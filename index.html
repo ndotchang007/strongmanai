@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strongman AI</title>
+    <link rel = "icon" type = "image/png" href = "assets/logo.png">
+    <style>
+        * {
+            box-sizing:border-box;
+            margin:0;
+            padding:0;
+            outline:none;
+        }
+        body {
+            width:100%;
+            min-height:100vh;
+            display:flex;
+            flex-direction:column;
+            background-color:#1b1b1b;
+        }
+        header {
+            height:100vh;
+            width:100%;
+            text-align:center;
+            justify-content:center;
+        }
+        .header-bar {
+            position:relative;
+            width:100%;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            padding:16px 20px 0;
+            flex-shrink:0;
+        }
+        main {
+            width:100%;
+            flex:1 0 auto;
+        }
+        .coming-soon-container {
+            width:100%;
+            margin-top:45vh;
+            text-align:center;
+            height:10vh;
+            font-size:50px;
+            font-family:'Times New Roman', Times, serif;
+            color:white;
+        }
+        .coming-soon-container-b {
+            font-size:25px;
+            color:gray;
+        }
+        .logo-container {
+            position:relative;
+            margin-top:0;
+            width:auto;
+            height:50px;
+            display:flex;
+            align-items:center;
+            flex-direction:row;
+            justify-content:flex-start;
+        }
+        .instagram-link {
+            position:relative;
+            display:flex;
+            align-items:center;
+            line-height:0;
+        }
+        .instagram-link img {
+            display:block;
+            height:40px;
+            width:auto;
+            filter:brightness(0.72);
+            transition:filter 0.2s ease;
+        }
+        .instagram-link:hover img {
+            filter:brightness(0.88);
+        }
+        .instagram-link:focus-visible {
+            outline:2px solid #f55a25;
+            outline-offset:4px;
+            border-radius:4px;
+        }
+        .logo-text {
+            margin-left:10px;
+            font-size:20px;
+            font-family:Helvetica, Arial, sans-serif;
+            font-weight:bold;
+            color:white;
+        }
+        footer {
+            width:100%;
+            flex-shrink:0;
+        }
+        .contact-us {
+            display:flex;
+            flex-direction:column;
+            justify-content:center;
+            align-items:center;
+            background-color:black;
+            height:60vh;
+            min-height:60vh;
+            max-height:60vh;
+            padding:16px;
+            box-sizing:border-box;
+            gap:8px;
+            overflow-y:auto;
+        }
+        .contact-us-message {
+            font-size:50px; 
+            color:white;
+        }
+        #message 
+        {
+            background-color:black;
+            color:white;
+            border:2px solid;
+            border-radius:5px;
+            border-color:rgb(148, 148, 148);
+            font-family:'Times New Roman', Times, serif;
+            font-size:16px;
+            padding:5px;
+        }
+        .contact-us label 
+        {
+            margin-top:10px;
+            color:white;
+            font-family:'Times New Roman', Times, serif;
+            font-size:20px;
+        }
+        .submit-btn
+        {
+            border:2px solid;
+            border-radius:5px;
+
+            height:30px;
+            width:200px;
+            
+            font-size:20px;
+            font-family:'Times New Roman', Times, serif;
+
+            background-color:black;
+            color:rgb(148, 148, 148);
+        }
+        .submit-btn:hover 
+        {
+            background-color:rgb(28, 27, 27);
+        }
+        .submit-container 
+        {
+            display:flex;
+            flex-direction:row;
+            justify-content:center;
+        }
+        .info-text 
+        {
+            text-align:center;
+            padding:30px;
+            font-size:35px;
+            line-height:1.3;
+            color:white;
+        }
+        .info-text-header
+        {
+            color:#f55a25;
+            text-align:center;
+            font-size:50px;
+            text-decoration:underline;
+            margin-bottom:10px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class = "header-bar">
+            <div class = "logo-container">
+                <img src = "assets/logo.png" height = 50 alt = "Strongman AI logo">
+                <p class = "logo-text">STRONGMAN <span style = "color:#f55a25">AI</span></p>
+            </div>
+            <a class = "instagram-link" href = "https://www.instagram.com/strongmanai/" target = "_blank" rel = "noopener noreferrer" aria-label = "Strongman AI on Instagram">
+                <img src = "assets/instagram-logo.png" alt = "">
+            </a>
+        </div>
+        <div class = "coming-soon-container">Coming soon! Look out for launch! 🚀<br><span class = "coming-soon-container-b">Scroll down for more info</span></div>
+    </header>
+    <main>
+        <div class = "info-text-container">
+            <p class = "info-text-header">Overview</p>
+            <p class = "info-text">
+            Strongman AI is an <span style = "color:#f55a25">AI gym app</span> made for all gym users. 
+            We understand that, for beginners, starting to workout 
+            can be <span style = "color:#f55a25">intimidating</span> and, for advanced, it's possible to 
+            lose <span style = "color:#f55a25">motivation</span> to workout. We at Strongman AI aim to solve
+            both these issues by making our apps <span style = "color:#f55a25">tailored</span> to <span style = "color:#f55a25">easy-use</span> and
+            <span style = "color:#f55a25">accurate statistics</span>. We've also added features for users to
+            <span style = "color:#f55a25">show off</span> their own progress and <span style = "color:#f55a25">motivate</span> others through a social media page.
+            To increase the enjoyment of working out, we also added a competition page to allow users to <span style = "color:#f55a25">compete</span> with their friends.
+            </p>
+        </div>
+        <div class = "our-team-container">
+            <br>
+            <p class = "info-text-header">Our Team</p>
+            <p class = "info-text">Our team consists of 7 people. We are looking for more people to add to our team, so if you are interested, click the instagram icon and follow and DM us.</p>
+            <br><br>
+        </div>
+    </main>
+    <footer>
+        <div class = "contact-us">
+            <p class = "contact-us-message">More questions?</p>
+            <label for = "message">Submit a question to us</label>
+            <textarea id = "message" name = "message" rows = "8" cols = "80"></textarea>
+            <div class = "submit-container">
+                <input type = "submit" value = "Submit" class = "submit-btn">
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
