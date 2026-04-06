@@ -99,59 +99,49 @@
             justify-content:center;
             align-items:center;
             background-color:black;
-            height:60vh;
-            min-height:60vh;
-            max-height:60vh;
-            padding:16px;
+            height:30vh;
+            min-height:30vh;
+            max-height:30vh;
+            padding:12px 16px;
             box-sizing:border-box;
-            gap:8px;
-            overflow-y:auto;
+            gap:12px;
         }
         .contact-us-message {
-            font-size:50px; 
-            color:white;
-        }
-        #message 
-        {
-            background-color:black;
-            color:white;
-            border:2px solid;
-            border-radius:5px;
-            border-color:rgb(148, 148, 148);
-            font-family:'Times New Roman', Times, serif;
-            font-size:16px;
-            padding:5px;
-        }
-        .contact-us label 
-        {
-            margin-top:10px;
+            font-size:clamp(22px, 4vw, 32px);
             color:white;
             font-family:'Times New Roman', Times, serif;
-            font-size:20px;
         }
-        .submit-btn
-        {
-            border:2px solid;
-            border-radius:5px;
-
-            height:30px;
-            width:200px;
-            
-            font-size:20px;
-            font-family:'Times New Roman', Times, serif;
-
-            background-color:black;
-            color:rgb(148, 148, 148);
-        }
-        .submit-btn:hover 
-        {
-            background-color:rgb(28, 27, 27);
-        }
-        .submit-container 
-        {
-            display:flex;
+        .contact-instagram-btn {
+            display:inline-flex;
             flex-direction:row;
+            align-items:center;
             justify-content:center;
+            gap:10px;
+            padding:10px 22px;
+            border:2px solid rgb(148, 148, 148);
+            border-radius:8px;
+            background-color:#111;
+            color:rgb(200, 200, 200);
+            font-family:Helvetica, Arial, sans-serif;
+            font-size:16px;
+            font-weight:600;
+            text-decoration:none;
+            transition:background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+        }
+        .contact-instagram-btn:hover {
+            background-color:rgb(28, 27, 27);
+            border-color:#f55a25;
+            color:white;
+        }
+        .contact-instagram-btn:focus-visible {
+            outline:2px solid #f55a25;
+            outline-offset:3px;
+        }
+        .contact-instagram-btn img {
+            height:26px;
+            width:auto;
+            display:block;
+            filter:brightness(0.85);
         }
         .info-text 
         {
@@ -208,11 +198,10 @@
     <footer>
         <div class = "contact-us">
             <p class = "contact-us-message">More questions?</p>
-            <label for = "message">Submit a question to us</label>
-            <textarea id = "message" name = "message" rows = "8" cols = "80"></textarea>
-            <div class = "submit-container">
-                <input type = "submit" value = "Submit" class = "submit-btn">
-            </div>
+            <a class = "contact-instagram-btn" href = "https://www.instagram.com/strongmanai/" target = "_blank" rel = "noopener noreferrer">
+                <img src = "assets/instagram-logo.png" alt = "">
+                <span>Contact us on Instagram</span>
+            </a>
         </div>
     </footer>
 </body>
