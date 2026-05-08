@@ -51,6 +51,55 @@
             font-size:25px;
             color:gray;
         }
+        .launch-countdown {
+            margin-top:28px;
+            padding:0 16px;
+        }
+        .launch-countdown-title {
+            font-size:clamp(18px, 3vw, 24px);
+            color:#c8c8c8;
+            margin-bottom:16px;
+            font-family:Helvetica, Arial, sans-serif;
+            font-weight:600;
+            letter-spacing:0.02em;
+        }
+        .launch-countdown-grid {
+            display:flex;
+            flex-wrap:wrap;
+            justify-content:center;
+            gap:clamp(12px, 3vw, 24px);
+            max-width:520px;
+            margin:0 auto;
+        }
+        .launch-countdown-unit {
+            min-width:72px;
+            padding:14px 16px;
+            background:rgba(245, 90, 37, 0.12);
+            border:1px solid rgba(245, 90, 37, 0.35);
+            border-radius:10px;
+        }
+        .launch-countdown-value {
+            font-size:clamp(32px, 6vw, 44px);
+            font-weight:700;
+            color:#f55a25;
+            font-family:Helvetica, Arial, sans-serif;
+            line-height:1.1;
+        }
+        .launch-countdown-label {
+            font-size:12px;
+            text-transform:uppercase;
+            letter-spacing:0.08em;
+            color:#888;
+            margin-top:6px;
+            font-family:Helvetica, Arial, sans-serif;
+        }
+        .launch-countdown-live {
+            margin-top:20px;
+            font-size:clamp(22px, 4vw, 32px);
+            color:#f55a25;
+            font-family:Helvetica, Arial, sans-serif;
+            font-weight:700;
+        }
         .logo-container {
             position:relative;
             margin-top:0;
@@ -172,7 +221,32 @@
                 <img src = "assets/instagram-logo.png" alt = "">
             </a>
         </div>
-        <div class = "coming-soon-container">Coming soon! Look out for launch! 🚀<br><span class = "coming-soon-container-b">Scroll down for more info</span></div>
+        <div class = "coming-soon-container">
+            Coming soon! Look out for launch! 🚀<br>
+            <span class = "coming-soon-container-b">Scroll down for more info</span>
+            <div class = "launch-countdown" id = "launch-countdown" aria-live = "polite">
+                <p class = "launch-countdown-title">Launch day · Friday, May 15, 2026</p>
+                <div class = "launch-countdown-grid" id = "launch-countdown-grid" hidden>
+                    <div class = "launch-countdown-unit">
+                        <div class = "launch-countdown-value" id = "cd-days">0</div>
+                        <div class = "launch-countdown-label">Days</div>
+                    </div>
+                    <div class = "launch-countdown-unit">
+                        <div class = "launch-countdown-value" id = "cd-hours">0</div>
+                        <div class = "launch-countdown-label">Hours</div>
+                    </div>
+                    <div class = "launch-countdown-unit">
+                        <div class = "launch-countdown-value" id = "cd-mins">0</div>
+                        <div class = "launch-countdown-label">Minutes</div>
+                    </div>
+                    <div class = "launch-countdown-unit">
+                        <div class = "launch-countdown-value" id = "cd-secs">0</div>
+                        <div class = "launch-countdown-label">Seconds</div>
+                    </div>
+                </div>
+                <p class = "launch-countdown-live" id = "launch-countdown-live" hidden>Launch day is here!</p>
+            </div>
+        </div>
     </header>
     <main>
         <div class = "info-text-container">
@@ -204,5 +278,39 @@
             </a>
         </div>
     </footer>
+    <script>
+        (function () {
+            var launch = new Date(2026, 4, 15, 0, 0, 0, 0);
+            var grid = document.getElementById('launch-countdown-grid');
+            var live = document.getElementById('launch-countdown-live');
+            var elDays = document.getElementById('cd-days');
+            var elHours = document.getElementById('cd-hours');
+            var elMins = document.getElementById('cd-mins');
+            var elSecs = document.getElementById('cd-secs');
+
+            function tick() {
+                var now = Date.now();
+                var ms = launch - now;
+                if (ms <= 0) {
+                    grid.hidden = true;
+                    live.hidden = false;
+                    return;
+                }
+                grid.hidden = false;
+                live.hidden = true;
+                var totalSec = Math.floor(ms / 1000);
+                var days = Math.floor(totalSec / 86400);
+                var hours = Math.floor((totalSec % 86400) / 3600);
+                var mins = Math.floor((totalSec % 3600) / 60);
+                var secs = totalSec % 60;
+                elDays.textContent = String(days);
+                elHours.textContent = String(hours).padStart(2, '0');
+                elMins.textContent = String(mins).padStart(2, '0');
+                elSecs.textContent = String(secs).padStart(2, '0');
+            }
+            tick();
+            setInterval(tick, 1000);
+        })();
+    </script>
 </body>
 </html>
