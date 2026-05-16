@@ -78,6 +78,14 @@
                 <p class="profile-error-banner" id="profile-error-banner" hidden></p>
 
                 <section class="profile-hero-card" aria-label="Profile">
+                    <div class="profile-banner-wrap" id="profile-banner-wrap" aria-hidden="true">
+                        <img src="" alt="" class="profile-banner-img" id="profile-banner-img" hidden decoding="async">
+                        <div class="profile-banner-fallback" id="profile-banner-fallback" aria-hidden="true"></div>
+                        <label class="profile-media-btn profile-media-btn--banner" id="profile-banner-change-label" hidden>
+                            <span>Change banner</span>
+                            <input type="file" id="profile-banner-input" accept="image/jpeg,image/png,image/gif,image/webp" hidden>
+                        </label>
+                    </div>
                     <p class="profile-eyebrow" id="profile-eyebrow">Your profile</p>
                     <div class="profile-hero-grid">
                         <div class="profile-avatar-frame">
@@ -90,12 +98,17 @@
                                 height="168"
                                 decoding="async"
                                 fetchpriority="high">
+                            <label class="profile-media-btn profile-media-btn--avatar" id="profile-avatar-change-label" hidden>
+                                <span>Change photo</span>
+                                <input type="file" id="profile-avatar-input" accept="image/jpeg,image/png,image/gif,image/webp" hidden>
+                            </label>
                         </div>
                         <div class="profile-hero-copy">
                             <div class="profile-hero-heading-row">
                                 <h1 class="profile-display-name" id="profile-username">username</h1>
                                 <div class="profile-hero-actions" id="profile-hero-actions">
-                                    <a href="/init" class="profile-edit-link home-btn" id="profile-edit-link">Edit profile</a>
+                                    <button type="button" class="profile-edit-link home-btn" id="profile-edit-toggle" hidden>Edit profile</button>
+                                    <a href="/init" class="profile-edit-link home-btn profile-edit-link--secondary" id="profile-setup-link" hidden>Account setup</a>
                                 </div>
                             </div>
                             <div class="profile-stats-row" id="profile-stats-row" role="list">
@@ -104,7 +117,17 @@
                             </div>
                             <div class="profile-bio-wrap">
                                 <p class="profile-bio" id="profile-bio"></p>
+                                <div class="profile-bio-edit" id="profile-bio-edit" hidden>
+                                    <label class="profile-bio-edit-label" for="profile-bio-input">Bio</label>
+                                    <textarea id="profile-bio-input" class="profile-bio-input" rows="4" maxlength="500" placeholder="Tell others what you train for…" spellcheck="true"></textarea>
+                                    <p class="profile-bio-charcount" id="profile-bio-charcount" aria-live="polite">0 / 500</p>
+                                    <div class="profile-bio-edit-actions">
+                                        <button type="button" class="profile-btn profile-btn--ghost" id="profile-bio-cancel">Cancel</button>
+                                        <button type="button" class="profile-btn profile-btn--primary" id="profile-bio-save">Save bio</button>
+                                    </div>
+                                </div>
                             </div>
+                            <p class="profile-save-status" id="profile-save-status" role="status" aria-live="polite" hidden></p>
                         </div>
                     </div>
 
