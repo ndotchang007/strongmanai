@@ -42,6 +42,16 @@
                         <span class="lb-filter-sep">/</span>
                         <button type="button" class="lb-filter-btn" data-group="mode" data-value="times">Times</button>
                     </div>
+                    <div class="lb-picker-row" id="lb-exercise-picker">
+                        <label class="lb-picker-label" for="lb-exercise-search">Exercise:</label>
+                        <input type="search" class="lb-picker-input" id="lb-exercise-search" list="lb-exercise-suggestions" value="Bench" placeholder="Search exercise…" autocomplete="off" spellcheck="false" aria-label="Exercise for leaderboard">
+                        <datalist id="lb-exercise-suggestions"></datalist>
+                    </div>
+                    <div class="lb-picker-row" id="lb-times-picker" hidden>
+                        <label class="lb-picker-label" for="lb-times-search">Event:</label>
+                        <input type="search" class="lb-picker-input" id="lb-times-search" list="lb-times-suggestions" value="Yoke walk" placeholder="Search timed event…" autocomplete="off" spellcheck="false" aria-label="Timed event for leaderboard">
+                        <datalist id="lb-times-suggestions"></datalist>
+                    </div>
                 </div>
                 <div class="lb-table-wrap">
                     <table class="lb-table">
