@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Loading…</title>
+  <script>
+    (function () {
+      var path = location.pathname.replace(/\/$/, '') || '/';
+      var qs = location.search || '';
+      var hash = location.hash || '';
+
+      var routes = {
+        '/home': '/html/homePage/homepage.html',
+        '/login': '/html/loginPage/loginPage.html',
+        '/signup': '/html/loginPage/loginPage.html?signup=1',
+        '/init': '/html/accountInitializationPage/initPage.html',
+        '/explore': '/html/explorePage/explorePage.html',
+        '/generate': '/html/generatePage/generatePage.html',
+        '/leaderboard': '/html/leaderboardPage/leaderboardPage.html',
+        '/leaderboards': '/html/leaderboardPage/leaderboardPublic.html',
+        '/profile': '/html/profilePage/profilePage.html',
+        '/create': '/html/createPage/createPage.html',
+        '/tracking': '/html/trackingPage/trackingPage.html',
+        '/about': '/html/aboutPage/aboutPage.html',
+        '/legal': '/html/legalPage/legalPage.html'
+      };
+
+      var target = routes[path];
+      if (target) {
+        var sep = target.indexOf('?') >= 0 ? '&' : '?';
+        if (path !== '/signup' && qs) {
+          target += (target.indexOf('?') >= 0 ? '&' : '?') + qs.slice(1);
+        } else if (path === '/signup' && qs) {
+          target += '&' + qs.slice(1);
+        }
+        location.replace(target + hash);
+      } else {
+        location.replace('/' + qs + hash);
+      }
+    })();
+  </script>
+</head>
+<body></body>
+</html>
