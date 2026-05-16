@@ -887,6 +887,19 @@ html[data-theme="light"] .profile-thumb
     background-color: #e8e8e8;
 }
 
+html[data-theme="light"] .profile-banner-wrap
+{
+    border-bottom-color: #ddd;
+}
+
+html[data-theme="light"] .profile-bio-input,
+html[data-theme="light"] .profile-media-btn
+{
+    background: rgba(255, 255, 255, 0.92);
+    color: #1a1a1a;
+    border-color: #ccc;
+}
+
 /* Tracking */
 html[data-theme="light"] body.tracking-page
 {
