@@ -16,6 +16,14 @@
     return out;
   }
 
+  function hasUserConfigured() {
+    try {
+      return !!localStorage.getItem(STORAGE_KEY);
+    } catch (e) {
+      return false;
+    }
+  }
+
   function load() {
     try {
       var raw = localStorage.getItem(STORAGE_KEY);
@@ -59,6 +67,7 @@
 
   window.WorkoutSplit = {
     STORAGE_KEY: STORAGE_KEY,
+    hasUserConfigured: hasUserConfigured,
     load: load,
     save: save,
     mondayIndexFromDate: mondayIndexFromDate,
