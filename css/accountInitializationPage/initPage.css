@@ -94,6 +94,14 @@ button:focus {
   transform: translate(-50%, 0);
 }
 
+.init-floating-header.float-up .init-continue {
+  display: none;
+}
+
+.init-floating-header[hidden] {
+  display: none !important;
+}
+
 .init-floating-header.hidden {
   visibility: hidden;
 }
@@ -106,33 +114,31 @@ button:focus {
   margin: 0;
 }
 
-/* Slide 2 & 3: invisible spacer so form sits below where floating header sits */
-.init-header-spacer {
-  visibility: hidden;
+/* Slide 2 & 3: static header in document flow (no overlap with form) */
+.init-slide-header {
   flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.35rem;
   width: 100%;
   max-width: min(36rem, 100%);
-  min-height: 4.5rem;
-  overflow: hidden;
-  margin: 0 0 0.25rem 0;
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(2.25rem, 5vw, 3.5rem);
-  line-height: 1.2;
+  margin: 0 auto 0.75rem;
+  padding: max(0.5rem, env(safe-area-inset-top, 0px)) 0.5rem 0;
   text-align: center;
 }
 
-.init-header-spacer > span {
-  display: block;
-  width: 100%;
+.init-slide-header .init-title {
+  margin: 0;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: unset;
 }
 
-.init-header-spacer + .slide2-content,
-.init-header-spacer + .slide3-content {
-  margin-top: 0;
+.slide[data-slide="2"],
+.slide[data-slide="3"] {
+  justify-content: flex-start;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  align-items: center;
+  padding: 0 max(1.5rem, env(safe-area-inset-right, 0px)) max(1.5rem, env(safe-area-inset-bottom, 0px)) max(1.5rem, env(safe-area-inset-left, 0px));
 }
 
 /* Title – serif, large like OG image, one line */
@@ -267,11 +273,20 @@ button:focus {
 
 .slide4-body.fade-in {
   opacity: 1;
+  pointer-events: auto;
 }
 
 .slide4-body.fade-out {
   opacity: 0;
   pointer-events: none;
+}
+
+.slide4-body .init-btn-wide {
+  position: relative;
+  z-index: 5;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
 }
 
 .slide[data-slide="4"] .slide4-title {
@@ -334,6 +349,10 @@ button:focus {
   opacity: 0;
   transition: opacity 0.5s ease-out;
   pointer-events: none;
+}
+
+.slide4-thanks-subtitle[hidden] {
+  display: none !important;
 }
 
 .slide4-thanks-subtitle.visible {
@@ -517,6 +536,8 @@ button:focus {
   font-family: inherit;
   cursor: pointer;
   text-decoration: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .init-opt:hover {
@@ -557,7 +578,7 @@ button:focus {
   display: none;
 }
 
-@media (max-width: 520px) {
+@media (max-width: 768px) {
   .slide {
     padding:
       max(3.5rem, calc(env(safe-area-inset-top, 0px) + 2.5rem))
@@ -570,18 +591,6 @@ button:focus {
     padding: 0;
   }
 
-  /* Form slides: scroll when content + keyboard exceed viewport */
-  .slide[data-slide="2"],
-  .slide[data-slide="3"] {
-    justify-content: flex-start;
-    overflow-x: hidden;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    align-items: stretch;
-    padding-top: max(0.75rem, env(safe-area-inset-top, 0px));
-    padding-bottom: max(1.25rem, env(safe-area-inset-bottom, 0px));
-  }
-
   .init-floating-header {
     width: calc(100% - 2rem);
     max-width: 22rem;
@@ -590,11 +599,6 @@ button:focus {
       max(0.5rem, env(safe-area-inset-right, 0px))
       0
       max(0.5rem, env(safe-area-inset-left, 0px));
-  }
-
-  .init-floating-header.float-up {
-    top: max(3.75rem, calc(env(safe-area-inset-top, 0px) + 2.75rem));
-    transform: translate(-50%, 0);
   }
 
   .init-floating-header .init-title,
@@ -613,11 +617,21 @@ button:focus {
     line-height: 1.35;
   }
 
-  .init-header-spacer {
-    font-size: clamp(1.5rem, 6.5vw, 2.25rem);
-    min-height: 0;
-    margin-bottom: 0.5rem;
+  .init-slide-header {
     max-width: 100%;
+    margin-bottom: 0.5rem;
+    padding-top: max(0.35rem, env(safe-area-inset-top, 0px));
+  }
+
+  .init-slide-header .init-title {
+    font-size: clamp(1.5rem, 6.5vw, 2.25rem);
+  }
+
+  .slide[data-slide="2"],
+  .slide[data-slide="3"] {
+    align-items: stretch;
+    padding-left: max(1rem, env(safe-area-inset-left, 0px));
+    padding-right: max(1rem, env(safe-area-inset-right, 0px));
   }
 
   .slide2-content,
@@ -773,8 +787,14 @@ button:focus {
 
   .init-btn-wide {
     margin-top: 1rem;
+    margin-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px));
     padding: 0.95rem 1rem;
     font-size: 1rem;
+    min-height: 3rem;
+  }
+
+  .slide4-body .init-btn-wide {
+    z-index: 20;
   }
 
   /* Thank you slide */
