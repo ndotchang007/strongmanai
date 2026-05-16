@@ -110,6 +110,64 @@
     font-weight: 500;
 }
 
+.lb-picker-row
+{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem 0.65rem;
+    width: 100%;
+    max-width: 28rem;
+    margin: 0 auto;
+}
+
+.lb-picker-label
+{
+    font-family: var(--font);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+
+.lb-picker-input
+{
+    flex: 1 1 12rem;
+    min-width: 10rem;
+    max-width: 18rem;
+    padding: 0.45rem 0.75rem;
+    border-radius: var(--radius-full, 999px);
+    border: 1px solid var(--border-mid);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text-primary);
+    font: inherit;
+    font-family: var(--font);
+    font-size: 0.82rem;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.lb-picker-input::placeholder
+{
+    color: var(--text-muted);
+    opacity: 0.65;
+}
+
+.lb-picker-input:hover,
+.lb-picker-input:focus
+{
+    outline: none;
+    border-color: rgba(255, 140, 0, 0.4);
+    background: rgba(255, 255, 255, 0.07);
+}
+
+.lb-picker-input::-webkit-search-cancel-button
+{
+    -webkit-appearance: none;
+}
+
 .lb-table-wrap
 {
     border-radius: var(--radius-md);
