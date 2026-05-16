@@ -585,27 +585,48 @@ button.sidebar-profile
     flex-wrap: wrap;
     gap: 0 0.35rem;
 }
+.complication-lb-exercise-wrap
+{
+    display: inline-flex;
+    align-items: center;
+    gap: 0;
+    color: var(--text-secondary);
+}
 .complication-leaderboard-exercise
 {
     background: transparent;
     border: none;
+    border-bottom: 1px solid transparent;
     color: var(--text-secondary);
     font-family: var(--font);
     font-size: inherit;
     font-weight: 700;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    cursor: pointer;
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'%3E%3Cpath fill='%23a1a1aa' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 0 center;
-    padding-right: 1rem;
-    transition: color 0.2s ease;
+    min-width: 6.5rem;
+    max-width: min(14rem, 42vw);
+    padding: 0 0 1px;
+    margin: 0;
+    transition: color 0.2s ease, border-color 0.2s ease;
 }
-.complication-leaderboard-exercise:hover
+.complication-leaderboard-exercise::placeholder
+{
+    color: var(--text-muted);
+    opacity: 0.85;
+    text-transform: none;
+    letter-spacing: 0.02em;
+    font-weight: 500;
+}
+.complication-leaderboard-exercise:hover,
+.complication-leaderboard-exercise:focus
 {
     color: var(--text-primary);
+    border-bottom-color: rgba(255, 140, 0, 0.45);
+    outline: none;
+}
+.complication-leaderboard-exercise::-webkit-search-cancel-button
+{
+    -webkit-appearance: none;
 }
 
 /* Graph card: header row with title + exercise picker, then a stack of two charts */
@@ -929,6 +950,14 @@ button.sidebar-profile
     color: var(--accent-hover);
     text-decoration: underline;
 }
+.complication-log.is-split-empty .complication-today-focus,
+.complication-log.is-split-empty .complication-split-label,
+.complication-log.is-split-empty .complication-split-grid,
+.complication-log.is-split-empty .complication-split-details
+{
+    display: none;
+}
+
 .complication-split-label
 {
     color: var(--text-muted);
