@@ -92,10 +92,118 @@ body.profile-page .profile-mainContent
     border: 1px solid var(--border-strong);
     background: linear-gradient(165deg, var(--bg-card) 0%, var(--bg-elevated) 100%);
     box-shadow: var(--shadow-soft);
-    padding: clamp(1.35rem, 3.5vw, 2rem);
+    padding: 0;
     display: flex;
     flex-direction: column;
-    gap: clamp(1.25rem, 3vw, 1.75rem);
+    gap: 0;
+    overflow: hidden;
+}
+
+.profile-hero-card > .profile-eyebrow,
+.profile-hero-card > .profile-hero-grid,
+.profile-hero-card > .profile-toolbar,
+.profile-hero-card > .profile-logout,
+.profile-hero-card > .profile-highlights
+{
+    margin-left: clamp(1.35rem, 3.5vw, 2rem);
+    margin-right: clamp(1.35rem, 3.5vw, 2rem);
+}
+
+.profile-hero-card > .profile-eyebrow
+{
+    margin-top: clamp(1.35rem, 3.5vw, 2rem);
+}
+
+.profile-hero-card > .profile-highlights
+{
+    margin-bottom: clamp(1.35rem, 3.5vw, 2rem);
+    padding-top: 0.25rem;
+}
+
+.profile-hero-card > .profile-toolbar,
+.profile-hero-card > .profile-logout
+{
+    margin-top: clamp(1.25rem, 3vw, 1.75rem);
+}
+
+.profile-hero-card > .profile-hero-grid
+{
+    margin-top: clamp(1rem, 2.5vw, 1.35rem);
+}
+
+.profile-banner-wrap
+{
+    position: relative;
+    width: 100%;
+    height: clamp(7rem, 22vw, 11rem);
+    background: linear-gradient(120deg, rgba(255, 140, 0, 0.22) 0%, rgba(30, 30, 30, 0.95) 55%, var(--bg-deep) 100%);
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.profile-banner-wrap[hidden]
+{
+    display: none;
+}
+
+.profile-banner-img
+{
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.profile-banner-fallback
+{
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(120deg, rgba(255, 140, 0, 0.18) 0%, rgba(20, 20, 20, 0.9) 100%);
+}
+
+.profile-media-btn
+{
+    position: absolute;
+    z-index: 2;
+    font-family: var(--font);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.45rem 0.85rem;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--border-strong);
+    background: rgba(0, 0, 0, 0.55);
+    color: var(--text-primary);
+    cursor: pointer;
+    backdrop-filter: blur(6px);
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.profile-media-btn:hover
+{
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(0, 0, 0, 0.72);
+}
+
+.profile-media-btn--banner
+{
+    right: clamp(0.85rem, 3vw, 1.25rem);
+    bottom: clamp(0.65rem, 2vw, 1rem);
+}
+
+.profile-media-btn--avatar
+{
+    left: 50%;
+    bottom: 0.35rem;
+    transform: translateX(-50%);
+}
+
+.profile-avatar-frame
+{
+    position: relative;
 }
 
 .profile-eyebrow
@@ -172,6 +280,85 @@ body.profile-page .profile-mainContent
     font-weight: 600;
     letter-spacing: 0.06em;
     text-transform: uppercase;
+}
+
+.profile-edit-link--secondary
+{
+    opacity: 0.85;
+}
+
+.profile-bio-edit
+{
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.profile-bio-edit-label
+{
+    font-family: var(--font);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+
+.profile-bio-input
+{
+    font-family: var(--font);
+    font-size: 0.92rem;
+    line-height: 1.5;
+    width: 100%;
+    min-height: 5.5rem;
+    padding: 0.65rem 0.75rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-mid);
+    background: rgba(0, 0, 0, 0.28);
+    color: var(--text-primary);
+    resize: vertical;
+    box-sizing: border-box;
+}
+
+.profile-bio-input:focus
+{
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+}
+
+.profile-bio-charcount
+{
+    margin: 0;
+    font-family: var(--font);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-align: right;
+}
+
+.profile-bio-edit-actions
+{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+.profile-save-status
+{
+    margin: 0.35rem 0 0;
+    font-family: var(--font);
+    font-size: 0.82rem;
+    color: var(--accent);
+}
+
+.profile-save-status--error
+{
+    color: #f87171;
+}
+
+.profile-hero-card.profile-hero-card--editing .profile-bio:not(.profile-bio--hidden)
+{
+    display: none;
 }
 
 .profile-stats-row
