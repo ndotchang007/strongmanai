@@ -27,6 +27,7 @@ button:focus {
 /* Slideshow: full viewport, one slide at a time */
 .slideshow {
   height: 100vh;
+  height: 100dvh;
   width: 100%;
   overflow: hidden;
   position: relative;
@@ -39,6 +40,7 @@ button:focus {
   left: 0;
   width: 100%;
   height: 100vh;
+  height: 100dvh;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -82,6 +84,9 @@ button:focus {
   top: 50%;
   transform: translate(-50%, -50%);
   text-align: center;
+  width: min(36rem, calc(100% - 2.5rem));
+  max-width: calc(100% - 2.5rem);
+  padding: 0 0.25rem;
 }
 
 .init-floating-header.float-up {
@@ -105,12 +110,24 @@ button:focus {
 .init-header-spacer {
   visibility: hidden;
   flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  width: 100%;
+  max-width: min(36rem, 100%);
   min-height: 4.5rem;
   overflow: hidden;
   margin: 0 0 0.25rem 0;
   font-family: Georgia, "Times New Roman", serif;
   font-size: clamp(2.25rem, 5vw, 3.5rem);
   line-height: 1.2;
+  text-align: center;
+}
+
+.init-header-spacer > span {
+  display: block;
+  width: 100%;
 }
 
 .init-header-spacer + .slide2-content,
@@ -196,6 +213,12 @@ button:focus {
 }
 
 /* Slide 2 content: fade in on enter, fade out on submit; uniform gap like reference */
+.slide2-content,
+.slide3-content {
+  width: 100%;
+  max-width: min(22rem, 100%);
+}
+
 .slide2-content {
   opacity: 0;
   transition: opacity 0.5s ease-out;
@@ -536,34 +559,243 @@ button:focus {
 
 @media (max-width: 520px) {
   .slide {
-    padding: 3rem max(1rem, env(safe-area-inset-left, 0px)) 2.5rem max(1rem, env(safe-area-inset-right, 0px));
+    padding:
+      max(3.5rem, calc(env(safe-area-inset-top, 0px) + 2.5rem))
+      max(1rem, env(safe-area-inset-right, 0px))
+      max(1.5rem, env(safe-area-inset-bottom, 0px))
+      max(1rem, env(safe-area-inset-left, 0px));
   }
 
-  .slide[data-slide="4"] {
-    padding: 1.25rem max(1rem, env(safe-area-inset-left, 0px)) max(2rem, env(safe-area-inset-bottom, 0px)) max(1rem, env(safe-area-inset-right, 0px));
+  .slide[data-slide="1"] {
+    padding: 0;
   }
 
-  .slide[data-slide="4"] .slide4-body,
-  .slide4-body {
+  /* Form slides: scroll when content + keyboard exceed viewport */
+  .slide[data-slide="2"],
+  .slide[data-slide="3"] {
+    justify-content: flex-start;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    align-items: stretch;
+    padding-top: max(0.75rem, env(safe-area-inset-top, 0px));
+    padding-bottom: max(1.25rem, env(safe-area-inset-bottom, 0px));
+  }
+
+  .init-floating-header {
+    width: calc(100% - 2rem);
+    max-width: 22rem;
+    padding:
+      0
+      max(0.5rem, env(safe-area-inset-right, 0px))
+      0
+      max(0.5rem, env(safe-area-inset-left, 0px));
+  }
+
+  .init-floating-header.float-up {
+    top: max(3.75rem, calc(env(safe-area-inset-top, 0px) + 2.75rem));
+    transform: translate(-50%, 0);
+  }
+
+  .init-floating-header .init-title,
+  .init-title {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+    text-align: center;
+    font-size: clamp(1.5rem, 6.5vw, 2.25rem);
+    line-height: 1.2;
+    hyphens: none;
+  }
+
+  .init-continue {
+    font-size: 0.9375rem;
+    line-height: 1.35;
+  }
+
+  .init-header-spacer {
+    font-size: clamp(1.5rem, 6.5vw, 2.25rem);
+    min-height: 0;
+    margin-bottom: 0.5rem;
+    max-width: 100%;
+  }
+
+  .slide2-content,
+  .slide3-content {
     width: 100%;
-    max-width: min(28rem, 100%);
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0 0.15rem;
+    flex-shrink: 0;
+  }
+
+  .init-prompt {
+    font-size: 1rem;
+    line-height: 1.45;
+    margin-bottom: 1rem;
+    padding: 0 0.15rem;
+  }
+
+  .init-form,
+  .init-form-dob {
+    width: 100%;
   }
 
   .init-input,
   .init-form-dob,
   .init-dob-row,
+  .init-btn,
   .init-btn-wide {
     min-width: 0;
     max-width: 100%;
+    width: 100%;
   }
 
-  .init-title {
+  .init-input {
+    font-size: 16px; /* prevents iOS zoom on focus */
+  }
+
+  .init-dob-row {
+    gap: 0.25rem;
+  }
+
+  .init-dob-input:last-of-type {
+    flex: 1.35;
+  }
+
+  /* Preferences slide */
+  .slide[data-slide="4"] {
+    justify-content: flex-start;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    align-items: stretch;
+    padding:
+      max(0.75rem, env(safe-area-inset-top, 0px))
+      max(1rem, env(safe-area-inset-right, 0px))
+      max(1.25rem, env(safe-area-inset-bottom, 0px))
+      max(1rem, env(safe-area-inset-left, 0px));
+  }
+
+  .slide[data-slide="4"] .slide4-title {
     white-space: normal;
-    text-align: center;
-    font-size: clamp(1.65rem, 7vw, 2.75rem);
+    overflow: visible;
+    text-overflow: unset;
+    width: 100%;
+    max-width: 100%;
+    font-size: clamp(1.35rem, 6vw, 1.85rem);
+    line-height: 1.25;
+    margin-bottom: 0.75rem;
+    padding: 0 0.15rem;
+    flex-shrink: 0;
   }
 
-  .init-header-spacer {
-    font-size: clamp(1.65rem, 7vw, 2.75rem);
+  .slide[data-slide="4"] .slide4-body,
+  .slide4-body {
+    width: 100%;
+    max-width: 100%;
+    align-items: stretch;
+  }
+
+  .slide4-title.proceed-step1 {
+    top: max(0.75rem, env(safe-area-inset-top, 0px));
+    width: calc(100% - 2rem);
+    max-width: 20rem;
+  }
+
+  .slide4-title.thanks-mode {
+    width: calc(100% - 2rem);
+    max-width: 18rem;
+    line-height: 1.25;
+  }
+
+  .slide4-title.thanks-mode .slide4-title-brand {
+    white-space: normal;
+  }
+
+  .slide4-thanks-subtitle {
+    top: calc(50% + 3rem);
+    width: calc(100% - 2rem);
+    max-width: 18rem;
+    font-size: 0.9375rem;
+    line-height: 1.4;
+  }
+
+  .init-intro,
+  .init-intro-small {
+    text-align: left;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+  }
+
+  .init-intro-small {
+    margin-bottom: 1rem;
+  }
+
+  .init-section {
+    margin-bottom: 1.25rem;
+  }
+
+  .init-section-title {
+    font-size: 1.125rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .init-field-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+    margin-bottom: 0.85rem;
+  }
+
+  .init-field-row .init-label {
+    display: block;
+    width: 100%;
+    line-height: 1.35;
+  }
+
+  .init-field-row .init-options {
+    width: 100%;
+    justify-content: flex-start;
+    row-gap: 0.2rem;
+  }
+
+  .init-opt {
+    font-size: 0.875rem;
+    line-height: 1.4;
+    padding: 0.2rem 0;
+  }
+
+  .init-field-inline {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .init-btn-wide {
+    margin-top: 1rem;
+    padding: 0.95rem 1rem;
+    font-size: 1rem;
+  }
+
+  /* Thank you slide */
+  .slide[data-slide="5"] {
+    padding:
+      max(2rem, env(safe-area-inset-top, 0px))
+      max(1.25rem, env(safe-area-inset-right, 0px))
+      max(1.5rem, env(safe-area-inset-bottom, 0px))
+      max(1.25rem, env(safe-area-inset-left, 0px));
+  }
+
+  .slide[data-slide="5"] .init-title-thanks {
+    white-space: normal;
+    font-size: clamp(1.5rem, 6.5vw, 2.1rem);
+    line-height: 1.25;
+    padding: 0 0.5rem;
+  }
+
+  .slide[data-slide="5"] .init-subtitle {
+    font-size: 0.9375rem;
+    line-height: 1.45;
+    padding: 0 1rem;
   }
 }
