@@ -32,7 +32,7 @@
     });
   }
 
-  // Leaderboard: lift max for selected exercise + profile bodyweight; scope filters follows / friends.
+  // Leaderboard: max weight + reps for selected exercise; scope filters follows / friends.
   var leaderboardBody = document.getElementById('leaderboard-body');
   var leaderboardExerciseSearch = document.getElementById('leaderboard-exercise-search');
   var leaderboardExerciseSuggestions = document.getElementById('leaderboard-exercise-suggestions');
@@ -106,18 +106,47 @@
     );
   }
 
+  function bestLiftFromExercise(ex) {
+    if (!ex) return null;
+    var bestWeight = null;
+    var repsAtBest = null;
+
+    function consider(weightRaw, repsRaw) {
+      var w = parseFloat(weightRaw);
+      if (isNaN(w) || w <= 0) return;
+      var r = parseFloat(repsRaw);
+      var reps = !isNaN(r) && r > 0 ? r : null;
+      if (bestWeight == null || w > bestWeight) {
+        bestWeight = w;
+        repsAtBest = reps;
+      }
+    }
+
+    consider(ex.weight, ex.reps);
+    var setWeights = Array.isArray(ex.setWeights) ? ex.setWeights : [];
+    var setReps = Array.isArray(ex.setReps) ? ex.setReps : [];
+    setWeights.forEach(function (raw, i) {
+      consider(raw, setReps[i]);
+    });
+    if (bestWeight == null) return null;
+    return { liftWeight: bestWeight, reps: repsAtBest };
+  }
+
   function bestLiftFromSessions(sessions, queryEl) {
     var best = null;
     (sessions || []).forEach(function (s) {
       (s.exercises || []).forEach(function (ex) {
         if (!exerciseMatchesSelection(ex.name, queryEl)) return;
-        var w = parseFloat(ex.weight);
-        if (!isNaN(w) && w > 0) best = best == null ? w : Math.max(best, w);
-        if (Array.isArray(ex.setWeights)) {
-          ex.setWeights.forEach(function (raw) {
-            var sw = parseFloat(raw);
-            if (!isNaN(sw) && sw > 0) best = best == null ? sw : Math.max(best, sw);
-          });
+        var lift = bestLiftFromExercise(ex);
+        if (!lift) return;
+        if (
+          best == null ||
+          lift.liftWeight > best.liftWeight ||
+          (lift.liftWeight === best.liftWeight &&
+            lift.reps != null &&
+            (best.reps == null || lift.reps > best.reps))
+        ) {
+          best = lift;
         }
       });
     });
@@ -134,9 +163,17 @@
     return (rows || []).map(function (u) {
       if (u.id !== cu.id) return u;
       var merged = Object.assign({}, u);
-      var server = merged.liftWeight != null ? Number(merged.liftWeight) : null;
-      merged.liftWeight =
-        server != null && !isNaN(server) ? Math.max(server, localBest) : localBest;
+      var serverW = merged.liftWeight != null ? Number(merged.liftWeight) : null;
+      var localW = localBest.liftWeight;
+      if (serverW == null || isNaN(serverW) || localW > serverW) {
+        merged.liftWeight = localW;
+        merged.reps = localBest.reps;
+      } else if (localW === serverW && localBest.reps != null) {
+        var serverR = merged.reps != null ? Number(merged.reps) : null;
+        if (serverR == null || isNaN(serverR) || localBest.reps > serverR) {
+          merged.reps = localBest.reps;
+        }
+      }
       return merged;
     });
   }
@@ -252,7 +289,7 @@
         '</td><td>' +
         escCell(user.liftWeight != null ? user.liftWeight : '–') +
         '</td><td>' +
-        escCell(user.bodyweight != null ? user.bodyweight : '–') +
+        escCell(user.reps != null ? user.reps : '–') +
         '</td>';
       leaderboardBody.appendChild(tr);
     });
@@ -593,7 +630,7 @@
       var bestW = null;
       var bestR = null;
       (s.exercises || []).forEach(function (ex) {
-        if (!exerciseMatchesSelection(ex.name, queryEl)) return;
+        if (!exerciseMatchesSelection(ex.name, selectEl)) return;
         var w = parseFloat(ex.weight);
         var r = parseFloat(ex.reps);
         if (!isNaN(w) && w > 0) bestW = bestW == null ? w : Math.max(bestW, w);
@@ -817,6 +854,7 @@
     populateGraphExerciseSelect(homeGraphSessions, graphExerciseSelect && graphExerciseSelect.value);
     populateLeaderboardExerciseSuggestions(homeGraphSessions);
     renderHomeGraphs();
+    loadHomeLeaderboard(homeLbScope);
   }
 
   function loadHomeGraphs() {
