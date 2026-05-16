@@ -32,8 +32,12 @@
     });
   }
 
-  // Leaderboard table from API — scope uses server-backed follows / mutual friends.
+  // Leaderboard: lift max for selected exercise + profile bodyweight; scope filters follows / friends.
   var leaderboardBody = document.getElementById('leaderboard-body');
+  var leaderboardExerciseSearch = document.getElementById('leaderboard-exercise-search');
+  var leaderboardExerciseSuggestions = document.getElementById('leaderboard-exercise-suggestions');
+  var lbSearchDebounceTimer = null;
+  var lbSearchAppliedKey = '';
   var homeLbUsers = null;
   var homeFollowingIds = [];
   var homeFriendIds = [];
@@ -42,11 +46,99 @@
   function sortHomeLbUsers(users) {
     var list = (users || []).slice();
     list.sort(function (a, b) {
-      var wa = a.weight != null ? Number(a.weight) : -Infinity;
-      var wb = b.weight != null ? Number(b.weight) : -Infinity;
-      return wb - wa;
+      var wa = a.liftWeight != null && !isNaN(Number(a.liftWeight)) ? Number(a.liftWeight) : -Infinity;
+      var wb = b.liftWeight != null && !isNaN(Number(b.liftWeight)) ? Number(b.liftWeight) : -Infinity;
+      if (wb !== wa) return wb - wa;
+      return String(a.username || '').localeCompare(String(b.username || ''));
     });
     return list;
+  }
+
+  function graphExerciseSlug(label) {
+    return String(label || '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
+
+  function graphExerciseLabel(selectEl) {
+    if (!selectEl || selectEl.selectedIndex < 0) return '';
+    return selectEl.options[selectEl.selectedIndex].text || '';
+  }
+
+  function exerciseQueryFromElement(el) {
+    if (!el) return { label: 'Bench', slug: 'bench' };
+    if (el.tagName === 'SELECT') {
+      var selectLabel = graphExerciseLabel(el);
+      var slug = el.value ? String(el.value) : graphExerciseSlug(selectLabel);
+      return {
+        label: selectLabel || 'Bench',
+        slug: slug || 'bench'
+      };
+    }
+    var label = String(el.value || '').trim();
+    if (!label) label = 'Bench';
+    return {
+      label: label,
+      slug: graphExerciseSlug(label) || 'bench'
+    };
+  }
+
+  function exerciseQueryCacheKey(q) {
+    return (q.slug || '') + '|' + String(q.label || '').toLowerCase();
+  }
+
+  function exerciseMatchesSelection(name, queryEl) {
+    var q = exerciseQueryFromElement(queryEl);
+    var n = String(name || '').trim().toLowerCase();
+    if (!n) return false;
+    var needle = String(q.label || '').trim().toLowerCase();
+    var slug = q.slug || '';
+    if (!needle && slug) needle = slug.replace(/-/g, ' ');
+    if (!needle) return false;
+    if (n === needle) return true;
+    if (n.indexOf(needle) !== -1 || needle.indexOf(n) !== -1) return true;
+    var slugFromName = graphExerciseSlug(name);
+    return !!(
+      slug &&
+      slugFromName &&
+      (slugFromName === slug || slugFromName.indexOf(slug) !== -1 || slug.indexOf(slugFromName) !== -1)
+    );
+  }
+
+  function bestLiftFromSessions(sessions, queryEl) {
+    var best = null;
+    (sessions || []).forEach(function (s) {
+      (s.exercises || []).forEach(function (ex) {
+        if (!exerciseMatchesSelection(ex.name, queryEl)) return;
+        var w = parseFloat(ex.weight);
+        if (!isNaN(w) && w > 0) best = best == null ? w : Math.max(best, w);
+        if (Array.isArray(ex.setWeights)) {
+          ex.setWeights.forEach(function (raw) {
+            var sw = parseFloat(raw);
+            if (!isNaN(sw) && sw > 0) best = best == null ? sw : Math.max(best, sw);
+          });
+        }
+      });
+    });
+    return best;
+  }
+
+  function overlayLocalLiftOnLeaderboard(rows, queryEl) {
+    var cu = typeof window.getCurrentUser === 'function' ? window.getCurrentUser() : null;
+    if (!cu || cu.id == null || !window.WorkoutLog || typeof window.WorkoutLog.getSessions !== 'function') {
+      return rows;
+    }
+    var localBest = bestLiftFromSessions(window.WorkoutLog.getSessions(), queryEl);
+    if (localBest == null) return rows;
+    return (rows || []).map(function (u) {
+      if (u.id !== cu.id) return u;
+      var merged = Object.assign({}, u);
+      var server = merged.liftWeight != null ? Number(merged.liftWeight) : null;
+      merged.liftWeight =
+        server != null && !isNaN(server) ? Math.max(server, localBest) : localBest;
+      return merged;
+    });
   }
 
   function idAllowSet(ids) {
@@ -158,24 +250,67 @@
         '</td><td>' +
         userNameCell(user) +
         '</td><td>' +
-        escCell(user.weight != null ? user.weight : '–') +
+        escCell(user.liftWeight != null ? user.liftWeight : '–') +
         '</td><td>' +
-        escCell(user.height != null ? user.height : '–') +
+        escCell(user.bodyweight != null ? user.bodyweight : '–') +
         '</td>';
       leaderboardBody.appendChild(tr);
     });
+  }
+
+  function populateLeaderboardExerciseSuggestions(sessions) {
+    if (!leaderboardExerciseSuggestions) return;
+    var fromLog = collectExerciseOptionsFromSessions(sessions);
+    var seen = {};
+    leaderboardExerciseSuggestions.innerHTML = '';
+    function addSuggestion(label) {
+      var t = String(label || '').trim();
+      if (!t) return;
+      var key = t.toLowerCase();
+      if (seen[key]) return;
+      seen[key] = true;
+      var opt = document.createElement('option');
+      opt.value = t;
+      leaderboardExerciseSuggestions.appendChild(opt);
+    }
+    fromLog.forEach(function (row) {
+      addSuggestion(row.label);
+    });
+    parseFavoriteMovementLines().forEach(addSuggestion);
+    if (!seen.bench) addSuggestion('Bench');
+  }
+
+  function commitLeaderboardExerciseSearch() {
+    if (!leaderboardExerciseSearch) return;
+    var q = exerciseQueryFromElement(leaderboardExerciseSearch);
+    var key = exerciseQueryCacheKey(q);
+    if (key === lbSearchAppliedKey) return;
+    lbSearchAppliedKey = key;
+    loadHomeLeaderboard(homeLbScope);
   }
 
   function loadHomeLeaderboard(scope) {
     if (typeof scope === 'string') homeLbScope = scope;
     if (!leaderboardBody || typeof window.apiGet !== 'function') return;
     leaderboardBody.innerHTML = '<tr><td colspan="4">Loading…</td></tr>';
-    window.apiGet('/users')
+    var q = exerciseQueryFromElement(leaderboardExerciseSearch);
+    lbSearchAppliedKey = exerciseQueryCacheKey(q);
+    var path =
+      '/leaderboard?exercise=' +
+      encodeURIComponent(q.slug) +
+      '&label=' +
+      encodeURIComponent(q.label);
+    window
+      .apiGet(path)
       .then(function (res) {
+        if (!res.ok) throw new Error('bad status');
         return res.json();
       })
       .then(function (users) {
-        homeLbUsers = Array.isArray(users) ? users : [];
+        homeLbUsers = overlayLocalLiftOnLeaderboard(
+          Array.isArray(users) ? users : [],
+          leaderboardExerciseSearch
+        );
         return fetchScopeLists(homeLbScope);
       })
       .then(function () {
@@ -187,6 +322,39 @@
   }
 
   loadHomeLeaderboard('global');
+  if (leaderboardExerciseSearch) {
+    leaderboardExerciseSearch.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (lbSearchDebounceTimer) {
+          clearTimeout(lbSearchDebounceTimer);
+          lbSearchDebounceTimer = null;
+        }
+        commitLeaderboardExerciseSearch();
+      }
+    });
+    leaderboardExerciseSearch.addEventListener('change', function () {
+      if (lbSearchDebounceTimer) {
+        clearTimeout(lbSearchDebounceTimer);
+        lbSearchDebounceTimer = null;
+      }
+      commitLeaderboardExerciseSearch();
+    });
+    leaderboardExerciseSearch.addEventListener('blur', function () {
+      if (lbSearchDebounceTimer) {
+        clearTimeout(lbSearchDebounceTimer);
+        lbSearchDebounceTimer = null;
+      }
+      commitLeaderboardExerciseSearch();
+    });
+    leaderboardExerciseSearch.addEventListener('input', function () {
+      if (lbSearchDebounceTimer) clearTimeout(lbSearchDebounceTimer);
+      lbSearchDebounceTimer = setTimeout(function () {
+        lbSearchDebounceTimer = null;
+        commitLeaderboardExerciseSearch();
+      }, 450);
+    });
+  }
 
   var logDatetimeEl = document.getElementById('log-datetime');
   var logDateShortEl = document.getElementById('log-date-short');
@@ -196,7 +364,19 @@
   function renderHomeWorkoutSplit() {
     var WS = window.WorkoutSplit;
     var todayEl = document.getElementById('home-today-split-summary');
+    var logCard = document.getElementById('home-complication-log');
     if (!WS || !daySplitEl) return;
+    if (!WS.hasUserConfigured || !WS.hasUserConfigured()) {
+      if (logCard) logCard.classList.add('is-split-empty');
+      if (todayEl) {
+        todayEl.textContent = '';
+        todayEl.hidden = true;
+      }
+      daySplitEl.innerHTML = '';
+      return;
+    }
+    if (logCard) logCard.classList.remove('is-split-empty');
+    if (todayEl) todayEl.hidden = false;
     var state = WS.load();
     if (todayEl) {
       todayEl.textContent = WS.splitFieldLineForDate(state, new Date());
@@ -286,32 +466,6 @@
   var GRAPH_POINT_LIMIT = 6;
   var FAVORITES_LS_KEY = 'strongman-favorite-movements';
   var homeGraphSessions = [];
-
-  function graphExerciseLabel(selectEl) {
-    if (!selectEl || selectEl.selectedIndex < 0) return '';
-    return selectEl.options[selectEl.selectedIndex].text || '';
-  }
-
-  function graphExerciseSlug(label) {
-    return String(label || '')
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '');
-  }
-
-  function exerciseMatchesSelection(name, selectEl) {
-    var label = graphExerciseLabel(selectEl);
-    var slug = selectEl && selectEl.value ? String(selectEl.value) : '';
-    var n = String(name || '').trim().toLowerCase();
-    if (!n) return false;
-    var needle = String(label || '').trim().toLowerCase();
-    if (!needle && slug) needle = slug.replace(/-/g, ' ');
-    if (!needle) return false;
-    if (n === needle) return true;
-    if (n.indexOf(needle) !== -1 || needle.indexOf(n) !== -1) return true;
-    var slugFromName = graphExerciseSlug(name);
-    return !!(slug && slugFromName && (slugFromName === slug || slugFromName.indexOf(slug) !== -1 || slug.indexOf(slugFromName) !== -1));
-  }
 
   function parseFavoriteMovementLines() {
     var out = [];
@@ -439,7 +593,7 @@
       var bestW = null;
       var bestR = null;
       (s.exercises || []).forEach(function (ex) {
-        if (!exerciseMatchesSelection(ex.name, selectEl)) return;
+        if (!exerciseMatchesSelection(ex.name, queryEl)) return;
         var w = parseFloat(ex.weight);
         var r = parseFloat(ex.reps);
         if (!isNaN(w) && w > 0) bestW = bestW == null ? w : Math.max(bestW, w);
@@ -655,11 +809,13 @@
     var WL = window.WorkoutLog;
     if (!WL || typeof WL.getSessions !== 'function') {
       homeGraphSessions = [];
+      populateLeaderboardExerciseSuggestions([]);
       renderHomeGraphs();
       return;
     }
     homeGraphSessions = WL.getSessions() || [];
     populateGraphExerciseSelect(homeGraphSessions, graphExerciseSelect && graphExerciseSelect.value);
+    populateLeaderboardExerciseSuggestions(homeGraphSessions);
     renderHomeGraphs();
   }
 
