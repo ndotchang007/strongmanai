@@ -118,12 +118,17 @@
               );
             }
             if (!res.ok) {
-              throw new Error(
-                (body && body.error) ||
-                  (res.status === 503
-                    ? 'Workout generation is not set up on the server yet.'
-                    : 'Something went wrong. Try again.')
-              );
+              var fallback =
+                res.status === 503
+                  ? 'Workout generation is not set up on the server yet.'
+                  : res.status === 404
+                    ? 'Generate API not found. Check that the backend is running and deployed.'
+                    : res.status === 502
+                      ? 'The AI service is temporarily unavailable. Try again in a moment.'
+                      : res.status === 500
+                        ? 'Server error. Try again shortly.'
+                        : 'Something went wrong. Try again.';
+              throw new Error((body && body.error) || fallback);
             }
             return body;
           });
