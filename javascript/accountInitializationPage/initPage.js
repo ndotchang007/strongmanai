@@ -45,10 +45,12 @@
     });
 
     if (floatingHeader) {
-      floatingHeader.classList.remove('hidden');
-      if (index === 0) floatingHeader.classList.remove('float-up');
-      if (index === 1 || index === 2) floatingHeader.classList.add('float-up');
-      if (index >= 3) floatingHeader.classList.add('hidden');
+      floatingHeader.classList.remove('hidden', 'float-up');
+      if (index === 0) {
+        floatingHeader.hidden = false;
+      } else {
+        floatingHeader.hidden = true;
+      }
     }
     if (slide2Content) { slide2Content.classList.remove('fade-in', 'fade-out'); }
     if (slide3Content) { slide3Content.classList.remove('fade-in', 'fade-out'); }
@@ -65,9 +67,7 @@
         requestAnimationFrame(function () { if (slide3Content) slide3Content.classList.add('fade-in'); });
       });
     } else if (index === 3) {
-      requestAnimationFrame(function () {
-        requestAnimationFrame(function () { if (slide4Body) slide4Body.classList.add('fade-in'); });
-      });
+      if (slide4Body) slide4Body.classList.add('fade-in');
       var data = getInitData();
       var nameEl = document.getElementById('welcomeName');
       if (nameEl) nameEl.textContent = data.firstName || '[name]';
@@ -117,12 +117,15 @@
     goNext();
   });
 
-  slideshow.addEventListener('click', function (e) {
-    if (currentIndex !== 0) return;
-    var tag = e.target.tagName.toLowerCase();
-    if (tag === 'input' || tag === 'textarea' || tag === 'button' || tag === 'a') return;
-    advanceFromSlide1();
-  });
+  var slide1 = slideshow.querySelector('[data-slide="1"]');
+  if (slide1) {
+    slide1.addEventListener('click', function (e) {
+      if (currentIndex !== 0) return;
+      var tag = e.target.tagName.toLowerCase();
+      if (tag === 'input' || tag === 'textarea' || tag === 'button' || tag === 'a') return;
+      advanceFromSlide1();
+    });
+  }
 
   // Form: basic info (required fields) – show red "Required" if empty, then next
   var formBasic = document.getElementById('form-basic');
@@ -234,7 +237,16 @@
 
   // Proceed: send profile to backend, then body fades out, thank you, redirect
   var proceedErrorEl = document.getElementById('proceed-error');
-  document.getElementById('btn-proceed').addEventListener('click', function () {
+  var proceedInFlight = false;
+
+  function handleProceed(e) {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    if (currentIndex !== 3 || proceedInFlight) return;
+    proceedInFlight = true;
+
     var data = getInitData();
     data.weight = (weightEl && weightEl.value.trim()) || data.weight;
     data.height = (heightEl && heightEl.value.trim()) || data.height;
@@ -247,6 +259,7 @@
     window.apiPut('/users/' + userId, payload).then(function (res) {
       return res.json().then(function (body) {
         if (!res.ok) {
+          proceedInFlight = false;
           if (proceedErrorEl) {
             proceedErrorEl.textContent = body.error || 'Could not save. Try again.';
             proceedErrorEl.hidden = false;
@@ -282,12 +295,22 @@
         }, 500);
       });
     }).catch(function () {
+      proceedInFlight = false;
       if (proceedErrorEl) {
         proceedErrorEl.textContent = 'Network error. Is the backend running?';
         proceedErrorEl.hidden = false;
       }
     });
-  });
+  }
+
+  var btnProceed = document.getElementById('btn-proceed');
+  if (btnProceed) {
+    btnProceed.addEventListener('click', handleProceed);
+    btnProceed.addEventListener('touchend', function (e) {
+      e.preventDefault();
+      handleProceed(e);
+    });
+  }
 
   document.getElementById('link-skip').addEventListener('click', function (e) {
     e.preventDefault();
