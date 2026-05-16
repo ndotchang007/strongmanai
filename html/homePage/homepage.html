@@ -90,7 +90,7 @@
                         <div class="complication-graph-pane">
                             <p class="graph-pane-title" id="graph-weight-title">Weight (lb)</p>
                             <div class="complication-graph-chart">
-                                <svg class="graph-svg" viewBox="0 0 260 140" preserveAspectRatio="xMidYMid meet">
+                                <svg class="graph-svg" id="graph-weight-svg" viewBox="0 0 260 140" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="graph-weight-title">
                                     <defs>
                                         <linearGradient id="graph-weight-fill" x1="0" y1="0" x2="0" y2="1">
                                             <stop offset="0%" stop-color="currentColor" stop-opacity="0.28"/>
@@ -105,30 +105,18 @@
                                     </g>
                                     <line class="graph-axis" x1="40" y1="20" x2="40" y2="110"/>
                                     <line class="graph-axis" x1="40" y1="110" x2="250" y2="110"/>
-                                    <path class="graph-area" d="M40,105 L82,88 L124,70 L166,52 L208,35 L250,22 L250,110 L40,110 Z" fill="url(#graph-weight-fill)"/>
-                                    <polyline class="graph-line" points="40,105 82,88 124,70 166,52 208,35 250,22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                    <circle class="graph-dot" cx="250" cy="22" r="3"/>
-                                    <g class="graph-tick-labels-y" aria-hidden="true">
-                                        <text x="36" y="110" text-anchor="end">100</text>
-                                        <text x="36" y="78" text-anchor="end">130</text>
-                                        <text x="36" y="46" text-anchor="end">160</text>
-                                        <text x="36" y="22" text-anchor="end">185</text>
-                                    </g>
-                                    <g class="graph-tick-labels-x" aria-hidden="true">
-                                        <text x="40" y="122" text-anchor="middle">1</text>
-                                        <text x="82" y="122" text-anchor="middle">2</text>
-                                        <text x="124" y="122" text-anchor="middle">3</text>
-                                        <text x="166" y="122" text-anchor="middle">4</text>
-                                        <text x="208" y="122" text-anchor="middle">5</text>
-                                        <text x="250" y="122" text-anchor="middle">6</text>
-                                    </g>
+                                    <path class="graph-area" id="graph-weight-area" fill="url(#graph-weight-fill)"/>
+                                    <polyline class="graph-line" id="graph-weight-line" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <circle class="graph-dot" id="graph-weight-dot" r="3"/>
+                                    <g class="graph-tick-labels-y" id="graph-weight-ticks-y" aria-hidden="true"></g>
+                                    <g class="graph-tick-labels-x" id="graph-weight-ticks-x" aria-hidden="true"></g>
                                 </svg>
                             </div>
                         </div>
                         <div class="complication-graph-pane">
                             <p class="graph-pane-title" id="graph-reps-title">Reps</p>
                             <div class="complication-graph-chart">
-                                <svg class="graph-svg" viewBox="0 0 260 140" preserveAspectRatio="xMidYMid meet">
+                                <svg class="graph-svg" id="graph-reps-svg" viewBox="0 0 260 140" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="graph-reps-title">
                                     <defs>
                                         <linearGradient id="graph-reps-fill" x1="0" y1="0" x2="0" y2="1">
                                             <stop offset="0%" stop-color="currentColor" stop-opacity="0.28"/>
@@ -143,23 +131,11 @@
                                     </g>
                                     <line class="graph-axis" x1="40" y1="20" x2="40" y2="110"/>
                                     <line class="graph-axis" x1="40" y1="110" x2="250" y2="110"/>
-                                    <path class="graph-area" d="M40,82 L82,68 L124,90 L166,55 L208,72 L250,42 L250,110 L40,110 Z" fill="url(#graph-reps-fill)"/>
-                                    <polyline class="graph-line" points="40,82 82,68 124,90 166,55 208,72 250,42" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                    <circle class="graph-dot" cx="250" cy="42" r="3"/>
-                                    <g class="graph-tick-labels-y" aria-hidden="true">
-                                        <text x="36" y="110" text-anchor="end">3</text>
-                                        <text x="36" y="78" text-anchor="end">5</text>
-                                        <text x="36" y="46" text-anchor="end">8</text>
-                                        <text x="36" y="22" text-anchor="end">12</text>
-                                    </g>
-                                    <g class="graph-tick-labels-x" aria-hidden="true">
-                                        <text x="40" y="122" text-anchor="middle">1</text>
-                                        <text x="82" y="122" text-anchor="middle">2</text>
-                                        <text x="124" y="122" text-anchor="middle">3</text>
-                                        <text x="166" y="122" text-anchor="middle">4</text>
-                                        <text x="208" y="122" text-anchor="middle">5</text>
-                                        <text x="250" y="122" text-anchor="middle">6</text>
-                                    </g>
+                                    <path class="graph-area" id="graph-reps-area" fill="url(#graph-reps-fill)"/>
+                                    <polyline class="graph-line" id="graph-reps-line" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <circle class="graph-dot" id="graph-reps-dot" r="3"/>
+                                    <g class="graph-tick-labels-y" id="graph-reps-ticks-y" aria-hidden="true"></g>
+                                    <g class="graph-tick-labels-x" id="graph-reps-ticks-x" aria-hidden="true"></g>
                                 </svg>
                             </div>
                         </div>
@@ -419,6 +395,7 @@
     <script src="../../shared/video-archive.js"></script>
     <script src="../../shared/site-footer-email.js"></script>
     <script src="../../shared/workout-split.js"></script>
+    <script src="../../shared/workout-log.js"></script>
     <script src="../../shared/settings-popup.js"></script>
     <script src="../../javascript/homePage/homepage.js"></script>
 </body>
