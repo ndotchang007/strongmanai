@@ -1,0 +1,1860 @@
+/* Tracking page — rebuilt from transcript patch fragments; sidebar/shell from homepage.css */
+
+.tracking-log-intro
+{
+    padding-top: 2.5rem;
+    margin-bottom: 1.25rem;
+    text-align: center;
+    max-width: 40rem;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* --- transcript fragment --- */
+
+.edit-link:hover
+{
+    color: #ccc;
+}
+
+/* --- transcript fragment --- */
+
+.edit-link
+{
+    align-self: flex-start;
+    margin-left: 0;
+    margin-top: 0.15rem;
+    color: #888;
+    font-size: 0.8rem;
+    text-decoration: none;
+    font-family: Georgia, "Times New Roman", Times, serif;
+    transition: color 0.2s;
+}
+
+/* --- transcript fragment --- */
+
+.tracking-saved-wrap
+{
+    margin-top: 0.5rem;
+}
+
+.tracking-saved-head
+{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.tracking-saved-title
+{
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: normal;
+    color: #fff;
+    font-family: Georgia, "Times New Roman", Times, serif;
+    text-align: left;
+}
+
+.tracking-archive-open-btn
+{
+    flex-shrink: 0;
+    padding: 0.5rem 1rem;
+    font-size: 0.82rem;
+    font-family: Georgia, "Times New Roman", Times, serif;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #141414;
+    background-color: #d3752d;
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, transform 0.1s ease;
+}
+
+.tracking-archive-open-btn:hover
+{
+    background-color: #e88a45;
+}
+
+.tracking-archive-open-btn:active
+{
+    transform: scale(0.98);
+}
+
+/* --- transcript fragment --- */
+
+.grid-container
+{
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.25rem;
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+    flex: 1;
+}
+
+.grid-container > .card[data-grid-card-id]
+{
+    position: relative;
+    padding-top: 1.1rem;
+}
+
+.tracking-grid-drag-handle
+{
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 30px;
+    margin: 0;
+    padding: 0;
+    border: none;
+    border-radius: 17px 17px 0 0;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.03) 100%);
+    cursor: grab;
+    z-index: 2;
+    box-sizing: border-box;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.tracking-grid-drag-handle::before
+{
+    content: "";
+    display: block;
+    width: 28px;
+    height: 4px;
+    margin: 10px auto 0;
+    border-radius: 2px;
+    background: repeating-linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.35) 0 3px,
+        transparent 3px 6px
+    );
+}
+
+.tracking-grid-drag-handle:active
+{
+    cursor: grabbing;
+}
+
+.grid-container > .card[data-grid-card-id].is-dragging
+{
+    opacity: 0.82;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+    z-index: 5;
+}
+
+.grid-container > .card[data-grid-card-id].is-dragging:hover
+{
+    transform: none;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+}
+
+.card
+{
+    background-color: #141414;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 18px;
+    padding: 1.35rem;
+    min-height: 220px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+/* --- transcript fragment --- */
+
+.chart-card
+{
+    padding: 0.75rem;
+    min-height: 260px;
+}
+
+.grid-container > .chart-card[data-grid-card-id]
+{
+    padding: 1rem 0.75rem 0.75rem;
+}
+
+/* --- transcript fragment --- */
+
+.card.complication-card:hover
+{
+    background-color: rgba(211, 117, 45, 0.16);
+    border-color: rgba(211, 117, 45, 0.5);
+}
+
+.grid-container > .card.complication-card[data-grid-card-id]
+{
+    padding-top: 1.15rem;
+}
+
+.grid-container > .card.pr-card[data-grid-card-id]
+{
+    padding-top: 1.1rem;
+}
+
+.grid-container > .card.tracking-stats-calendar-card[data-grid-card-id]
+{
+    padding-top: 1.1rem;
+}
+
+.complication-heading
+{
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #fff;
+    text-align: center;
+    font-family: Helvetica, Arial, sans-serif;
+    line-height: 1.35;
+}
+
+.complication-heading .val
+{
+    color: #d3752d;
+}
+
+.tracking-cta-footer a:hover
+{
+    text-decoration: underline;
+}
+
+.home-settings-panel.tracking-archive-panel
+{
+    max-width: min(720px, 94vw);
+    max-height: min(88vh, 760px);
+}
+
+.tracking-archive-body
+{
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 0.35rem 1rem 1.15rem;
+}
+
+.tracking-archive-list
+{
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+.tracking-archive-empty
+{
+    margin: 0;
+    padding: 1.25rem 0.5rem;
+    text-align: center;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.55);
+    font-family: Helvetica, Arial, sans-serif;
+}
+
+.tracking-grid-drag-handle:focus
+{
+    outline: none;
+}
+
+.tracking-grid-drag-handle:focus-visible
+{
+    outline: 2px solid rgba(211, 117, 45, 0.85);
+    outline-offset: -2px;
+}
+
+/* --- transcript fragment --- */
+
+/* —— PR log header —— */
+.tracking-pr-header
+{
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 1.25rem 1.25rem 1.5rem;
+    box-sizing: border-box;
+}
+
+.tracking-pr-header-intro
+{
+    text-align: center;
+    margin-bottom: 1.25rem;
+}
+
+.tracking-pr-page-title
+{
+    margin: 0 0 0.35rem;
+    font-size: clamp(1.35rem, 3.5vw, 1.85rem);
+    font-weight: normal;
+    letter-spacing: 0.04em;
+    color: #fff;
+}
+
+.tracking-pr-welcome-line
+{
+    margin: 0;
+    font-size: clamp(1rem, 2.5vw, 1.15rem);
+    color: rgba(255, 255, 255, 0.85);
+    line-height: 1.4;
+}
+
+.tracking-stats-hero-plain
+{
+    color: #fff;
+}
+
+.tracking-stats-accent
+{
+    color: #d3752d;
+}
+
+.tracking-pr-form
+{
+    display: flex;
+    flex-direction: column;
+    gap: 1.35rem;
+    padding: 1.5rem 1.35rem 1.65rem;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 12px;
+    background-color: #1b1b1b;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+    font-family: Helvetica, Arial, sans-serif;
+    text-align: left;
+}
+
+.tracking-field
+{
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    text-align: left;
+}
+
+.tracking-field label
+{
+    font-size: 0.7rem;
+    font-weight: bold;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #888;
+}
+
+.tracking-field-row
+{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.tracking-field--grow
+{
+    flex: 1 1 200px;
+    min-width: 0;
+}
+
+.tracking-input,
+.tracking-textarea
+{
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    font-family: inherit;
+    color: #fff;
+    background-color: #2a2a2a;
+    border: 1px solid #555;
+    border-radius: 8px;
+    box-sizing: border-box;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.tracking-textarea
+{
+    resize: vertical;
+    min-height: 5rem;
+    line-height: 1.45;
+}
+
+.tracking-input::placeholder,
+.tracking-textarea::placeholder
+{
+    color: rgba(255, 255, 255, 0.38);
+}
+
+.tracking-input:focus,
+.tracking-textarea:focus
+{
+    outline: none;
+    border-color: #ff8c00;
+    box-shadow: 0 0 0 1px rgba(255, 140, 0, 0.35);
+}
+
+.tracking-input[type="datetime-local"]
+{
+    color-scheme: dark;
+    min-height: 2.75rem;
+}
+
+select.tracking-input
+{
+    cursor: pointer;
+    appearance: auto;
+}
+
+.tracking-optional
+{
+    font-weight: normal;
+    text-transform: none;
+    letter-spacing: normal;
+    color: rgba(255, 255, 255, 0.45);
+    font-size: 0.65rem;
+}
+
+.tracking-pr-discipline-fieldset
+{
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
+.tracking-pr-discipline-legend
+{
+    font-size: 0.7rem;
+    font-weight: bold;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #888;
+    margin-bottom: 0.55rem;
+    padding: 0;
+}
+
+.tracking-pr-discipline-row
+{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.5rem;
+    padding: 0.35rem 0 0.15rem;
+}
+
+.tracking-pr-radio-label
+{
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #e8e8e8;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0.5rem 0.35rem 0;
+    border-radius: 6px;
+    transition: color 0.15s, background 0.15s;
+}
+
+.tracking-pr-radio-label:hover
+{
+    color: #fff;
+}
+
+.tracking-pr-radio-label input
+{
+    width: 1rem;
+    height: 1rem;
+    accent-color: #ff8c00;
+    cursor: pointer;
+}
+
+.tracking-pr-panel
+{
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+    padding-top: 0.15rem;
+}
+
+/* `hidden` on panels must win over `display: flex` above */
+.tracking-pr-panel[hidden]
+{
+    display: none !important;
+}
+
+.tracking-pr-time-row
+{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    align-items: end;
+}
+
+@media (max-width: 480px)
+{
+    .tracking-pr-time-row
+    {
+        grid-template-columns: 1fr;
+    }
+}
+
+.tracking-pr-time-part
+{
+    min-width: 0;
+}
+
+.tracking-field--narrow
+{
+    flex: 1 1 5.5rem;
+    min-width: 4.5rem;
+}
+
+.tracking-error
+{
+    margin: 0;
+    font-size: 0.9rem;
+    color: #f87171;
+    line-height: 1.4;
+}
+
+.tracking-submit,
+.tracking-pr-submit
+{
+    align-self: stretch;
+    margin-top: 0.25rem;
+    padding: 0.85rem 1.25rem;
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: bold;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #1b1b1b;
+    background-color: #ff8c00;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, transform 0.1s ease;
+}
+
+.tracking-submit:hover,
+.tracking-pr-submit:hover
+{
+    background-color: #ffa033;
+}
+
+.tracking-submit:active,
+.tracking-pr-submit:active
+{
+    transform: scale(0.99);
+}
+
+.tracking-pr-message
+{
+    margin: 0.75rem 0 0;
+    text-align: center;
+    font-size: 0.88rem;
+    color: rgba(255, 255, 255, 0.85);
+    font-family: Helvetica, Arial, sans-serif;
+}
+
+.tracking-pr-message:not([hidden])
+{
+    padding: 0.65rem 0.9rem;
+    border-radius: 8px;
+    background-color: rgba(211, 117, 45, 0.14);
+    border: 1px solid rgba(211, 117, 45, 0.4);
+    color: #fff;
+}
+
+/* —— Dashboard (sticky filters + log + grid) —— */
+.tracking-dashboard
+{
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    padding: 0 1.25rem 2.5rem;
+}
+
+/* --- transcript fragment --- */
+
+.edit-link
+{
+    align-self: flex-start;
+    margin-left: 0;
+    margin-top: 0.15rem;
+    padding: 0;
+    color: #888;
+    font-size: 0.8rem;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    font-family: Georgia, "Times New Roman", Times, serif;
+    transition: color 0.2s;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.edit-link:hover
+{
+    color: #d3752d;
+}
+
+/* --- transcript fragment --- */
+
+.grid-container.tracking-grid--edit-active > .card[data-grid-card-id]
+{
+    padding-top: 2.15rem;
+}
+
+.grid-container:not(.tracking-grid--edit-active) > .card[data-grid-card-id] .tracking-grid-drag-handle
+{
+    display: none;
+}
+
+.grid-container.tracking-grid--edit-active > .card[data-grid-card-id] .tracking-grid-drag-handle
+{
+    display: block;
+}
+
+.grid-container.tracking-grid--edit-active > .card.complication-card[data-grid-card-id]
+{
+    padding-top: 2.35rem;
+}
+
+.grid-container.tracking-grid--edit-active > .card.pr-card[data-grid-card-id]
+{
+    padding-top: 2.15rem;
+}
+
+.grid-container.tracking-grid--edit-active > .card.tracking-stats-calendar-card[data-grid-card-id]
+{
+    padding-top: 2.15rem;
+}
+
+/* --- transcript fragment --- */
+
+.grid-container.tracking-grid--edit-active > .chart-card[data-grid-card-id]
+{
+    padding: 2.15rem 0.75rem 0.75rem;
+}
+
+/* --- transcript fragment --- */
+
+.pr-card
+{
+    align-items: flex-start;
+    text-align: left;
+}
+
+.tracking-pr-card--has .tracking-pr-card-empty
+{
+    display: none;
+}
+
+.tracking-pr-card-empty
+{
+    margin: 0 0 0.75rem;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.5);
+    font-family: Helvetica, Arial, sans-serif;
+    line-height: 1.45;
+}
+
+/* --- transcript fragment --- */
+
+/* —— Full-height viewports (stats first, PR second — swapped vs PR-on-top) —— */
+.tracking-viewport
+{
+    box-sizing: border-box;
+    min-height: 100vh;
+    scroll-snap-align: start;
+    scroll-snap-stop: normal;
+}
+
+.tracking-viewport--stats
+{
+    display: flex;
+    flex-direction: column;
+    padding: 0 1.25rem;
+}
+
+.tracking-viewport-intro
+{
+    text-align: center;
+    padding: 1.5rem 0 1rem;
+    flex-shrink: 0;
+}
+
+.tracking-viewport-hint
+{
+    margin: 1.25rem 0 0;
+    color: #888;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-family: Georgia, "Times New Roman", Times, serif;
+}
+
+.tracking-viewport--pr
+{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 2rem 1.25rem 3rem;
+}
+
+/* —— PR section (bottom viewport) —— */
+.tracking-pr-header
+{
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.tracking-pr-header-intro
+{
+    text-align: center;
+    margin-bottom: 1.25rem;
+}
+
+.tracking-pr-page-title
+{
+    margin: 0 0 0.35rem;
+    font-size: clamp(1.35rem, 3.5vw, 1.85rem);
+    font-weight: normal;
+    letter-spacing: 0.04em;
+    color: #fff;
+}
+
+.tracking-pr-section-title
+{
+    margin: 0 0 0.5rem;
+    font-size: clamp(1.2rem, 3vw, 1.5rem);
+    font-weight: normal;
+    letter-spacing: 0.03em;
+    color: #fff;
+}
+
+.tracking-pr-welcome-line
+{
+    margin: 0;
+    font-size: clamp(1rem, 2.5vw, 1.15rem);
+    color: rgba(255, 255, 255, 0.85);
+    line-height: 1.4;
+}
+
+.tracking-pr-welcome-line--section
+{
+    font-size: 0.92rem;
+    color: rgba(255, 255, 255, 0.62);
+    max-width: 36rem;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* --- transcript fragment --- */
+
+/* —— Dashboard (sticky filters + log + grid) —— */
+.tracking-dashboard
+{
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    padding: 0 0 2.5rem;
+    min-height: 0;
+}
+
+/* --- transcript fragment --- */
+
+.tracking-log-intro
+{
+    padding-top: 1rem;
+    margin-bottom: 1.25rem;
+    text-align: center;
+    max-width: 40rem;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+html
+{
+    scroll-snap-type: y proximity;
+}
+
+html:has(body.tracking-page)
+{
+    scroll-snap-type: none;
+}
+
+/* --- transcript fragment --- */
+
+/* —— Tracking: Create-style pill tabs + three panels (stats | archive | personal bests) —— */
+.tracking-main
+{
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    width: 100%;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: clamp(1.25rem, 2.5vw, 2rem) clamp(1.25rem, 2.5vw, 2rem) 3rem;
+    box-sizing: border-box;
+    color: var(--text-primary, #fff);
+    font-family: var(--font, "DM Sans", system-ui, sans-serif);
+}
+
+.tracking-page-hero
+{
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto 1.5rem;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.tracking-page-hero-text
+{
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    max-width: 52rem;
+}
+
+.tracking-page-eyebrow
+{
+    margin: 0;
+    font-family: var(--font, "DM Sans", system-ui, sans-serif);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent, #ff8c00);
+}
+
+.tracking-page-title
+{
+    margin: 0;
+    font-family: var(--font, "DM Sans", system-ui, sans-serif);
+    font-size: clamp(1.65rem, 3.8vw, 2.35rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.12;
+    color: var(--text-primary, #fff);
+}
+
+.tracking-page-title #tracking-stats-display-name
+{
+    color: var(--accent, #ff8c00);
+}
+
+.tracking-page-subtitle
+{
+    margin: 0.35rem 0 0;
+    font-family: var(--font, "DM Sans", system-ui, sans-serif);
+    font-size: clamp(0.88rem, 1.5vw, 0.98rem);
+    line-height: 1.55;
+    color: var(--text-muted, #a1a1aa);
+    max-width: 48rem;
+}
+
+.tracking-summary-strip
+{
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0.75rem;
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto 1.35rem;
+    box-sizing: border-box;
+}
+
+.tracking-summary-card
+{
+    position: relative;
+    padding: 1rem 1rem 0.95rem;
+    border-radius: var(--radius-md, 14px);
+    border: 1px solid var(--border-mid, rgba(255, 255, 255, 0.1));
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(18px) saturate(1.2);
+    -webkit-backdrop-filter: blur(18px) saturate(1.2);
+    box-shadow:
+        0 2px 12px rgba(0, 0, 0, 0.22),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+
+.tracking-summary-card:hover
+{
+    border-color: var(--border-strong, rgba(255, 255, 255, 0.14));
+    background: rgba(255, 255, 255, 0.06);
+    transform: translateY(-1px);
+}
+
+.tracking-summary-label
+{
+    margin: 0 0 0.35rem;
+    font-family: var(--font, "DM Sans", system-ui, sans-serif);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted, #a1a1aa);
+}
+
+.tracking-summary-value
+{
+    margin: 0;
+    font-family: var(--font, "DM Sans", system-ui, sans-serif);
+    font-size: clamp(1.35rem, 2.8vw, 1.75rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text-primary, #fff);
+    line-height: 1.15;
+}
+
+.tracking-summary-hint
+{
+    margin: 0.4rem 0 0;
+    font-family: var(--font, "DM Sans", system-ui, sans-serif);
+    font-size: 0.68rem;
+    line-height: 1.35;
+    color: rgba(255, 255, 255, 0.42);
+}
+
+.tracking-stats-range-hint
+{
+    margin: 0.85rem 0 0;
+    text-align: center;
+    font-family: var(--font, "DM Sans", system-ui, sans-serif);
+    font-size: 0.8rem;
+    color: var(--text-muted, #a1a1aa);
+    line-height: 1.5;
+    max-width: 40rem;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.tracking-stats-range-hint strong
+{
+    color: var(--text-primary, #fff);
+    font-weight: 600;
+}
+
+.tracking-chart-card-head
+{
+    width: 100%;
+    text-align: left;
+    margin-bottom: 0.5rem;
+    padding: 0 0.15rem;
+}
+
+.tracking-chart-card-title
+{
+    margin: 0 0 0.15rem;
+    font-family: var(--font, "DM Sans", system-ui, sans-serif);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-muted, #a1a1aa);
+}
+
+.tracking-chart-card-sub
+{
+    margin: 0;
+    font-family: var(--font, "DM Sans", system-ui, sans-serif);
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.48);
+}
+
+.tracking-chart-canvas-wrap
+{
+    position: relative;
+    width: 100%;
+    height: 220px;
+    max-height: min(42vh, 300px);
+    flex-shrink: 0;
+}
+
+.tracking-page .grid-container > .card.chart-card[data-grid-card-id]
+{
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.tracking-chart-caption
+{
+    margin: 0.5rem 0 0;
+    width: 100%;
+    text-align: center;
+    font-family: var(--font, "DM Sans", system-ui, sans-serif);
+    font-size: 0.72rem;
+    line-height: 1.45;
+    color: rgba(255, 255, 255, 0.5);
+    padding: 0 0.25rem;
+}
+
+.tracking-physique-section
+{
+    width: 100%;
+    max-width: 1100px;
+    margin: 1.5rem auto 0;
+    padding: 0 0 0.5rem;
+    box-sizing: border-box;
+}
+
+.tracking-physique-section-head
+{
+    margin-bottom: 1rem;
+}
+
+.tracking-gallery-heading
+{
+    margin: 0 0 0.35rem;
+    font-family: var(--font, "DM Sans", system-ui, sans-serif);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-muted, #a1a1aa);
+}
+
+.tracking-gallery-lede
+{
+    margin: 0;
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.52);
+    line-height: 1.45;
+    max-width: 42rem;
+}
+
+.tracking-physique-gallery
+{
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 0.75rem;
+}
+
+.tracking-physique-figure
+{
+    margin: 0;
+    border-radius: var(--radius-md, 14px);
+    overflow: hidden;
+    border: 1px solid var(--border-mid, rgba(255, 255, 255, 0.1));
+    background: rgba(0, 0, 0, 0.35);
+}
+
+.tracking-physique-img
+{
+    display: block;
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+}
+
+.tracking-physique-caption
+{
+    padding: 0.4rem 0.5rem;
+    font-size: 0.68rem;
+    color: var(--text-muted, #a1a1aa);
+    line-height: 1.35;
+}
+
+.tracking-physique-empty
+{
+    margin: 0.75rem 0 0;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.48);
+}
+
+.tracking-session-photo-row
+{
+    margin-top: 0.65rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.65rem;
+}
+
+.tracking-session-photo-thumbs
+{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+.tracking-session-photo-thumb-wrap
+{
+    position: relative;
+    width: 52px;
+    height: 52px;
+    flex-shrink: 0;
+}
+
+.tracking-session-photo-thumb-wrap .tracking-session-photo-thumb
+{
+    width: 100%;
+    height: 100%;
+}
+
+.tracking-session-photo-remove
+{
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 1.25rem;
+    height: 1.25rem;
+    padding: 0;
+    margin: 0;
+    border: none;
+    border-radius: 50%;
+    font-size: 0.95rem;
+    line-height: 1;
+    font-weight: 700;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.62);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.tracking-session-photo-remove:hover
+{
+    background: rgba(224, 85, 85, 0.95);
+    color: #fff;
+}
+
+.tracking-session-photo-thumb
+{
+    width: 52px;
+    height: 52px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.tracking-session-photo-btn
+{
+    font-family: var(--font, "DM Sans", system-ui, sans-serif);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.4rem 0.75rem;
+    border-radius: 999px;
+    border: 1px solid var(--border-mid, rgba(255, 255, 255, 0.1));
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-secondary, #d4d4d8);
+    cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.tracking-session-photo-btn:hover
+{
+    border-color: var(--accent, #ff8c00);
+    color: var(--accent, #ff8c00);
+}
+
+.tracking-page .tracking-mode-tabs .create-mode-tab
+{
+    font-family: var(--font, "DM Sans", system-ui, sans-serif);
+    font-weight: 600;
+    letter-spacing: 0.1em;
+}
+
+.tracking-page .tracking-stats-range
+{
+    font-family: var(--font, "DM Sans", system-ui, sans-serif);
+}
+
+.tracking-stats-range-btn.active
+{
+    color: var(--accent, #ff8c00);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.tracking-page .grid-container > .card[data-grid-card-id]
+{
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(20px) saturate(1.2);
+    -webkit-backdrop-filter: blur(20px) saturate(1.2);
+    border: 1px solid var(--border-mid, rgba(255, 255, 255, 0.1));
+    border-radius: var(--radius-md, 14px);
+    box-shadow:
+        0 2px 12px rgba(0, 0, 0, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.tracking-page .card.complication-card:hover
+{
+    background: rgba(255, 140, 0, 0.1);
+    border-color: rgba(255, 140, 0, 0.35);
+}
+
+.tracking-page .complication-heading .val
+{
+    color: var(--accent, #ff8c00);
+}
+
+.tracking-mode-header
+{
+    margin-bottom: 1.25rem;
+}
+
+.tracking-tab-layout
+{
+    display: flex;
+    flex-direction: column;
+    min-height: auto;
+    overflow: visible;
+    box-sizing: border-box;
+}
+
+.tracking-stats-hero
+{
+    flex-shrink: 0;
+    margin-bottom: 1rem;
+}
+
+.tracking-stats-toolbar
+{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem 1rem;
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.tracking-stats-range
+{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.2rem 0.35rem;
+    font-family: Georgia, "Times New Roman", Times, serif;
+    font-size: clamp(0.95rem, 2.2vw, 1.1rem);
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.tracking-stats-range-btn
+{
+    background: none;
+    border: none;
+    font: inherit;
+    font-family: inherit;
+    color: inherit;
+    cursor: pointer;
+    padding: 0.15rem 0.2rem;
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+.tracking-stats-range-btn:hover
+{
+    color: #fff;
+}
+
+.tracking-stats-range-btn.active
+{
+    color: #fff;
+    text-decoration: underline;
+    text-underline-offset: 0.25em;
+}
+
+.tracking-stats-range-sep
+{
+    color: rgba(255, 255, 255, 0.35);
+    user-select: none;
+    font-size: 0.9em;
+}
+
+.tracking-panels-wrap
+{
+    flex: 1 1 auto;
+    min-height: auto;
+    position: relative;
+    overflow: visible;
+}
+
+.tracking-panel
+{
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: visible;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.tracking-panel[hidden]
+{
+    display: none !important;
+}
+
+.tracking-panel-fill--stats
+{
+    width: 100%;
+}
+
+.tracking-panel-fill
+{
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: visible;
+}
+
+.tracking-panel-scroll
+{
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* —— Archive tab: saved clips from Create (IndexedDB on device) —— */
+.tracking-archive-video-block
+{
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto 1.25rem;
+    padding: 0 0 1.25rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    box-sizing: border-box;
+}
+
+.tracking-archive-video-head
+{
+    margin-bottom: 0.85rem;
+}
+
+.tracking-archive-video-title
+{
+    margin: 0 0 0.35rem;
+    font-size: clamp(1rem, 2.5vw, 1.2rem);
+    font-weight: bold;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #ff8c00;
+    font-family: Helvetica, Arial, sans-serif;
+}
+
+.tracking-archive-video-note
+{
+    margin: 0;
+    font-size: 0.78rem;
+    color: rgba(255, 255, 255, 0.52);
+    line-height: 1.4;
+}
+
+.tracking-archive-panel-head--below-video
+{
+    padding-top: 0.25rem;
+}
+
+.tracking-video-archive-list
+{
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+}
+
+.tracking-video-archive-item
+{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.65rem 1rem;
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background-color: rgba(0, 0, 0, 0.28);
+}
+
+.tracking-video-archive-meta
+{
+    flex: 1 1 200px;
+    min-width: 0;
+}
+
+.tracking-video-archive-title
+{
+    margin: 0 0 0.2rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #fff;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tracking-video-archive-date
+{
+    margin: 0;
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.45);
+}
+
+.tracking-video-archive-badges
+{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+.tracking-video-archive-badge
+{
+    font-size: 0.65rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.45rem;
+    border-radius: 4px;
+    background-color: rgba(255, 140, 0, 0.15);
+    color: #ff8c00;
+}
+
+.tracking-video-archive-actions
+{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+}
+
+.tracking-video-archive-btn
+{
+    font-family: inherit;
+    font-size: 0.68rem;
+    font-weight: bold;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 0.4rem 0.7rem;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    background-color: rgba(255, 255, 255, 0.06);
+    color: #fff;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+}
+
+.tracking-video-archive-btn:hover
+{
+    border-color: #ff8c00;
+    color: #ff8c00;
+}
+
+.tracking-video-archive-btn--danger:hover
+{
+    border-color: #e05555;
+    color: #ff9999;
+}
+
+.tracking-video-archive-empty
+{
+    margin: 0;
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.42);
+}
+
+.tracking-archive-video-backdrop
+{
+    position: fixed;
+    inset: 0;
+    z-index: 11000;
+    background-color: rgba(0, 0, 0, 0.75);
+}
+
+.tracking-archive-video-modal
+{
+    position: fixed;
+    z-index: 11001;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    box-sizing: border-box;
+}
+
+/* display:flex above beats the HTML hidden attribute — force closed state */
+.tracking-archive-video-backdrop[hidden],
+.tracking-archive-video-modal[hidden]
+{
+    display: none !important;
+}
+
+.tracking-archive-video-modal-panel
+{
+    width: 100%;
+    max-width: min(96vw, 520px);
+    max-height: min(92vh, 90vh);
+    overflow: auto;
+    padding: 1rem 1rem 1.25rem;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background-color: #1b1b1b;
+    box-shadow: 0 20px 48px rgba(0, 0, 0, 0.55);
+}
+
+.tracking-archive-video-modal-head
+{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.tracking-archive-video-modal-title
+{
+    margin: 0;
+    font-size: 1rem;
+    font-weight: bold;
+    color: #ff8c00;
+}
+
+.tracking-archive-video-modal-close
+{
+    border: none;
+    background: none;
+    color: rgba(255, 255, 255, 0.65);
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 0.25rem;
+}
+
+.tracking-archive-video-frame
+{
+    position: relative;
+    width: 100%;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #000;
+}
+
+.tracking-archive-video-el
+{
+    display: block;
+    width: 100%;
+    max-height: min(60vh, 480px);
+    object-fit: contain;
+}
+
+.tracking-archive-audio-el
+{
+    position: absolute;
+    width: 0;
+    height: 0;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.tracking-viewport-intro--compact
+{
+    text-align: center;
+    padding: 0.65rem 0 0.85rem;
+    flex-shrink: 0;
+}
+
+.tracking-panel-list-shell
+{
+    width: 100%;
+    max-width: 720px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+.tracking-archive-scroll--tab
+{
+    max-height: min(70vh, 720px);
+}
+
+.tracking-pr-tab-body
+{
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+.tracking-pr-archive-scroll
+{
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+}
+
+.tracking-pr-archive-list
+{
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+.tracking-pr-archive-result
+{
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #ff8c00;
+    margin-top: 0.35rem;
+}
+
+.tracking-pr-archive-notes
+{
+    font-style: italic;
+    color: rgba(255, 255, 255, 0.65) !important;
+}
+
+.tracking-saved-item
+{
+    background-color: #1b1b1b;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+    padding: 1rem 1.1rem 1rem;
+    box-sizing: border-box;
+}
+
+.tracking-saved-item-head
+{
+    font-weight: 600;
+    font-size: 1rem;
+    color: #fff;
+    margin-bottom: 0.35rem;
+}
+
+.tracking-saved-item-meta
+{
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.55);
+    margin-bottom: 0.5rem;
+}
+
+.tracking-saved-exercises
+{
+    list-style: none;
+    padding: 0;
+    margin: 0.5rem 0 0;
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.88);
+}
+
+.tracking-saved-exercises li
+{
+    padding: 0.2rem 0;
+}
+
+.tracking-saved-item-foot
+{
+    margin-top: 0.65rem;
+    font-size: 0.82rem;
+    color: #ff8c00;
+}
+
+.tracking-archive-panel-head
+{
+    flex-shrink: 0;
+    text-align: center;
+    padding: 0.5rem 0 1rem;
+}
+
+.tracking-archive-heading
+{
+    margin: 0 0 0.35rem;
+    font-size: clamp(1.1rem, 2.8vw, 1.4rem);
+    font-weight: normal;
+    color: #fff;
+    font-family: Georgia, "Times New Roman", Times, serif;
+}
+
+.tracking-archive-lede
+{
+    margin: 0;
+    font-size: 0.86rem;
+    color: rgba(255, 255, 255, 0.55);
+    font-family: Helvetica, Arial, sans-serif;
+    line-height: 1.45;
+    max-width: 28rem;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.tracking-archive-scroll
+{
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding: 0 0.15rem 0.5rem 0;
+}
+
+.tracking-archive-inline-list
+{
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+.tracking-archive-inline-empty
+{
+    margin: 0;
+    padding: 1.5rem 0.75rem;
+    text-align: center;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.55);
+    font-family: Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+}
+
+.tracking-archive-inline-empty a
+{
+    color: #d3752d;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.tracking-archive-inline-empty a:hover
+{
+    text-decoration: underline;
+}
+
+.tracking-complication-card
+{
+    cursor: pointer;
+}
+
+.tracking-grid--edit-active .tracking-complication-card
+{
+    cursor: default;
+}
+
+.tracking-detail-panel
+{
+    max-width: min(520px, 94vw);
+}
+
+.tracking-detail-body
+{
+    padding: 0.75rem 1rem 1.25rem;
+    max-height: min(70vh, 520px);
+    overflow-y: auto;
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.88);
+}
+
+.tracking-detail-body .tracking-detail-p
+{
+    margin: 0 0 1rem;
+}
+
+.tracking-detail-body .tracking-detail-p:last-child
+{
+    margin-bottom: 0;
+}
+
+.tracking-detail-pr-list
+{
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.tracking-detail-pr-list li
+{
+    padding: 0.65rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 0.88rem;
+}
+
+.tracking-detail-pr-list li:last-child
+{
+    border-bottom: none;
+}
+
+@media (max-width: 960px)
+{
+    .grid-container
+    {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .tracking-summary-strip
+    {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 640px)
+{
+    .grid-container
+    {
+        grid-template-columns: 1fr;
+    }
+
+    .tracking-summary-strip
+    {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 520px)
+{
+    .tracking-main
+    {
+        padding-left: max(clamp(1.25rem, 2.5vw, 2rem), env(safe-area-inset-left, 0px));
+        padding-right: max(clamp(1.25rem, 2.5vw, 2rem), env(safe-area-inset-right, 0px));
+        padding-bottom: max(3rem, env(safe-area-inset-bottom, 0px));
+    }
+
+    .tracking-page .tracking-mode-tabs
+    {
+        gap: 0.35rem;
+    }
+
+    .tracking-page .tracking-mode-tabs .create-mode-tab
+    {
+        flex: 1 1 auto;
+        min-width: 0;
+        padding: 0.5rem 0.55rem;
+        font-size: 0.58rem;
+        letter-spacing: 0.07em;
+        text-align: center;
+    }
+}
