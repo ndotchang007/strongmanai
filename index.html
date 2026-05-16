@@ -1,1 +1,221 @@
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="strongman-api-base" content="https://strongmanai-api.onrender.com/api/v1">
+    <title>Strongman Ai</title>
+    <link rel="icon" type="image/png" href="../assets/logo.png">
+    <link rel="apple-touch-icon" href="../assets/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/index.css">
+</head>
+<body>
+    <header class="site-header">
+        <a href="/" class="site-header-logo-link"><span class="site-header-logo">STRONGMAN <span class="site-header-logo-ai">AI</span></span></a>
+        <nav class="site-header-nav">
+            <a href="#" class="site-header-link" data-email-kind="bug">REPORT ISSUE</a>
+            <a href="/login" class="site-header-link">LOGIN</a>
+            <a href="/signup" class="site-header-link">SIGNUP</a>
+            <a href="/leaderboards" class="site-header-link">VIEW LEADERBOARDS</a>
+        </nav>
+    </header>
+    <div class = "mainContent">
+        <section class="page1 hero-viewport" aria-label="Introduction">
+            <div class="hero-backdrop" aria-hidden="true"></div>
+            <div class="hero-scrim" aria-hidden="true"></div>
+            <div class="hero-inner">
+                <p class="hero-eyebrow">AI-powered training · built for athletes who lift</p>
+                <h1 class="hero-headline">TRANSFORM YOURSELF <span class="hero-headline-break">WITH <span class="slogan-accent">AI</span></span></h1>
+                <p class="hero-subtitle">Generate workouts tailored to your goals, track every session, and compete on leaderboards — your personal fitness assistant, end to end.</p>
+                <form class="loginContainer hero-login" id="index-login-form" action="#" method="post" novalidate>
+                    <button type="button" class="googleButton" id="index-google-btn" aria-label="Continue with Google">Continue with Google</button>
+                    <div class="orSeparator">OR</div>
+                    <input type="email" class="emailInput" id="index-login-email" name="email" placeholder="Email" autocomplete="email" required>
+                    <input type="password" class="emailInput index-login-password" id="index-login-password" name="password" placeholder="Password" autocomplete="current-password" required>
+                    <p class="index-login-error" id="index-login-error" role="alert" hidden></p>
+                    <button type="submit" class="emailButton">Sign in</button>
+                </form>
+                <p class="hero-footnote">New here? <a href="/signup" class="hero-footnote-link">Create an account</a> — always free to start.</p>
+            </div>
+        </section>
+        <div class="page2">
+            <div class="page2-header">
+                <h2 class="page2-title">MEET STRONGMAN AI</h2>
+                <p class="page2-subtitle">Your personal fitness assistant. Generate a workout, track it, and compete on leaderboards.</p>
+            </div>
+            <div class="page2-nav">
+                <div class="page2-nav-inner">
+                    <span class="page2-nav-slider" aria-hidden="true"></span>
+                    <button type="button" class="page2-nav-btn active" data-tab="generate">GENERATE.</button>
+                    <button type="button" class="page2-nav-btn" data-tab="track">TRACK.</button>
+                    <button type="button" class="page2-nav-btn" data-tab="compete">COMPETE.</button>
+                </div>
+            </div>
+            <div class="page2-content-box">
+                <div class="page2-tab-content page2-tab-content--generate active" id="content-generate">
+                    <div class="page2-generate-solo">
+                        <div class="page2-generate-solo-inner">
+                            <h3 class="page2-box-heading page2-generate-solo-heading">GENERATE.</h3>
+                            <p class="page2-box-desc page2-generate-lead">Ask for any workout in plain language, then press <kbd class="page2-kbd">Enter</kbd> or the arrow to prepare a draft. Use <strong class="page2-generate-strong">View workout draft</strong> to open the preview.</p>
+                            <form class="page2-generate-ai-form page2-generate-ai-form--solo" id="generate-ai-section" action="#" method="post">
+                                <div class="page2-generate-ai-input-wrap page2-generate-ai-input-wrap--solo">
+                                    <label class="visually-hidden" for="page2-generate-prompt">Workout request</label>
+                                    <input type="text" class="page2-generate-ai-input" id="page2-generate-prompt" name="prompt" placeholder="e.g. 3-day split for Water Polo shooting power, 45 min sessions" autocomplete="off">
+                                    <button type="submit" class="page2-generate-ai-send" aria-label="Prepare workout draft">↑</button>
+                                </div>
+                            </form>
+                            <div class="page2-generate-ready" id="page2-generate-ready" hidden>
+                                <p class="page2-generate-ready-text">Draft ready — open when you want to preview it.</p>
+                                <button type="button" class="page2-generate-open-modal-btn" id="page2-open-generate-modal">View workout draft</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="page2-tab-content" id="content-track">
+                    <div class="page2-box-image">
+                        <div class="page2-card-carousel" data-page2-carousel>
+                            <div class="page2-carousel-viewport">
+                                <div class="page2-carousel-track">
+                                    <div class="page2-carousel-slide">
+                                        <img src="../assets/index/tracking1.png" class="page2-img" alt="Track — screenshot 1" data-fallback-src="../assets/homeImg.png">
+                                    </div>
+                                    <div class="page2-carousel-slide">
+                                        <img src="../assets/index/tracking2.png" class="page2-img" alt="Track — screenshot 2" data-fallback-src="../assets/homeImg.png">
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" class="page2-carousel-btn page2-carousel-prev" aria-label="Previous screenshot">‹</button>
+                            <button type="button" class="page2-carousel-btn page2-carousel-next" aria-label="Next screenshot">›</button>
+                            <div class="page2-carousel-dots" role="tablist" aria-label="Screenshots">
+                                <button type="button" class="page2-carousel-dot active" aria-selected="true" aria-label="Screenshot 1"></button>
+                                <button type="button" class="page2-carousel-dot" aria-selected="false" aria-label="Screenshot 2"></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="page2-box-text">
+                        <h3 class="page2-box-heading">TRACK.</h3>
+                        <p class="page2-box-desc">Log a workout and view it in your past workouts section. View every workout you've logged in your workout journal. Get personalized data about your workouts and overall journey as well as monthly recaps of your achievements.</p>
+                    </div>
+                </div>
+                <div class="page2-tab-content" id="content-compete">
+                    <div class="page2-box-image">
+                        <div class="page2-card-carousel" data-page2-carousel>
+                            <div class="page2-carousel-viewport">
+                                <div class="page2-carousel-track">
+                                    <div class="page2-carousel-slide">
+                                        <img src="../assets/index/leaderboard1.png" class="page2-img" alt="Compete — screenshot 1" data-fallback-src="../assets/homeImg.png">
+                                    </div>
+                                    <div class="page2-carousel-slide">
+                                        <img src="../assets/index/leaderboard2.png" class="page2-img" alt="Compete — screenshot 2" data-fallback-src="../assets/homeImg.png">
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" class="page2-carousel-btn page2-carousel-prev" aria-label="Previous screenshot">‹</button>
+                            <button type="button" class="page2-carousel-btn page2-carousel-next" aria-label="Next screenshot">›</button>
+                            <div class="page2-carousel-dots" role="tablist" aria-label="Screenshots">
+                                <button type="button" class="page2-carousel-dot active" aria-selected="true" aria-label="Screenshot 1"></button>
+                                <button type="button" class="page2-carousel-dot" aria-selected="false" aria-label="Screenshot 2"></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="page2-box-text">
+                        <h3 class="page2-box-heading">COMPETE.</h3>
+                        <p class="page2-box-desc">Show off your personal records on global and friend leaderboards. Add badges to your profile page, as well as pictures, lifts, and stat recaps. Compete against your friends in categories like PRs, bodyweight maxes, and weight loss.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="page3" id="site-stats-section">
+            <div class="page3-content">
+                <div class="page3-stats">
+                    <p class="page3-stat-line" id="stat-workouts-made-row"><span class="page3-stat-num" id="stat-workouts-made" data-value="0">0</span> WORKOUTS MADE</p>
+                    <p class="page3-stat-line" id="stat-workouts-tracked-row"><span class="page3-stat-num" id="stat-workouts-tracked" data-value="0">0</span> WORKOUTS TRACKED</p>
+                    <p class="page3-stat-line" id="stat-lifts-recorded-row"><span class="page3-stat-num" id="stat-lifts-recorded" data-value="0">0</span> LIFTS RECORDED</p>
+                    <p class="page3-stat-line" id="stat-accounts-created-row"><span class="page3-stat-num" id="stat-accounts-created" data-value="0">0</span> ACCOUNTS CREATED</p>
+                    <p class="page3-stat-line" id="stat-active-users-row"><span class="page3-stat-num" id="stat-active-users" data-value="0">0</span> ACTIVE USERS</p>
+                </div>
+                <p class="page3-cta">START YOUR FITNESS JOURNEY <a href="/signup" class="page3-cta-link">HERE</a></p>
+            </div>
+        </div>
+    </div>
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <div class="footer-col footer-col-brand">
+                <p class="footer-logo">STRONGMAN <span class="footer-logo-ai">AI</span></p>
+                <p class="footer-tagline">BETTER TRAINING. FASTER RESULTS.</p>
+                <p class="footer-section-title">SOCIALS</p>
+                <div class="footer-socials">
+                    <a href="https://www.instagram.com/strongmanai/" class="footer-link" target="_blank" rel="noopener noreferrer">Instagram</a>
+                </div>
+            </div>
+            <div class="footer-col">
+                <p class="footer-section-title">REPORT AN ISSUE</p>
+                <button type="button" class="footer-link-button" data-email-kind="bug">REPORT A BUG</button>
+                <a href="#" class="footer-link" data-email-kind="rate">RATE US</a>
+                <a href="#" class="footer-link" data-email-kind="suggestions">SUGGESTIONS</a>
+                <p class="footer-section-title footer-section-title--spaced">MODELS</p>
+                <span class="footer-text">EDDIE</span>
+                <span class="footer-text footer-placeholder">---</span>
+                <span class="footer-text footer-placeholder">---</span>
+                <span class="footer-text footer-placeholder">---</span>
+                <p class="footer-section-title footer-section-title--spaced">WEB VERSIONS</p>
+                <span class="footer-text">VERSION 0.1</span>
+            </div>
+            <div class="footer-col">
+                <p class="footer-section-title">TERMS + POLICIES</p>
+                <a href="/legal#terms" class="footer-link">TERMS OF SERVICE</a>
+                <a href="/legal#privacy" class="footer-link">PRIVACY POLICY</a>
+                <p class="footer-section-title footer-section-title--spaced">STATISTICS</p>
+                <a href="/#stat-accounts-created" class="footer-link">USER COUNT</a>
+                <a href="/#stat-lifts-recorded" class="footer-link">LIFT COUNT</a>
+                <a href="/#stat-workouts-tracked" class="footer-link">WORKOUT COUNT</a>
+                <a href="/#stat-active-users" class="footer-link">ACTIVE USERS</a>
+                <p class="footer-section-title footer-section-title--spaced">COMPANY</p>
+                <a href="#" class="footer-link">STRONGMAN AI</a>
+                <a href="#" class="footer-link" data-email-kind="questions">QUESTIONS</a>
+                <a href="#" class="footer-link">HIRING</a>
+                <p class="footer-section-title footer-section-title--spaced">CONTRIBUTORS</p>
+                <a href="/about" class="footer-link">OUR TEAM</a>
+                <p class="footer-section-title footer-section-title--spaced">CONTACT</p>
+                <button type="button" class="footer-link-button" data-email-kind="contact">CONTACT US</button>
+            </div>
+        </div>
+    </footer>
+    <div id="generate-workout-overlay" class="generate-workout-overlay" hidden>
+        <div class="generate-workout-dialog" role="dialog" aria-modal="true" aria-labelledby="generate-workout-title" aria-busy="false">
+            <button type="button" class="generate-workout-close" id="generate-workout-close" aria-label="Close">&times;</button>
+            <h2 id="generate-workout-title" class="generate-workout-title">Your workout</h2>
+            <p class="generate-workout-prompt-label">You asked for:</p>
+            <p class="generate-workout-prompt" id="generate-workout-prompt-display"></p>
+            <div class="generate-workout-result" id="generate-workout-result"></div>
+            <div class="generate-workout-actions">
+                <button type="button" class="generate-workout-done footer-email-btn footer-email-btn--primary" id="generate-workout-done">Done</button>
+                <a href="/generate" class="generate-workout-full-link">Open full generator</a>
+            </div>
+        </div>
+    </div>
+    <div id="footer-email-overlay" class="footer-email-overlay" hidden>
+        <div class="footer-email-dialog" role="dialog" aria-modal="true" aria-labelledby="footer-email-heading">
+            <button type="button" class="footer-email-close" id="footer-email-close" aria-label="Close">&times;</button>
+            <h2 id="footer-email-heading" class="footer-email-title">Send email</h2>
+            <p class="footer-email-to">To: <a href="mailto:strongmanaioutreach@gmail.com" class="footer-email-to-link">strongmanaioutreach@gmail.com</a></p>
+            <div class="footer-email-fields">
+                <label class="footer-email-label" for="footer-email-subject">Subject</label>
+                <input type="text" class="footer-email-input" id="footer-email-subject" autocomplete="off">
+                <label class="footer-email-label" for="footer-email-body">Message</label>
+                <textarea class="footer-email-textarea" id="footer-email-body" rows="6" spellcheck="true"></textarea>
+            </div>
+            <div class="footer-email-actions">
+                <button type="button" class="footer-email-btn footer-email-btn--secondary" id="footer-email-cancel">Cancel</button>
+                <button type="button" class="footer-email-btn footer-email-btn--primary" id="footer-email-open">Open in email app</button>
+            </div>
+        </div>
+    </div>
+    <script src="../shared/api.js"></script>
+    <script src="../shared/site-footer-email.js"></script>
+    <script src="../javascript/index.js"></script>
+</body>
+</html>
