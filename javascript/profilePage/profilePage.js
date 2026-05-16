@@ -6,7 +6,9 @@
     );
 
   var DEFAULT_AVATAR = '../../assets/default-user.png';
+  var MAX_BIO_LENGTH = 500;
   var BADGES_STORE_KEY = 'strongman_user_badges_v1';
+  var profileSaveInFlight = false;
   var AVATAR_FALLBACK_SVG =
     'data:image/svg+xml,' +
     encodeURIComponent(
@@ -151,11 +153,61 @@
 
   function bioFromUser(u) {
     if (!u) return '';
-    if (u.bio || u.profileBio) return String(u.bio || u.profileBio);
+    if (u.bio != null && String(u.bio).trim()) return String(u.bio).trim();
+    if (u.profileBio != null && String(u.profileBio).trim()) return String(u.profileBio).trim();
     var parts = [];
     if (u.experience) parts.push(String(u.experience));
     if (u.reason) parts.push(String(u.reason));
     return parts.join(' · ');
+  }
+
+  function compressImageFile(file, maxDim, quality) {
+    maxDim = maxDim || 1200;
+    quality = quality == null ? 0.82 : quality;
+    return new Promise(function (resolve, reject) {
+      if (!file || !file.type || file.type.indexOf('image/') !== 0) {
+        reject(new Error('invalid_type'));
+        return;
+      }
+      var reader = new FileReader();
+      reader.onload = function () {
+        var img = new Image();
+        img.onload = function () {
+          var w = img.naturalWidth || img.width;
+          var h = img.naturalHeight || img.height;
+          if (!w || !h) {
+            reject(new Error('invalid_image'));
+            return;
+          }
+          var scale = Math.min(1, maxDim / Math.max(w, h));
+          var cw = Math.max(1, Math.round(w * scale));
+          var ch = Math.max(1, Math.round(h * scale));
+          var canvas = document.createElement('canvas');
+          canvas.width = cw;
+          canvas.height = ch;
+          var ctx = canvas.getContext('2d');
+          if (!ctx) {
+            reject(new Error('canvas'));
+            return;
+          }
+          ctx.drawImage(img, 0, 0, cw, ch);
+          var mime = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+          try {
+            resolve(canvas.toDataURL(mime, quality));
+          } catch (e) {
+            reject(e);
+          }
+        };
+        img.onerror = function () {
+          reject(new Error('load_failed'));
+        };
+        img.src = reader.result;
+      };
+      reader.onerror = function () {
+        reject(new Error('read_failed'));
+      };
+      reader.readAsDataURL(file);
+    });
   }
 
   function displayNameFromUser(u) {
@@ -183,7 +235,24 @@
   var competeBtn = document.getElementById('profile-compete-btn');
   var logoutWrap = document.getElementById('profile-logout-wrap');
   var logoutLink = document.getElementById('profile-logout');
-  var editLink = document.getElementById('profile-edit-link');
+  var editToggle = document.getElementById('profile-edit-toggle');
+  var setupLink = document.getElementById('profile-setup-link');
+  var bannerWrap = document.getElementById('profile-banner-wrap');
+  var bannerImg = document.getElementById('profile-banner-img');
+  var bannerFallback = document.getElementById('profile-banner-fallback');
+  var bannerChangeLabel = document.getElementById('profile-banner-change-label');
+  var bannerInput = document.getElementById('profile-banner-input');
+  var avatarChangeLabel = document.getElementById('profile-avatar-change-label');
+  var avatarInput = document.getElementById('profile-avatar-input');
+  var heroCard = document.querySelector('.profile-hero-card');
+  var bioEditWrap = document.getElementById('profile-bio-edit');
+  var bioInput = document.getElementById('profile-bio-input');
+  var bioCharcount = document.getElementById('profile-bio-charcount');
+  var bioSaveBtn = document.getElementById('profile-bio-save');
+  var bioCancelBtn = document.getElementById('profile-bio-cancel');
+  var saveStatusEl = document.getElementById('profile-save-status');
+  var canEditProfile = false;
+  var editModeOpen = false;
   var highlightsList = document.getElementById('profile-highlights-list');
   var highlightsEmpty = document.getElementById('profile-highlights-empty');
   var highlightsWrap = document.getElementById('profile-highlights-wrap');
@@ -201,6 +270,136 @@
     }
     errorBanner.hidden = false;
     errorBanner.textContent = msg;
+  }
+
+  function setSaveStatus(msg, isError) {
+    if (!saveStatusEl) return;
+    if (!msg) {
+      saveStatusEl.hidden = true;
+      saveStatusEl.textContent = '';
+      saveStatusEl.classList.remove('profile-save-status--error');
+      return;
+    }
+    saveStatusEl.hidden = false;
+    saveStatusEl.textContent = msg;
+    saveStatusEl.classList.toggle('profile-save-status--error', !!isError);
+  }
+
+  function updateBioCharcount() {
+    if (!bioCharcount || !bioInput) return;
+    var len = bioInput.value ? bioInput.value.length : 0;
+    bioCharcount.textContent = len + ' / ' + MAX_BIO_LENGTH;
+  }
+
+  function bindBanner(url) {
+    if (!bannerWrap) return;
+    bannerWrap.hidden = false;
+    bannerWrap.setAttribute('aria-hidden', 'false');
+    var has = url && String(url).trim();
+    if (bannerImg) {
+      if (has) {
+        bannerImg.hidden = false;
+        bannerImg.src = String(url).trim();
+        bannerImg.alt = 'Profile banner';
+        if (bannerFallback) bannerFallback.hidden = true;
+      } else {
+        bannerImg.hidden = true;
+        bannerImg.removeAttribute('src');
+        if (bannerFallback) bannerFallback.hidden = false;
+      }
+    }
+  }
+
+  function setEditMode(open) {
+    editModeOpen = !!open;
+    if (heroCard) heroCard.classList.toggle('profile-hero-card--editing', editModeOpen);
+    if (bioEditWrap) bioEditWrap.hidden = !editModeOpen;
+    if (bioEl) bioEl.classList.toggle('profile-bio--hidden', editModeOpen);
+    if (bannerChangeLabel) bannerChangeLabel.hidden = !editModeOpen || !canEditProfile;
+    if (avatarChangeLabel) avatarChangeLabel.hidden = !editModeOpen || !canEditProfile;
+    if (editToggle) editToggle.textContent = editModeOpen ? 'Done editing' : 'Edit profile';
+    if (editModeOpen && bioInput) {
+      var vu = window.getCurrentUser();
+      bioInput.value =
+        vu && vu.bio != null && String(vu.bio).trim() ? String(vu.bio).trim() : '';
+      updateBioCharcount();
+    }
+  }
+
+  function configureProfileEditing(enabled, user) {
+    canEditProfile = !!enabled;
+    if (editToggle) editToggle.hidden = !canEditProfile;
+    if (setupLink) setupLink.hidden = !canEditProfile;
+    if (!canEditProfile) setEditMode(false);
+    if (bannerChangeLabel) bannerChangeLabel.hidden = !editModeOpen || !canEditProfile;
+    if (avatarChangeLabel) avatarChangeLabel.hidden = !editModeOpen || !canEditProfile;
+    if (canEditProfile && user && bioInput && !editModeOpen) {
+      bioInput.value = bioFromUser(user);
+      updateBioCharcount();
+    }
+  }
+
+  function mergeViewerWithApi(viewer, apiUser) {
+    if (!viewer || !apiUser) return apiUser || viewer;
+    var merged = Object.assign({}, viewer, apiUser);
+    if (apiUser.token) merged.token = apiUser.token;
+    else if (viewer.token) merged.token = viewer.token;
+    return merged;
+  }
+
+  function persistProfilePatch(patch) {
+    var viewer = window.getCurrentUser();
+    if (!viewer || !viewer.id || !viewer.token) {
+      setError('Log in to update your profile.');
+      return Promise.resolve(false);
+    }
+    if (profileSaveInFlight) return Promise.resolve(false);
+    profileSaveInFlight = true;
+    setSaveStatus('Saving…', false);
+    return window
+      .apiPut('/users/' + viewer.id, patch)
+      .then(function (res) {
+        return res.json().then(function (body) {
+          profileSaveInFlight = false;
+          if (!res.ok) {
+            setSaveStatus((body && body.error) || 'Could not save.', true);
+            return false;
+          }
+          var merged = mergeViewerWithApi(viewer, body);
+          window.setCurrentUser(merged);
+          setSaveStatus('Saved.', false);
+          setError('');
+          setTimeout(function () {
+            setSaveStatus('');
+          }, 2200);
+          return merged;
+        });
+      })
+      .catch(function () {
+        profileSaveInFlight = false;
+        setSaveStatus('Network error. Try again.', true);
+        return false;
+      });
+  }
+
+  function handleImagePick(file, field, maxDim) {
+    if (!file) return;
+    setSaveStatus('Processing image…', false);
+    compressImageFile(file, maxDim, 0.82)
+      .then(function (dataUrl) {
+        var patch = {};
+        patch[field] = dataUrl;
+        return persistProfilePatch(patch);
+      })
+      .then(function (updated) {
+        if (!updated) return;
+        if (field === 'avatarUrl') bindAvatar(avatarImg, displayNameFromUser(updated), updated.avatarUrl);
+        if (field === 'bannerUrl') bindBanner(updated.bannerUrl);
+        renderProfile(updated, { viewingOther: false, skipEditConfigure: true });
+      })
+      .catch(function () {
+        setSaveStatus('Could not use that image. Try JPEG or PNG.', true);
+      });
   }
 
   function applyFollowButtonState(targetUserId, viewer, viewingOther, followOpts) {
@@ -342,9 +541,7 @@
 
   if (logoutWrap) logoutWrap.hidden = !viewer;
 
-  if (editLink) {
-    editLink.hidden = !!(viewingOther || !viewer);
-  }
+  configureProfileEditing(!viewingOther && !!viewer, viewer);
 
   if (loginBanner) {
     if (!viewer && !viewingOther) {
@@ -378,6 +575,56 @@
       e.preventDefault();
       window.setCurrentUser(null);
       window.location.href = '/';
+    });
+  }
+
+  if (editToggle) {
+    editToggle.addEventListener('click', function () {
+      if (!canEditProfile) return;
+      setEditMode(!editModeOpen);
+    });
+  }
+
+  if (bioInput) {
+    bioInput.addEventListener('input', updateBioCharcount);
+  }
+
+  if (bioCancelBtn) {
+    bioCancelBtn.addEventListener('click', function () {
+      setEditMode(false);
+      setSaveStatus('');
+    });
+  }
+
+  if (bioSaveBtn) {
+    bioSaveBtn.addEventListener('click', function () {
+      if (!canEditProfile) return;
+      var text = bioInput ? bioInput.value.trim() : '';
+      if (text.length > MAX_BIO_LENGTH) {
+        setSaveStatus('Bio is too long.', true);
+        return;
+      }
+      persistProfilePatch({ bio: text }).then(function (updated) {
+        if (!updated) return;
+        setEditMode(false);
+        renderProfile(updated, { viewingOther: false });
+      });
+    });
+  }
+
+  if (avatarInput) {
+    avatarInput.addEventListener('change', function () {
+      var file = avatarInput.files && avatarInput.files[0];
+      avatarInput.value = '';
+      handleImagePick(file, 'avatarUrl', 512);
+    });
+  }
+
+  if (bannerInput) {
+    bannerInput.addEventListener('change', function () {
+      var file = bannerInput.files && bannerInput.files[0];
+      bannerInput.value = '';
+      handleImagePick(file, 'bannerUrl', 1600);
     });
   }
 
@@ -415,9 +662,15 @@
       if (followersEl && fwc != null) followersEl.textContent = fwc + ' followers';
     }
 
-    if (bioEl) bioEl.textContent = bioFromUser(u);
+    var bioText = bioFromUser(u);
+    if (bioEl) bioEl.textContent = bioText;
 
     bindAvatar(avatarImg, displayName, u && u.avatarUrl);
+    bindBanner(u && u.bannerUrl);
+
+    if (!opts.skipEditConfigure) {
+      configureProfileEditing(!opts.viewingOther && !!window.getCurrentUser(), u);
+    }
 
     renderBadges(u && u.id, !!opts.viewingOther);
   }
@@ -429,6 +682,7 @@
       if (bioEl) bioEl.textContent = '';
       if (statsRow) statsRow.hidden = true;
       bindAvatar(avatarImg, 'Guest', null);
+      bindBanner(null);
       applyFollowButtonState(null, null, false);
       renderBadges(null, true);
       document.title = 'Profile — Strongman AI';
@@ -439,7 +693,9 @@
     applyFollowButtonState(viewer.id, viewer, false);
     loadPublicProfile(viewer.id).then(function (fresh) {
       if (!fresh) return;
-      renderProfile(Object.assign({}, viewer, fresh), { viewingOther: false });
+      var merged = mergeViewerWithApi(viewer, fresh);
+      window.setCurrentUser(merged);
+      renderProfile(merged, { viewingOther: false });
     });
     return;
   }
@@ -449,7 +705,9 @@
     applyFollowButtonState(viewedId, viewer, false);
     loadPublicProfile(viewedId).then(function (fresh) {
       if (!fresh) return;
-      renderProfile(Object.assign({}, viewer, fresh), { viewingOther: false });
+      var merged = mergeViewerWithApi(viewer, fresh);
+      window.setCurrentUser(merged);
+      renderProfile(merged, { viewingOther: false });
     });
     return;
   }
@@ -462,6 +720,7 @@
         if (bioEl) bioEl.textContent = '';
         if (statsRow) statsRow.hidden = true;
         bindAvatar(avatarImg, 'Unknown', null);
+        bindBanner(null);
         configureTabs(false);
         applyFollowButtonState(null, viewer, false);
         document.title = 'Profile — Strongman AI';
