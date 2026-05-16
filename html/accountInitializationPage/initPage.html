@@ -14,7 +14,10 @@
     <!-- Header block: title + "Click to continue" move together slide 1 → 2 -->
     <div class="init-floating-header" id="floating-header">
       <h1 class="init-title" id="floating-title">Welcome to Strongman AI!</h1>
-      <p class="init-continue">Press space to continue.</p>
+      <p class="init-continue">
+        <span class="init-continue-desktop">Press space to continue.</span>
+        <span class="init-continue-touch">Tap to continue.</span>
+      </p>
     </div>
 
     <!-- Slide 1: Welcome (header is in floating block above) -->
@@ -22,7 +25,7 @@
 
     <!-- Slide 2: Basic info -->
     <section class="slide" data-slide="2">
-      <div class="init-header-spacer" aria-hidden="true"><span>Welcome to Strongman AI!</span><span>Press space to continue.</span></div>
+      <div class="init-header-spacer" aria-hidden="true"><span>Welcome to Strongman AI!</span><span class="init-continue-desktop">Press space to continue.</span><span class="init-continue-touch">Tap to continue.</span></div>
       <div class="slide2-content" id="slide2-content">
           <p class="init-prompt">To start off, let's get some information about <span class="init-accent">you.</span></p>
         <form class="init-form" id="form-basic">
@@ -37,7 +40,7 @@
 
     <!-- Slide 3: Date of birth -->
     <section class="slide" data-slide="3">
-      <div class="init-header-spacer" aria-hidden="true"><span>Welcome to Strongman AI!</span><span>Press space to continue.</span></div>
+      <div class="init-header-spacer" aria-hidden="true"><span>Welcome to Strongman AI!</span><span class="init-continue-desktop">Press space to continue.</span><span class="init-continue-touch">Tap to continue.</span></div>
       <div class="slide3-content" id="slide3-content">
         <p class="init-prompt">Great! Now, please enter your date of birth.</p>
         <form class="init-form init-form-dob" id="form-dob">
