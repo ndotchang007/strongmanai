@@ -151,11 +151,29 @@ button:focus {
   margin-right: auto;
 }
 
-/* "Click or press space" – smaller sans-serif */
+/* Continue prompt – smaller sans-serif; touch vs desktop copy */
 .init-continue {
   font-size: 1rem;
   color: #cccccc;
   margin: 0;
+}
+
+.init-continue-touch {
+  display: none;
+}
+
+@media (max-width: 520px), (hover: none) and (pointer: coarse) {
+  .init-continue-desktop {
+    display: none;
+  }
+
+  .init-continue-touch {
+    display: inline;
+  }
+}
+
+.slide[data-slide="1"].active {
+  cursor: pointer;
 }
 
 /* Prompt text – medium sans-serif */
