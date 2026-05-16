@@ -277,22 +277,422 @@
     });
   }
 
-  // Graph: each pane is a fixed metric (Weight / Reps); the exercise select prefixes both titles.
+  // Graph: weight and reps over recent sessions for the selected exercise (from WorkoutLog).
   var graphWeightTitleEl = document.getElementById('graph-weight-title');
   var graphRepsTitleEl = document.getElementById('graph-reps-title');
+  var GRAPH_XS = [40, 82, 124, 166, 208, 250];
+  var GRAPH_Y_TOP = 22;
+  var GRAPH_Y_BOTTOM = 110;
+  var GRAPH_POINT_LIMIT = 6;
+  var FAVORITES_LS_KEY = 'strongman-favorite-movements';
+  var homeGraphSessions = [];
+
+  function graphExerciseLabel(selectEl) {
+    if (!selectEl || selectEl.selectedIndex < 0) return '';
+    return selectEl.options[selectEl.selectedIndex].text || '';
+  }
+
+  function graphExerciseSlug(label) {
+    return String(label || '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
+
+  function exerciseMatchesSelection(name, selectEl) {
+    var label = graphExerciseLabel(selectEl);
+    var slug = selectEl && selectEl.value ? String(selectEl.value) : '';
+    var n = String(name || '').trim().toLowerCase();
+    if (!n) return false;
+    var needle = String(label || '').trim().toLowerCase();
+    if (!needle && slug) needle = slug.replace(/-/g, ' ');
+    if (!needle) return false;
+    if (n === needle) return true;
+    if (n.indexOf(needle) !== -1 || needle.indexOf(n) !== -1) return true;
+    var slugFromName = graphExerciseSlug(name);
+    return !!(slug && slugFromName && (slugFromName === slug || slugFromName.indexOf(slug) !== -1 || slug.indexOf(slugFromName) !== -1));
+  }
+
+  function parseFavoriteMovementLines() {
+    var out = [];
+    try {
+      var raw = localStorage.getItem(FAVORITES_LS_KEY) || '';
+      raw.split(/[\n,]+/).forEach(function (part) {
+        var t = part.trim();
+        if (t) out.push(t);
+      });
+    } catch (e) {}
+    return out;
+  }
+
+  function collectExerciseOptionsFromSessions(sessions) {
+    var map = {};
+    (sessions || []).forEach(function (s) {
+      (s.exercises || []).forEach(function (ex) {
+        var label = ex && ex.name ? String(ex.name).trim() : '';
+        if (!label) return;
+        var key = label.toLowerCase();
+        if (!map[key]) map[key] = { label: label, count: 0 };
+        map[key].count += 1;
+      });
+    });
+    var list = Object.keys(map).map(function (k) {
+      return map[k];
+    });
+    list.sort(function (a, b) {
+      return b.count - a.count || a.label.localeCompare(b.label);
+    });
+    return list;
+  }
+
+  function populateGraphExerciseSelect(sessions, preferredValue) {
+    if (!graphExerciseSelect) return;
+    var fromLog = collectExerciseOptionsFromSessions(sessions);
+    var seen = {};
+    var options = [];
+    fromLog.forEach(function (row) {
+      var slug = graphExerciseSlug(row.label);
+      if (!slug || seen[slug]) return;
+      seen[slug] = true;
+      options.push({ value: slug, label: row.label });
+    });
+    parseFavoriteMovementLines().forEach(function (fav) {
+      var slug = graphExerciseSlug(fav);
+      if (!slug || seen[slug]) return;
+      seen[slug] = true;
+      options.push({ value: slug, label: fav });
+    });
+    if (!options.length) {
+      options.push({ value: 'bench', label: 'Bench' });
+    }
+    var prev = preferredValue || graphExerciseSelect.value;
+    graphExerciseSelect.innerHTML = '';
+    options.forEach(function (opt) {
+      var o = document.createElement('option');
+      o.value = opt.value;
+      o.textContent = opt.label;
+      graphExerciseSelect.appendChild(o);
+    });
+    var pick = prev;
+    if (pick && !seen[pick]) {
+      for (var i = 0; i < options.length; i++) {
+        if (options[i].value === pick || options[i].label.toLowerCase() === String(prev).toLowerCase()) {
+          pick = options[i].value;
+          break;
+        }
+      }
+    }
+    if (!pick || !seen[pick]) {
+      var benchIdx = options.findIndex(function (o) {
+        return /bench/i.test(o.label);
+      });
+      pick = benchIdx >= 0 ? options[benchIdx].value : options[0].value;
+    }
+    graphExerciseSelect.value = pick;
+  }
+
+  function sessionSortTime(s) {
+    if (s && s.createdAt) {
+      var t = Date.parse(s.createdAt);
+      if (!isNaN(t)) return t;
+    }
+    if (s && s.date) {
+      var p = String(s.date).split('-');
+      if (p.length === 3) {
+        var d = new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10));
+        if (!isNaN(d.getTime())) return d.getTime();
+      }
+    }
+    return 0;
+  }
+
+  function formatGraphXLabel(point) {
+    if (point && point.date) {
+      var parts = String(point.date).split('-');
+      if (parts.length === 3) {
+        return parseInt(parts[1], 10) + '/' + parseInt(parts[2], 10);
+      }
+    }
+    if (point && point.createdAt) {
+      var d = new Date(point.createdAt);
+      if (!isNaN(d.getTime())) return d.getMonth() + 1 + '/' + d.getDate();
+    }
+    return '';
+  }
+
+  function formatGraphYLabel(value, metric) {
+    if (value == null || isNaN(value)) return '—';
+    if (metric === 'reps') return String(Math.round(value));
+    var n = Number(value);
+    return Math.abs(n - Math.round(n)) < 0.05 ? String(Math.round(n)) : String(Math.round(n * 10) / 10);
+  }
+
+  function buildExerciseTrendPoints(sessions, selectEl) {
+    var sorted = (sessions || [])
+      .slice()
+      .sort(function (a, b) {
+        return sessionSortTime(a) - sessionSortTime(b);
+      });
+    var points = [];
+    sorted.forEach(function (s) {
+      if (!s) return;
+      var bestW = null;
+      var bestR = null;
+      (s.exercises || []).forEach(function (ex) {
+        if (!exerciseMatchesSelection(ex.name, selectEl)) return;
+        var w = parseFloat(ex.weight);
+        var r = parseFloat(ex.reps);
+        if (!isNaN(w) && w > 0) bestW = bestW == null ? w : Math.max(bestW, w);
+        if (!isNaN(r) && r > 0) bestR = bestR == null ? r : Math.max(bestR, r);
+      });
+      if (bestW == null && bestR == null) return;
+      points.push({
+        date: s.date,
+        createdAt: s.createdAt,
+        weight: bestW,
+        reps: bestR
+      });
+    });
+    if (points.length > GRAPH_POINT_LIMIT) {
+      points = points.slice(points.length - GRAPH_POINT_LIMIT);
+    }
+    return points;
+  }
+
+  function scaleMetricValue(value, min, max) {
+    if (value == null || isNaN(value)) return GRAPH_Y_BOTTOM;
+    if (max <= min) return GRAPH_Y_BOTTOM - (GRAPH_Y_BOTTOM - GRAPH_Y_TOP) * 0.5;
+    var t = (value - min) / (max - min);
+    return GRAPH_Y_BOTTOM - t * (GRAPH_Y_BOTTOM - GRAPH_Y_TOP);
+  }
+
+  function metricRange(points, metric) {
+    var vals = [];
+    points.forEach(function (p) {
+      var v = metric === 'weight' ? p.weight : p.reps;
+      if (v != null && !isNaN(v)) vals.push(v);
+    });
+    if (!vals.length) return { min: 0, max: 1 };
+    var min = Math.min.apply(null, vals);
+    var max = Math.max.apply(null, vals);
+    if (max <= min) {
+      var pad = metric === 'reps' ? 1 : 5;
+      return { min: Math.max(0, min - pad), max: max + pad };
+    }
+    var span = max - min;
+    return { min: Math.max(0, min - span * 0.08), max: max + span * 0.08 };
+  }
+
+  function coordsForMetric(points, metric) {
+    var range = metricRange(points, metric);
+    var n = points.length;
+    var coords = [];
+    for (var i = 0; i < n; i++) {
+      var x = n === 1 ? GRAPH_XS[GRAPH_XS.length - 1] : GRAPH_XS[GRAPH_XS.length - n + i];
+      var raw = metric === 'weight' ? points[i].weight : points[i].reps;
+      var y =
+        raw == null || isNaN(raw)
+          ? GRAPH_Y_BOTTOM
+          : scaleMetricValue(raw, range.min, range.max);
+      coords.push({ x: x, y: y, raw: raw, point: points[i] });
+    }
+    return { coords: coords, range: range };
+  }
+
+  function setTickLabels(container, labels, xs, ys, anchor) {
+    if (!container) return;
+    container.innerHTML = '';
+    for (var i = 0; i < labels.length; i++) {
+      var text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      text.setAttribute('x', String(xs[i]));
+      text.setAttribute('y', String(ys[i]));
+      text.setAttribute('text-anchor', anchor || 'middle');
+      text.textContent = labels[i];
+      container.appendChild(text);
+    }
+  }
+
+  function renderHomeMetricChart(config) {
+    var areaEl = document.getElementById(config.areaId);
+    var lineEl = document.getElementById(config.lineId);
+    var dotEl = document.getElementById(config.dotId);
+    var ticksY = document.getElementById(config.ticksYId);
+    var ticksX = document.getElementById(config.ticksXId);
+    var pane = config.paneEl;
+    if (!areaEl || !lineEl || !dotEl) return;
+
+    var points = config.points || [];
+    var hasMetric = points.some(function (p) {
+      var v = config.metric === 'weight' ? p.weight : p.reps;
+      return v != null && !isNaN(v);
+    });
+
+    if (pane) pane.classList.toggle('graph-pane--empty', !hasMetric);
+
+    if (!hasMetric) {
+      areaEl.setAttribute('d', '');
+      lineEl.setAttribute('points', '');
+      dotEl.setAttribute('cx', String(GRAPH_XS[0]));
+      dotEl.setAttribute('cy', String(GRAPH_Y_BOTTOM));
+      dotEl.setAttribute('opacity', '0');
+      var yEmpty = [GRAPH_Y_BOTTOM, 78, 46, GRAPH_Y_TOP];
+      setTickLabels(
+        ticksY,
+        ['—', '—', '—', '—'],
+        [36, 36, 36, 36],
+        yEmpty,
+        'end'
+      );
+      setTickLabels(
+        ticksX,
+        ['—', '—', '—', '—', '—', '—'],
+        GRAPH_XS,
+        [122, 122, 122, 122, 122, 122]
+      );
+      return;
+    }
+
+    dotEl.setAttribute('opacity', '1');
+    var plotted = coordsForMetric(points, config.metric);
+    var coords = plotted.coords;
+    var range = plotted.range;
+    var linePts = coords
+      .map(function (c) {
+        return c.x + ',' + c.y;
+      })
+      .join(' ');
+    lineEl.setAttribute('points', linePts);
+
+    if (coords.length) {
+      var first = coords[0];
+      var last = coords[coords.length - 1];
+      var areaD =
+        'M' +
+        first.x +
+        ',' +
+        first.y +
+        coords
+          .slice(1)
+          .map(function (c) {
+            return ' L' + c.x + ',' + c.y;
+          })
+          .join('') +
+        ' L' +
+        last.x +
+        ',' +
+        GRAPH_Y_BOTTOM +
+        ' L' +
+        first.x +
+        ',' +
+        GRAPH_Y_BOTTOM +
+        ' Z';
+      areaEl.setAttribute('d', areaD);
+      dotEl.setAttribute('cx', String(last.x));
+      dotEl.setAttribute('cy', String(last.y));
+    }
+
+    var yVals = [range.min, range.min + (range.max - range.min) / 3, range.min + ((range.max - range.min) * 2) / 3, range.max];
+    var yPos = [GRAPH_Y_BOTTOM, 94, 70, GRAPH_Y_TOP];
+    setTickLabels(
+      ticksY,
+      yVals.map(function (v) {
+        return formatGraphYLabel(v, config.metric);
+      }),
+      [36, 36, 36, 36],
+      yPos,
+      'end'
+    );
+
+    var xLabels = [];
+    var xCoords = [];
+    for (var i = 0; i < GRAPH_XS.length; i++) {
+      var pt = points[i - (GRAPH_XS.length - points.length)];
+      if (i < GRAPH_XS.length - points.length) {
+        xLabels.push('');
+      } else {
+        xLabels.push(pt ? formatGraphXLabel(pt) || String(i - (GRAPH_XS.length - points.length) + 1) : '');
+      }
+      xCoords.push(GRAPH_XS[i]);
+    }
+    setTickLabels(ticksX, xLabels, xCoords, new Array(GRAPH_XS.length).fill(122));
+  }
+
   function updateGraphTitles() {
-    var exercise = graphExerciseSelect ? graphExerciseSelect.options[graphExerciseSelect.selectedIndex].text : '';
+    var exercise = graphExerciseLabel(graphExerciseSelect);
     var prefix = exercise ? exercise + ' — ' : '';
     if (graphWeightTitleEl) graphWeightTitleEl.textContent = prefix + 'Weight (lb)';
     if (graphRepsTitleEl) graphRepsTitleEl.textContent = prefix + 'Reps';
   }
-  updateGraphTitles();
-  if (graphExerciseSelect) {
-    graphExerciseSelect.addEventListener('change', function () {
-      updateGraphTitles();
-      // TODO: when other exercises exist, switch both chart datasets by selected exercise
+
+  function renderHomeGraphs() {
+    updateGraphTitles();
+    var points = buildExerciseTrendPoints(homeGraphSessions, graphExerciseSelect);
+    var weightPane = graphWeightTitleEl && graphWeightTitleEl.closest('.complication-graph-pane');
+    var repsPane = graphRepsTitleEl && graphRepsTitleEl.closest('.complication-graph-pane');
+    renderHomeMetricChart({
+      metric: 'weight',
+      points: points,
+      areaId: 'graph-weight-area',
+      lineId: 'graph-weight-line',
+      dotId: 'graph-weight-dot',
+      ticksYId: 'graph-weight-ticks-y',
+      ticksXId: 'graph-weight-ticks-x',
+      paneEl: weightPane
+    });
+    renderHomeMetricChart({
+      metric: 'reps',
+      points: points,
+      areaId: 'graph-reps-area',
+      lineId: 'graph-reps-line',
+      dotId: 'graph-reps-dot',
+      ticksYId: 'graph-reps-ticks-y',
+      ticksXId: 'graph-reps-ticks-x',
+      paneEl: repsPane
     });
   }
+
+  function refreshHomeGraphData() {
+    var WL = window.WorkoutLog;
+    if (!WL || typeof WL.getSessions !== 'function') {
+      homeGraphSessions = [];
+      renderHomeGraphs();
+      return;
+    }
+    homeGraphSessions = WL.getSessions() || [];
+    populateGraphExerciseSelect(homeGraphSessions, graphExerciseSelect && graphExerciseSelect.value);
+    renderHomeGraphs();
+  }
+
+  function loadHomeGraphs() {
+    var WL = window.WorkoutLog;
+    if (WL && typeof WL.syncFromServer === 'function') {
+      var cu = typeof window.getCurrentUser === 'function' ? window.getCurrentUser() : null;
+      if (cu && cu.token) {
+        WL.syncFromServer(function () {
+          refreshHomeGraphData();
+        });
+        return;
+      }
+    }
+    refreshHomeGraphData();
+  }
+
+  loadHomeGraphs();
+  if (graphExerciseSelect) {
+    graphExerciseSelect.addEventListener('change', function () {
+      renderHomeGraphs();
+    });
+  }
+
+  window.addEventListener('storage', function (e) {
+    if (!e.key || e.key.indexOf('strongman_workouts') !== 0) return;
+    refreshHomeGraphData();
+  });
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden && document.body.getAttribute('data-current-page') === 'home') {
+      loadHomeGraphs();
+    }
+  });
 
   // Leaderboard scope toggle: Global / Followers / Friends (data source TBD per user account)
   document.querySelectorAll('.scope-btn').forEach(function (btn) {
