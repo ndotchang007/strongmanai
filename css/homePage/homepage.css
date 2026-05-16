@@ -725,6 +725,11 @@ button.sidebar-profile
     font-family: var(--font);
     font-size: 9px;
 }
+.complication-graph-pane.graph-pane--empty .graph-line,
+.complication-graph-pane.graph-pane--empty .graph-area
+{
+    opacity: 0.2;
+}
 
 /* Leaderboard */
 .complication-scope-btns
