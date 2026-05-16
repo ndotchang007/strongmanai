@@ -89,12 +89,16 @@
     if (heightUnit) heightUnit.textContent = isMetric ? 'cm' : 'in.';
   }
 
-  // Slide 1: space or click → title + "Click to continue" move up together, then slide 2 appears
+  var slide1Advancing = false;
+
+  // Slide 1: space or tap → title + continue prompt move up together, then slide 2 appears
   function advanceFromSlide1() {
-    if (currentIndex !== 0) return;
+    if (currentIndex !== 0 || slide1Advancing) return;
+    slide1Advancing = true;
     floatingHeader.classList.add('float-up');
     setTimeout(function () {
       showSlide(1);
+      slide1Advancing = false;
     }, 600);
   }
 
@@ -113,7 +117,12 @@
     goNext();
   });
 
-  // Slide 1: only space advances (no click)
+  slideshow.addEventListener('click', function (e) {
+    if (currentIndex !== 0) return;
+    var tag = e.target.tagName.toLowerCase();
+    if (tag === 'input' || tag === 'textarea' || tag === 'button' || tag === 'a') return;
+    advanceFromSlide1();
+  });
 
   // Form: basic info (required fields) – show red "Required" if empty, then next
   var formBasic = document.getElementById('form-basic');
