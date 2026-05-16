@@ -142,9 +142,9 @@
                     </div>
                 </article>
                 <article class="complication-card complication-leaderboard">
-                    <!-- Leaderboard exercise dropdown: add other options when exercise list is defined -->
                     <h2 class="complication-title complication-title-leaderboard">
-                        <a href="/leaderboards" class="complication-title-link">LEADERBOARD</a> (<select class="complication-leaderboard-exercise" id="leaderboard-exercise" aria-label="Exercise for leaderboard"><option value="bench">Bench</option></select>)
+                        <a href="/leaderboards" class="complication-title-link">LEADERBOARD</a>
+                        <span class="complication-lb-exercise-wrap">(<input type="search" class="complication-leaderboard-exercise" id="leaderboard-exercise-search" list="leaderboard-exercise-suggestions" value="Bench" placeholder="Search exercise…" autocomplete="off" spellcheck="false" aria-label="Exercise for leaderboard"><datalist id="leaderboard-exercise-suggestions"></datalist>)</span>
                     </h2>
                     <div class="complication-scope-btns" role="group" aria-label="Leaderboard scope">
                         <button type="button" class="home-btn scope-btn active" data-scope="global">Global</button>
@@ -161,17 +161,7 @@
                                 <th>BODYWEIGHT</th>
                             </tr>
                         </thead>
-                        <tbody id="leaderboard-body">
-                            <!-- Temporary placeholder names/rows; leaderboard source will be set by user account -->
-                            <tr><td>1</td><td>SKIBIDISIGMA432</td><td>135</td><td>135</td></tr>
-                            <tr><td>2</td><td>DAWGWHAT6967</td><td>135</td><td>135</td></tr>
-                            <tr><td>3</td><td>SIXSEVEN67</td><td>135</td><td>135</td></tr>
-                            <!-- Current user row: placeholder (John); keep in middle, highlight via JS -->
-                            <tr class="leaderboard-row-user" data-current-user><td>4</td><td>HOUDINI07</td><td>135</td><td>135</td></tr>
-                            <tr><td>5</td><td>RAHHHHHHHHH</td><td>135</td><td>135</td></tr>
-                            <tr><td>6</td><td>A-A-RON</td><td>135</td><td>135</td></tr>
-                            <tr><td>7</td><td>LEGLAZER42</td><td>135</td><td>135</td></tr>
-                        </tbody>
+                        <tbody id="leaderboard-body"></tbody>
                     </table>
                 </div>
             </article>
