@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="strongman-api-base" content="https://strongmanai-api.onrender.com/api/v1">
+    <title>Strongman AI – Create</title>
+    <link rel="icon" type="image/png" href="../../assets/logo.png">
+    <link rel="apple-touch-icon" href="../../assets/logo.png">
+    <link rel="stylesheet" href="../../css/homePage/homepage.css">
+    <link rel="stylesheet" href="../../css/createPage/createPage.css">
+    <link rel="stylesheet" href="../../css/shared/settings-app.css">
+</head>
+<body class="create-page" data-current-page="create">
+    <aside class="site-sidebar" id="site-sidebar" aria-label="Main navigation">
+        <div class="sidebar-brand">
+            <span class="sidebar-logo">STRONGMAN <span class="sidebar-logo-ai">AI</span></span>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="/home" class="sidebar-link" data-page="home" aria-label="Home">
+                <img src="../../assets/icons/home-outline.png" alt="" class="sidebar-icon sidebar-icon-outline">
+                <img src="../../assets/icons/home-filled.png" alt="" class="sidebar-icon sidebar-icon-filled">
+                <span class="sidebar-label">Home</span>
+            </a>
+            <a href="/leaderboard" class="sidebar-link" data-page="leaderboard" aria-label="Leaderboard">
+                <img src="../../assets/icons/trophy-outline.png" alt="" class="sidebar-icon sidebar-icon-outline">
+                <img src="../../assets/icons/trophy-filled.png" alt="" class="sidebar-icon sidebar-icon-filled">
+                <span class="sidebar-label">Leaderboard</span>
+            </a>
+            <a href="/explore" class="sidebar-link" data-page="explore" aria-label="Explore">
+                <img src="../../assets/icons/explore-outline.png" alt="" class="sidebar-icon sidebar-icon-outline">
+                <img src="../../assets/icons/explore-filled.png" alt="" class="sidebar-icon sidebar-icon-filled">
+                <span class="sidebar-label">Explore</span>
+            </a>
+            <a href="/generate" class="sidebar-link" data-page="generate" aria-label="Generate">
+                <img src="../../assets/icons/AI-outline.png" alt="" class="sidebar-icon sidebar-icon-outline">
+                <img src="../../assets/icons/AI-outline.png" alt="" class="sidebar-icon sidebar-icon-filled">
+                <span class="sidebar-label">Generate</span>
+            </a>
+            <a href="/tracking" class="sidebar-link" data-page="tracking" aria-label="Tracking">
+                <img src="../../assets/icons/graph-outline.png" alt="" class="sidebar-icon sidebar-icon-outline">
+                <img src="../../assets/icons/graph-outline.png" alt="" class="sidebar-icon sidebar-icon-filled">
+                <span class="sidebar-label">Tracking</span>
+            </a>
+            <a href="/create" class="sidebar-link" data-page="create" aria-label="Create">
+                <img src="../../assets/icons/create-outline.png" alt="" class="sidebar-icon sidebar-icon-outline">
+                <img src="../../assets/icons/create-outline.png" alt="" class="sidebar-icon sidebar-icon-filled">
+                <span class="sidebar-label">Create</span>
+            </a>
+        </nav>
+        <div class="sidebar-bottom">
+            <div class="sidebar-profile-wrap">
+                <button type="button" class="sidebar-profile sidebar-profile-trigger" id="sidebar-profile-trigger" aria-label="Profile menu" aria-expanded="false" aria-haspopup="true" aria-controls="sidebar-profile-menu">
+                    <span class="sidebar-profile-avatar" aria-hidden="true"></span>
+                    <span class="sidebar-label">Profile</span>
+                </button>
+                <div class="sidebar-profile-menu" id="sidebar-profile-menu" role="menu" aria-hidden="true" hidden>
+                    <a href="/profile" class="sidebar-profile-menu-item" role="menuitem">View profile</a>
+                    <button type="button" class="sidebar-profile-menu-item sidebar-profile-menu-item--button" role="menuitem" id="sidebar-profile-logout">Log out</button>
+                </div>
+            </div>
+            <button type="button" class="sidebar-link sidebar-link-more sidebar-settings-trigger" id="sidebar-settings-trigger" aria-label="Settings" aria-haspopup="dialog" aria-expanded="false" aria-controls="home-settings-dialog">
+                <img src="../../assets/icons/menu-outline.png" alt="" class="sidebar-icon sidebar-icon-outline">
+                <img src="../../assets/icons/menu-outline.png" alt="" class="sidebar-icon sidebar-icon-filled">
+                <span class="sidebar-label">Settings</span>
+            </button>
+        </div>
+    </aside>
+    <div class="main-wrap">
+        <main class="create-main">
+            <header class="create-mode-header" aria-label="Create options">
+                <nav class="create-mode-tabs" role="tablist" aria-label="Create modes">
+                    <button type="button" class="create-mode-tab active" role="tab" aria-selected="true" aria-controls="create-panel-workout" id="create-tab-workout" data-mode="workout">Log workout</button>
+                    <button type="button" class="create-mode-tab" role="tab" aria-selected="false" aria-controls="create-panel-video" id="create-tab-video" data-mode="video">Upload video</button>
+                    <button type="button" class="create-mode-tab" role="tab" aria-selected="false" aria-controls="create-panel-split" id="create-tab-split" data-mode="split">Workout split</button>
+                </nav>
+                <div class="create-mode-rule" aria-hidden="true"></div>
+            </header>
+
+            <div class="create-intro">
+                <h1 class="create-title">CREATE</h1>
+                <p class="create-subtitle">Log a session, upload video, or define your weekly split for home and autofill.</p>
+            </div>
+
+            <section id="create-panel-workout" class="create-panel create-panel--active" role="tabpanel" aria-labelledby="create-tab-workout">
+                <div class="create-workout-two-col">
+                <div class="create-workout-primary">
+                <div class="create-archive-section" id="create-archive-section" aria-labelledby="create-archive-heading">
+                    <div class="create-archive-panel-head">
+                        <div class="create-archive-panel-titles">
+                            <h2 class="create-archive-title" id="create-archive-heading">Saved templates</h2>
+                            <p class="create-archive-lede">Apply loads exercises into blocks. Newest first.</p>
+                        </div>
+                        <a href="/generate" class="create-archive-cta">Generate plan</a>
+                    </div>
+                    <details class="create-archive-format-details">
+                        <summary class="create-archive-format-summary">How saved text is parsed</summary>
+                        <p class="create-archive-format-hint">AI plans use lines like <code>Block · Exercise · 4×6 @ 315 lb</code> or <code>Press · 5×3 @ 185 lb</code>. You can also use <code>## Warmup</code> or an ALL CAPS section title, then lines such as <code>Back squat 4×6 @ 315</code>.</p>
+                    </details>
+                    <p class="create-error" id="create-archive-error" role="alert" hidden></p>
+                    <div class="create-archive-list" id="create-archive-list" role="list"></div>
+                </div>
+                <form class="create-form" id="create-workout-form">
+                    <div class="create-field-row">
+                        <div class="create-field create-field--grow">
+                            <label for="create-datetime">Date &amp; time</label>
+                            <input type="datetime-local" id="create-datetime" class="create-input" name="datetime" required aria-label="Workout date and time">
+                        </div>
+                        <div class="create-field create-field--grow">
+                            <label for="create-split">Split / focus</label>
+                            <input type="text" id="create-split" class="create-input" name="split" placeholder="e.g. Lower · Events" aria-label="Split or focus name">
+                        </div>
+                    </div>
+                    <div class="create-field">
+                        <label for="create-session-title">Session title <span class="create-optional">(optional)</span></label>
+                        <input type="text" id="create-session-title" class="create-input" name="title" placeholder="e.g. Yoke + sandbag" aria-label="Session title">
+                    </div>
+
+                    <fieldset class="create-session-type-fieldset">
+                        <legend class="create-session-type-legend">Session type</legend>
+                        <div class="create-session-type-row" role="radiogroup" aria-label="Session type">
+                            <label class="create-session-type-option">
+                                <input type="radio" name="create-session-type" id="create-session-type-strength" value="strength" checked>
+                                <span>Strength / lifting</span>
+                            </label>
+                            <label class="create-session-type-option">
+                                <input type="radio" name="create-session-type" id="create-session-type-cardio" value="cardio">
+                                <span>Cardio-only</span>
+                            </label>
+                            <label class="create-session-type-option">
+                                <input type="radio" name="create-session-type" id="create-session-type-mixed" value="mixed">
+                                <span>Strength + cardio</span>
+                            </label>
+                        </div>
+                    </fieldset>
+
+                    <div id="create-cardio-section" class="create-cardio-section" hidden>
+                        <div class="create-cardio-head">
+                            <span class="create-cardio-label" id="create-cardio-heading">Cardio</span>
+                            <p class="create-cardio-hint" id="create-cardio-hint">Log duration and what you did.</p>
+                        </div>
+                        <div class="create-field-row">
+                            <div class="create-field create-field--grow">
+                                <label for="create-cardio-type">Cardio type</label>
+                                <select id="create-cardio-type" class="create-input" name="cardioType" aria-label="Cardio type">
+                                    <option value="">Choose cardio type</option>
+                                    <option value="running">Running</option>
+                                    <option value="walking">Walking</option>
+                                    <option value="cycling">Cycling</option>
+                                    <option value="swimming">Swimming</option>
+                                    <option value="rowing">Rowing</option>
+                                    <option value="elliptical">Elliptical</option>
+                                    <option value="stair-climber">Stair climber</option>
+                                    <option value="hiking">Hiking</option>
+                                    <option value="rucking">Rucking</option>
+                                    <option value="ski-erg">SkiErg</option>
+                                    <option value="other-cardio">Other cardio</option>
+                                    <option value="sports">Sports</option>
+                                </select>
+                            </div>
+                            <div class="create-field create-field--grow">
+                                <label for="create-cardio-minutes" id="create-cardio-minutes-label">Duration (minutes)</label>
+                                <input type="number" id="create-cardio-minutes" class="create-input" name="cardioMinutes" min="0" step="1" placeholder="e.g. 30" aria-label="Cardio duration in minutes">
+                            </div>
+                        </div>
+                        <div class="create-field-row">
+                            <div class="create-field create-field--grow" id="create-cardio-distance-wrap">
+                                <label for="create-cardio-distance">Distance <span class="create-unit-label">(mi)</span></label>
+                                <input type="number" id="create-cardio-distance" class="create-input" name="cardioDistance" min="0" step="0.01" placeholder="e.g. 3.1" aria-label="Cardio distance in miles">
+                            </div>
+                            <div class="create-field create-field--grow" id="create-cardio-calories-wrap" hidden>
+                                <label for="create-cardio-calories">Calorie burn</label>
+                                <input type="number" id="create-cardio-calories" class="create-input" name="cardioCalories" min="0" step="1" placeholder="e.g. 450" aria-label="Cardio calorie burn">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="create-strength-section" class="create-exercises-block">
+                        <div class="create-exercises-head">
+                            <span class="create-exercises-label">Exercises</span>
+                            <p class="create-exercises-hint">Free-text names. Intensity is estimated from sets × reps × weight (or per-set averages when enabled).</p>
+                        </div>
+                        <div class="create-blocks-option">
+                            <label class="create-toggle-label">
+                                <input type="checkbox" id="create-blocks-enabled" class="create-checkbox" aria-describedby="create-blocks-hint">
+                                <span class="create-toggle-text">Split into blocks <span class="create-optional">(warmup, main, accessories…)</span></span>
+                            </label>
+                            <p class="create-blocks-hint" id="create-blocks-hint">Each block can hold multiple exercises. Turn off to use a single flat list.</p>
+                        </div>
+                        <div id="create-single-exercises-wrap" class="create-exercises-container">
+                            <div class="create-exercise-list" id="create-exercise-list" aria-live="polite"></div>
+                            <div class="create-add-exercise-row" id="create-add-exercise-row" role="group" aria-label="Add exercise">
+                                <button type="button" class="create-add-exercise" id="create-add-exercise">+ Add exercise</button>
+                                <button type="button" class="create-add-exercise-variant" data-add-exercise-kind="dropset" aria-label="Add exercise with dropset">+ Dropset</button>
+                                <button type="button" class="create-add-exercise-variant" data-add-exercise-kind="superset" aria-label="Add exercise with superset">+ Superset</button>
+                            </div>
+                        </div>
+                        <div id="create-blocks-wrap" class="create-blocks-wrap" hidden>
+                            <div class="create-blocks-list" id="create-blocks-list" aria-live="polite"></div>
+                            <button type="button" class="create-add-exercise" id="create-add-block">+ Add block</button>
+                        </div>
+                    </div>
+
+                    <div class="create-field">
+                        <label for="create-notes">Notes</label>
+                        <textarea id="create-notes" class="create-textarea" name="notes" rows="3" placeholder="RPE, equipment, how it felt…" aria-label="Session notes"></textarea>
+                    </div>
+
+                    <div class="create-intensity-panel" id="create-intensity-panel" aria-live="polite">
+                        <div class="create-intensity-panel-head">
+                            <label for="create-session-intensity-user" class="create-intensity-main-label">Session intensity</label>
+                            <p class="create-intensity-panel-lede">Your own 0–100 score for how demanding this session felt. It is not calculated from weight or reps.</p>
+                        </div>
+                        <div class="create-intensity-row">
+                            <input type="number" id="create-session-intensity-user" class="create-input create-intensity-input" name="sessionIntensityUser" min="0" max="100" step="1" placeholder="0–100" aria-label="Session intensity score 0 to 100">
+                            <span class="create-intensity-tier-pill" id="create-intensity-tier-pill">—</span>
+                        </div>
+                    </div>
+
+                    <p class="create-error" id="create-error" role="alert" hidden></p>
+                    <button type="submit" class="create-submit">Save workout</button>
+                </form>
+                <p class="create-message" id="create-message" hidden></p>
+                <p class="create-footnote"><a href="/tracking">View logged workouts on Tracking</a></p>
+                </div>
+                <aside class="create-overload-aside" id="create-overload-aside" aria-label="Progressive overload coach">
+                    <div class="create-overload-inner">
+                        <h2 class="create-overload-title">Overload coach</h2>
+                        <p class="create-overload-lede">AI suggests next sets × reps @ weight from your history. Log workouts first.</p>
+                        <p class="create-overload-empty" id="create-overload-empty">Save at least one strength session to unlock predictions.</p>
+                        <div class="create-overload-active" id="create-overload-active" hidden>
+                            <p class="create-overload-quota" id="create-overload-quota" aria-live="polite"></p>
+                            <button type="button" class="create-overload-predict" id="create-overload-predict">Predict next loads</button>
+                            <p class="create-error" id="create-overload-error" role="alert" hidden></p>
+                            <div class="create-overload-summary" id="create-overload-summary" role="region" aria-live="polite" hidden>
+                                <p class="create-overload-summary-title">Session read</p>
+                                <ul class="create-overload-summary-list" id="create-overload-summary-list"></ul>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+                </div>
+
+                <div class="create-share-backdrop" id="create-share-backdrop" aria-hidden="true"></div>
+                <div class="create-share-modal" id="create-share-modal" role="dialog" aria-modal="true" aria-labelledby="create-share-modal-title" aria-hidden="true">
+                    <div class="create-share-modal-panel">
+                        <header class="create-share-modal-head">
+                            <h2 class="create-share-modal-title" id="create-share-modal-title">Share graphic</h2>
+                            <button type="button" class="create-share-modal-close" id="create-share-modal-close" aria-label="Close">×</button>
+                        </header>
+                        <p class="create-share-modal-lede">Choose a photo and what to show. Title and notes are on by default; add lifts or other details when you want.</p>
+                        <div class="create-field">
+                            <label for="create-share-image">Background photo</label>
+                            <input type="file" id="create-share-image" class="create-share-file" accept="image/*" aria-label="Background photo for graphic">
+                        </div>
+                        <fieldset class="create-share-include-fieldset">
+                            <legend class="create-share-include-legend">Include on image</legend>
+                            <label class="create-share-check"><input type="checkbox" id="create-share-inc-title" class="create-checkbox" checked> Session title</label>
+                            <label class="create-share-check"><input type="checkbox" id="create-share-inc-notes" class="create-checkbox" checked> Notes</label>
+                            <label class="create-share-check"><input type="checkbox" id="create-share-inc-intensity" class="create-checkbox"> Session intensity</label>
+                            <label class="create-share-check"><input type="checkbox" id="create-share-inc-bw" class="create-checkbox"> Body weight</label>
+                            <div class="create-field create-share-bw-field" id="create-share-bw-wrap" hidden>
+                                <label for="create-share-bodyweight">Body weight text</label>
+                                <input type="text" id="create-share-bodyweight" class="create-input" placeholder="e.g. 185 lb" aria-label="Body weight for overlay">
+                            </div>
+                            <div id="create-share-cardio-line-wrap" class="create-share-exercises-box" hidden>
+                                <label class="create-share-check"><input type="checkbox" id="create-share-inc-cardio" class="create-checkbox"> Cardio line</label>
+                            </div>
+                            <div id="create-share-exercises-wrap" class="create-share-exercises-box">
+                                <span class="create-share-exercises-label">Exercises</span>
+                                <p class="create-share-exercises-hint">Uncheck lifts you do not want on the graphic.</p>
+                                <div id="create-share-exercise-checks" class="create-share-exercise-checks"></div>
+                            </div>
+                        </fieldset>
+                        <div class="create-share-preview-wrap">
+                            <p class="create-share-preview-label">Preview <span class="create-optional">(9 : 16)</span></p>
+                            <div id="create-share-preview" class="create-share-preview create-share-preview--story" aria-live="polite">
+                                <span class="create-share-preview-placeholder" id="create-share-preview-placeholder">Choose a photo</span>
+                                <img id="create-share-preview-img" class="create-share-preview-img" alt="" hidden>
+                                <div class="create-share-overlay" id="create-share-overlay" role="textbox" aria-label="Draggable overlay" hidden>
+                                    <div class="create-share-overlay-text" id="create-share-overlay-text"></div>
+                                </div>
+                            </div>
+                            <div class="create-share-overlay-controls">
+                                <div class="create-share-overlay-sliders">
+                                    <div class="create-field create-share-slider-field">
+                                        <label for="create-share-overlay-size">Text size</label>
+                                        <input type="range" id="create-share-overlay-size" class="create-share-range" min="12" max="52" value="22" aria-label="Overlay text size">
+                                    </div>
+                                    <div class="create-field create-share-slider-field">
+                                        <label for="create-share-overlay-opacity">Overlay opacity</label>
+                                        <input type="range" id="create-share-overlay-opacity" class="create-share-range" min="30" max="100" value="95" aria-label="Overlay opacity percent">
+                                    </div>
+                                </div>
+                                <p class="create-share-drag-hint">Tip: drag the overlay on the preview to reposition it.</p>
+                            </div>
+                        </div>
+                        <div class="create-share-modal-actions">
+                            <button type="button" class="create-share-secondary" id="create-share-skip">Skip</button>
+                            <button type="button" class="create-share-download" id="create-share-download" disabled>Download PNG</button>
+                        </div>
+                        <p class="create-share-note" id="create-share-status" role="status"></p>
+                    </div>
+                </div>
+
+                <div class="create-comp-report-backdrop" id="create-comp-report-backdrop" aria-hidden="true"></div>
+                <div class="create-comp-report-modal" id="create-comp-report-modal" role="dialog" aria-modal="true" aria-labelledby="create-comp-report-title" aria-hidden="true">
+                    <div class="create-comp-report-panel">
+                        <header class="create-comp-report-head">
+                            <h2 class="create-comp-report-title" id="create-comp-report-title">Competition check-in</h2>
+                            <button type="button" class="create-comp-report-close" id="create-comp-report-close" aria-label="Close">×</button>
+                        </header>
+                        <p class="create-comp-report-lede">Update how you are doing on an active challenge after this workout.</p>
+                        <div class="create-field">
+                            <label for="create-comp-report-select">Competition</label>
+                            <select id="create-comp-report-select" class="create-input"></select>
+                        </div>
+                        <div class="create-field">
+                            <label for="create-comp-report-progress">Your progress toward goal (0–100%)</label>
+                            <input type="number" id="create-comp-report-progress" class="create-input" min="0" max="100" step="1" value="0">
+                        </div>
+                        <div class="create-field">
+                            <label for="create-comp-report-note">Session notes for this competition <span class="create-optional">(optional)</span></label>
+                            <textarea id="create-comp-report-note" class="create-input create-textarea" rows="3" maxlength="2000" placeholder="e.g. Hit a PR on bench, feeling ahead of schedule"></textarea>
+                        </div>
+                        <p class="create-comp-report-status" id="create-comp-report-status" role="status" aria-live="polite"></p>
+                        <div class="create-comp-report-actions">
+                            <button type="button" class="create-comp-report-secondary" id="create-comp-report-skip">Skip</button>
+                            <button type="button" class="create-comp-report-primary" id="create-comp-report-save">Save progress</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="create-panel-split" class="create-panel" role="tabpanel" aria-labelledby="create-tab-split" hidden>
+                <form class="create-form create-form--split" id="create-split-form">
+                    <div class="create-split-lede">
+                        <h2 class="create-split-heading">Weekly split</h2>
+                        <p class="create-split-hint">Names for Monday → Sunday. Used on Home and to fill “Split / focus” when you log a workout.</p>
+                    </div>
+                    <div class="create-field">
+                        <label for="create-split-program-name">Program name <span class="create-optional">(optional)</span></label>
+                        <input type="text" id="create-split-program-name" class="create-input" placeholder="e.g. Upper / Lower / Events" autocomplete="off">
+                    </div>
+                    <div class="create-split-days" role="group" aria-label="Day names Monday through Sunday">
+                        <div class="create-split-day-row">
+                            <span class="create-split-day-letter" aria-hidden="true">M</span>
+                            <label class="create-split-day-label" for="create-split-day-0">Monday</label>
+                            <input type="text" id="create-split-day-0" class="create-input create-split-day-input" data-split-day="0" maxlength="80" autocomplete="off">
+                        </div>
+                        <div class="create-split-day-row">
+                            <span class="create-split-day-letter" aria-hidden="true">T</span>
+                            <label class="create-split-day-label" for="create-split-day-1">Tuesday</label>
+                            <input type="text" id="create-split-day-1" class="create-input create-split-day-input" data-split-day="1" maxlength="80" autocomplete="off">
+                        </div>
+                        <div class="create-split-day-row">
+                            <span class="create-split-day-letter" aria-hidden="true">W</span>
+                            <label class="create-split-day-label" for="create-split-day-2">Wednesday</label>
+                            <input type="text" id="create-split-day-2" class="create-input create-split-day-input" data-split-day="2" maxlength="80" autocomplete="off">
+                        </div>
+                        <div class="create-split-day-row">
+                            <span class="create-split-day-letter" aria-hidden="true">T</span>
+                            <label class="create-split-day-label" for="create-split-day-3">Thursday</label>
+                            <input type="text" id="create-split-day-3" class="create-input create-split-day-input" data-split-day="3" maxlength="80" autocomplete="off">
+                        </div>
+                        <div class="create-split-day-row">
+                            <span class="create-split-day-letter" aria-hidden="true">F</span>
+                            <label class="create-split-day-label" for="create-split-day-4">Friday</label>
+                            <input type="text" id="create-split-day-4" class="create-input create-split-day-input" data-split-day="4" maxlength="80" autocomplete="off">
+                        </div>
+                        <div class="create-split-day-row">
+                            <span class="create-split-day-letter" aria-hidden="true">S</span>
+                            <label class="create-split-day-label" for="create-split-day-5">Saturday</label>
+                            <input type="text" id="create-split-day-5" class="create-input create-split-day-input" data-split-day="5" maxlength="80" autocomplete="off">
+                        </div>
+                        <div class="create-split-day-row">
+                            <span class="create-split-day-letter" aria-hidden="true">S</span>
+                            <label class="create-split-day-label" for="create-split-day-6">Sunday</label>
+                            <input type="text" id="create-split-day-6" class="create-input create-split-day-input" data-split-day="6" maxlength="80" autocomplete="off">
+                        </div>
+                    </div>
+                    <p class="create-error" id="create-split-error" role="alert" hidden></p>
+                    <button type="submit" class="create-submit">Save split</button>
+                </form>
+                <p class="create-message" id="create-split-message" hidden></p>
+            </section>
+
+            <section id="create-panel-video" class="create-panel" role="tabpanel" aria-labelledby="create-tab-video" hidden>
+                <form class="create-form create-form--video" id="create-video-form">
+                    <div class="create-field">
+                        <label for="create-video-title">Title</label>
+                        <input type="text" id="create-video-title" class="create-input" name="videoTitle" placeholder="e.g. Axle clean &amp; press — top set" aria-label="Video title">
+                    </div>
+                    <div class="create-field">
+                        <label for="create-video-file">Video file</label>
+                        <div class="create-video-drop" id="create-video-drop">
+                            <input type="file" id="create-video-file" class="create-video-input" name="video" accept="video/*" aria-label="Choose video file">
+                            <p class="create-video-drop-text"><strong>Choose a file</strong> or drag a clip here</p>
+                            <p class="create-video-filename" id="create-video-filename" hidden></p>
+                        </div>
+                    </div>
+
+                    <section class="create-video-studio" id="create-video-studio" hidden aria-label="Video preview and overlay">
+                        <h2 class="create-video-studio-heading">Video creator — preview</h2>
+                        <p class="create-video-studio-lede">Drag the title on the clip. Use the sliders to adjust size and opacity. Feeds show like / follow / profile like Instagram.</p>
+                        <div class="create-video-stage-outer">
+                            <div class="create-video-stage" id="create-video-stage">
+                                <div class="create-video-stage-fallback" id="create-video-stage-fallback" aria-hidden="true"></div>
+                                <video class="create-video-preview-el" id="create-video-preview" playsinline controls aria-label="Uploaded clip preview"></video>
+                                <audio id="create-video-audio-layer" class="create-video-audio-layer" preload="auto" aria-hidden="true"></audio>
+                                <div class="create-video-title-overlay" id="create-video-title-overlay" role="textbox" aria-label="Draggable title overlay">
+                                    <span class="create-video-title-overlay-text" id="create-video-overlay-display">Title</span>
+                                </div>
+                                <div class="create-video-social-strip" id="create-video-social-strip">
+                                    <button type="button" class="create-video-social-btn create-video-like-btn" id="create-video-like-btn" aria-pressed="false" aria-label="Like">
+                                        <span class="create-video-like-icon" aria-hidden="true">♡</span>
+                                    </button>
+                                    <button type="button" class="create-video-social-btn create-video-follow-btn" id="create-video-follow-btn">Follow</button>
+                                    <a href="/profile" class="create-video-profile-link" id="create-video-profile-link">Profile</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="create-video-overlay-controls">
+                            <div class="create-field">
+                                <label for="create-video-overlay-input">Overlay text</label>
+                                <input type="text" id="create-video-overlay-input" class="create-input" placeholder="Shown on video" aria-label="Overlay text">
+                            </div>
+                            <div class="create-video-overlay-sliders">
+                                <div class="create-field create-video-slider-field">
+                                    <label for="create-video-overlay-size">Text size</label>
+                                    <input type="range" id="create-video-overlay-size" class="create-video-range" min="12" max="52" value="22" aria-label="Overlay text size">
+                                </div>
+                                <div class="create-field create-video-slider-field">
+                                    <label for="create-video-overlay-opacity">Overlay opacity</label>
+                                    <input type="range" id="create-video-overlay-opacity" class="create-video-range" min="30" max="100" value="95" aria-label="Overlay opacity percent">
+                                </div>
+                            </div>
+                            <p class="create-video-drag-hint">Tip: drag the title on the preview to reposition it.</p>
+                            <div class="create-video-audio-row">
+                                <button type="button" class="create-video-audio-open-btn" id="create-video-audio-open-btn">Audio overlay…</button>
+                                <button type="button" class="create-video-audio-remove-btn" id="create-video-audio-remove-btn" hidden>Remove overlay</button>
+                                <span class="create-video-audio-summary" id="create-video-audio-summary"></span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <div class="create-field">
+                        <label for="create-video-notes">Notes for review <span class="create-optional">(optional)</span></label>
+                        <textarea id="create-video-notes" class="create-textarea" name="videoNotes" rows="3" placeholder="Angle, event, what you want feedback on…" aria-label="Video notes"></textarea>
+                    </div>
+                    <p class="create-error" id="create-video-error" role="alert" hidden></p>
+                    <button type="submit" class="create-submit">Upload video</button>
+                </form>
+                <p class="create-message" id="create-video-message" hidden></p>
+            </section>
+        </main>
+        <footer class="site-footer">
+            <div class="footer-inner">
+                <div class="footer-col footer-col-brand">
+                    <p class="footer-logo">STRONGMAN <span class="footer-logo-ai">AI</span></p>
+                    <p class="footer-tagline">BETTER TRAINING. FASTER RESULTS.</p>
+                    <p class="footer-section-title">SOCIALS</p>
+                    <div class="footer-socials">
+                        <a href="https://www.instagram.com/strongmanai/" class="footer-link" target="_blank" rel="noopener noreferrer">Instagram</a>
+                    </div>
+                </div>
+                <div class="footer-col">
+                    <p class="footer-section-title">REPORT AN ISSUE</p>
+                    <button type="button" class="footer-link-button" data-email-kind="bug">REPORT A BUG</button>
+                    <a href="#" class="footer-link" data-email-kind="rate">RATE US</a>
+                    <a href="#" class="footer-link" data-email-kind="suggestions">SUGGESTIONS</a>
+                    <p class="footer-section-title footer-section-title--spaced">MODELS</p>
+                    <span class="footer-text">EDDIE</span>
+                    <span class="footer-text footer-placeholder">---</span>
+                    <span class="footer-text footer-placeholder">---</span>
+                    <span class="footer-text footer-placeholder">---</span>
+                    <p class="footer-section-title footer-section-title--spaced">WEB VERSIONS</p>
+                    <span class="footer-text">VERSION 0.1</span>
+                </div>
+                <div class="footer-col">
+                    <p class="footer-section-title">TERMS + POLICIES</p>
+                    <a href="/legal#terms" class="footer-link">TERMS OF SERVICE</a>
+                    <a href="/legal#privacy" class="footer-link">PRIVACY POLICY</a>
+                <p class="footer-section-title footer-section-title--spaced">STATISTICS</p>
+                <a href="/#stat-accounts-created" class="footer-link">USER COUNT</a>
+                <a href="/#stat-lifts-recorded" class="footer-link">LIFT COUNT</a>
+                <a href="/#stat-workouts-tracked" class="footer-link">WORKOUT COUNT</a>
+                <a href="/#stat-active-users" class="footer-link">ACTIVE USERS</a>
+                    <p class="footer-section-title footer-section-title--spaced">COMPANY</p>
+                    <a href="#" class="footer-link">STRONGMAN AI</a>
+                    <a href="#" class="footer-link" data-email-kind="questions">QUESTIONS</a>
+                    <a href="#" class="footer-link">HIRING</a>
+                    <p class="footer-section-title footer-section-title--spaced">CONTRIBUTORS</p>
+                    <a href="/about" class="footer-link">OUR TEAM</a>
+                    <p class="footer-section-title footer-section-title--spaced">CONTACT</p>
+                    <button type="button" class="footer-link-button" data-email-kind="contact">CONTACT US</button>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <div id="footer-email-overlay" class="footer-email-overlay" hidden>
+        <div class="footer-email-dialog" role="dialog" aria-modal="true" aria-labelledby="footer-email-heading">
+            <button type="button" class="footer-email-close" id="footer-email-close" aria-label="Close">&times;</button>
+            <h2 id="footer-email-heading" class="footer-email-title">Send email</h2>
+            <p class="footer-email-to">To: <a href="mailto:strongmanaioutreach@gmail.com" class="footer-email-to-link">strongmanaioutreach@gmail.com</a></p>
+            <div class="footer-email-fields">
+                <label class="footer-email-label" for="footer-email-subject">Subject</label>
+                <input type="text" class="footer-email-input" id="footer-email-subject" autocomplete="off">
+                <label class="footer-email-label" for="footer-email-body">Message</label>
+                <textarea class="footer-email-textarea" id="footer-email-body" rows="6" spellcheck="true"></textarea>
+            </div>
+            <div class="footer-email-actions">
+                <button type="button" class="footer-email-btn footer-email-btn--secondary" id="footer-email-cancel">Cancel</button>
+                <button type="button" class="footer-email-btn footer-email-btn--primary" id="footer-email-open">Open in email app</button>
+            </div>
+        </div>
+    </div>
+
+    <template id="create-block-template">
+        <section class="create-block" data-create-block>
+            <div class="create-block-head">
+                <div class="create-field create-field--grow create-block-name-field">
+                    <label class="create-exercise-label">Block name</label>
+                    <input type="text" class="create-input create-block-name" placeholder="e.g. Warmup, Main work, Events" aria-label="Block name">
+                </div>
+                <button type="button" class="create-block-remove" aria-label="Remove block">×</button>
+            </div>
+            <div class="create-exercise-list create-block-exercises" aria-live="polite"></div>
+            <div class="create-add-exercise-row create-add-exercise-row--block" role="group" aria-label="Add exercise to this block">
+                <button type="button" class="create-add-exercise create-add-exercise--block">+ Add exercise</button>
+                <button type="button" class="create-add-exercise-variant create-add-exercise-variant--block" data-add-exercise-kind="dropset" aria-label="Add exercise with dropset">+ Dropset</button>
+                <button type="button" class="create-add-exercise-variant create-add-exercise-variant--block" data-add-exercise-kind="superset" aria-label="Add exercise with superset">+ Superset</button>
+            </div>
+        </section>
+    </template>
+
+    <template id="create-exercise-row-template">
+        <div class="create-exercise-row">
+            <div class="create-exercise-row-main">
+                <div class="create-field create-exercise-name">
+                    <label class="create-exercise-label">Exercise</label>
+                    <input type="text" class="create-input create-exercise-name-input" name="exerciseName" placeholder="e.g. Log press" aria-label="Exercise name">
+                </div>
+                <div class="create-field create-exercise-num">
+                    <label class="create-exercise-label">Sets</label>
+                    <input type="number" class="create-input create-exercise-sets" name="sets" min="0" step="1" value="3" aria-label="Sets">
+                </div>
+                <div class="create-field create-exercise-num">
+                    <label class="create-exercise-label">Reps</label>
+                    <input type="number" class="create-input create-exercise-reps" name="reps" min="0" step="1" value="5" aria-label="Reps">
+                </div>
+                <div class="create-field create-exercise-num">
+                    <label class="create-exercise-label">Weight <span class="create-unit-label">(lb)</span></label>
+                    <input type="number" class="create-input create-exercise-weight" name="weight" min="0" step="0.5" value="0" aria-label="Weight">
+                </div>
+                <div class="create-exercise-recommend">
+                    <span class="create-exercise-recommend-label">AI suggests</span>
+                    <span class="create-exercise-recommend-value" data-ex-recommend>—</span>
+                </div>
+                <button type="button" class="create-exercise-remove" aria-label="Remove exercise">×</button>
+            </div>
+            <div class="create-exercise-actions">
+                <button type="button" class="create-exercise-per-set-toggle" aria-expanded="false">Log weight per set</button>
+            </div>
+            <div class="create-exercise-per-set" hidden>
+                <span class="create-exercise-per-set-label">Weight each set <span class="create-unit-label">(lb)</span></span>
+                <div class="create-exercise-per-set-inputs"></div>
+            </div>
+            <div class="create-exercise-dropset" hidden>
+                <div class="create-dropset-list"></div>
+                <button type="button" class="create-exercise-extra-add create-dropset-add-row">+ Add drop</button>
+            </div>
+            <div class="create-exercise-superset" hidden>
+                <div class="create-superset-grid">
+                    <div class="create-field create-exercise-name">
+                        <label class="create-exercise-label">Superset exercise</label>
+                        <input type="text" class="create-input create-superset-name-input" placeholder="e.g. Pull-ups" aria-label="Superset exercise name">
+                    </div>
+                    <div class="create-field create-exercise-num">
+                        <label class="create-exercise-label">Sets</label>
+                        <input type="number" class="create-input create-superset-sets" min="0" step="1" value="" aria-label="Superset sets">
+                    </div>
+                    <div class="create-field create-exercise-num">
+                        <label class="create-exercise-label">Reps</label>
+                        <input type="number" class="create-input create-superset-reps" min="0" step="1" value="" aria-label="Superset reps">
+                    </div>
+                    <div class="create-field create-exercise-num">
+                        <label class="create-exercise-label">Weight <span class="create-unit-label">(lb)</span></label>
+                        <input type="number" class="create-input create-superset-weight" min="0" step="0.5" value="" aria-label="Superset weight">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <div class="home-settings-backdrop" id="home-settings-backdrop" aria-hidden="true"></div>
+    <div class="home-settings-dialog" id="home-settings-dialog" role="dialog" aria-modal="true" aria-labelledby="home-settings-title" aria-hidden="true">
+        <div class="home-settings-panel">
+            <header class="home-settings-header">
+                <h2 class="home-settings-title" id="home-settings-title">Settings</h2>
+                <button type="button" class="home-settings-close" id="home-settings-close" aria-label="Close settings">×</button>
+            </header>
+            <div class="home-settings-body">
+                <section class="home-settings-section" aria-labelledby="settings-appearance-heading">
+                    <h3 class="home-settings-section-title" id="settings-appearance-heading">Appearance</h3>
+                    <p class="home-settings-hint">Theme and preferences apply across the app.</p>
+                    <div class="home-settings-theme-row" role="group" aria-label="Color theme">
+                        <label class="home-settings-radio-label"><input type="radio" name="home-theme" value="dark" class="home-settings-radio"> Dark</label>
+                        <label class="home-settings-radio-label"><input type="radio" name="home-theme" value="light" class="home-settings-radio"> Light</label>
+                        <label class="home-settings-radio-label"><input type="radio" name="home-theme" value="system" class="home-settings-radio"> System</label>
+                    </div>
+                </section>
+                <section class="home-settings-section" aria-labelledby="settings-account-heading">
+                    <h3 class="home-settings-section-title" id="settings-account-heading">Account &amp; setup</h3>
+                    <a href="/init" class="home-settings-link">Open account initialization</a>
+                    <a href="/profile" class="home-settings-link">Profile</a>
+                </section>
+                <section class="home-settings-section" aria-labelledby="settings-units-heading">
+                    <h3 class="home-settings-section-title" id="settings-units-heading">Units &amp; region</h3>
+                    <label class="home-settings-field-label" for="settings-units-select">Weight &amp; distance</label>
+                    <select id="settings-units-select" class="home-settings-select">
+                        <option value="imperial">Imperial (lb, ft)</option>
+                        <option value="metric">Metric (kg, m)</option>
+                    </select>
+                </section>
+                <section class="home-settings-section" aria-labelledby="settings-coach-heading">
+                    <h3 class="home-settings-section-title" id="settings-coach-heading">AI coaching</h3>
+                    <p class="home-settings-hint home-settings-hint--below-title">Favorite lifts (one per line or commas). Used for progressive overload on Create.</p>
+                    <label class="home-settings-field-label" for="settings-favorite-movements">Favorite movements</label>
+                    <textarea id="settings-favorite-movements" class="home-settings-textarea" rows="3" maxlength="2000" placeholder="e.g. axle clean &amp; press, sandbag load, deficit deadlift" spellcheck="true" aria-label="Favorite movements for AI coaching"></textarea>
+                </section>
+                <section class="home-settings-section" aria-labelledby="settings-anything-heading">
+                    <h3 class="home-settings-section-title" id="settings-anything-heading">Anything else?</h3>
+                    <p class="home-settings-hint home-settings-hint--below-title">Goals, injuries, constraints, or context for coaches (optional).</p>
+                    <label class="home-settings-field-label" for="settings-anything-else">Anything else you want us to know?</label>
+                    <textarea id="settings-anything-else" class="home-settings-textarea" rows="4" maxlength="4000" placeholder="e.g. recovering from shoulder surgery; goal is a 600 lb deadlift by year end" spellcheck="true" aria-label="Additional context for coaching"></textarea>
+                </section>
+                <section class="home-settings-section" aria-labelledby="settings-notifications-heading">
+                    <h3 class="home-settings-section-title" id="settings-notifications-heading">Notifications</h3>
+                    <p class="home-settings-hint home-settings-hint--below-title">Reminders (workouts, check-ins) and product updates. Turn either option on or off anytime.</p>
+                    <label class="home-settings-toggle"><input type="checkbox" id="settings-notify-push" class="home-settings-checkbox"> Browser notifications</label>
+                    <label class="home-settings-toggle"><input type="checkbox" id="settings-notify-email" class="home-settings-checkbox"> Email notifications</label>
+                    <p class="home-settings-notify-status" id="settings-notify-browser-status" role="status" aria-live="polite" hidden></p>
+                    <div class="home-settings-reminder-wrap" id="settings-reminder-schedule-block">
+                        <p class="home-settings-field-label home-settings-field-label--reminder">Reminder schedule</p>
+                        <p class="home-settings-hint home-settings-hint--tight">Uses your local device time. Turn on browser notifications above. Reminders only fire while a Strongman AI tab is open.</p>
+                        <label class="home-settings-toggle home-settings-toggle--reminder"><input type="checkbox" id="settings-reminder-enabled" class="home-settings-checkbox"> Use scheduled reminders</label>
+                        <div class="home-settings-reminder-fields" id="settings-reminder-fields" hidden>
+                            <label class="home-settings-field-label" for="settings-reminder-time">Time</label>
+                            <input type="time" id="settings-reminder-time" class="home-settings-time-input" value="09:00">
+                            <label class="home-settings-field-label" for="settings-reminder-frequency">Repeat</label>
+                            <select id="settings-reminder-frequency" class="home-settings-select">
+                                <option value="daily">Every day</option>
+                                <option value="weekdays">Monday – Friday</option>
+                                <option value="weekends">Saturday &amp; Sunday</option>
+                                <option value="custom">Choose days…</option>
+                            </select>
+                            <div class="home-settings-reminder-custom" id="settings-reminder-custom-days" hidden role="group" aria-label="Reminder days">
+                                <label class="home-settings-day-chip"><input type="checkbox" class="settings-reminder-day" data-weekday="1"> Mon</label>
+                                <label class="home-settings-day-chip"><input type="checkbox" class="settings-reminder-day" data-weekday="2"> Tue</label>
+                                <label class="home-settings-day-chip"><input type="checkbox" class="settings-reminder-day" data-weekday="3"> Wed</label>
+                                <label class="home-settings-day-chip"><input type="checkbox" class="settings-reminder-day" data-weekday="4"> Thu</label>
+                                <label class="home-settings-day-chip"><input type="checkbox" class="settings-reminder-day" data-weekday="5"> Fri</label>
+                                <label class="home-settings-day-chip"><input type="checkbox" class="settings-reminder-day" data-weekday="6"> Sat</label>
+                                <label class="home-settings-day-chip"><input type="checkbox" class="settings-reminder-day" data-weekday="0"> Sun</label>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <section class="home-settings-section" aria-labelledby="settings-privacy-heading">
+                    <h3 class="home-settings-section-title" id="settings-privacy-heading">Privacy</h3>
+                    <label class="home-settings-toggle"><input type="checkbox" id="settings-profile-public" class="home-settings-checkbox" checked> Public profile on leaderboards</label>
+                    <label class="home-settings-toggle"><input type="checkbox" id="settings-show-activity" class="home-settings-checkbox" checked> Show activity to friends</label>
+                </section>
+                <section class="home-settings-section home-settings-section--footer" aria-labelledby="settings-about-heading">
+                    <h3 class="home-settings-section-title" id="settings-about-heading">About</h3>
+                    <p class="home-settings-meta">Strongman AI web v0.1</p>
+                    <div class="home-settings-inline-links">
+                        <a href="/legal#terms" class="home-settings-inline-link">Terms</a>
+                        <span class="home-settings-sep" aria-hidden="true">·</span>
+                        <a href="/legal#privacy" class="home-settings-inline-link">Privacy</a>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <div id="create-audio-overlay-backdrop" class="create-audio-overlay-backdrop" hidden aria-hidden="true"></div>
+    <div id="create-audio-overlay-modal" class="create-audio-overlay-modal" role="dialog" aria-modal="true" aria-labelledby="create-audio-overlay-title" aria-hidden="true" hidden>
+        <div class="create-audio-overlay-panel">
+            <header class="create-audio-overlay-head">
+                <h2 class="create-audio-overlay-title" id="create-audio-overlay-title">Audio overlay</h2>
+                <button type="button" class="create-audio-overlay-close" id="create-audio-overlay-close" aria-label="Close">&times;</button>
+            </header>
+            <p class="create-audio-overlay-lede">Record voiceover or attach a track, then crop which part plays with your video timeline.</p>
+            <div class="create-audio-overlay-actions">
+                <button type="button" class="create-audio-overlay-btn" id="create-audio-record-start">Record</button>
+                <button type="button" class="create-audio-overlay-btn" id="create-audio-record-stop" disabled>Stop</button>
+                <label class="create-audio-attach-label">
+                    Attach file
+                    <input type="file" id="create-audio-file-input" class="create-audio-file-input" accept="audio/*" aria-label="Attach audio file">
+                </label>
+            </div>
+            <p class="create-audio-overlay-status" id="create-audio-overlay-status" role="status"></p>
+            <audio id="create-audio-modal-preview" class="create-audio-modal-preview" controls preload="metadata" aria-label="Audio preview"></audio>
+            <div class="create-audio-trim-section" id="create-audio-trim-section" hidden>
+                <p class="create-audio-trim-label">Crop playback window (seconds)</p>
+                <div class="create-audio-trim-row">
+                    <label class="create-audio-trim-field" for="create-audio-trim-start">Start <span id="create-audio-trim-start-val">0.0</span>s</label>
+                    <input type="range" id="create-audio-trim-start" class="create-audio-trim-range" min="0" max="0" step="0.05" value="0" aria-label="Trim start seconds">
+                </div>
+                <div class="create-audio-trim-row">
+                    <label class="create-audio-trim-field" for="create-audio-trim-end">End <span id="create-audio-trim-end-val">0.0</span>s</label>
+                    <input type="range" id="create-audio-trim-end" class="create-audio-trim-range" min="0" max="0" step="0.05" value="0" aria-label="Trim end seconds">
+                </div>
+                <p class="create-audio-trim-hint">Playback maps video time 0s → audio at “Start”; stops when the clip passes “End” or the video ends.</p>
+            </div>
+            <label class="create-audio-mute-label"><input type="checkbox" id="create-audio-mute-original" checked> Mute original video audio while overlay plays (recommended)</label>
+            <div class="create-audio-overlay-footer">
+                <button type="button" class="create-audio-overlay-secondary" id="create-audio-clear-btn">Clear audio</button>
+                <button type="button" class="create-audio-overlay-primary" id="create-audio-done-btn">Apply</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../../shared/api.js"></script>
+    <script src="../../shared/competitions-store.js"></script>
+    <script src="../../shared/sidebar-profile-menu.js"></script>
+    <script src="../../shared/auth-guard.js"></script>
+    <script src="../../shared/workout-archive.js"></script>
+    <script src="../../shared/site-footer-email.js"></script>
+    <script src="../../shared/workout-split.js"></script>
+    <script src="../../shared/workout-log.js"></script>
+    <script src="../../shared/settings-popup.js"></script>
+    <script src="../../shared/video-archive.js"></script>
+    <script src="../../javascript/createPage/createPage.js"></script>
+</body>
+</html>
