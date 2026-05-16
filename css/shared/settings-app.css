@@ -732,6 +732,26 @@ html[data-theme="light"] .lb-filter-btn.active
     color: #b35a00;
     border-color: rgba(255, 140, 0, 0.45);
 }
+
+html[data-theme="light"] .lb-picker-label
+{
+    color: #666;
+}
+
+html[data-theme="light"] .lb-picker-input
+{
+    background: rgba(0, 0, 0, 0.04);
+    border-color: rgba(0, 0, 0, 0.12);
+    color: #222;
+}
+
+html[data-theme="light"] .lb-picker-input:hover,
+html[data-theme="light"] .lb-picker-input:focus
+{
+    background: rgba(0, 0, 0, 0.06);
+    border-color: rgba(255, 140, 0, 0.45);
+}
+
 html[data-theme="light"] .lb-table th,
 html[data-theme="light"] .lb-table td
 {
