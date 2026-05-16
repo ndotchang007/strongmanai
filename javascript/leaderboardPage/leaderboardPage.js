@@ -22,6 +22,12 @@
   var messageEl = document.getElementById('leaderboard-message');
   var thMetric = document.getElementById('lb-th-metric');
   var thSkill = document.getElementById('lb-th-skill');
+  var exercisePickerRow = document.getElementById('lb-exercise-picker');
+  var timesPickerRow = document.getElementById('lb-times-picker');
+  var exerciseSearch = document.getElementById('lb-exercise-search');
+  var exerciseSuggestions = document.getElementById('lb-exercise-suggestions');
+  var timesSearch = document.getElementById('lb-times-search');
+  var timesSuggestions = document.getElementById('lb-times-suggestions');
 
   var state = {
     audience: 'global',
@@ -29,6 +35,20 @@
   };
 
   var DEFAULT_EXERCISE = { label: 'Bench', slug: 'bench' };
+  var DEFAULT_TIME_EVENT = { label: 'Yoke walk', slug: 'yoke-walk' };
+  var FAVORITES_LS_KEY = 'strongman-favorite-movements';
+  var TIMED_EVENT_DEFAULTS = [
+    'Yoke walk',
+    'Atlas stones',
+    "Farmer's carry",
+    'Truck pull',
+    'Sandbag carry',
+    'Tire flip',
+    'Husafell stone',
+    'Loading race'
+  ];
+  var lbSearchDebounceTimer = null;
+  var lbSearchAppliedKey = '';
   var SKILL_LEVELS = ['beginner', 'intermediate', 'advanced'];
   var lbRows = null;
   var lbFollowingIds = [];
@@ -85,9 +105,113 @@
     return raw.charAt(0).toUpperCase() + raw.slice(1);
   }
 
+  function exerciseSlug(label) {
+    return String(label || '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
+
+  function queryFromSearchInput(el, fallback) {
+    var fb = fallback || DEFAULT_EXERCISE;
+    if (!el) return { label: fb.label, slug: fb.slug };
+    var label = String(el.value || '').trim();
+    if (!label) label = fb.label;
+    return {
+      label: label,
+      slug: exerciseSlug(label) || fb.slug
+    };
+  }
+
+  function exerciseQueryCacheKey(q) {
+    return (q.slug || '') + '|' + String(q.label || '').toLowerCase();
+  }
+
+  function parseFavoriteMovementLines() {
+    var out = [];
+    try {
+      var raw = localStorage.getItem(FAVORITES_LS_KEY) || '';
+      raw.split(/[\n,]+/).forEach(function (part) {
+        var t = part.trim();
+        if (t) out.push(t);
+      });
+    } catch (e) {}
+    return out;
+  }
+
+  function collectExerciseOptionsFromSessions(sessions) {
+    var map = {};
+    (sessions || []).forEach(function (s) {
+      (s.exercises || []).forEach(function (ex) {
+        var label = ex && ex.name ? String(ex.name).trim() : '';
+        if (!label) return;
+        var key = label.toLowerCase();
+        if (!map[key]) map[key] = { label: label, count: 0 };
+        map[key].count += 1;
+      });
+    });
+    return Object.keys(map)
+      .map(function (k) {
+        return map[k];
+      })
+      .sort(function (a, b) {
+        return b.count - a.count || a.label.localeCompare(b.label);
+      });
+  }
+
+  function populateDatalist(datalistEl, labels) {
+    if (!datalistEl) return;
+    var seen = {};
+    datalistEl.innerHTML = '';
+    (labels || []).forEach(function (label) {
+      var t = String(label || '').trim();
+      if (!t) return;
+      var key = t.toLowerCase();
+      if (seen[key]) return;
+      seen[key] = true;
+      var opt = document.createElement('option');
+      opt.value = t;
+      datalistEl.appendChild(opt);
+    });
+  }
+
+  function populateExerciseSuggestions() {
+    var labels = [];
+    var WL = window.WorkoutLog;
+    if (WL && typeof WL.getSessions === 'function') {
+      collectExerciseOptionsFromSessions(WL.getSessions()).forEach(function (row) {
+        labels.push(row.label);
+      });
+    }
+    parseFavoriteMovementLines().forEach(function (f) {
+      labels.push(f);
+    });
+    if (labels.indexOf('Bench') === -1) labels.unshift('Bench');
+    populateDatalist(exerciseSuggestions, labels);
+  }
+
+  function populateTimesSuggestions() {
+    var labels = TIMED_EVENT_DEFAULTS.slice();
+    parseFavoriteMovementLines().forEach(function (f) {
+      labels.push(f);
+    });
+    populateDatalist(timesSuggestions, labels);
+  }
+
+  function updatePickerVisibility() {
+    var mode = state.mode;
+    if (exercisePickerRow) exercisePickerRow.hidden = mode !== 'exercises';
+    if (timesPickerRow) timesPickerRow.hidden = mode !== 'times';
+  }
+
   function syntheticTimeMinutes(user) {
     var id = user && user.id != null ? Number(user.id) : 0;
-    var base = 8 + (id % 50) + (id % 7) * 0.5;
+    var eventSlug = queryFromSearchInput(timesSearch, DEFAULT_TIME_EVENT).slug;
+    var slugHash = 0;
+    for (var i = 0; i < eventSlug.length; i++) {
+      slugHash += eventSlug.charCodeAt(i);
+    }
+    var base = 8 + (id % 50) + (id % 7) * 0.5 + (slugHash % 25) * 0.15;
     var mins = Math.floor(base);
     var secs = Math.floor((base - mins) * 60);
     return String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
@@ -306,7 +430,7 @@
         return res.json();
       });
     }
-    var q = DEFAULT_EXERCISE;
+    var q = queryFromSearchInput(exerciseSearch, DEFAULT_EXERCISE);
     var path =
       '/leaderboard?exercise=' +
       encodeURIComponent(q.slug) +
@@ -322,6 +446,17 @@
     if (messageEl) messageEl.textContent = 'Loading…';
     if (tbody) {
       tbody.innerHTML = '<tr><td colspan="4">Loading…</td></tr>';
+    }
+    if (state.mode === 'exercises' && exerciseSearch) {
+      lbSearchAppliedKey = exerciseQueryCacheKey(
+        queryFromSearchInput(exerciseSearch, DEFAULT_EXERCISE)
+      );
+    } else if (state.mode === 'times' && timesSearch) {
+      lbSearchAppliedKey = exerciseQueryCacheKey(
+        queryFromSearchInput(timesSearch, DEFAULT_TIME_EVENT)
+      );
+    } else {
+      lbSearchAppliedKey = '';
     }
     fetchLeaderboardRows()
       .then(function (rows) {
@@ -348,6 +483,59 @@
       });
   }
 
+  function commitExerciseSearch() {
+    if (state.mode !== 'exercises' || !exerciseSearch) return;
+    var q = queryFromSearchInput(exerciseSearch, DEFAULT_EXERCISE);
+    var key = exerciseQueryCacheKey(q);
+    if (key === lbSearchAppliedKey) return;
+    lbSearchAppliedKey = key;
+    loadLeaderboard();
+  }
+
+  function commitTimesSearch() {
+    if (state.mode !== 'times' || !timesSearch) return;
+    var q = queryFromSearchInput(timesSearch, DEFAULT_TIME_EVENT);
+    var key = exerciseQueryCacheKey(q);
+    if (key === lbSearchAppliedKey) return;
+    lbSearchAppliedKey = key;
+    loadLeaderboard();
+  }
+
+  function wirePickerSearch(inputEl, commitFn) {
+    if (!inputEl) return;
+    inputEl.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (lbSearchDebounceTimer) {
+          clearTimeout(lbSearchDebounceTimer);
+          lbSearchDebounceTimer = null;
+        }
+        commitFn();
+      }
+    });
+    inputEl.addEventListener('change', function () {
+      if (lbSearchDebounceTimer) {
+        clearTimeout(lbSearchDebounceTimer);
+        lbSearchDebounceTimer = null;
+      }
+      commitFn();
+    });
+    inputEl.addEventListener('blur', function () {
+      if (lbSearchDebounceTimer) {
+        clearTimeout(lbSearchDebounceTimer);
+        lbSearchDebounceTimer = null;
+      }
+      commitFn();
+    });
+    inputEl.addEventListener('input', function () {
+      if (lbSearchDebounceTimer) clearTimeout(lbSearchDebounceTimer);
+      lbSearchDebounceTimer = setTimeout(function () {
+        lbSearchDebounceTimer = null;
+        commitFn();
+      }, 450);
+    });
+  }
+
   document.querySelectorAll('.lb-filter-btn').forEach(function (btn) {
     btn.addEventListener('click', function () {
       var group = btn.getAttribute('data-group');
@@ -357,9 +545,19 @@
       document.querySelectorAll('.lb-filter-btn[data-group="' + group + '"]').forEach(function (b) {
         b.classList.toggle('active', b.getAttribute('data-value') === value);
       });
+      if (group === 'mode') {
+        lbSearchAppliedKey = '';
+        updatePickerVisibility();
+      }
       loadLeaderboard();
     });
   });
+
+  wirePickerSearch(exerciseSearch, commitExerciseSearch);
+  wirePickerSearch(timesSearch, commitTimesSearch);
+  populateExerciseSuggestions();
+  populateTimesSuggestions();
+  updatePickerVisibility();
 
   var compState = 'finished';
   var compTickId = null;
