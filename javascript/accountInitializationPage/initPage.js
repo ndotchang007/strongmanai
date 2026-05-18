@@ -3,24 +3,34 @@
   var SLIDE_COUNT = 5;
   var HOMEPAGE_PATH = '/home';
   var LOGIN_PATH = '/';
+  var MIN_AGE = 16;
+  var MAX_AGE = 110;
+  var USERNAME_RE = /^[A-Za-z0-9_]{3,30}$/;
 
-  // If not logged in (e.g. opened init directly), go to login
-  var currentUser = typeof window.getCurrentUser === 'function' ? window.getCurrentUser() : null;
+  var currentUser =
+    typeof window.getCurrentUser === 'function' ? window.getCurrentUser() : null;
   if (!currentUser || !currentUser.id) {
-    try { window.location.replace(LOGIN_PATH); } catch (e) { window.location.href = LOGIN_PATH; }
-    throw new Error('Redirecting to login');
+    try {
+      window.location.replace(LOGIN_PATH);
+    } catch (e) {
+      window.location.href = LOGIN_PATH;
+    }
+    return;
   }
 
   var slideshow = document.getElementById('slideshow');
-  var slides = slideshow.querySelectorAll('.slide');
+  var slides = slideshow ? slideshow.querySelectorAll('.init-slide') : [];
+  var progressNav = document.getElementById('init-progress');
   var currentIndex = 0;
+  var proceedInFlight = false;
 
-  var floatingHeader = document.getElementById('floating-header');
-  var slide2Content = document.getElementById('slide2-content');
-  var slide3Content = document.getElementById('slide3-content');
+  var welcomeContinueBtn = document.getElementById('btn-welcome-continue');
   var slide4Body = document.getElementById('slide4-body');
-  var slide4Title = document.getElementById('slide4-title');
-  var slide4ThanksSubtitle = document.getElementById('slide4-thanks-subtitle');
+  var proceedErrorEl = document.getElementById('proceed-error');
+  var weightEl = document.getElementById('weight');
+  var heightEl = document.getElementById('height');
+  var dobInput = document.getElementById('dob');
+  var eligibilityCheckbox = document.getElementById('eligibility-confirm');
 
   function getInitData() {
     try {
@@ -32,48 +42,137 @@
   }
 
   function setInitData(data) {
-    var prev = getInitData();
-    var next = Object.assign({}, prev, data);
+    var next = Object.assign({}, getInitData(), data);
     localStorage.setItem(INIT_DATA_KEY, JSON.stringify(next));
+  }
+
+  function pad2(n) {
+    return String(n).padStart(2, '0');
+  }
+
+  function isoFromParts(year, month, day) {
+    if (!year || !month || !day) return '';
+    return year + '-' + pad2(month) + '-' + pad2(day);
+  }
+
+  function partsFromIso(iso) {
+    if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return null;
+    var p = iso.split('-');
+    return { year: p[0], month: p[1], day: p[2] };
+  }
+
+  function formatIsoDate(d) {
+    return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+  }
+
+  function configureDobInputLimits() {
+    if (!dobInput) return;
+    var today = new Date();
+    var maxDob = new Date(
+      today.getFullYear() - MIN_AGE,
+      today.getMonth(),
+      today.getDate()
+    );
+    var minDob = new Date(
+      today.getFullYear() - MAX_AGE,
+      today.getMonth(),
+      today.getDate()
+    );
+    dobInput.max = formatIsoDate(maxDob);
+    dobInput.min = formatIsoDate(minDob);
+  }
+
+  function ageFromIso(iso) {
+    var parts = partsFromIso(iso);
+    if (!parts) return null;
+    var y = parseInt(parts.year, 10);
+    var m = parseInt(parts.month, 10);
+    var d = parseInt(parts.day, 10);
+    if (!y || !m || !d) return null;
+    var birth = new Date(y, m - 1, d);
+    if (
+      birth.getFullYear() !== y ||
+      birth.getMonth() !== m - 1 ||
+      birth.getDate() !== d
+    ) {
+      return null;
+    }
+    var today = new Date();
+    var age = today.getFullYear() - y;
+    var hadBirthday =
+      today.getMonth() > birth.getMonth() ||
+      (today.getMonth() === birth.getMonth() && today.getDate() >= birth.getDate());
+    if (!hadBirthday) age -= 1;
+    return age;
+  }
+
+  function validateDob(iso) {
+    if (!iso) {
+      return { ok: false, message: 'Enter your date of birth.' };
+    }
+    var parts = partsFromIso(iso);
+    if (!parts) {
+      return { ok: false, message: 'Enter a valid date of birth.' };
+    }
+    var age = ageFromIso(iso);
+    if (age == null) {
+      return { ok: false, message: 'Enter a valid date of birth.' };
+    }
+    if (age < MIN_AGE) {
+      return {
+        ok: false,
+        message:
+          'You must be at least ' +
+          MIN_AGE +
+          ' years old to use Strongman AI. If you are under ' +
+          MIN_AGE +
+          ', ask a parent or coach to help you find age-appropriate training resources.',
+      };
+    }
+    if (age > MAX_AGE) {
+      return { ok: false, message: 'Please enter a realistic date of birth.' };
+    }
+    return { ok: true, age: age };
+  }
+
+  function validateUsername(value) {
+    var u = (value || '').trim();
+    if (!u) return 'Choose a username.';
+    if (u.length < 3) return 'Username must be at least 3 characters.';
+    if (u.length > 30) return 'Username must be 30 characters or fewer.';
+    if (!USERNAME_RE.test(u)) {
+      return 'Use only letters, numbers, and underscores (no spaces).';
+    }
+    return '';
+  }
+
+  function updateProgress(index) {
+    if (!progressNav) return;
+    progressNav.hidden = index === 0;
+    document.querySelectorAll('.init-progress-step').forEach(function (step) {
+      var n = parseInt(step.getAttribute('data-step'), 10);
+      step.classList.toggle('is-active', n === index + 1);
+      step.classList.toggle('is-done', n < index + 1);
+    });
   }
 
   function showSlide(index) {
     if (index < 0 || index >= SLIDE_COUNT) return;
     currentIndex = index;
     slides.forEach(function (slide, i) {
-      slide.classList.toggle('active', i === index);
+      slide.classList.toggle('is-active', i === index);
     });
+    updateProgress(index);
 
-    if (floatingHeader) {
-      floatingHeader.classList.remove('hidden', 'float-up');
-      if (index === 0) {
-        floatingHeader.hidden = false;
-      } else {
-        floatingHeader.hidden = true;
-      }
-    }
-    if (slide2Content) { slide2Content.classList.remove('fade-in', 'fade-out'); }
-    if (slide3Content) { slide3Content.classList.remove('fade-in', 'fade-out'); }
-    if (slide4Body) { slide4Body.classList.remove('fade-in', 'fade-out'); slide4Body.hidden = false; }
-    if (slide4Title) slide4Title.classList.remove('thanks-mode');
-    if (slide4ThanksSubtitle) slide4ThanksSubtitle.hidden = true;
-
-    if (index === 1) {
-      requestAnimationFrame(function () {
-        requestAnimationFrame(function () { if (slide2Content) slide2Content.classList.add('fade-in'); });
-      });
-    } else if (index === 2) {
-      requestAnimationFrame(function () {
-        requestAnimationFrame(function () { if (slide3Content) slide3Content.classList.add('fade-in'); });
-      });
-    } else if (index === 3) {
-      if (slide4Body) slide4Body.classList.add('fade-in');
+    if (index === 3) {
       var data = getInitData();
       var nameEl = document.getElementById('welcomeName');
-      if (nameEl) nameEl.textContent = data.firstName || '[name]';
+      if (nameEl) nameEl.textContent = data.firstName || 'athlete';
       restoreFields();
       updateUnits();
     }
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   function goNext() {
@@ -85,140 +184,187 @@
     var isMetric = (data.measurement || 'metric') === 'metric';
     var weightUnit = document.getElementById('weightUnit');
     var heightUnit = document.getElementById('heightUnit');
-    if (weightUnit) weightUnit.textContent = isMetric ? 'kg' : 'lbs.';
-    if (heightUnit) heightUnit.textContent = isMetric ? 'cm' : 'in.';
+    if (weightUnit) weightUnit.textContent = isMetric ? 'kg' : 'lb';
+    if (heightUnit) heightUnit.textContent = isMetric ? 'cm' : 'in';
   }
 
-  var slide1Advancing = false;
-
-  // Slide 1: space or tap → title + continue prompt move up together, then slide 2 appears
-  function advanceFromSlide1() {
-    if (currentIndex !== 0 || slide1Advancing) return;
-    slide1Advancing = true;
-    floatingHeader.classList.add('float-up');
-    setTimeout(function () {
-      showSlide(1);
-      slide1Advancing = false;
-    }, 600);
-  }
-
-  document.addEventListener('keydown', function (e) {
-    if (e.key !== ' ') return;
-    var tag = e.target.tagName.toLowerCase();
-    if (tag === 'input' || tag === 'textarea') return;
-    e.preventDefault();
-    if (currentIndex === 0) {
-      advanceFromSlide1();
-      return;
-    }
-    // Only slide 1 advances with space; slides 2 and 3 require form submit
-    if (currentIndex === 1 || currentIndex === 2) return;
-    if (currentIndex >= SLIDE_COUNT - 1) return;
+  function advanceFromWelcome() {
+    if (currentIndex !== 0) return;
     goNext();
-  });
+  }
 
-  var slide1 = slideshow.querySelector('[data-slide="1"]');
-  if (slide1) {
-    slide1.addEventListener('click', function (e) {
-      if (currentIndex !== 0) return;
-      var tag = e.target.tagName.toLowerCase();
-      if (tag === 'input' || tag === 'textarea' || tag === 'button' || tag === 'a') return;
-      advanceFromSlide1();
+  if (welcomeContinueBtn) {
+    welcomeContinueBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      advanceFromWelcome();
     });
   }
 
-  // Form: basic info (required fields) – show red "Required" if empty, then next
+  var slide1 = slideshow && slideshow.querySelector('[data-slide="1"]');
+  if (slide1) {
+    slide1.addEventListener('click', function (e) {
+      if (currentIndex !== 0) return;
+      var tag = (e.target.tagName || '').toLowerCase();
+      if (tag === 'input' || tag === 'textarea' || tag === 'button' || tag === 'a') return;
+      advanceFromWelcome();
+    });
+  }
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== ' ' && e.key !== 'Spacebar') return;
+    var tag = (e.target.tagName || '').toLowerCase();
+    if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+    if (currentIndex === 0) {
+      e.preventDefault();
+      advanceFromWelcome();
+    }
+  });
+
   var formBasic = document.getElementById('form-basic');
   var formBasicError = document.getElementById('form-basic-error');
-  formBasic.addEventListener('submit', function (e) {
-    e.preventDefault();
-    var username = document.getElementById('username').value.trim();
-    var firstName = document.getElementById('firstName').value.trim();
-    var lastName = document.getElementById('lastName').value.trim();
-    var allFilled = username && firstName && lastName;
-    if (!allFilled) {
-      if (formBasicError) {
-        formBasicError.hidden = false;
+
+  if (formBasic) {
+    formBasic.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var username = document.getElementById('username').value.trim();
+      var firstName = document.getElementById('firstName').value.trim();
+      var lastName = document.getElementById('lastName').value.trim();
+
+      var userErr = validateUsername(username);
+      if (userErr) {
+        if (formBasicError) {
+          formBasicError.textContent = userErr;
+          formBasicError.hidden = false;
+        }
+        return;
       }
-      return;
+      if (!firstName || !lastName) {
+        if (formBasicError) {
+          formBasicError.textContent = 'First and last name are required.';
+          formBasicError.hidden = false;
+        }
+        return;
+      }
+      if (firstName.length > 64 || lastName.length > 64) {
+        if (formBasicError) {
+          formBasicError.textContent = 'Names must be 64 characters or fewer.';
+          formBasicError.hidden = false;
+        }
+        return;
+      }
+
+      if (formBasicError) formBasicError.hidden = true;
+      setInitData({ username: username, firstName: firstName, lastName: lastName });
+      goNext();
+    });
+  }
+
+  ['username', 'firstName', 'lastName'].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('input', function () {
+        if (formBasicError) formBasicError.hidden = true;
+      });
     }
-    if (formBasicError) formBasicError.hidden = true;
-    setInitData({ username: username, firstName: firstName, lastName: lastName });
-    slide2Content.classList.remove('fade-in');
-    slide2Content.classList.add('fade-out');
-    setTimeout(function () {
-      showSlide(2);
-    }, 500);
-  });
-  [document.getElementById('username'), document.getElementById('firstName'), document.getElementById('lastName')].forEach(function (input) {
-    if (input) input.addEventListener('input', function () { if (formBasicError) formBasicError.hidden = true; });
   });
 
-  // Form: DOB – required; show red "Required" if any field empty
   var formDob = document.getElementById('form-dob');
   var formDobError = document.getElementById('form-dob-error');
-  formDob.addEventListener('submit', function (e) {
-    e.preventDefault();
-    var month = document.getElementById('dobMonth').value.trim();
-    var day = document.getElementById('dobDay').value.trim();
-    var year = document.getElementById('dobYear').value.trim();
-    var allFilled = month && day && year;
-    if (!allFilled) {
-      if (formDobError) formDobError.hidden = false;
-      return;
-    }
-    if (formDobError) formDobError.hidden = true;
-    setInitData({ dobMonth: month, dobDay: day, dobYear: year });
-    slide3Content.classList.remove('fade-in');
-    slide3Content.classList.add('fade-out');
-    setTimeout(function () {
-      showSlide(3);
-    }, 500);
-  });
-  [document.getElementById('dobMonth'), document.getElementById('dobDay'), document.getElementById('dobYear')].forEach(function (input) {
-    if (input) input.addEventListener('input', function () { if (formDobError) formDobError.hidden = true; });
-  });
 
-  // Option toggles (For you / For us)
-  document.querySelectorAll('.init-options').forEach(function (group) {
+  if (formDob) {
+    formDob.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var iso = dobInput ? dobInput.value : '';
+      var dobCheck = validateDob(iso);
+
+      if (!dobCheck.ok) {
+        if (formDobError) {
+          formDobError.textContent = dobCheck.message;
+          formDobError.hidden = false;
+        }
+        return;
+      }
+
+      if (!eligibilityCheckbox || !eligibilityCheckbox.checked) {
+        if (formDobError) {
+          formDobError.textContent =
+            'Please confirm you meet the minimum age requirement.';
+          formDobError.hidden = false;
+        }
+        return;
+      }
+
+      var parts = partsFromIso(iso);
+      if (formDobError) formDobError.hidden = true;
+      setInitData({
+        dobIso: iso,
+        dobMonth: parts.month,
+        dobDay: parts.day,
+        dobYear: parts.year,
+      });
+      goNext();
+    });
+  }
+
+  if (dobInput) {
+    dobInput.addEventListener('change', function () {
+      if (formDobError) formDobError.hidden = true;
+    });
+  }
+  if (eligibilityCheckbox) {
+    eligibilityCheckbox.addEventListener('change', function () {
+      if (formDobError) formDobError.hidden = true;
+    });
+  }
+
+  document.querySelectorAll('.init-chip-row').forEach(function (group) {
     var field = group.getAttribute('data-field');
-    group.querySelectorAll('.init-opt').forEach(function (btn) {
+    group.querySelectorAll('.init-chip').forEach(function (btn) {
       btn.addEventListener('click', function () {
-        group.querySelectorAll('.init-opt').forEach(function (b) { b.classList.remove('active'); });
-        btn.classList.add('active');
-        var data = getInitData();
-        data[field] = btn.getAttribute('data-value');
-        setInitData(data);
+        group.querySelectorAll('.init-chip').forEach(function (b) {
+          b.classList.remove('is-selected');
+        });
+        btn.classList.add('is-selected');
+        var patch = {};
+        patch[field] = btn.getAttribute('data-value');
+        setInitData(patch);
         if (field === 'measurement') updateUnits();
       });
     });
   });
 
-  var weightEl = document.getElementById('weight');
-  var heightEl = document.getElementById('height');
   if (weightEl) {
-    weightEl.addEventListener('change', function () { setInitData({ weight: weightEl.value.trim() }); });
-    weightEl.addEventListener('blur', function () { setInitData({ weight: weightEl.value.trim() }); });
+    weightEl.addEventListener('change', function () {
+      setInitData({ weight: weightEl.value.trim() });
+    });
+    weightEl.addEventListener('blur', function () {
+      setInitData({ weight: weightEl.value.trim() });
+    });
   }
   if (heightEl) {
-    heightEl.addEventListener('change', function () { setInitData({ height: heightEl.value.trim() }); });
-    heightEl.addEventListener('blur', function () { setInitData({ height: heightEl.value.trim() }); });
+    heightEl.addEventListener('change', function () {
+      setInitData({ height: heightEl.value.trim() });
+    });
+    heightEl.addEventListener('blur', function () {
+      setInitData({ height: heightEl.value.trim() });
+    });
   }
 
-  // Build backend payload from init data (field names match backend User)
   function buildProfilePayload() {
     var data = getInitData();
-    var month = (data.dobMonth || '').trim();
-    var day = (data.dobDay || '').trim();
-    var year = (data.dobYear || '').trim();
-    var dateOfBirth = (year && month && day) ? year + '-' + month.padStart(2, '0') + '-' + day.padStart(2, '0') : null;
+    var iso =
+      (data.dobIso && String(data.dobIso).trim()) ||
+      isoFromParts(data.dobYear, data.dobMonth, data.dobDay);
+    var dateOfBirth = iso || null;
+
     var weightStr = (weightEl && weightEl.value.trim()) || data.weight;
     var heightStr = (heightEl && heightEl.value.trim()) || data.height;
     var weight = weightStr ? parseInt(weightStr, 10) : null;
     var height = heightStr ? parseInt(heightStr, 10) : null;
     if (isNaN(weight)) weight = null;
     if (isNaN(height)) height = null;
-    var payload = {
+
+    return {
       username: data.username || null,
       firstName: data.firstName || null,
       lastName: data.lastName || null,
@@ -230,14 +376,20 @@
       equipment: data.equipment || null,
       timeAvailable: data.time || null,
       reason: data.reason || null,
-      source: data.source || null
+      source: data.source || null,
     };
-    return payload;
   }
 
-  // Proceed: send profile to backend, then body fades out, thank you, redirect
-  var proceedErrorEl = document.getElementById('proceed-error');
-  var proceedInFlight = false;
+  function finishAndRedirect() {
+    showSlide(4);
+    setTimeout(function () {
+      try {
+        window.location.assign(HOMEPAGE_PATH);
+      } catch (e) {
+        window.location.href = HOMEPAGE_PATH;
+      }
+    }, 2200);
+  }
 
   function handleProceed(e) {
     if (e) {
@@ -245,83 +397,83 @@
       e.stopPropagation();
     }
     if (currentIndex !== 3 || proceedInFlight) return;
-    proceedInFlight = true;
 
     var data = getInitData();
+    var dobCheck = validateDob(
+      data.dobIso || isoFromParts(data.dobYear, data.dobMonth, data.dobDay)
+    );
+    if (!dobCheck.ok) {
+      if (proceedErrorEl) {
+        proceedErrorEl.textContent = dobCheck.message;
+        proceedErrorEl.hidden = false;
+      }
+      showSlide(2);
+      return;
+    }
+
+    proceedInFlight = true;
     data.weight = (weightEl && weightEl.value.trim()) || data.weight;
     data.height = (heightEl && heightEl.value.trim()) || data.height;
     setInitData(data);
 
     var payload = buildProfilePayload();
-    var userId = currentUser.id;
     if (proceedErrorEl) proceedErrorEl.hidden = true;
 
-    window.apiPut('/users/' + userId, payload).then(function (res) {
-      return res.json().then(function (body) {
-        if (!res.ok) {
+    var btnProceed = document.getElementById('btn-proceed');
+    var btnSkip = document.getElementById('link-skip');
+    if (btnProceed) btnProceed.disabled = true;
+    if (btnSkip) btnSkip.disabled = true;
+
+    window
+      .apiPut('/users/' + currentUser.id, payload)
+      .then(function (res) {
+        return res.json().then(function (body) {
           proceedInFlight = false;
-          if (proceedErrorEl) {
-            proceedErrorEl.textContent = body.error || 'Could not save. Try again.';
-            proceedErrorEl.hidden = false;
+          if (btnProceed) btnProceed.disabled = false;
+          if (btnSkip) btnSkip.disabled = false;
+
+          if (!res.ok) {
+            if (proceedErrorEl) {
+              proceedErrorEl.textContent =
+                (body && body.error) || 'Could not save. Try again.';
+              proceedErrorEl.hidden = false;
+            }
+            return;
           }
-          return;
+          if (body && typeof window.setCurrentUser === 'function') {
+            window.setCurrentUser(body);
+          }
+          finishAndRedirect();
+        });
+      })
+      .catch(function () {
+        proceedInFlight = false;
+        if (btnProceed) btnProceed.disabled = false;
+        if (btnSkip) btnSkip.disabled = false;
+        if (proceedErrorEl) {
+          proceedErrorEl.textContent =
+            'Network error. Check your connection and try again.';
+          proceedErrorEl.hidden = false;
         }
-        if (body && typeof window.setCurrentUser === 'function') window.setCurrentUser(body);
-        slide4Body.classList.remove('fade-in');
-        slide4Body.classList.add('fade-out');
-        setTimeout(function () {
-          slide4Body.hidden = true;
-          slide4Title.classList.add('proceed-step1');
-          requestAnimationFrame(function () {
-            requestAnimationFrame(function () {
-              slide4Title.classList.add('move-to-center');
-            });
-          });
-          setTimeout(function () {
-            slide4Title.classList.remove('proceed-step1', 'move-to-center');
-            slide4Title.classList.add('thanks-mode');
-            slide4ThanksSubtitle.hidden = false;
-            requestAnimationFrame(function () {
-              slide4ThanksSubtitle.classList.add('visible');
-            });
-            setTimeout(function () {
-              try {
-                window.location.assign(HOMEPAGE_PATH);
-              } catch (e) {
-                window.location.href = HOMEPAGE_PATH;
-              }
-            }, 3000);
-          }, 650);
-        }, 500);
       });
-    }).catch(function () {
-      proceedInFlight = false;
-      if (proceedErrorEl) {
-        proceedErrorEl.textContent = 'Network error. Is the backend running?';
-        proceedErrorEl.hidden = false;
-      }
-    });
   }
 
   var btnProceed = document.getElementById('btn-proceed');
   if (btnProceed) {
     btnProceed.addEventListener('click', handleProceed);
-    btnProceed.addEventListener('touchend', function (e) {
-      e.preventDefault();
-      handleProceed(e);
-    });
   }
 
-  document.getElementById('link-skip').addEventListener('click', function (e) {
-    e.preventDefault();
-    showSlide(SLIDE_COUNT - 1);
-  });
-  document.getElementById('link-settings').addEventListener('click', function (e) {
-    e.preventDefault();
-  });
-  document.getElementById('link-tutorial').addEventListener('click', function (e) {
-    e.preventDefault();
-  });
+  var linkSkip = document.getElementById('link-skip');
+  if (linkSkip) {
+    linkSkip.addEventListener('click', handleProceed);
+  }
+
+  var linkSettings = document.getElementById('link-settings');
+  if (linkSettings) {
+    linkSettings.addEventListener('click', function (e) {
+      e.preventDefault();
+    });
+  }
 
   function restoreFields() {
     var data = getInitData();
@@ -331,22 +483,32 @@
     if (u) u.value = data.username || '';
     if (f) f.value = data.firstName || '';
     if (l) l.value = data.lastName || '';
-    document.getElementById('dobMonth').value = data.dobMonth || '';
-    document.getElementById('dobDay').value = data.dobDay || '';
-    document.getElementById('dobYear').value = data.dobYear || '';
+
+    if (dobInput) {
+      dobInput.value =
+        (data.dobIso && String(data.dobIso).trim()) ||
+        isoFromParts(data.dobYear, data.dobMonth, data.dobDay) ||
+        '';
+    }
+
     if (weightEl) weightEl.value = data.weight || '';
     if (heightEl) heightEl.value = data.height || '';
-    document.querySelectorAll('.init-options').forEach(function (group) {
+
+    document.querySelectorAll('.init-chip-row').forEach(function (group) {
       var field = group.getAttribute('data-field');
       var value = data[field];
       if (value != null) {
-        group.querySelectorAll('.init-opt').forEach(function (b) {
-          b.classList.toggle('active', b.getAttribute('data-value') === value);
+        group.querySelectorAll('.init-chip').forEach(function (b) {
+          b.classList.toggle(
+            'is-selected',
+            b.getAttribute('data-value') === value
+          );
         });
       }
     });
   }
 
+  configureDobInputLimits();
   showSlide(0);
   restoreFields();
 })();
