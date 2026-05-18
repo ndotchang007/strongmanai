@@ -2,168 +2,217 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="strongman-api-base" content="https://strongmanai-api.onrender.com/api/v1">
-  <title>Welcome – Strongman AI</title>
+  <title>Set up your profile – Strongman AI</title>
   <link rel="icon" type="image/png" href="../../assets/logo.png">
   <link rel="apple-touch-icon" href="../../assets/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/index.css">
   <link rel="stylesheet" href="../../css/accountInitializationPage/initPage.css">
 </head>
-<body>
-  <main class="slideshow" id="slideshow">
-    <!-- Header block: title + "Click to continue" move together slide 1 → 2 -->
-    <div class="init-floating-header" id="floating-header">
-      <h1 class="init-title" id="floating-title">Welcome to Strongman AI!</h1>
-      <p class="init-continue">
-        <span class="init-continue-desktop">Press space to continue.</span>
-        <span class="init-continue-touch">Tap to continue.</span>
-      </p>
-    </div>
+<body class="init-page">
+  <div class="init-ambient" aria-hidden="true">
+    <span class="init-ambient-orb init-ambient-orb--a"></span>
+    <span class="init-ambient-orb init-ambient-orb--b"></span>
+  </div>
 
-    <!-- Slide 1: Welcome (header is in floating block above) -->
-    <section class="slide active" data-slide="1"></section>
+  <header class="init-top" id="init-top">
+    <a href="/home" class="init-brand" aria-label="Strongman AI home">
+      <img src="../../assets/logo.png" alt="" class="init-brand-logo" width="40" height="40" decoding="async">
+      <span class="init-brand-wordmark">STRONGMAN <span class="init-brand-accent">AI</span></span>
+    </a>
+    <nav class="init-progress" id="init-progress" aria-label="Setup progress" hidden>
+      <ol class="init-progress-list">
+        <li class="init-progress-step is-active" data-step="1"><span class="init-progress-dot"></span><span class="init-progress-label">Welcome</span></li>
+        <li class="init-progress-step" data-step="2"><span class="init-progress-dot"></span><span class="init-progress-label">You</span></li>
+        <li class="init-progress-step" data-step="3"><span class="init-progress-dot"></span><span class="init-progress-label">Age</span></li>
+        <li class="init-progress-step" data-step="4"><span class="init-progress-dot"></span><span class="init-progress-label">Prefs</span></li>
+        <li class="init-progress-step" data-step="5"><span class="init-progress-dot"></span><span class="init-progress-label">Done</span></li>
+      </ol>
+    </nav>
+  </header>
 
-    <!-- Slide 2: Basic info -->
-    <section class="slide" data-slide="2">
-      <header class="init-slide-header">
-        <h1 class="init-title">Welcome to Strongman AI!</h1>
-      </header>
-      <div class="slide2-content" id="slide2-content">
-          <p class="init-prompt">To start off, let's get some information about <span class="init-accent">you.</span></p>
-        <form class="init-form" id="form-basic">
-          <input type="text" id="username" class="init-input" placeholder="Enter username" autocomplete="username" required aria-describedby="form-basic-error">
-          <input type="text" id="firstName" class="init-input" placeholder="Enter first name" autocomplete="given-name" required aria-describedby="form-basic-error">
-          <input type="text" id="lastName" class="init-input" placeholder="Enter last name" autocomplete="family-name" required aria-describedby="form-basic-error">
-          <p class="init-error" id="form-basic-error" role="alert" hidden>Required</p>
-          <button type="submit" class="init-btn">Submit</button>
+  <main class="init-main slideshow" id="slideshow">
+    <!-- Step 1: Welcome -->
+    <section class="init-slide is-active" data-slide="1" aria-labelledby="welcome-heading">
+      <div class="init-card init-card--hero">
+        <p class="init-eyebrow">Account setup</p>
+        <h1 class="init-hero-title" id="welcome-heading">Welcome to Strongman AI</h1>
+        <p class="init-hero-lede">A few quick steps to personalize training, tracking, and AI workouts for you.</p>
+        <ul class="init-hero-points">
+          <li>Built for serious strength &amp; strongman training</li>
+          <li>Your data stays on your account</li>
+          <li>Takes about two minutes</li>
+        </ul>
+        <button type="button" class="init-btn init-btn--primary init-btn--lg" id="btn-welcome-continue">Get started</button>
+        <p class="init-hero-hint">
+          <span class="init-hero-hint-desktop">Press <kbd>Space</kbd> to continue</span>
+          <span class="init-hero-hint-touch">Tap anywhere to continue</span>
+        </p>
+      </div>
+    </section>
+
+    <!-- Step 2: Basic info -->
+    <section class="init-slide" data-slide="2" aria-labelledby="basic-heading">
+      <div class="init-card">
+        <p class="init-step-kicker">Step 1 of 3</p>
+        <h2 class="init-card-title" id="basic-heading">Tell us about you</h2>
+        <p class="init-card-desc">This is how you’ll appear on leaderboards and your profile.</p>
+        <form class="init-form" id="form-basic" novalidate>
+          <div class="init-field">
+            <label class="init-label" for="username">Username</label>
+            <input type="text" id="username" class="init-input" placeholder="e.g. atlas_lifts" autocomplete="username" required minlength="3" maxlength="30" pattern="[A-Za-z0-9_]+" aria-describedby="form-basic-error username-hint">
+            <p class="init-hint" id="username-hint">Letters, numbers, and underscores only (3–30 characters).</p>
+          </div>
+          <div class="init-field-row">
+            <div class="init-field">
+              <label class="init-label" for="firstName">First name</label>
+              <input type="text" id="firstName" class="init-input" placeholder="First name" autocomplete="given-name" required maxlength="64" aria-describedby="form-basic-error">
+            </div>
+            <div class="init-field">
+              <label class="init-label" for="lastName">Last name</label>
+              <input type="text" id="lastName" class="init-input" placeholder="Last name" autocomplete="family-name" required maxlength="64" aria-describedby="form-basic-error">
+            </div>
+          </div>
+          <p class="init-error" id="form-basic-error" role="alert" hidden></p>
+          <button type="submit" class="init-btn init-btn--primary init-btn--full">Continue</button>
         </form>
       </div>
     </section>
 
-    <!-- Slide 3: Date of birth -->
-    <section class="slide" data-slide="3">
-      <header class="init-slide-header">
-        <h1 class="init-title">Welcome to Strongman AI!</h1>
-      </header>
-      <div class="slide3-content" id="slide3-content">
-        <p class="init-prompt">Great! Now, please enter your date of birth.</p>
-        <form class="init-form init-form-dob" id="form-dob">
-        <div class="init-dob-row">
-          <input type="text" id="dobMonth" class="init-input init-dob-input" placeholder="MM" maxlength="2" inputmode="numeric" required aria-describedby="form-dob-error">
-          <span class="init-dob-sep">/</span>
-          <input type="text" id="dobDay" class="init-input init-dob-input" placeholder="DD" maxlength="2" inputmode="numeric" required aria-describedby="form-dob-error">
-          <span class="init-dob-sep">/</span>
-          <input type="text" id="dobYear" class="init-input init-dob-input" placeholder="YYYY" maxlength="4" inputmode="numeric" required aria-describedby="form-dob-error">
+    <!-- Step 3: Date of birth + eligibility -->
+    <section class="init-slide" data-slide="3" aria-labelledby="dob-heading">
+      <div class="init-card">
+        <p class="init-step-kicker">Step 2 of 3</p>
+        <h2 class="init-card-title" id="dob-heading">Confirm your age</h2>
+        <p class="init-card-desc">Strongman AI is for athletes <strong>16 and older</strong>. We use your birthday only to verify eligibility and improve coaching context.</p>
+
+        <div class="init-callout init-callout--warn" role="note">
+          <p class="init-callout-title">Who can sign up?</p>
+          <p class="init-callout-text">You must be at least <strong>16 years old</strong>. If you are 16–17, use the app with a parent or coach and train under appropriate supervision.</p>
         </div>
-        <p class="init-error" id="form-dob-error" role="alert" hidden>Required</p>
-        <button type="submit" class="init-btn">Submit</button>
-      </form>
+
+        <form class="init-form" id="form-dob" novalidate>
+          <div class="init-field">
+            <label class="init-label" for="dob">Date of birth</label>
+            <input type="date" id="dob" class="init-input init-input--date" required aria-describedby="form-dob-error">
+          </div>
+          <label class="init-check">
+            <input type="checkbox" id="eligibility-confirm" class="init-check-input" required>
+            <span class="init-check-box" aria-hidden="true"></span>
+            <span class="init-check-text">I confirm I am at least 16 years old and eligible to use strength-training software.</span>
+          </label>
+          <p class="init-error" id="form-dob-error" role="alert" hidden></p>
+          <button type="submit" class="init-btn init-btn--primary init-btn--full">Continue</button>
+        </form>
       </div>
     </section>
 
-    <!-- Slide 4: Preferences -->
-    <section class="slide" data-slide="4">
-      <h1 class="init-title slide4-title" id="slide4-title">
-        <span class="slide4-title-prefix">Welcome to </span><span class="slide4-title-brand">Strongman AI</span><span class="slide4-title-suffix"> <span class="init-accent init-name" id="welcomeName">[name]</span>!</span>
-      </h1>
-      <div class="slide4-body" id="slide4-body">
-      <p class="init-intro">The rest of the fields are optional. However, they help to improve your and future users' experience with Strongman AI. These fields can be changed in your <a href="#" class="init-link" id="link-settings">account settings</a>. If you wish to skip the following fields, click <a href="#" class="init-link" id="link-skip">here</a> to proceed to your homepage.</p>
-      <p class="init-intro init-intro-small">Click <a href="#" class="init-link" id="link-tutorial">here</a> for a tutorial if you are new to the app.</p>
+    <!-- Step 4: Preferences -->
+    <section class="init-slide init-slide--prefs" data-slide="4" aria-labelledby="prefs-heading">
+      <div class="init-card init-card--wide">
+        <p class="init-step-kicker">Step 3 of 3</p>
+        <h2 class="init-card-title" id="prefs-heading">Almost done, <span class="init-accent init-name" id="welcomeName">athlete</span></h2>
+        <p class="init-card-desc">Optional details help AI workouts and recommendations fit you better. You can change these anytime in <a href="/home" class="init-inline-link" id="link-settings">settings</a>.</p>
 
-      <div class="init-section">
-        <h2 class="init-section-title">For you</h2>
-        <div class="init-field init-field-row">
-          <span class="init-label">Preferred Measurement System:</span>
-          <span class="init-options" data-field="measurement">
-            <button type="button" class="init-opt active" data-value="metric">Metric</button>
-            <span class="init-opt-sep">/</span>
-            <button type="button" class="init-opt" data-value="imperial">Imperial</button>
-          </span>
-        </div>
-        <div class="init-field init-field-row">
-          <span class="init-label">Training Experience:</span>
-          <span class="init-options" data-field="experience">
-            <button type="button" class="init-opt active" data-value="beginner">Beginner</button>
-            <span class="init-opt-sep">/</span>
-            <button type="button" class="init-opt" data-value="intermediate">Intermediate</button>
-            <span class="init-opt-sep">/</span>
-            <button type="button" class="init-opt" data-value="advanced">Advanced</button>
-          </span>
-        </div>
-        <div class="init-field init-field-row">
-          <span class="init-label">Equipment access:</span>
-          <span class="init-options" data-field="equipment">
-            <button type="button" class="init-opt" data-value="local">Local gym</button>
-            <span class="init-opt-sep">/</span>
-            <button type="button" class="init-opt active" data-value="home">Home gym</button>
-            <span class="init-opt-sep">/</span>
-            <button type="button" class="init-opt" data-value="none">None</button>
-          </span>
-        </div>
-        <div class="init-field init-field-row">
-          <span class="init-label">Daily time to workout:</span>
-          <span class="init-options" data-field="time">
-            <button type="button" class="init-opt" data-value="1hr">&lt; 1 hr</button>
-            <span class="init-opt-sep">/</span>
-            <button type="button" class="init-opt active" data-value="2hr">&lt; 2hr</button>
-            <span class="init-opt-sep">/</span>
-            <button type="button" class="init-opt" data-value="4hr">&lt; 4 hr</button>
-            <span class="init-opt-sep">/</span>
-            <button type="button" class="init-opt" data-value="fullday">full day</button>
-          </span>
-        </div>
-        <div class="init-field init-field-inline">
-          <span class="init-label">Weight:</span>
-          <input type="text" id="weight" class="init-input init-input-small" placeholder="" inputmode="decimal">
-          <span class="init-unit" id="weightUnit">lbs.</span>
-        </div>
-        <div class="init-field init-field-inline">
-          <span class="init-label">Height:</span>
-          <input type="text" id="height" class="init-input init-input-small" placeholder="" inputmode="decimal">
-          <span class="init-unit" id="heightUnit">in.</span>
+        <div class="init-prefs-scroll" id="slide4-body">
+          <div class="init-prefs-group">
+            <h3 class="init-prefs-group-title">Training</h3>
+            <div class="init-pref-block">
+              <span class="init-pref-label">Units</span>
+              <div class="init-chip-row" data-field="measurement" role="group" aria-label="Preferred units">
+                <button type="button" class="init-chip is-selected" data-value="metric">Metric (kg, cm)</button>
+                <button type="button" class="init-chip" data-value="imperial">Imperial (lb, in)</button>
+              </div>
+            </div>
+            <div class="init-pref-block">
+              <span class="init-pref-label">Experience</span>
+              <div class="init-chip-row" data-field="experience" role="group" aria-label="Training experience">
+                <button type="button" class="init-chip is-selected" data-value="beginner">Beginner</button>
+                <button type="button" class="init-chip" data-value="intermediate">Intermediate</button>
+                <button type="button" class="init-chip" data-value="advanced">Advanced</button>
+              </div>
+            </div>
+            <div class="init-pref-block">
+              <span class="init-pref-label">Equipment</span>
+              <div class="init-chip-row" data-field="equipment" role="group" aria-label="Equipment access">
+                <button type="button" class="init-chip" data-value="local">Gym</button>
+                <button type="button" class="init-chip is-selected" data-value="home">Home gym</button>
+                <button type="button" class="init-chip" data-value="none">Minimal</button>
+              </div>
+            </div>
+            <div class="init-pref-block">
+              <span class="init-pref-label">Typical session</span>
+              <div class="init-chip-row" data-field="time" role="group" aria-label="Time available">
+                <button type="button" class="init-chip" data-value="1hr">&lt; 1 hr</button>
+                <button type="button" class="init-chip is-selected" data-value="2hr">1–2 hr</button>
+                <button type="button" class="init-chip" data-value="4hr">2–4 hr</button>
+                <button type="button" class="init-chip" data-value="fullday">4+ hr</button>
+              </div>
+            </div>
+            <div class="init-metrics-row">
+              <div class="init-field init-field--compact">
+                <label class="init-label" for="weight">Weight</label>
+                <div class="init-input-with-unit">
+                  <input type="number" id="weight" class="init-input" placeholder="—" min="1" max="999" inputmode="decimal" aria-describedby="weightUnit">
+                  <span class="init-unit" id="weightUnit">kg</span>
+                </div>
+              </div>
+              <div class="init-field init-field--compact">
+                <label class="init-label" for="height">Height</label>
+                <div class="init-input-with-unit">
+                  <input type="number" id="height" class="init-input" placeholder="—" min="1" max="999" inputmode="decimal" aria-describedby="heightUnit">
+                  <span class="init-unit" id="heightUnit">cm</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="init-prefs-group">
+            <h3 class="init-prefs-group-title">About you</h3>
+            <div class="init-pref-block">
+              <span class="init-pref-label">Main goal</span>
+              <div class="init-chip-row" data-field="reason" role="group" aria-label="Reason for using the app">
+                <button type="button" class="init-chip is-selected" data-value="sports">Sport / events</button>
+                <button type="button" class="init-chip" data-value="aesthetics">Physique</button>
+                <button type="button" class="init-chip" data-value="strength">Max strength</button>
+              </div>
+            </div>
+            <div class="init-pref-block">
+              <span class="init-pref-label">How did you find us?</span>
+              <div class="init-chip-row init-chip-row--wrap" data-field="source" role="group" aria-label="Referral source">
+                <button type="button" class="init-chip is-selected" data-value="instagram">Instagram</button>
+                <button type="button" class="init-chip" data-value="youtube">YouTube</button>
+                <button type="button" class="init-chip" data-value="tiktok">TikTok</button>
+                <button type="button" class="init-chip" data-value="friend">Friend</button>
+                <button type="button" class="init-chip" data-value="other">Other</button>
+              </div>
+            </div>
+          </div>
+
+          <p class="init-error" id="proceed-error" role="alert" hidden></p>
+          <div class="init-actions-stack">
+            <button type="button" class="init-btn init-btn--primary init-btn--full" id="btn-proceed">Save &amp; go to home</button>
+            <button type="button" class="init-btn init-btn--ghost init-btn--full" id="link-skip">Skip optional fields</button>
+          </div>
         </div>
       </div>
-
-      <div class="init-section">
-        <h2 class="init-section-title">For us</h2>
-        <div class="init-field init-field-row">
-          <span class="init-label">Reason for trying Strongman AI:</span>
-          <span class="init-options" data-field="reason">
-            <button type="button" class="init-opt active" data-value="sports">Sports</button>
-            <span class="init-opt-sep">/</span>
-            <button type="button" class="init-opt" data-value="aesthetics">Aesthetics</button>
-            <span class="init-opt-sep">/</span>
-            <button type="button" class="init-opt" data-value="strength">Strength</button>
-          </span>
-        </div>
-        <div class="init-field init-field-row">
-          <span class="init-label">Where did you hear about Strongman AI:</span>
-          <span class="init-options" data-field="source">
-            <button type="button" class="init-opt active" data-value="instagram">Instagram</button>
-            <span class="init-opt-sep">/</span>
-            <button type="button" class="init-opt" data-value="youtube">YouTube</button>
-            <span class="init-opt-sep">/</span>
-            <button type="button" class="init-opt" data-value="tiktok">TikTok</button>
-            <span class="init-opt-sep">/</span>
-            <button type="button" class="init-opt" data-value="friend">Friend</button>
-            <span class="init-opt-sep">/</span>
-            <button type="button" class="init-opt" data-value="other">Other</button>
-          </span>
-        </div>
-      </div>
-
-      <p class="init-error" id="proceed-error" role="alert" hidden></p>
-      <button type="button" class="init-btn init-btn-wide" id="btn-proceed">Proceed to your homepage</button>
-      </div>
-      <p class="init-subtitle slide4-thanks-subtitle" id="slide4-thanks-subtitle" hidden>We hope you enjoy your experience.</p>
     </section>
 
-    <!-- Slide 5: Thank you -->
-    <section class="slide" data-slide="5">
-      <h1 class="init-title init-title-thanks">Thank you for trying Strongman AI</h1>
-      <p class="init-subtitle">We hope you enjoy your experience.</p>
+    <!-- Step 5: Thank you -->
+    <section class="init-slide" data-slide="5" aria-labelledby="thanks-heading">
+      <div class="init-card init-card--hero init-card--thanks" id="thanks-card">
+        <div class="init-thanks-icon" aria-hidden="true">✓</div>
+        <h2 class="init-hero-title init-hero-title--sm" id="thanks-heading">You’re all set</h2>
+        <p class="init-hero-lede" id="slide4-thanks-subtitle">Taking you to your home feed…</p>
+        <div class="init-spinner" aria-hidden="true"></div>
+      </div>
     </section>
   </main>
+
   <script src="../../shared/api.js"></script>
   <script src="../../javascript/accountInitializationPage/initPage.js"></script>
 </body>
