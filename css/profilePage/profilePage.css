@@ -406,6 +406,30 @@ body.profile-page .profile-mainContent
     font-style: normal;
 }
 
+.profile-bio.profile-bio--other:empty::before,
+.profile-page--readonly .profile-bio:empty::before
+{
+    content: "No bio yet.";
+    font-style: italic;
+}
+
+.profile-page--readonly .profile-bio-edit,
+.profile-page--readonly .profile-hero-actions,
+.profile-page--readonly .profile-media-btn
+{
+    display: none !important;
+}
+
+.profile-page--readonly .profile-hero-card--editing .profile-bio--hidden
+{
+    display: block;
+}
+
+.profile-page--readonly .profile-hero-card--editing .profile-bio
+{
+    display: block;
+}
+
 .profile-toolbar
 {
     display: flex;
