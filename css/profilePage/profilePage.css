@@ -29,10 +29,15 @@ body.profile-page .profile-mainContent
 
 .profile-hero-actions
 {
-    display: flex;
+    display: none;
     flex-wrap: wrap;
     align-items: center;
     gap: 0.65rem 1rem;
+}
+
+.profile-is-owner .profile-hero-actions
+{
+    display: flex;
 }
 
 .profile-scroll
@@ -152,7 +157,17 @@ body.profile-page .profile-mainContent
     width: 100%;
     height: 100%;
     object-fit: cover;
+    display: none;
+}
+
+.profile-banner-img[src]
+{
     display: block;
+}
+
+.profile-banner-img[hidden]
+{
+    display: none !important;
 }
 
 .profile-banner-fallback
@@ -274,24 +289,27 @@ body.profile-page .profile-mainContent
     color: var(--text-primary);
 }
 
-.profile-edit-link
+.profile-edit-profile-btn
 {
-    font-size: 0.8rem;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-}
-
-.profile-edit-link--secondary
-{
-    opacity: 0.85;
+    flex-shrink: 0;
+    white-space: nowrap;
 }
 
 .profile-bio-edit
 {
-    display: flex;
+    display: none !important;
     flex-direction: column;
     gap: 0.5rem;
+}
+
+.profile-is-owner.profile-is-editing .profile-bio-edit
+{
+    display: flex !important;
+}
+
+.profile-is-owner.profile-is-editing .profile-bio--display
+{
+    display: none;
 }
 
 .profile-bio-edit-label
@@ -356,10 +374,6 @@ body.profile-page .profile-mainContent
     color: #f87171;
 }
 
-.profile-hero-card.profile-hero-card--editing .profile-bio:not(.profile-bio--hidden)
-{
-    display: none;
-}
 
 .profile-stats-row
 {
@@ -399,36 +413,24 @@ body.profile-page .profile-mainContent
     color: var(--text-secondary);
 }
 
-.profile-bio:empty::before
+.profile-bio.profile-bio--empty
 {
-    content: "Add a short bio to tell others what you train for.";
     color: var(--text-muted);
-    font-style: normal;
-}
-
-.profile-bio.profile-bio--other:empty::before,
-.profile-page--readonly .profile-bio:empty::before
-{
-    content: "No bio yet.";
     font-style: italic;
 }
 
-.profile-page--readonly .profile-bio-edit,
-.profile-page--readonly .profile-hero-actions,
-.profile-page--readonly .profile-media-btn
+.profile-is-visitor .profile-bio-edit,
+.profile-is-visitor .profile-hero-actions,
+.profile-is-visitor .profile-media-btn
 {
     display: none !important;
 }
 
-.profile-page--readonly .profile-hero-card--editing .profile-bio--hidden
+.profile-is-visitor .profile-hero-card--editing .profile-bio
 {
     display: block;
 }
 
-.profile-page--readonly .profile-hero-card--editing .profile-bio
-{
-    display: block;
-}
 
 .profile-toolbar
 {
