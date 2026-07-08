@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="shared/gh-pages-routes.js"></script>
+    <script>
+      if (window.StrongmanGhPages && window.StrongmanGhPages.route404()) {
+        document.documentElement.className = 'gh-pages-routing';
+      }
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page not found – Strongman AI</title>
+    <link rel="icon" type="image/png" href="assets/logo.png">
+    <link rel="apple-touch-icon" href="assets/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/index.css">
+    <style>
+        .not-found-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 6rem 1.5rem 4rem;
+            min-height: 60vh;
+        }
+        .not-found-code {
+            margin: 0 0 0.5rem;
+            font-size: clamp(3rem, 12vw, 5rem);
+            font-weight: 700;
+            letter-spacing: -0.04em;
+            color: var(--accent);
+        }
+        .not-found-title {
+            margin: 0 0 0.75rem;
+            font-size: clamp(1.35rem, 4vw, 1.75rem);
+            font-weight: 600;
+        }
+        .not-found-lead {
+            margin: 0 0 1.75rem;
+            max-width: 28rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+        .not-found-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1.35rem;
+            border-radius: var(--radius-full);
+            background: var(--accent);
+            color: #111;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background 0.15s ease;
+        }
+        .not-found-link:hover {
+            background: var(--accent-hover);
+        }
+    </style>
+</head>
+<body>
+    <header class="site-header">
+        <div class="site-header-island">
+            <a href="/" class="site-header-logo-link">
+                <span class="site-header-logo">STRONGMAN <span class="site-header-logo-ai">AI</span></span>
+            </a>
+        </div>
+    </header>
+
+    <main class="not-found-main">
+        <p class="not-found-code" aria-hidden="true">404</p>
+        <h1 class="not-found-title">Page not found</h1>
+        <p class="not-found-lead">That URL doesn’t exist or may have moved. Head back to the landing page to pick up where you left off.</p>
+        <a href="/" class="not-found-link">Back to home</a>
+    </main>
+</body>
+</html>

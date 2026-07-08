@@ -1,0 +1,821 @@
+/* Workout tracker — matches Strongman AI logbook / create design tokens */
+
+.workout-tracker
+{
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+    min-width: 0;
+}
+
+.wt-toolbar
+{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.wt-view-tabs
+{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.wt-view-tab
+{
+    font-family: var(--font, "DM Sans", system-ui, sans-serif);
+    font-size: 0.72rem;
+    font-weight: bold;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.45rem 0.85rem;
+    border-radius: 999px;
+    border: 1px solid #555;
+    background-color: #222;
+    color: #aaa;
+    cursor: pointer;
+    transition: color 0.15s, background 0.15s, border-color 0.15s;
+}
+
+.wt-view-tab:hover
+{
+    color: #e8e8e8;
+    border-color: #777;
+}
+
+.wt-view-tab--active
+{
+    color: #1b1b1b;
+    background-color: #ff8c00;
+    border-color: #ff8c00;
+}
+
+.wt-toolbar-meta
+{
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.45);
+}
+
+.wt-body
+{
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-width: 0;
+}
+
+.wt-empty
+{
+    margin: 0;
+    padding: 1.5rem 1.25rem;
+    text-align: center;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.5);
+    border: 1px dashed rgba(255, 255, 255, 0.14);
+    border-radius: var(--radius-md, 14px);
+}
+
+.wt-empty--sheet
+{
+    grid-column: 1 / -1;
+}
+
+/* Superset grouping */
+
+.wt-superset-group,
+.wt-superset-block
+{
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    padding: 0.65rem 0.75rem;
+    border-radius: var(--radius-md, 14px);
+    border: 1px solid rgba(255, 140, 0, 0.22);
+    background: rgba(255, 140, 0, 0.04);
+}
+
+.wt-superset-badge
+{
+    font-size: 0.68rem;
+    font-weight: bold;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #ff8c00;
+    padding: 0.25rem 0.65rem;
+    border-radius: 999px;
+    background: rgba(255, 140, 0, 0.12);
+    border: 1px solid rgba(255, 140, 0, 0.35);
+}
+
+.wt-exercise-group-tag
+{
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #ff8c00;
+    margin-right: 0.35rem;
+}
+
+/* Exercise cards */
+
+.wt-view--card
+{
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.wt-exercise-card
+{
+    padding: 1.15rem 1.25rem;
+    border-radius: 16px;
+    border: 1px solid rgba(100, 100, 100, 0.45);
+    background: rgba(255, 255, 255, 0.03);
+    gap: 0.85rem;
+}
+
+.wt-exercise-card--superset
+{
+    border-color: rgba(255, 140, 0, 0.28);
+    box-shadow: inset 3px 0 0 rgba(255, 140, 0, 0.65);
+}
+
+.wt-exercise-head
+{
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.wt-exercise-name
+{
+    flex: 1 1 160px;
+    min-width: 0;
+    min-height: 2.65rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.wt-exercise-actions
+{
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    flex-shrink: 0;
+}
+
+.wt-icon-btn
+{
+    width: 2rem;
+    height: 2rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    border: 1px solid rgba(100, 100, 100, 0.5);
+    background: rgba(0, 0, 0, 0.2);
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    font-size: 0.85rem;
+    line-height: 1;
+}
+
+.wt-icon-btn:hover
+{
+    border-color: #ff8c00;
+    color: #ff8c00;
+}
+
+.wt-icon-btn--danger:hover
+{
+    border-color: #f87171;
+    color: #f87171;
+}
+
+.wt-previous
+{
+    margin: 0;
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.5);
+    line-height: 1.4;
+}
+
+/* Set rows */
+
+.wt-sets-list
+{
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+}
+
+.wt-set-row
+{
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.55rem 0.65rem;
+    border-radius: 12px;
+    border: 1px solid rgba(100, 100, 100, 0.42);
+    background: rgba(0, 0, 0, 0.15);
+    transition: border-color 0.15s, background 0.15s;
+}
+
+.wt-set-row--done
+{
+    border-color: rgba(255, 140, 0, 0.35);
+    background: rgba(255, 140, 0, 0.08);
+}
+
+.wt-set-label
+{
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.55);
+    min-width: 3.25rem;
+}
+
+.wt-set-fields
+{
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex: 1 1 140px;
+    min-width: 0;
+}
+
+.wt-set-input
+{
+    width: 4.5rem;
+    min-height: 2.35rem;
+    padding: 0.45rem 0.55rem;
+    font-size: 0.95rem;
+    text-align: center;
+}
+
+.wt-set-input--weight
+{
+    width: 5rem;
+}
+
+.wt-set-times
+{
+    color: rgba(255, 255, 255, 0.45);
+    font-weight: 600;
+}
+
+.wt-set-check
+{
+    width: 2.35rem;
+    height: 2.35rem;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.04);
+    color: rgba(255, 255, 255, 0.45);
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+    transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.wt-set-check:hover
+{
+    border-color: #ff8c00;
+    color: #ff8c00;
+}
+
+.wt-set-check--done
+{
+    border-color: #ff8c00;
+    background: rgba(255, 140, 0, 0.2);
+    color: #ff8c00;
+}
+
+.wt-set-delete
+{
+    width: 1.75rem;
+    height: 1.75rem;
+    border: none;
+    background: none;
+    color: rgba(255, 255, 255, 0.35);
+    cursor: pointer;
+    font-size: 1.1rem;
+    line-height: 1;
+}
+
+.wt-set-delete:hover
+{
+    color: #f87171;
+}
+
+.wt-set-rest
+{
+    width: 100%;
+    font-size: 0.72rem;
+    color: rgba(255, 140, 0, 0.85);
+    padding-left: 3.75rem;
+}
+
+.wt-add-set-btn
+{
+    align-self: flex-start;
+    font-size: 0.82rem;
+}
+
+.wt-add-exercise-btn
+{
+    align-self: flex-start;
+}
+
+/* Spreadsheet view */
+
+.wt-view--sheet
+{
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border: 1px solid rgba(100, 100, 100, 0.45);
+    border-radius: var(--radius-md, 14px);
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.12);
+}
+
+.wt-sheet-head,
+.wt-sheet-row
+{
+    display: grid;
+    grid-template-columns: minmax(120px, 1.6fr) 52px 80px 72px minmax(80px, 1fr) 44px;
+    gap: 0.35rem;
+    align-items: center;
+    padding: 0.55rem 0.65rem;
+}
+
+.wt-sheet-head
+{
+    background: rgba(255, 255, 255, 0.04);
+    border-bottom: 1px solid rgba(100, 100, 100, 0.42);
+}
+
+.wt-sheet-cell--head
+{
+    font-size: 0.65rem;
+    font-weight: bold;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.45);
+}
+
+.wt-sheet-row
+{
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: background 0.15s;
+}
+
+.wt-sheet-row:last-of-type
+{
+    border-bottom: none;
+}
+
+.wt-sheet-row--done
+{
+    background: rgba(255, 140, 0, 0.06);
+}
+
+.wt-sheet-row--superset
+{
+    box-shadow: inset 3px 0 0 rgba(255, 140, 0, 0.55);
+}
+
+.wt-sheet-cell--name
+{
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    min-width: 0;
+}
+
+.wt-sheet-cell--num
+{
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.55);
+    text-align: center;
+}
+
+.wt-sheet-cell--action
+{
+    display: flex;
+    justify-content: center;
+}
+
+.wt-sheet-input
+{
+    width: 100%;
+    min-height: 2.15rem;
+    padding: 0.4rem 0.5rem;
+    font-size: 0.88rem;
+}
+
+.wt-view--sheet .wt-add-exercise-btn
+{
+    margin: 0.75rem 0.65rem;
+}
+
+/* Timeline view */
+
+.wt-view--timeline
+{
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding-left: 0.5rem;
+    border-left: 2px solid rgba(255, 140, 0, 0.35);
+}
+
+.wt-timeline-item
+{
+    position: relative;
+    display: flex;
+    gap: 1rem;
+    padding: 0.85rem 0 0.85rem 1rem;
+}
+
+.wt-timeline-item::before
+{
+    content: "";
+    position: absolute;
+    left: -0.55rem;
+    top: 1.15rem;
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 50%;
+    background: #ff8c00;
+    box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.25);
+}
+
+.wt-timeline-time
+{
+    flex-shrink: 0;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: rgba(255, 140, 0, 0.95);
+    min-width: 4.5rem;
+}
+
+.wt-timeline-body
+{
+    flex: 1;
+    min-width: 0;
+}
+
+.wt-timeline-exercise
+{
+    margin: 0 0 0.2rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.92);
+}
+
+.wt-timeline-set
+{
+    margin: 0;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.65);
+}
+
+.wt-timeline-gap
+{
+    display: inline-block;
+    margin-top: 0.35rem;
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+/* Map view */
+
+.wt-view--map
+{
+    padding: 0.5rem 0;
+}
+
+.wt-map-root
+{
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.wt-map-tree
+{
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin-left: 1.25rem;
+    padding-left: 1rem;
+    border-left: 2px solid rgba(255, 255, 255, 0.12);
+}
+
+.wt-map-branch
+{
+    position: relative;
+    padding: 0.35rem 0 0.35rem 0.75rem;
+}
+
+.wt-map-connector
+{
+    position: absolute;
+    left: -1rem;
+    top: 1.1rem;
+    width: 1rem;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.wt-map-connector::after
+{
+    content: "";
+    position: absolute;
+    right: 0;
+    top: -3px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255, 140, 0, 0.6);
+}
+
+.wt-map-node
+{
+    font-family: var(--font, "DM Sans", system-ui, sans-serif);
+    text-align: left;
+    cursor: pointer;
+    border: 1px solid rgba(100, 100, 100, 0.45);
+    background: rgba(255, 255, 255, 0.03);
+    color: rgba(255, 255, 255, 0.88);
+    transition: border-color 0.15s, background 0.15s;
+}
+
+.wt-map-node:hover
+{
+    border-color: rgba(255, 140, 0, 0.45);
+}
+
+.wt-map-node--root
+{
+    display: inline-block;
+    padding: 0.65rem 1rem;
+    border-radius: var(--radius-md, 14px);
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    background: rgba(255, 140, 0, 0.12);
+    border-color: rgba(255, 140, 0, 0.35);
+    color: #ff8c00;
+    cursor: default;
+}
+
+.wt-map-node--exercise
+{
+    width: 100%;
+    padding: 0.55rem 0.85rem;
+    border-radius: 12px;
+    font-size: 0.88rem;
+    font-weight: 600;
+}
+
+.wt-map-node--exercise.wt-map-node--collapsed
+{
+    opacity: 0.75;
+}
+
+.wt-map-node--set
+{
+    width: 100%;
+    padding: 0.4rem 0.7rem;
+    border-radius: 10px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.wt-map-set--done .wt-map-node--set
+{
+    border-color: rgba(255, 140, 0, 0.3);
+    color: rgba(255, 140, 0, 0.95);
+}
+
+.wt-map-sets
+{
+    list-style: none;
+    margin: 0.45rem 0 0 0.85rem;
+    padding: 0 0 0 0.75rem;
+    border-left: 2px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.wt-map-set
+{
+    position: relative;
+}
+
+.wt-map-set::before
+{
+    content: "";
+    position: absolute;
+    left: -0.75rem;
+    top: 50%;
+    width: 0.65rem;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.wt-map-check
+{
+    color: #ff8c00;
+}
+
+@media (max-width: 640px)
+{
+    .wt-view-tabs
+    {
+        width: 100%;
+    }
+
+    .wt-view-tab
+    {
+        flex: 1 1 auto;
+        text-align: center;
+        padding: 0.45rem 0.5rem;
+        font-size: 0.65rem;
+    }
+}
+
+/* Focus mode — mobile set-by-set */
+.wt-view--focus
+{
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0.25rem 0;
+}
+
+.wt-focus-progress
+{
+    margin: 0;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255, 140, 0, 0.9);
+}
+
+.wt-focus-head
+{
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.wt-focus-exercise-name
+{
+    flex: 1 1 100%;
+    min-width: 0;
+    font-size: 1.05rem;
+    font-weight: 600;
+}
+
+.wt-focus-tools
+{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.35rem;
+}
+
+.wt-focus-tool-btn
+{
+    font-size: 0.78rem;
+}
+
+.wt-focus-exercise
+{
+    margin: 0;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.95);
+    line-height: 1.2;
+}
+
+.wt-focus-fields
+{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+}
+
+.wt-focus-input
+{
+    min-height: 3.5rem;
+    font-size: 1.25rem;
+    text-align: center;
+    font-weight: 600;
+}
+
+.wt-focus-nav
+{
+    display: flex;
+    gap: 0.65rem;
+    justify-content: space-between;
+}
+
+.wt-focus-nav-btn
+{
+    flex: 1;
+    min-height: 2.75rem;
+    font-family: var(--font, "DM Sans", system-ui, sans-serif);
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-radius: 12px;
+    border: 1px solid rgba(100, 100, 100, 0.5);
+    background: rgba(255, 255, 255, 0.04);
+    color: rgba(255, 255, 255, 0.75);
+    cursor: pointer;
+}
+
+.wt-focus-nav-btn:disabled
+{
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.wt-focus-rest
+{
+    margin: 0;
+    font-size: 0.82rem;
+    color: rgba(255, 140, 0, 0.85);
+    text-align: center;
+}
+
+@media (max-width: 640px)
+{
+    .wt-sheet-head
+    {
+        display: none;
+    }
+
+    .wt-sheet-row
+    {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto auto auto;
+        gap: 0.45rem;
+        padding: 0.75rem 0.65rem;
+        border-bottom: 1px solid rgba(100, 100, 100, 0.42);
+    }
+
+    .wt-sheet-cell--name
+    {
+        grid-column: 1 / -1;
+    }
+
+    .wt-sheet-cell--num
+    {
+        grid-column: 1 / 2;
+    }
+
+    .wt-sheet-cell--action
+    {
+        grid-column: 2 / 3;
+        justify-content: flex-end;
+    }
+
+    .wt-set-row
+    {
+        padding: 0.65rem 0.55rem;
+    }
+
+    .wt-set-label
+    {
+        width: 100%;
+    }
+
+    .wt-set-fields
+    {
+        flex: 1 1 100%;
+    }
+}

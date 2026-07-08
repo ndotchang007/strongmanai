@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="strongman-api-base" content="http://127.0.0.1:8080/api/v1">
+    <title>Verify email – Strongman AI</title>
+    <link rel="icon" type="image/png" href="assets/logo.png">
+    <link rel="apple-touch-icon" href="assets/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/login.css">
+</head>
+<body class="auth-page auth-page--verify">
+    <div class="auth-ambient" aria-hidden="true">
+        <span class="auth-ambient-orb auth-ambient-orb--a"></span>
+        <span class="auth-ambient-orb auth-ambient-orb--b"></span>
+    </div>
+
+    <main class="verify-center">
+        <div class="verify-card" id="verify-card">
+            <img src="assets/logo.png" alt="" class="verify-card-logo" width="44" height="44" decoding="async">
+            <h1 class="verify-card-title" id="verify-title">Confirm your email</h1>
+            <p class="verify-card-text" id="verify-desc">Working…</p>
+            <p class="verify-card-error" id="verify-error" role="alert" hidden></p>
+            <a class="login-btn verify-card-link" id="verify-action-link" href="/login">Back to sign in</a>
+            <p class="verify-card-meta" id="verify-redirect-note" hidden></p>
+            <button type="button" class="login-btn login-btn--secondary verify-card-resend" id="verify-resend-btn" hidden>Resend confirmation email</button>
+        </div>
+    </main>
+
+    <script src="shared/api.js"></script>
+    <script src="js/verify-email.js"></script>
+</body>
+</html>

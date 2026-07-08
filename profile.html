@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="strongman-api-base" content="http://127.0.0.1:8080/api/v1">
+    <title>Strongman AI – Profile</title>
+    <link rel="icon" type="image/png" href="assets/logo.png">
+    <link rel="apple-touch-icon" href="assets/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/index.css">
+    <link rel="stylesheet" href="css/home.css">
+    <link rel="stylesheet" href="css/app-nav.css">
+    <link rel="stylesheet" href="css/notification-bell.css">
+    <link rel="stylesheet" href="css/server-wake.css">
+    <link rel="stylesheet" href="css/profile.css">
+    <link rel="stylesheet" href="css/athlete-sports.css">
+    <link rel="stylesheet" href="css/info-tip.css">
+    <link rel="stylesheet" href="css/settings-app.css">
+    <link rel="stylesheet" href="css/workout-dashboard.css">
+</head>
+<body class="profile-page" data-current-page="profile">
+    <aside class="site-sidebar" id="site-sidebar" aria-label="Main navigation">
+        <div class="sidebar-brand">
+            <span class="sidebar-logo">STRONGMAN <span class="sidebar-logo-ai">AI</span></span>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="/home" class="sidebar-link" data-page="home" aria-label="Home">
+                <img src="assets/icons/home-outline.png" alt="" class="sidebar-icon sidebar-icon-outline">
+                <img src="assets/icons/home-filled.png" alt="" class="sidebar-icon sidebar-icon-filled">
+                <span class="sidebar-label">Home</span>
+            </a>
+            <a href="/leaderboard" class="sidebar-link" data-page="leaderboard" aria-label="Leaderboard">
+                <img src="assets/icons/trophy-outline.png" alt="" class="sidebar-icon sidebar-icon-outline">
+                <img src="assets/icons/trophy-filled.png" alt="" class="sidebar-icon sidebar-icon-filled">
+                <span class="sidebar-label">Leaderboard</span>
+            </a>
+            <a href="/explore" class="sidebar-link" data-page="explore" aria-label="Explore">
+                <img src="assets/icons/explore-outline.png" alt="" class="sidebar-icon sidebar-icon-outline">
+                <img src="assets/icons/explore-filled.png" alt="" class="sidebar-icon sidebar-icon-filled">
+                <span class="sidebar-label">Explore</span>
+            </a>
+            <a href="/generate" class="sidebar-link" data-page="generate" aria-label="Generate">
+                <img src="assets/icons/AI-outline.png" alt="" class="sidebar-icon sidebar-icon-outline">
+                <img src="assets/icons/AI-outline.png" alt="" class="sidebar-icon sidebar-icon-filled">
+                <span class="sidebar-label">Generate</span>
+            </a>
+            <a href="/tracking" class="sidebar-link" data-page="tracking" aria-label="Tracking">
+                <img src="assets/icons/graph-outline.png" alt="" class="sidebar-icon sidebar-icon-outline">
+                <img src="assets/icons/graph-outline.png" alt="" class="sidebar-icon sidebar-icon-filled">
+                <span class="sidebar-label">Tracking</span>
+            </a>
+            <a href="/create" class="sidebar-link" data-page="create" aria-label="Create">
+                <img src="assets/icons/create-outline.png" alt="" class="sidebar-icon sidebar-icon-outline">
+                <img src="assets/icons/create-outline.png" alt="" class="sidebar-icon sidebar-icon-filled">
+                <span class="sidebar-label">Create</span>
+            </a>
+        </nav>
+        <div class="sidebar-bottom">
+            <div class="sidebar-profile-wrap">
+                <button type="button" class="sidebar-profile sidebar-profile-trigger" id="sidebar-profile-trigger" aria-label="Profile menu" aria-expanded="false" aria-haspopup="true" aria-controls="sidebar-profile-menu">
+                    <span class="sidebar-profile-avatar" aria-hidden="true"></span>
+                    <span class="sidebar-label">Profile</span>
+                </button>
+                <div class="sidebar-profile-menu" id="sidebar-profile-menu" role="menu" aria-hidden="true" hidden>
+                    <a href="/profile" class="sidebar-profile-menu-item" role="menuitem">View profile</a>
+                    <button type="button" class="sidebar-profile-menu-item sidebar-profile-menu-item--button" role="menuitem" id="sidebar-profile-logout">Log out</button>
+                </div>
+            </div>
+            <button type="button" class="sidebar-link sidebar-link-more sidebar-settings-trigger" id="sidebar-settings-trigger" aria-label="Settings" aria-haspopup="dialog" aria-expanded="false" aria-controls="home-settings-dialog">
+                <img src="assets/icons/menu-outline.png" alt="" class="sidebar-icon sidebar-icon-outline">
+                <img src="assets/icons/menu-outline.png" alt="" class="sidebar-icon sidebar-icon-filled">
+                <span class="sidebar-label">Settings</span>
+            </button>
+        </div>
+    </aside>
+    <div class="main-wrap">
+    <div class="mainContent profile-mainContent">
+        <main class="profile-scroll">
+            <div class="profile-inner">
+
+                <p class="profile-login-banner" id="profile-login-banner" hidden></p>
+                <p class="profile-error-banner" id="profile-error-banner" hidden></p>
+
+                <a href="/customize" class="profile-user-settings-banner">
+                    <span class="profile-user-settings-kicker">User settings</span>
+                    <span class="profile-user-settings-title">Update your account, sports &amp; schedule</span>
+                    <span class="profile-user-settings-arrow">Open User settings →</span>
+                </a>
+
+                <div class="profile-shell profile-card" aria-label="Profile">
+
+                    <!-- Hero identity strip -->
+                    <section class="pf-hero">
+                        <div class="pf-cover" id="profile-banner-wrap" aria-hidden="true">
+                            <div class="pf-cover-mesh" id="profile-banner-fallback" aria-hidden="true"></div>
+                        </div>
+
+                        <div class="pf-hero-content">
+                            <div class="pf-avatar-col">
+                                <div class="pf-avatar-ring">
+                                    <div class="pf-avatar-glow" aria-hidden="true"></div>
+                                    <img
+                                        src=""
+                                        alt=""
+                                        class="profile-avatar-img"
+                                        id="profile-avatar-img"
+                                        width="148"
+                                        height="148"
+                                        decoding="async"
+                                        fetchpriority="high">
+                                    <label class="pf-avatar-edit" id="profile-avatar-change-label" hidden>
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                                        <input type="file" id="profile-avatar-input" accept="image/jpeg,image/png,image/gif,image/webp" hidden>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="pf-identity">
+                                <p class="profile-eyebrow" id="profile-eyebrow">Your profile</p>
+                                <h1 class="profile-display-name" id="profile-username">username</h1>
+                                <p class="pf-level-pill" id="profile-experience-tag" hidden>
+                                    <span class="pf-level-dot" aria-hidden="true"></span>
+                                    <span id="profile-experience-text">Athlete</span>
+                                </p>
+
+                                <div class="pf-bio-block" id="profile-bio-wrap">
+                                    <p class="profile-bio profile-bio--display" id="profile-bio">no bio written</p>
+                                    <div class="profile-bio-edit" id="profile-bio-edit" hidden aria-hidden="true">
+                                        <label class="profile-bio-edit-label" for="profile-bio-input">Bio</label>
+                                        <textarea id="profile-bio-input" class="profile-bio-input" rows="3" maxlength="500" placeholder="Tell the community about your training…" spellcheck="true"></textarea>
+                                        <p class="profile-bio-charcount" id="profile-bio-charcount" aria-live="polite">0 / 500</p>
+                                        <div class="profile-bio-edit-actions">
+                                            <button type="button" class="profile-btn profile-btn--ghost" id="profile-bio-cancel">Cancel</button>
+                                            <button type="button" class="profile-btn profile-btn--primary" id="profile-bio-save">Save bio</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="pf-actions">
+                                    <div class="profile-toolbar">
+                                        <button type="button" class="profile-btn profile-btn--primary profile-btn--lg" id="profile-follow-btn">Follow</button>
+                                        <button type="button" class="profile-btn profile-btn--ghost profile-btn--lg" id="profile-compete-btn">Compete</button>
+                                    </div>
+                                    <div class="profile-hero-actions" id="profile-hero-actions">
+                                        <button type="button" class="profile-btn profile-btn--primary profile-btn--lg profile-edit-profile-btn" id="profile-edit-toggle">Edit profile</button>
+                                        <button type="button" class="profile-btn profile-btn--ghost profile-btn--lg sidebar-settings-trigger" id="profile-settings-open" aria-haspopup="dialog" aria-expanded="false" aria-controls="home-settings-dialog">Settings</button>
+                                    </div>
+                                </div>
+
+                                <p class="profile-save-status" id="profile-save-status" role="status" aria-live="polite" hidden></p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Stats row -->
+                    <section class="pf-stats" id="profile-stats-row" aria-label="Profile stats">
+                        <article class="pf-stat-card" id="profile-followers">
+                            <span class="pf-stat-icon" aria-hidden="true">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            </span>
+                            <span class="profile-stat-value pf-stat-num">—</span>
+                            <span class="profile-stat-label pf-stat-label">Followers</span>
+                        </article>
+                        <article class="pf-stat-card" id="profile-following">
+                            <span class="pf-stat-icon" aria-hidden="true">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+                            </span>
+                            <span class="profile-stat-value pf-stat-num">—</span>
+                            <span class="profile-stat-label pf-stat-label">Following</span>
+                        </article>
+                        <article class="pf-stat-card pf-stat-card--accent" id="profile-badge-stat">
+                            <span class="pf-stat-icon" aria-hidden="true">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>
+                            </span>
+                            <span class="profile-stat-value pf-stat-num" id="profile-badge-count">0</span>
+                            <span class="profile-stat-label pf-stat-label">Badges</span>
+                        </article>
+                    </section>
+
+                    <!-- Badge trophy wall -->
+                    <section class="pf-badges" id="profile-highlights-wrap" aria-labelledby="profile-highlights-title">
+                        <header class="pf-section-head pf-section-head--row">
+                            <div>
+                                <h2 class="pf-section-title" id="profile-highlights-title">Trophy case</h2>
+                                <p class="pf-section-sub" id="profile-badges-subtitle">Your latest unlocks</p>
+                            </div>
+                            <button type="button" class="profile-btn profile-btn--ghost pf-view-badges-btn" id="profile-view-badges-btn">View all badges</button>
+                        </header>
+                        <p class="pf-badges-empty" id="profile-highlights-empty" hidden>No badges unlocked yet — start training to earn some.</p>
+                        <ul class="pf-badge-grid" id="profile-highlights-list"></ul>
+                    </section>
+
+                    <!-- Athlete snapshot -->
+                    <section class="pf-snapshot" id="profile-athlete-wrap" hidden aria-label="Athlete details">
+                        <header class="pf-section-head pf-section-head--row">
+                            <div>
+                                <h2 class="pf-section-title">Athlete snapshot</h2>
+                                <p class="pf-section-sub">Training profile</p>
+                            </div>
+                            <a href="/customize" class="pf-section-link" id="profile-athlete-edit">Edit</a>
+                        </header>
+                        <div class="pf-snapshot-grid" id="profile-athlete-grid"></div>
+                    </section>
+
+                </div>
+
+                <p class="profile-logout" id="profile-logout-wrap" hidden><a href="#" id="profile-logout">Log out</a></p>
+            </div>
+        </main>
+    </div>
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <div class="footer-col footer-col-brand">
+                <p class="footer-logo">STRONGMAN <span class="footer-logo-ai">AI</span></p>
+                <p class="footer-tagline">BETTER TRAINING. FASTER RESULTS.</p>
+                <p class="footer-section-title">SOCIALS</p>
+                <div class="footer-socials">
+                    <a href="https://www.instagram.com/strongmanai/" class="footer-link" target="_blank" rel="noopener noreferrer">Instagram</a>
+                </div>
+            </div>
+            <div class="footer-col">
+                <p class="footer-section-title">REPORT AN ISSUE</p>
+                <button type="button" class="footer-link-button" data-email-kind="bug">REPORT A BUG</button>
+                <a href="#" class="footer-link" data-email-kind="rate">RATE US</a>
+                <a href="#" class="footer-link" data-email-kind="suggestions">SUGGESTIONS</a>
+                <p class="footer-section-title footer-section-title--spaced">MODELS</p>
+                <span class="footer-text">EDDIE</span>
+                <span class="footer-text footer-placeholder">---</span>
+                <span class="footer-text footer-placeholder">---</span>
+                <span class="footer-text footer-placeholder">---</span>
+                <p class="footer-section-title footer-section-title--spaced">WEB VERSIONS</p>
+                <span class="footer-text">VERSION 0.1</span>
+            </div>
+            <div class="footer-col">
+                <p class="footer-section-title">TERMS + POLICIES</p>
+                <a href="/legal#terms" class="footer-link">TERMS OF SERVICE</a>
+                <a href="/legal#privacy" class="footer-link">PRIVACY POLICY</a>
+                <p class="footer-section-title footer-section-title--spaced">STATISTICS</p>
+                <a href="/#stat-accounts-created" class="footer-link">USER COUNT</a>
+                <a href="/#stat-lifts-recorded" class="footer-link">LIFT COUNT</a>
+                <a href="/#stat-workouts-tracked" class="footer-link">WORKOUT COUNT</a>
+                <a href="/#stat-active-users" class="footer-link">ACTIVE USERS</a>
+                <p class="footer-section-title footer-section-title--spaced">COMPANY</p>
+                <a href="#" class="footer-link">STRONGMAN AI</a>
+                <a href="#" class="footer-link" data-email-kind="questions">QUESTIONS</a>
+                <a href="#" class="footer-link">HIRING</a>
+                <p class="footer-section-title footer-section-title--spaced">CONTRIBUTORS</p>
+                <a href="/about" class="footer-link">OUR TEAM</a>
+                <p class="footer-section-title footer-section-title--spaced">CONTACT</p>
+                <button type="button" class="footer-link-button" data-email-kind="contact">CONTACT US</button>
+            </div>
+        </div>
+    </footer>
+    </div>
+
+    <div id="footer-email-overlay" class="footer-email-overlay" hidden>
+        <div class="footer-email-dialog" role="dialog" aria-modal="true" aria-labelledby="footer-email-heading">
+            <button type="button" class="footer-email-close" id="footer-email-close" aria-label="Close">&times;</button>
+            <h2 id="footer-email-heading" class="footer-email-title">Send email</h2>
+            <p class="footer-email-to">To: <a href="mailto:strongmanaioutreach@gmail.com" class="footer-email-to-link">strongmanaioutreach@gmail.com</a></p>
+            <div class="footer-email-fields">
+                <label class="footer-email-label" for="footer-email-subject">Subject</label>
+                <input type="text" class="footer-email-input" id="footer-email-subject" autocomplete="off">
+                <label class="footer-email-label" for="footer-email-body">Message</label>
+                <textarea class="footer-email-textarea" id="footer-email-body" rows="6" spellcheck="true"></textarea>
+            </div>
+            <div class="footer-email-actions">
+                <button type="button" class="footer-email-btn footer-email-btn--secondary" id="footer-email-cancel">Cancel</button>
+                <button type="button" class="footer-email-btn footer-email-btn--primary" id="footer-email-open">Open in email app</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="home-settings-backdrop" id="home-settings-backdrop" aria-hidden="true"></div>
+    <div class="home-settings-dialog" id="home-settings-dialog" role="dialog" aria-modal="true" aria-labelledby="home-settings-title" aria-hidden="true">
+        <div class="home-settings-panel">
+            <header class="home-settings-header">
+                <h2 class="home-settings-title" id="home-settings-title">Settings</h2>
+                <button type="button" class="home-settings-close" id="home-settings-close" aria-label="Close settings">×</button>
+            </header>
+            <div class="home-settings-body">
+                <section class="home-settings-section" aria-labelledby="settings-appearance-heading">
+                    <h3 class="home-settings-section-title" id="settings-appearance-heading">Appearance</h3>
+                    <p class="home-settings-hint">Theme and preferences apply across the app.</p>
+                    <div class="home-settings-theme-row" role="group" aria-label="Color theme">
+                        <label class="home-settings-radio-label"><input type="radio" name="home-theme" value="dark" class="home-settings-radio"> Dark</label>
+                        <label class="home-settings-radio-label"><input type="radio" name="home-theme" value="light" class="home-settings-radio"> Light</label>
+                        <label class="home-settings-radio-label"><input type="radio" name="home-theme" value="system" class="home-settings-radio"> System</label>
+                    </div>
+                </section>
+                <section class="home-settings-section" aria-labelledby="settings-account-heading">
+                    <h3 class="home-settings-section-title" id="settings-account-heading">Account &amp; setup</h3>
+                    <a href="/profile" class="home-settings-link">Profile</a>
+                </section>
+                <section class="home-settings-section" aria-labelledby="settings-units-heading">
+                    <h3 class="home-settings-section-title" id="settings-units-heading">Units &amp; region</h3>
+                    <label class="home-settings-field-label" for="settings-units-select">Weight &amp; distance</label>
+                    <select id="settings-units-select" class="home-settings-select">
+                        <option value="imperial">Imperial (lb, ft)</option>
+                        <option value="metric">Metric (kg, m)</option>
+                    </select>
+                </section>
+                <section class="home-settings-section" aria-labelledby="settings-coach-heading">
+                    <h3 class="home-settings-section-title" id="settings-coach-heading">AI coaching</h3>
+                    <p class="home-settings-hint home-settings-hint--below-title">Favorite lifts (one per line or commas). Used for progressive overload on Create.</p>
+                    <label class="home-settings-field-label" for="settings-favorite-movements">Favorite movements</label>
+                    <textarea id="settings-favorite-movements" class="home-settings-textarea" rows="3" maxlength="2000" placeholder="e.g. axle clean &amp; press, sandbag load, deficit deadlift" spellcheck="true" aria-label="Favorite movements for AI coaching"></textarea>
+                </section>
+                <section class="home-settings-section" aria-labelledby="settings-anything-heading">
+                    <h3 class="home-settings-section-title" id="settings-anything-heading">Anything else?</h3>
+                    <p class="home-settings-hint home-settings-hint--below-title">Context Rocky uses when coaching you.</p>
+                    <div class="home-settings-notes-block">
+                        <div class="home-settings-known-header">
+                            <p class="home-settings-field-label" id="settings-known-notes-label">Things I already know about you</p>
+                            <a href="/init?refine=1" class="home-settings-known-customize-btn">Customize</a>
+                        </div>
+                        <div id="settings-known-notes" class="home-settings-known-notes" aria-labelledby="settings-known-notes-label" role="region">Nothing saved from setup yet.</div>
+                    </div>
+                    <label class="home-settings-field-label" for="settings-anything-else">Anything else you want me to know</label>
+                    <textarea id="settings-anything-else" class="home-settings-textarea" rows="4" maxlength="4000" spellcheck="true" aria-label="Anything else you want me to know"></textarea>
+                </section>
+                <section class="home-settings-section" aria-labelledby="settings-notifications-heading">
+                    <h3 class="home-settings-section-title" id="settings-notifications-heading">Notifications</h3>
+                    <p class="home-settings-hint home-settings-hint--below-title">Reminders (workouts, check-ins) and product updates. Turn either option on or off anytime.</p>
+                    <label class="home-settings-toggle"><input type="checkbox" id="settings-notify-push" class="home-settings-checkbox"> Browser notifications</label>
+                    <label class="home-settings-toggle"><input type="checkbox" id="settings-notify-email" class="home-settings-checkbox"> Email notifications</label>
+                    <p class="home-settings-notify-status" id="settings-notify-browser-status" role="status" aria-live="polite" hidden></p>
+                    <div class="home-settings-reminder-wrap" id="settings-reminder-schedule-block">
+                        <p class="home-settings-field-label home-settings-field-label--reminder">Reminder schedule</p>
+                        <p class="home-settings-hint home-settings-hint--tight">Uses your local device time. Turn on browser notifications above. Reminders only fire while a Strongman AI tab is open.</p>
+                        <label class="home-settings-toggle home-settings-toggle--reminder"><input type="checkbox" id="settings-reminder-enabled" class="home-settings-checkbox"> Use scheduled reminders</label>
+                        <div class="home-settings-reminder-fields" id="settings-reminder-fields" hidden>
+                            <label class="home-settings-field-label" for="settings-reminder-time">Time</label>
+                            <input type="time" id="settings-reminder-time" class="home-settings-time-input" value="09:00">
+                            <label class="home-settings-field-label" for="settings-reminder-frequency">Repeat</label>
+                            <select id="settings-reminder-frequency" class="home-settings-select">
+                                <option value="daily">Every day</option>
+                                <option value="weekdays">Monday – Friday</option>
+                                <option value="weekends">Saturday &amp; Sunday</option>
+                                <option value="custom">Choose days…</option>
+                            </select>
+                            <div class="home-settings-reminder-custom" id="settings-reminder-custom-days" hidden role="group" aria-label="Reminder days">
+                                <label class="home-settings-day-chip"><input type="checkbox" class="settings-reminder-day" data-weekday="1"> Mon</label>
+                                <label class="home-settings-day-chip"><input type="checkbox" class="settings-reminder-day" data-weekday="2"> Tue</label>
+                                <label class="home-settings-day-chip"><input type="checkbox" class="settings-reminder-day" data-weekday="3"> Wed</label>
+                                <label class="home-settings-day-chip"><input type="checkbox" class="settings-reminder-day" data-weekday="4"> Thu</label>
+                                <label class="home-settings-day-chip"><input type="checkbox" class="settings-reminder-day" data-weekday="5"> Fri</label>
+                                <label class="home-settings-day-chip"><input type="checkbox" class="settings-reminder-day" data-weekday="6"> Sat</label>
+                                <label class="home-settings-day-chip"><input type="checkbox" class="settings-reminder-day" data-weekday="0"> Sun</label>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <section class="home-settings-section" aria-labelledby="settings-privacy-heading">
+                    <h3 class="home-settings-section-title" id="settings-privacy-heading">Privacy</h3>
+                    <label class="home-settings-toggle"><input type="checkbox" id="settings-profile-public" class="home-settings-checkbox" checked> Public profile on leaderboards</label>
+                    <label class="home-settings-toggle"><input type="checkbox" id="settings-show-activity" class="home-settings-checkbox" checked> Show activity to friends</label>
+                </section>
+                <section class="home-settings-section home-settings-section--footer" aria-labelledby="settings-about-heading">
+                    <h3 class="home-settings-section-title" id="settings-about-heading">About</h3>
+                    <p class="home-settings-meta">Strongman AI v1.1</p>
+                    <div class="home-settings-inline-links">
+                        <a href="/legal#terms" class="home-settings-inline-link">Terms</a>
+                        <span class="home-settings-sep" aria-hidden="true">·</span>
+                        <a href="/legal#privacy" class="home-settings-inline-link">Privacy</a>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <div class="pf-ach-overlay" id="profile-ach-overlay" hidden>
+        <div class="pf-ach-dialog" role="dialog" aria-modal="true" aria-labelledby="profile-ach-title">
+            <header class="pf-ach-header">
+                <div class="pf-ach-header-text">
+                    <h2 class="pf-ach-title" id="profile-ach-title">Achievements</h2>
+                    <p class="pf-ach-subtitle" id="profile-ach-subtitle">0 / 0 unlocked</p>
+                </div>
+                <button type="button" class="pf-ach-close" id="profile-ach-close" aria-label="Close achievements">&times;</button>
+            </header>
+            <div class="pf-ach-progress-wrap" aria-hidden="true">
+                <div class="pf-ach-progress-track">
+                    <div class="pf-ach-progress-fill" id="profile-ach-progress-fill" style="width: 0%"></div>
+                </div>
+            </div>
+            <div class="pf-ach-filters" id="profile-ach-filters" role="tablist" aria-label="Achievement categories"></div>
+            <div class="pf-ach-body">
+                <ul class="pf-ach-grid" id="profile-ach-grid"></ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="shared/name-policy.js"></script>
+    <script src="shared/api.js"></script>
+    <script src="shared/notification-bell.js"></script>
+    <script src="shared/user-avatar.js"></script>
+    <script src="shared/server-wake.js"></script>
+    <script src="shared/pr-log.js"></script>
+    <script src="shared/workout-log.js"></script>
+    <script src="shared/training-sync.js"></script>
+    <script src="shared/info-tip.js"></script>
+    <script src="shared/sport-database.js"></script>
+    <script src="shared/athlete-context.js"></script>
+    <script src="shared/achievements.js"></script>
+    <script src="shared/app-nav.js"></script>
+    <script src="shared/sidebar-profile-menu.js"></script>
+    <script src="shared/auth-guard.js"></script>
+    <script src="shared/site-footer-email.js"></script>
+    <script src="shared/known-notes.js"></script>
+    <script src="shared/settings-popup.js"></script>
+    <script src="js/profile.js"></script>
+    <script src="shared/workout-dashboard.js"></script>
+    <script>if (window.WorkoutDashboard) window.WorkoutDashboard.init({});</script>
+</body>
+</html>

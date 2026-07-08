@@ -1,0 +1,55 @@
+/* Fast tap / select micro-interactions */
+
+@media (prefers-reduced-motion: no-preference) {
+    .buddy-pill,
+    .buddy-day span,
+    .lb-filter-btn,
+    .lb-comp-toggle-btn,
+    .lb-comp-add-btn,
+    .init-bubble,
+    .init-btn,
+    .customize-save-btn,
+    .buddy-known-customize-btn,
+    .home-settings-known-customize-btn,
+    .app-bottom-nav-link,
+    .sidebar-link,
+    .dash-start-btn,
+    .sport-card,
+    .notif-bell-btn,
+    .home-settings-radio-label,
+    .home-settings-day-chip,
+    .home-settings-toggle
+    {
+        transition: transform 0.1s ease, box-shadow 0.12s ease, border-color 0.12s ease, background-color 0.12s ease, color 0.12s ease;
+    }
+
+    .buddy-pill:active,
+    .buddy-day:active span,
+    .lb-filter-btn:active,
+    .lb-comp-toggle-btn:active,
+    .init-bubble:active:not(.init-bubble--search),
+    .init-btn:active,
+    .customize-save-btn:active,
+    .buddy-known-customize-btn:active,
+    .home-settings-known-customize-btn:active,
+    .dash-start-btn:active,
+    .sport-card:active,
+    .notif-bell-action:active
+    {
+        transform: scale(0.96);
+    }
+
+    .buddy-pill.is-active,
+    .lb-filter-btn.active,
+    .lb-comp-toggle-btn.active,
+    .init-bubble.is-selected
+    {
+        animation: sm-select-pop 0.14s ease-out;
+    }
+
+    @keyframes sm-select-pop {
+        0% { transform: scale(0.94); }
+        70% { transform: scale(1.02); }
+        100% { transform: scale(1); }
+    }
+}

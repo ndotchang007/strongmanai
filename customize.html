@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="strongman-api-base" content="http://127.0.0.1:8080/api/v1">
+    <title>Strongman AI – User settings</title>
+    <link rel="icon" type="image/png" href="assets/logo.png">
+    <link rel="apple-touch-icon" href="assets/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/home.css">
+    <link rel="stylesheet" href="css/app-nav.css">
+    <link rel="stylesheet" href="css/notification-bell.css">
+    <link rel="stylesheet" href="css/settings-app.css">
+    <link rel="stylesheet" href="css/settings-buddy.css">
+    <link rel="stylesheet" href="css/server-wake.css">
+    <link rel="stylesheet" href="css/customize.css">
+    <link rel="stylesheet" href="css/athlete-sports.css">
+    <link rel="stylesheet" href="css/info-tip.css">
+    <link rel="stylesheet" href="css/workout-dashboard.css">
+</head>
+<body class="customize-page" data-current-page="customize">
+    <aside class="site-sidebar" id="site-sidebar" aria-label="Main navigation">
+        <div class="sidebar-brand">
+            <span class="sidebar-logo">STRONGMAN <span class="sidebar-logo-ai">AI</span></span>
+        </div>
+        <nav class="sidebar-nav" aria-label="App sections"></nav>
+        <div class="sidebar-bottom">
+            <div class="sidebar-profile-wrap">
+                <button type="button" class="sidebar-profile sidebar-profile-trigger" id="sidebar-profile-trigger" aria-label="Profile menu" aria-expanded="false" aria-haspopup="true" aria-controls="sidebar-profile-menu">
+                    <span class="sidebar-profile-avatar" aria-hidden="true"></span>
+                    <span class="sidebar-label">Profile</span>
+                </button>
+                <div class="sidebar-profile-menu" id="sidebar-profile-menu" role="menu" aria-hidden="true" hidden>
+                    <a href="/profile" class="sidebar-profile-menu-item" role="menuitem">View profile</a>
+                    <button type="button" class="sidebar-profile-menu-item sidebar-profile-menu-item--button" role="menuitem" id="sidebar-profile-logout">Log out</button>
+                </div>
+            </div>
+            <button type="button" class="sidebar-link sidebar-link-more sidebar-settings-trigger" id="sidebar-settings-trigger" aria-label="Settings" aria-haspopup="dialog" aria-expanded="false" aria-controls="home-settings-dialog">
+                <span class="sidebar-label">Settings</span>
+            </button>
+        </div>
+    </aside>
+    <div class="main-wrap">
+        <main class="customize-main">
+            <div class="dash-rocky-setup-alert customize-rocky-setup-alert" data-rocky-setup-alert hidden role="alert">
+                <span class="dash-rocky-setup-mark" aria-hidden="true">R</span>
+                <div class="dash-rocky-setup-copy">
+                    <p class="dash-rocky-setup-title">Hold it — you haven't told me your sports yet.</p>
+                    <p class="dash-rocky-setup-text">Add your sport(s), practice nights, and game days below so Rocky can coach you for real.</p>
+                </div>
+            </div>
+            <div class="rocky-sport-alerts" data-rocky-sport-alerts hidden></div>
+            <div class="customize-setup-banner" id="customize-setup-banner" hidden role="status">
+                <p class="customize-setup-banner-title">Almost there — lock in your schedule</p>
+                <p class="customize-setup-banner-text">For each sport, pick school or club, set practice nights and game/meet days, and choose your season phase. Rocky uses this to plan lifting around your real week.</p>
+            </div>
+            <header class="user-settings-hero">
+                <p class="user-settings-eyebrow">Under You · v1.1</p>
+                <h1 class="user-settings-title">User settings</h1>
+                <p class="user-settings-lead">Your account, sports, schedule, and training preferences — everything Rocky uses to coach you.</p>
+                <a href="/info" class="user-settings-info-link">New here? Read the guide →</a>
+            </header>
+
+            <section class="buddy-form-wrap" aria-label="User settings">
+                <div id="user-account-mount"></div>
+                <div id="customize-sports-mount" class="sports-editor-mount"></div>
+                <div id="customize-form-mount"></div>
+                <div class="customize-actions">
+                    <button type="button" class="customize-save-btn" id="customize-save-btn">Save changes</button>
+                    <a href="/generate" class="customize-secondary-link">Chat with Rocky →</a>
+                </div>
+                <p class="customize-completion" id="customize-completion">Let's fill in a few things…</p>
+            </section>
+        </main>
+        <footer class="site-footer site-footer--compact">
+            <div class="footer-inner footer-inner--compact">
+                <p class="footer-logo">STRONGMAN <span class="footer-logo-ai">AI</span></p>
+                <div class="footer-compact-links">
+                    <a href="/legal#terms" class="footer-link">Terms</a>
+                    <a href="/legal#privacy" class="footer-link">Privacy</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <div class="home-settings-backdrop" id="home-settings-backdrop" aria-hidden="true"></div>
+    <div class="home-settings-dialog settings-buddy settings-hub" id="home-settings-dialog" role="dialog" aria-modal="true" aria-labelledby="home-settings-title" aria-hidden="true">
+        <div class="home-settings-panel">
+            <header class="home-settings-header">
+                <div class="settings-hub-brand">
+                    <span class="settings-hub-mark" aria-hidden="true">SM</span>
+                    <div class="settings-hub-brand-text">
+                        <span class="settings-hub-eyebrow">Strongman AI</span>
+                        <span class="settings-hub-title-text">Settings</span>
+                    </div>
+                </div>
+                <h2 class="home-settings-title visually-hidden" id="home-settings-title">Settings</h2>
+                <button type="button" class="home-settings-close" id="home-settings-close" aria-label="Close settings">×</button>
+            </header>
+            <div class="home-settings-body">
+                <p class="settings-hub-intro">Theme, notifications, and app preferences. You're on User settings for account and training details.</p>
+                <section class="home-settings-section settings-buddy-card" aria-labelledby="settings-appearance-heading">
+                    <h3 class="home-settings-section-title" id="settings-appearance-heading">Appearance</h3>
+                    <div class="home-settings-theme-row settings-theme-pills" role="group" aria-label="Color theme">
+                        <label class="settings-theme-pill"><input type="radio" name="home-theme" value="dark" class="home-settings-radio"> Dark</label>
+                        <label class="settings-theme-pill"><input type="radio" name="home-theme" value="light" class="home-settings-radio"> Light</label>
+                        <label class="settings-theme-pill"><input type="radio" name="home-theme" value="system" class="home-settings-radio"> Auto</label>
+                    </div>
+                </section>
+                <section class="home-settings-section settings-buddy-card" aria-labelledby="settings-units-heading">
+                    <h3 class="home-settings-section-title" id="settings-units-heading">Units</h3>
+                    <select id="settings-units-select" class="home-settings-select settings-buddy-select">
+                        <option value="imperial">Imperial (lb, ft)</option>
+                        <option value="metric">Metric (kg, m)</option>
+                    </select>
+                </section>
+                <a href="/info" class="settings-hub-training-card settings-hub-info-card" id="settings-hub-info-card">
+                    <span class="settings-hub-training-kicker">Guide</span>
+                    <span class="settings-hub-training-title">How to use Strongman AI</span>
+                    <span class="settings-hub-training-desc">Setup steps, tips for Rocky, and where everything lives.</span>
+                    <span class="settings-hub-training-arrow">Open guide →</span>
+                </a>
+                <section class="home-settings-section settings-buddy-card" aria-labelledby="settings-notifications-heading">
+                    <h3 class="home-settings-section-title" id="settings-notifications-heading">Notifications</h3>
+                    <p class="home-settings-hint home-settings-hint--below-title">Rocky-style email nudges when you haven’t logged a workout. Same roast energy as your dashboard.</p>
+                    <label class="home-settings-toggle"><input type="checkbox" id="settings-notify-email" class="home-settings-checkbox"> Enable email notifications</label>
+                    <p class="home-settings-notify-status" id="settings-notify-browser-status" role="status" aria-live="polite" hidden></p>
+                </section>
+                <section class="home-settings-section settings-buddy-card settings-hub-labs" aria-labelledby="settings-labs-heading">
+                    <h3 class="home-settings-section-title" id="settings-labs-heading">Labs <span class="settings-hub-labs-badge">Beta</span></h3>
+                    <div class="settings-hub-toggle-row">
+                        <div class="settings-hub-toggle-copy">
+                            <span class="settings-hub-toggle-label">Experimental mode</span>
+                            <span class="settings-hub-toggle-hint">Try in-progress features before they ship.</span>
+                        </div>
+                        <label class="settings-hub-switch" aria-label="Enable experimental mode">
+                            <input type="checkbox" id="settings-experimental-mode" class="home-settings-checkbox">
+                            <span class="settings-hub-switch-track" aria-hidden="true"></span>
+                        </label>
+                    </div>
+                </section>
+                <section class="home-settings-section home-settings-section--footer settings-buddy-card" aria-labelledby="settings-about-heading">
+                    <h3 class="home-settings-section-title" id="settings-about-heading">About</h3>
+                    <p class="home-settings-meta">Strongman AI v1.1</p>
+                    <div class="home-settings-inline-links">
+                        <a href="/legal#terms" class="home-settings-inline-link">Terms</a>
+                        <span class="home-settings-sep" aria-hidden="true">·</span>
+                        <a href="/legal#privacy" class="home-settings-inline-link">Privacy</a>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <script src="shared/name-policy.js"></script>
+    <script src="shared/api.js"></script>
+    <script src="shared/known-notes.js"></script>
+    <script src="shared/notification-bell.js"></script>
+    <script src="shared/server-wake.js"></script>
+    <script src="shared/user-avatar.js"></script>
+    <script src="shared/app-nav.js"></script>
+    <script src="shared/sidebar-profile-menu.js"></script>
+    <script src="shared/auth-guard.js"></script>
+    <script src="shared/info-tip.js"></script>
+    <script src="shared/sport-database.js"></script>
+    <script src="shared/sport-picker.js"></script>
+    <script src="shared/athlete-context.js"></script>
+    <script src="shared/rocky-setup-alert.js"></script>
+    <script src="shared/athlete-sports-editor.js"></script>
+    <script src="shared/units.js"></script>
+    <script src="shared/user-account-form.js"></script>
+    <script src="shared/athlete-profile-form.js"></script>
+    <script src="shared/site-footer-email.js"></script>
+    <script src="shared/settings-popup.js"></script>
+    <script src="js/customize.js"></script>
+    <script src="shared/workout-dashboard.js"></script>
+    <script>if (window.WorkoutDashboard) window.WorkoutDashboard.init({});</script>
+    <datalist id="sport-datalist"></datalist>
+</body>
+</html>

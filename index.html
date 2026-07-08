@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="strongman-api-base" content="http://127.0.0.1:8080/api/v1">
+    <title>Strongman AI</title>
+    <link rel="icon" type="image/png" href="assets/logo.png">
+    <link rel="apple-touch-icon" href="assets/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/index.css">
+    <link rel="stylesheet" href="css/cookie-consent.css">
+    <link rel="stylesheet" href="css/info-tip.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="site-header-island">
+            <a href="/" class="site-header-logo-link">
+                <img src="assets/logo.png" alt="Strongman AI" class="site-header-logo-img" width="34" height="34" decoding="async">
+            </a>
+            <span class="site-header-divider" aria-hidden="true"></span>
+            <button type="button" class="site-header-menu-btn" aria-label="Open menu" aria-expanded="false" aria-controls="site-header-nav">
+                <span class="site-header-menu-bars" aria-hidden="true"><span></span><span></span><span></span></span>
+            </button>
+            <nav class="site-header-nav" id="site-header-nav">
+                <a href="#" class="site-header-link" data-email-kind="bug">REPORT ISSUE</a>
+                <a href="/login" class="site-header-link">LOGIN</a>
+                <a href="/leaderboards" class="site-header-link">VIEW LEADERBOARDS</a>
+            </nav>
+        </div>
+    </header>
+    <div class="mainContent">
+        <section class="page1 hero-viewport" aria-label="Introduction">
+            <div class="hero-grid-bg" aria-hidden="true"></div>
+            <div class="hero-scrim" aria-hidden="true"></div>
+            <div class="hero-layout hero-layout--centered">
+                <div class="hero-inner">
+                    <div class="hero-badge-row">
+                        <span class="hero-badge hero-badge--live"><span class="hero-badge-dot" aria-hidden="true"></span>Built for student athletes</span>
+                        <span class="hero-badge">School · Practice · Lifting</span>
+                    </div>
+                    <h1 class="hero-headline">A personalized fitness coach built<span class="hero-headline-accent">for high school athletes</span></h1>
+                    <p class="hero-subtitle">Strongman AI programs workouts around school nights, practice, and game days — then tracks every rep, surfaces insights, and puts you on leaderboards built for real competition.</p>
+                    <ul class="hero-pill-list" aria-label="Platform capabilities">
+                        <li class="hero-pill">Sport-aware AI coaching</li>
+                        <li class="hero-pill">Practice &amp; game-day hints</li>
+                        <li class="hero-pill">Session analytics</li>
+                        <li class="hero-pill">PR leaderboards</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        <section class="product-showcase" aria-label="Product preview">
+            <div class="product-showcase-inner">
+                <p class="section-eyebrow">Your dashboard</p>
+                <h2 class="product-showcase-title">See what training looks like inside Strongman AI</h2>
+                <div class="hero-visual" aria-hidden="true">
+                    <div class="hero-visual-glow"></div>
+                    <div class="hero-mockup">
+                        <div class="hero-mockup-chrome">
+                            <span class="hero-mockup-dot"></span>
+                            <span class="hero-mockup-dot"></span>
+                            <span class="hero-mockup-dot"></span>
+                            <span class="hero-mockup-label">strongman.ai / dashboard</span>
+                        </div>
+                        <div class="hero-mockup-body">
+                            <div class="hero-mockup-panel hero-mockup-panel--prompt">
+                                <p class="hero-mockup-kicker">Coach</p>
+                                <p class="hero-mockup-text" id="hero-demo-prompt">"45-min upper body, badminton in-season — no heavy legs before Saturday match"</p>
+                                <div class="hero-mockup-progress"><span></span></div>
+                            </div>
+                            <div class="hero-mockup-row">
+                                <div class="hero-mockup-panel hero-mockup-panel--stat">
+                                    <p class="hero-mockup-kicker">This week</p>
+                                    <p class="hero-mockup-metric">12<span> sessions</span></p>
+                                </div>
+                                <div class="hero-mockup-panel hero-mockup-panel--stat">
+                                    <p class="hero-mockup-kicker">PR streak</p>
+                                    <p class="hero-mockup-metric">+18<span> lbs</span></p>
+                                </div>
+                            </div>
+                            <div class="hero-mockup-panel hero-mockup-panel--chart">
+                                <p class="hero-mockup-kicker">Volume trend</p>
+                                <div class="hero-mockup-bars">
+                                    <span style="--h: 42%"></span>
+                                    <span style="--h: 58%"></span>
+                                    <span style="--h: 48%"></span>
+                                    <span style="--h: 72%"></span>
+                                    <span style="--h: 65%"></span>
+                                    <span style="--h: 88%"></span>
+                                    <span style="--h: 94%"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="hero-float-card hero-float-card--rank">
+                            <span class="hero-float-label">Global rank</span>
+                            <strong>#142</strong>
+                            <span class="hero-float-sub">Bench press · 225 lb</span>
+                        </div>
+                        <div class="hero-float-card hero-float-card--ai">
+                            <span class="hero-float-label">Rocky AI</span>
+                            <strong>Draft ready</strong>
+                            <span class="hero-float-sub">View workout preview →</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="hs-athletes" aria-labelledby="hs-athletes-heading">
+            <div class="hs-athletes-inner">
+                <div class="hs-athletes-copy">
+                    <p class="section-eyebrow">For high school athletes</p>
+                    <h2 class="hs-athletes-title" id="hs-athletes-heading">Lift smarter between class, practice, and competition</h2>
+                    <p class="hs-athletes-lead">Set your sport, season phase, practice nights, and session caps once — Rocky uses that context every time you chat with Coach or log a workout.</p>
+                    <ul class="hs-athletes-list">
+                        <li><strong>Game &amp; match day recovery</strong> — lighter sessions when you're competing</li>
+                        <li><strong>Practice-day programming</strong> — complementary lifts that don't bury your legs before practice</li>
+                        <li><strong>Weeknight caps<span data-info-tip="weeknight_cap"></span></strong> — 30–45 minute sessions after school</li>
+                        <li><strong>Sport performance goals</strong> — plus physique, strength, and general health</li>
+                    </ul>
+                    <a href="/signup" class="hs-athletes-cta">Create your athlete profile</a>
+                </div>
+                <div class="hs-athletes-card" id="hs-athletes-demo-card" aria-hidden="true">
+                    <p class="hs-athletes-card-kicker">Athlete customization</p>
+                    <div class="hs-athletes-card-row"><span>Sport</span><strong id="hs-demo-sport">Badminton · singles</strong></div>
+                    <div class="hs-athletes-card-row"><span>Season</span><strong id="hs-demo-season">In-season</strong></div>
+                    <div class="hs-athletes-card-row"><span>Practice</span><strong id="hs-demo-practice">Mon / Wed / Fri</strong></div>
+                    <div class="hs-athletes-card-row"><span id="hs-demo-comp-label">Match day</span><strong id="hs-demo-comp">Saturday</strong></div>
+                    <div class="hs-athletes-card-hint" id="hs-demo-hint">Today: Short session before match (~30 min)</div>
+                </div>
+            </div>
+        </section>
+        <section class="capabilities" aria-label="Platform capabilities">
+            <div class="capabilities-inner">
+                <div class="capabilities-header">
+                    <p class="section-eyebrow">Why Strongman AI</p>
+                    <h2 class="capabilities-title">Built like a product, not a bare-bones tracker</h2>
+                    <p class="capabilities-lead">Every layer — generation, logging, analytics, and competition — is designed to work together so your training feels guided, not manual.</p>
+                </div>
+                <div class="capabilities-grid">
+                    <article class="cap-card cap-card--featured">
+                        <div class="cap-card-icon" aria-hidden="true">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z"/><path d="M5 19l1 3 1-3 3-1-3-1-1-3-1 3-3 1 3 1z"/><path d="M19 13l.75 2.25L22 16l-2.25.75L19 19l-.75-2.25L16 16l2.25-.75L19 13z"/></svg>
+                        </div>
+                        <h3 class="cap-card-title">Student-athlete scheduling</h3>
+                        <p class="cap-card-desc">Tell us your sport, practice nights, and game days. Rocky caps session length on school nights and dials volume down before competition — not one-size-fits-all bro splits.</p>
+                    </article>
+                    <article class="cap-card">
+                        <div class="cap-card-icon" aria-hidden="true">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z"/><path d="M5 19l1 3 1-3 3-1-3-1-1-3-1 3-3 1 3 1z"/><path d="M19 13l.75 2.25L22 16l-2.25.75L19 19l-.75-2.25L16 16l2.25-.75L19 13z"/></svg>
+                        </div>
+                        <h3 class="cap-card-title">Natural-language generation</h3>
+                        <p class="cap-card-desc">Describe your sport, schedule, or weak points in plain English. Rocky turns it into a structured plan you can preview before you train.</p>
+                    </article>
+                    <article class="cap-card">
+                        <div class="cap-card-icon" aria-hidden="true">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg>
+                        </div>
+                        <h3 class="cap-card-title">Deep session analytics</h3>
+                        <p class="cap-card-desc">Volume trends, monthly recaps, and personalized insights from your workout journal — data that actually informs your next block.</p>
+                    </article>
+                    <article class="cap-card">
+                        <div class="cap-card-icon" aria-hidden="true">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+                        </div>
+                        <h3 class="cap-card-title">Competitive leaderboards</h3>
+                        <p class="cap-card-desc">Global and friend rankings across PRs, bodyweight maxes, and more — with badges and profile showcases that make progress visible.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+        <div class="page2">
+            <div class="page2-header">
+                <p class="section-eyebrow">See it in action</p>
+                <h2 class="page2-title">One platform, three workflows</h2>
+                <p class="page2-subtitle">Try the live demo below — generate a workout draft, explore tracking screenshots, and preview how competition works on Strongman AI.</p>
+            </div>
+            <div class="page2-nav">
+                <div class="page2-nav-inner">
+                    <span class="page2-nav-slider" aria-hidden="true"></span>
+                    <button type="button" class="page2-nav-btn active" data-tab="generate">GENERATE.</button>
+                    <button type="button" class="page2-nav-btn" data-tab="track">TRACK.</button>
+                    <button type="button" class="page2-nav-btn" data-tab="compete">COMPETE.</button>
+                </div>
+            </div>
+            <div class="page2-content-box">
+                <div class="page2-tab-content page2-tab-content--generate active" id="content-generate">
+                    <div class="page2-generate-solo">
+                        <div class="page2-generate-solo-inner">
+                            <h3 class="page2-box-heading page2-generate-solo-heading">GENERATE.</h3>
+                            <p class="page2-box-desc page2-generate-lead">Ask for any workout in plain language, then press <kbd class="page2-kbd">Enter</kbd> or the arrow to prepare a draft. Use <strong class="page2-generate-strong">View workout draft</strong> to open the preview.</p>
+                            <form class="page2-generate-ai-form page2-generate-ai-form--solo" id="generate-ai-section" action="#" method="post">
+                                <div class="page2-generate-ai-input-wrap page2-generate-ai-input-wrap--solo">
+                                    <label class="visually-hidden" for="page2-generate-prompt">Workout request</label>
+                                    <input type="text" class="page2-generate-ai-input" id="page2-generate-prompt" name="prompt" placeholder="e.g. 45-min upper body, volleyball in-season, light legs before Friday match" autocomplete="off">
+                                    <button type="submit" class="page2-generate-ai-send" aria-label="Prepare workout draft">↑</button>
+                                </div>
+                            </form>
+                            <div class="page2-generate-ready" id="page2-generate-ready" hidden>
+                                <p class="page2-generate-ready-text">Draft ready — open when you want to preview it.</p>
+                                <button type="button" class="page2-generate-open-modal-btn" id="page2-open-generate-modal">View workout draft</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="page2-tab-content" id="content-track">
+                    <div class="page2-box-image">
+                        <div class="hero-visual page2-mockup-wrap" aria-hidden="true">
+                            <div class="hero-visual-glow"></div>
+                            <div class="hero-mockup">
+                                <div class="hero-mockup-chrome">
+                                    <span class="hero-mockup-dot"></span><span class="hero-mockup-dot"></span><span class="hero-mockup-dot"></span>
+                                    <span class="hero-mockup-label">strongman.ai / journal</span>
+                                </div>
+                                <div class="hero-mockup-body">
+                                    <div class="hero-mockup-panel hero-mockup-panel--prompt">
+                                        <p class="hero-mockup-kicker">Today's session</p>
+                                        <p class="hero-mockup-text">Upper push · 5 exercises · 42 min logged</p>
+                                        <div class="hero-mockup-progress"><span></span></div>
+                                    </div>
+                                    <div class="hero-mockup-row">
+                                        <div class="hero-mockup-panel hero-mockup-panel--stat">
+                                            <p class="hero-mockup-kicker">Sets logged</p>
+                                            <p class="hero-mockup-metric">28<span> today</span></p>
+                                        </div>
+                                        <div class="hero-mockup-panel hero-mockup-panel--stat">
+                                            <p class="hero-mockup-kicker">Streak</p>
+                                            <p class="hero-mockup-metric">9<span> days</span></p>
+                                        </div>
+                                    </div>
+                                    <div class="hero-mockup-panel hero-mockup-panel--chart">
+                                        <p class="hero-mockup-kicker">Weekly volume</p>
+                                        <div class="hero-mockup-bars">
+                                            <span style="--h: 38%"></span><span style="--h: 52%"></span><span style="--h: 45%"></span>
+                                            <span style="--h: 68%"></span><span style="--h: 74%"></span><span style="--h: 82%"></span><span style="--h: 91%"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="hero-float-card hero-float-card--rank">
+                                    <span class="hero-float-label">New PR</span><strong>225 lb</strong><span class="hero-float-sub">Bench press</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="page2-box-text">
+                        <h3 class="page2-box-heading">TRACK.</h3>
+                        <p class="page2-box-desc">Log a workout and view it in your past workouts section. View every workout you've logged in your workout journal. Get personalized data about your workouts and overall journey as well as monthly recaps of your achievements.</p>
+                    </div>
+                </div>
+                <div class="page2-tab-content" id="content-compete">
+                    <div class="page2-box-image">
+                        <div class="hero-visual page2-mockup-wrap" aria-hidden="true">
+                            <div class="hero-visual-glow"></div>
+                            <div class="hero-mockup">
+                                <div class="hero-mockup-chrome">
+                                    <span class="hero-mockup-dot"></span><span class="hero-mockup-dot"></span><span class="hero-mockup-dot"></span>
+                                    <span class="hero-mockup-label">strongman.ai / leaderboards</span>
+                                </div>
+                                <div class="hero-mockup-body">
+                                    <div class="hero-mockup-panel hero-mockup-panel--prompt">
+                                        <p class="hero-mockup-kicker">Bench press · Global</p>
+                                        <p class="hero-mockup-text">#142 worldwide · 225 lb · +15 lb this month</p>
+                                        <div class="hero-mockup-progress"><span></span></div>
+                                    </div>
+                                    <div class="hero-mockup-row">
+                                        <div class="hero-mockup-panel hero-mockup-panel--stat">
+                                            <p class="hero-mockup-kicker">Among friends</p>
+                                            <p class="hero-mockup-metric">#3<span> rank</span></p>
+                                        </div>
+                                        <div class="hero-mockup-panel hero-mockup-panel--stat">
+                                            <p class="hero-mockup-kicker">PRs logged</p>
+                                            <p class="hero-mockup-metric">12<span> total</span></p>
+                                        </div>
+                                    </div>
+                                    <div class="hero-mockup-panel hero-mockup-panel--chart">
+                                        <p class="hero-mockup-kicker">Rank movement</p>
+                                        <div class="hero-mockup-bars">
+                                            <span style="--h: 55%"></span><span style="--h: 48%"></span><span style="--h: 42%"></span>
+                                            <span style="--h: 36%"></span><span style="--h: 30%"></span><span style="--h: 22%"></span><span style="--h: 18%"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="hero-float-card hero-float-card--ai">
+                                    <span class="hero-float-label">Badge earned</span><strong>PR Hunter</strong><span class="hero-float-sub">Added to profile</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="page2-box-text">
+                        <h3 class="page2-box-heading">COMPETE.</h3>
+                        <p class="page2-box-desc">Show off your personal records on global and friend leaderboards. Add badges to your profile page, as well as pictures, lifts, and stat recaps. Compete against your friends in categories like PRs, bodyweight maxes, and weight loss.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <section class="page3" id="site-stats-section" aria-label="Live platform stats">
+            <div class="page3-scrub" data-scrub-steps="6">
+                <div class="page3-scrub-pin">
+                    <div class="page3-scrub-stage page3-scrub-stage--stats">
+                        <div class="page3-stat-bg" aria-hidden="true">
+                            <span class="page3-stat-float" style="--x:8%;--y:10%;--sz:1.1rem">#225 bench</span>
+                            <span class="page3-stat-float" style="--x:22%;--y:18%;--sz:0.9rem">#3-day split</span>
+                            <span class="page3-stat-float" style="--x:42%;--y:6%;--sz:0.85rem">#45 min session</span>
+                            <span class="page3-stat-float" style="--x:62%;--y:12%;--sz:0.95rem">#185 OHP</span>
+                            <span class="page3-stat-float" style="--x:90%;--y:8%;--sz:1rem">#315 squat</span>
+                            <span class="page3-stat-float page3-stat-float--accent" style="--x:76%;--y:22%;--sz:1.05rem">#PR +18 lb</span>
+                            <span class="page3-stat-float" style="--x:94%;--y:34%;--sz:0.88rem">#bench 5×5</span>
+                            <span class="page3-stat-float" style="--x:4%;--y:32%;--sz:0.82rem">#12 sessions</span>
+                            <span class="page3-stat-float" style="--x:30%;--y:38%;--sz:0.9rem">#28 sets logged</span>
+                            <span class="page3-stat-float" style="--x:52%;--y:28%;--sz:0.8rem">#volume up</span>
+                            <span class="page3-stat-float page3-stat-float--accent" style="--x:68%;--y:40%;--sz:0.92rem">#92% volume</span>
+                            <span class="page3-stat-float" style="--x:86%;--y:48%;--sz:0.95rem">#9-day streak</span>
+                            <span class="page3-stat-float" style="--x:12%;--y:48%;--sz:0.88rem">#leg day</span>
+                            <span class="page3-stat-float" style="--x:36%;--y:52%;--sz:0.85rem">#push pull</span>
+                            <span class="page3-stat-float" style="--x:58%;--y:56%;--sz:1rem">#405 deadlift</span>
+                            <span class="page3-stat-float page3-stat-float--accent" style="--x:80%;--y:62%;--sz:1.08rem">#142 global</span>
+                            <span class="page3-stat-float" style="--x:96%;--y:68%;--sz:0.82rem">#PR hunter</span>
+                            <span class="page3-stat-float" style="--x:6%;--y:64%;--sz:0.9rem">#225×5</span>
+                            <span class="page3-stat-float" style="--x:26%;--y:72%;--sz:0.95rem">#monthly recap</span>
+                            <span class="page3-stat-float" style="--x:48%;--y:68%;--sz:0.88rem">#Rocky AI</span>
+                            <span class="page3-stat-float page3-stat-float--accent" style="--x:70%;--y:76%;--sz:0.9rem">#new PR</span>
+                            <span class="page3-stat-float" style="--x:88%;--y:82%;--sz:1rem">#135 snatch</span>
+                            <span class="page3-stat-float" style="--x:16%;--y:84%;--sz:0.85rem">#track reps</span>
+                            <span class="page3-stat-float" style="--x:40%;--y:88%;--sz:0.92rem">#compete</span>
+                            <span class="page3-stat-float" style="--x:62%;--y:90%;--sz:0.8rem">#friend rank</span>
+                            <span class="page3-stat-float page3-stat-float--accent" style="--x:82%;--y:92%;--sz:0.88rem">#strongman</span>
+                        </div>
+                        <div class="page3-scrub-copy">
+                            <p class="page3-scrub-lead">A growing community of</p>
+                            <ul class="page3-scrub-lines" aria-label="Platform statistics">
+                                <li class="page3-stat-line" data-scrub-index="0" data-stat-field="workoutsMade" id="stat-workouts-made-row">
+                                    <span class="page3-stat-num" id="stat-workouts-made" data-value="0">0</span><span class="page3-stat-label"> workouts generated</span>
+                                </li>
+                                <li class="page3-stat-line" data-scrub-index="1" data-stat-field="liftsTracked" id="stat-lifts-tracked-row">
+                                    <span class="page3-stat-num" id="stat-lifts-tracked" data-value="0">0</span><span class="page3-stat-label"> lifts tracked</span>
+                                </li>
+                                <li class="page3-stat-line" data-scrub-index="2" data-stat-field="users" id="stat-users-row">
+                                    <span class="page3-stat-num" id="stat-users" data-value="0">0</span><span class="page3-stat-label"> users</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="page3-scrub-stage page3-scrub-stage--cta" aria-label="Call to action">
+                        <div class="page3-cta-block">
+                            <p class="page3-cta-eyebrow">Start training smarter</p>
+                            <h2 class="page3-cta-headline">Your next PR starts with one account</h2>
+                            <p class="page3-cta-sub">Chat with Coach for structured workouts and advice, log every session, and climb leaderboards built for real competition — all in one place.</p>
+                            <ul class="page3-cta-perks" aria-label="Platform benefits">
+                                <li class="page3-cta-perk">Athlete profile with sport, practice &amp; game-day schedule</li>
+                                <li class="page3-cta-perk">AI workouts that respect school-night time caps</li>
+                                <li class="page3-cta-perk">Session analytics and monthly recaps</li>
+                                <li class="page3-cta-perk">Global and friend leaderboards</li>
+                            </ul>
+                            <div class="page3-cta-actions">
+                                <a href="/signup" class="page3-cta-button">Create your free account</a>
+                                <a href="/login" class="page3-cta-secondary">Already training here? Log in</a>
+                            </div>
+                            <p class="page3-cta-note">Free to start · Rocky AI included · No credit card required</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    <footer class="site-footer site-footer--scroll-gated" id="site-footer">
+        <div class="footer-inner">
+            <div class="footer-col footer-col-brand">
+                <p class="footer-logo">STRONGMAN <span class="footer-logo-ai">AI</span></p>
+                <p class="footer-tagline">BETTER TRAINING. FASTER RESULTS.</p>
+                <p class="footer-section-title">SOCIALS</p>
+                <div class="footer-socials">
+                    <a href="https://www.instagram.com/strongmanai/" class="footer-link" target="_blank" rel="noopener noreferrer">Instagram</a>
+                </div>
+            </div>
+            <div class="footer-col">
+                <p class="footer-section-title">REPORT AN ISSUE</p>
+                <button type="button" class="footer-link-button" data-email-kind="bug">REPORT A BUG</button>
+                <a href="#" class="footer-link" data-email-kind="rate">RATE US</a>
+                <a href="#" class="footer-link" data-email-kind="suggestions">SUGGESTIONS</a>
+                <p class="footer-section-title footer-section-title--spaced">MODELS</p>
+                <span class="footer-text">EDDIE</span>
+                <span class="footer-text footer-placeholder">---</span>
+                <span class="footer-text footer-placeholder">---</span>
+                <span class="footer-text footer-placeholder">---</span>
+                <p class="footer-section-title footer-section-title--spaced">WEB VERSIONS</p>
+                <span class="footer-text">VERSION 1.1</span>
+                <a href="/versions" class="footer-link">VERSION HISTORY</a>
+            </div>
+            <div class="footer-col">
+                <p class="footer-section-title">TERMS + POLICIES</p>
+                <a href="/legal#terms" class="footer-link">TERMS OF SERVICE</a>
+                <a href="/legal#privacy" class="footer-link">PRIVACY POLICY</a>
+                <a href="/surveys" class="footer-link">SURVEYS &amp; FORMS</a>
+                <p class="footer-section-title footer-section-title--spaced">STATISTICS</p>
+                <a href="#stat-users" class="footer-link">USER COUNT</a>
+                <a href="#stat-lifts-tracked" class="footer-link">LIFTS TRACKED</a>
+                <a href="#stat-workouts-made" class="footer-link">WORKOUTS GENERATED</a>
+                <p class="footer-section-title footer-section-title--spaced">COMPANY</p>
+                <a href="#" class="footer-link">STRONGMAN AI</a>
+                <a href="#" class="footer-link" data-email-kind="questions">QUESTIONS</a>
+                <a href="#" class="footer-link">HIRING</a>
+                <p class="footer-section-title footer-section-title--spaced">CONTRIBUTORS</p>
+                <a href="/about" class="footer-link">OUR TEAM</a>
+                <p class="footer-section-title footer-section-title--spaced">CONTACT</p>
+                <button type="button" class="footer-link-button" data-email-kind="contact">CONTACT US</button>
+            </div>
+        </div>
+    </footer>
+    <div id="generate-workout-overlay" class="generate-workout-overlay" hidden>
+        <div class="generate-workout-dialog" role="dialog" aria-modal="true" aria-labelledby="generate-workout-title" aria-busy="false">
+            <button type="button" class="generate-workout-close" id="generate-workout-close" aria-label="Close">&times;</button>
+            <h2 id="generate-workout-title" class="generate-workout-title">Your workout</h2>
+            <p class="generate-workout-prompt-label">You asked for:</p>
+            <p class="generate-workout-prompt" id="generate-workout-prompt-display"></p>
+            <div class="generate-workout-result" id="generate-workout-result"></div>
+            <div class="generate-workout-actions">
+                <button type="button" class="generate-workout-done footer-email-btn footer-email-btn--primary" id="generate-workout-done">Done</button>
+                <a href="/generate" class="generate-workout-full-link">Open full generator</a>
+            </div>
+        </div>
+    </div>
+    <div id="footer-email-overlay" class="footer-email-overlay" hidden>
+        <div class="footer-email-dialog" role="dialog" aria-modal="true" aria-labelledby="footer-email-heading">
+            <button type="button" class="footer-email-close" id="footer-email-close" aria-label="Close">&times;</button>
+            <h2 id="footer-email-heading" class="footer-email-title">Send email</h2>
+            <p class="footer-email-to">To: <a href="mailto:strongmanaioutreach@gmail.com" class="footer-email-to-link">strongmanaioutreach@gmail.com</a></p>
+            <div class="footer-email-fields">
+                <label class="footer-email-label" for="footer-email-subject">Subject</label>
+                <input type="text" class="footer-email-input" id="footer-email-subject" autocomplete="off">
+                <label class="footer-email-label" for="footer-email-body">Message</label>
+                <textarea class="footer-email-textarea" id="footer-email-body" rows="6" spellcheck="true"></textarea>
+            </div>
+            <div class="footer-email-actions">
+                <button type="button" class="footer-email-btn footer-email-btn--secondary" id="footer-email-cancel">Cancel</button>
+                <button type="button" class="footer-email-btn footer-email-btn--primary" id="footer-email-open">Open in email app</button>
+            </div>
+        </div>
+    </div>
+    <script src="shared/api.js"></script>
+    <link rel="stylesheet" href="css/server-wake.css">
+    <script src="shared/server-wake.js"></script>
+    <script src="shared/cookie-consent.js"></script>
+    <script src="shared/site-footer-email.js"></script>
+    <script src="shared/info-tip.js"></script>
+    <script src="js/index.js"></script>
+</body>
+</html>

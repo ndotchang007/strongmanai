@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="strongman-api-base" content="http://127.0.0.1:8080/api/v1">
+    <title>Surveys – Strongman AI</title>
+    <link rel="icon" type="image/png" href="assets/logo.png">
+    <link rel="apple-touch-icon" href="assets/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/index.css">
+    <link rel="stylesheet" href="css/surveys.css">
+</head>
+<body class="surveys-page">
+    <header class="site-header">
+        <a href="/" class="site-header-logo-link"><span class="site-header-logo">STRONGMAN <span class="site-header-logo-ai">AI</span></span></a>
+        <nav class="site-header-nav">
+            <a href="/surveys" class="site-header-link">SURVEYS</a>
+            <a href="#" class="site-header-link" data-email-kind="bug">REPORT ISSUE</a>
+            <a href="/login" class="site-header-link">LOGIN</a>
+            <a href="/leaderboards" class="site-header-link">VIEW LEADERBOARDS</a>
+        </nav>
+    </header>
+
+    <div class="mainContent">
+        <section class="surveys-hero" aria-labelledby="surveys-heading">
+            <div class="surveys-hero-grid" aria-hidden="true"></div>
+            <div class="surveys-hero-inner">
+                <p class="section-eyebrow">Help us build better</p>
+                <h1 id="surveys-heading" class="surveys-hero-title">Surveys</h1>
+                <p class="surveys-hero-lead">Scroll through open surveys and share your perspective. Every response helps Strongman AI prioritize fixes, shape the roadmap, and build tools athletes actually want.</p>
+            </div>
+        </section>
+
+        <section class="surveys-gallery" aria-label="Available surveys">
+            <div class="surveys-gallery-inner">
+                <p class="surveys-gallery-label">Open now</p>
+                <div id="surveys-gallery"></div>
+            </div>
+        </section>
+    </div>
+
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <div class="footer-col footer-col-brand">
+                <p class="footer-logo">STRONGMAN <span class="footer-logo-ai">AI</span></p>
+                <p class="footer-tagline">BETTER TRAINING. FASTER RESULTS.</p>
+                <p class="footer-section-title">SOCIALS</p>
+                <div class="footer-socials">
+                    <a href="https://www.instagram.com/strongmanai/" class="footer-link" target="_blank" rel="noopener noreferrer">Instagram</a>
+                </div>
+            </div>
+            <div class="footer-col">
+                <p class="footer-section-title">REPORT AN ISSUE</p>
+                <button type="button" class="footer-link-button" data-email-kind="bug">REPORT A BUG</button>
+                <a href="#" class="footer-link" data-email-kind="rate">RATE US</a>
+                <a href="#" class="footer-link" data-email-kind="suggestions">SUGGESTIONS</a>
+                <p class="footer-section-title footer-section-title--spaced">MODELS</p>
+                <span class="footer-text">EDDIE</span>
+                <span class="footer-text footer-placeholder">---</span>
+                <span class="footer-text footer-placeholder">---</span>
+                <span class="footer-text footer-placeholder">---</span>
+                <p class="footer-section-title footer-section-title--spaced">WEB VERSIONS</p>
+                <span class="footer-text">VERSION 1.1</span>
+            </div>
+            <div class="footer-col">
+                <p class="footer-section-title">TERMS + POLICIES</p>
+                <a href="/legal#terms" class="footer-link">TERMS OF SERVICE</a>
+                <a href="/legal#privacy" class="footer-link">PRIVACY POLICY</a>
+                <p class="footer-section-title footer-section-title--spaced">COMPANY</p>
+                <a href="/" class="footer-link">STRONGMAN AI</a>
+                <a href="/surveys" class="footer-link">SURVEYS</a>
+                <a href="/about" class="footer-link">OUR TEAM</a>
+                <p class="footer-section-title footer-section-title--spaced">CONTACT</p>
+                <button type="button" class="footer-link-button" data-email-kind="contact">CONTACT US</button>
+            </div>
+        </div>
+    </footer>
+
+    <div id="footer-email-overlay" class="footer-email-overlay" hidden>
+        <div class="footer-email-dialog" role="dialog" aria-modal="true" aria-labelledby="footer-email-heading">
+            <button type="button" class="footer-email-close" id="footer-email-close" aria-label="Close">&times;</button>
+            <h2 id="footer-email-heading" class="footer-email-title">Send email</h2>
+            <p class="footer-email-to">To: <a href="mailto:strongmanaioutreach@gmail.com" class="footer-email-to-link">strongmanaioutreach@gmail.com</a></p>
+            <div class="footer-email-fields">
+                <label class="footer-email-label" for="footer-email-subject">Subject</label>
+                <input type="text" class="footer-email-input" id="footer-email-subject" autocomplete="off">
+                <label class="footer-email-label" for="footer-email-body">Message</label>
+                <textarea class="footer-email-textarea" id="footer-email-body" rows="6" spellcheck="true"></textarea>
+            </div>
+            <div class="footer-email-actions">
+                <button type="button" class="footer-email-btn footer-email-btn--secondary" id="footer-email-cancel">Cancel</button>
+                <button type="button" class="footer-email-btn footer-email-btn--primary" id="footer-email-open">Open in email app</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="shared/surveys-catalog.js"></script>
+    <script src="shared/site-footer-email.js"></script>
+    <script src="js/surveys.js"></script>
+</body>
+</html>

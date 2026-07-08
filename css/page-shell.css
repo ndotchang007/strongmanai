@@ -1,0 +1,23 @@
+/* Consistent page margins — prevents edge-to-edge content on app pages */
+
+body:not(.coach-fullpage):not(.create-focus-mode) .main-wrap
+{
+    padding-left: max(clamp(0.65rem, 2.2vw, 1.15rem), env(safe-area-inset-left, 0px));
+    padding-right: max(clamp(0.65rem, 2.2vw, 1.15rem), env(safe-area-inset-right, 0px));
+    box-sizing: border-box;
+}
+
+.sports-editor-mount,
+#user-account-mount
+{
+    padding-inline: 0;
+}
+
+@media (max-width: 768px)
+{
+    body:not(.coach-fullpage) .main-wrap
+    {
+        padding-left: max(0.85rem, env(safe-area-inset-left, 0px));
+        padding-right: max(0.85rem, env(safe-area-inset-right, 0px));
+    }
+}

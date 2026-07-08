@@ -1,0 +1,286 @@
+/* Generate workout — sidebar + shell from home.css */
+
+body.generate-page
+{
+    background-color: #1b1b1b;
+}
+
+body.coach-fullpage.generate-page
+{
+    background-color: #121212;
+    background-image: none;
+}
+
+body.coach-fullpage .generate-main
+{
+    max-width: none;
+    padding: 0;
+}
+
+.generate-main
+{
+    width: 100%;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    box-sizing: border-box;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 2rem 1.5rem 3rem;
+    color: #fff;
+    font-family: var(--font, "DM Sans", system-ui, sans-serif);
+}
+
+.generate-header
+{
+    margin-bottom: 1.75rem;
+    text-align: center;
+}
+
+.generate-title
+{
+    font-size: clamp(1.35rem, 4vw, 1.85rem);
+    font-weight: bold;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 0.65rem;
+    line-height: 1.2;
+}
+
+.generate-subtitle
+{
+    margin: 0;
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.72);
+    line-height: 1.45;
+    max-width: 32rem;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.generate-archive-hint
+{
+    margin: 1rem auto 0;
+    max-width: 28rem;
+    font-size: 0.82rem;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.62);
+}
+
+.generate-create-link
+{
+    color: #ff9f40;
+    font-weight: 600;
+}
+
+.generate-create-link:hover
+{
+    text-decoration: underline;
+}
+
+.generate-form
+{
+    margin-bottom: 1.5rem;
+}
+
+.generate-chips
+{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    margin-top: 0.85rem;
+}
+
+.generate-chip
+{
+    font-family: var(--font, "DM Sans", system-ui, sans-serif);
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 0.5rem 0.95rem;
+    border-radius: 999px;
+    border: 1px solid rgba(100, 100, 100, 0.55);
+    background: rgba(255, 255, 255, 0.04);
+    color: rgba(255, 255, 255, 0.88);
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+}
+
+.generate-chip:hover
+{
+    border-color: rgba(255, 140, 0, 0.45);
+    background: rgba(255, 140, 0, 0.1);
+}
+
+.generate-input-wrap
+{
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    padding: 1rem 1.1rem;
+    border: 1px solid #6a6a6a;
+    border-radius: 12px;
+    background-color: #1b1b1b;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+}
+
+@media (min-width: 560px)
+{
+    .generate-input-wrap
+    {
+        flex-direction: row;
+        align-items: stretch;
+        gap: 0.75rem;
+        padding: 0.65rem 0.65rem 0.65rem 1rem;
+    }
+}
+
+.generate-input
+{
+    flex: 1;
+    min-width: 0;
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    font-family: var(--font, "DM Sans", system-ui, sans-serif);
+    color: #fff;
+    background-color: #2a2a2a;
+    border: 1px solid #555;
+    border-radius: 8px;
+    box-sizing: border-box;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+@media (min-width: 560px)
+{
+    .generate-input
+    {
+        border-radius: 50px;
+        padding: 0.7rem 1.15rem;
+    }
+}
+
+.generate-input::placeholder
+{
+    color: rgba(255, 255, 255, 0.38);
+}
+
+.generate-input:focus
+{
+    border-color: #ff8c00;
+    box-shadow: 0 0 0 1px rgba(255, 140, 0, 0.35);
+}
+
+.generate-submit
+{
+    flex-shrink: 0;
+    padding: 0.75rem 1.5rem;
+    font-family: var(--font, "DM Sans", system-ui, sans-serif);
+    font-size: 0.9rem;
+    font-weight: bold;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #1b1b1b;
+    background-color: #ff8c00;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.15s, transform 0.1s;
+    white-space: nowrap;
+}
+
+@media (min-width: 560px)
+{
+    .generate-submit
+    {
+        border-radius: 50px;
+        padding: 0.7rem 1.35rem;
+    }
+}
+
+.generate-submit:hover
+{
+    background-color: #ffa033;
+}
+
+.generate-submit:active
+{
+    transform: scale(0.99);
+}
+
+.generate-error
+{
+    margin: 0.85rem 0 0;
+    font-size: 0.9rem;
+    color: #f87171;
+    line-height: 1.4;
+}
+
+.generate-quota
+{
+    margin: 0.5rem 0 0;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.55);
+    line-height: 1.35;
+}
+
+.generate-result
+{
+    flex: 1;
+    min-height: 12rem;
+    padding: 1.35rem 1.25rem;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 12px;
+    background-color: #222;
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.55;
+    font-size: 0.95rem;
+    position: relative;
+}
+
+.generate-result-placeholder
+{
+    margin: 0;
+    color: rgba(255, 255, 255, 0.55);
+    font-style: italic;
+    text-align: center;
+    padding: 2rem 0.5rem;
+}
+
+.generate-result-text
+{
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-family: var(--font, "DM Sans", system-ui, sans-serif);
+    font-size: inherit;
+    line-height: inherit;
+    color: inherit;
+    text-align: left;
+}
+
+@media (min-width: 640px)
+{
+    .generate-main
+    {
+        padding-top: 2.5rem;
+    }
+}
+
+@media (max-width: 480px)
+{
+    .generate-main
+    {
+        padding: 1.25rem max(0.85rem, env(safe-area-inset-left, 0px)) 2.5rem max(0.85rem, env(safe-area-inset-right, 0px));
+    }
+
+    .generate-input-wrap
+    {
+        padding: 0.85rem 0.9rem;
+    }
+
+    .generate-submit
+    {
+        width: 100%;
+    }
+}

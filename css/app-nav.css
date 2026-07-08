@@ -1,0 +1,155 @@
+/* App navigation — desktop sidebar SVG icons + mobile bottom tab bar */
+
+.app-nav-icon
+{
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+    display: block;
+}
+.site-sidebar:hover .app-nav-icon
+{
+    width: 24px;
+    height: 24px;
+}
+.app-nav-icon--filled
+{
+    display: none;
+}
+.app-nav-link-active .app-nav-icon--outline,
+.sidebar-link-active .app-nav-icon--outline
+{
+    display: none;
+}
+.app-nav-link-active .app-nav-icon--filled,
+.sidebar-link-active .app-nav-icon--filled
+{
+    display: block;
+}
+
+.sidebar-link .sidebar-icon
+{
+    display: none !important;
+}
+.sidebar-link .app-nav-label
+{
+    font-family: var(--font);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    opacity: 0;
+    width: 0;
+    min-width: 0;
+    max-width: 0;
+    overflow: hidden;
+    pointer-events: none;
+    transition: opacity 0.2s ease, width 0.2s ease, max-width 0.2s ease;
+}
+.site-sidebar:hover .sidebar-link .app-nav-label
+{
+    opacity: 1;
+    width: auto;
+    max-width: none;
+    overflow: visible;
+}
+
+/* Instagram-style bottom tab bar — floating rounded pill on mobile */
+.app-bottom-nav
+{
+    display: none;
+    position: fixed;
+    z-index: 1100;
+    left: 0.85rem;
+    right: 0.85rem;
+    bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+    width: auto;
+    height: 52px;
+    padding: 0;
+    border-radius: 20px;
+    background: rgba(22, 22, 22, 0.94);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--border-mid, rgba(100, 100, 100, 0.52));
+    box-shadow: 0 10px 36px rgba(0, 0, 0, 0.42);
+    overflow: hidden;
+}
+
+html[data-theme="light"] .app-bottom-nav
+{
+    background: rgba(248, 248, 248, 0.94);
+    border-color: rgba(0, 0, 0, 0.12);
+    box-shadow: 0 10px 32px rgba(0, 0, 0, 0.12);
+}
+.app-bottom-nav-link
+{
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.15rem;
+    min-height: 52px;
+    padding: 0.35rem 0.25rem 0.25rem;
+    color: var(--text-muted, #a1a1aa);
+    text-decoration: none;
+    transition: color 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+.app-bottom-nav-link .app-nav-icon
+{
+    width: 24px;
+    height: 24px;
+}
+.app-bottom-nav-link .app-nav-label
+{
+    font-family: var(--font);
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    line-height: 1;
+}
+.app-bottom-nav-link:hover,
+.app-bottom-nav-link:focus-visible
+{
+    color: var(--text-primary, #f4f4f5);
+    outline: none;
+}
+.app-bottom-nav-link.app-nav-link-active
+{
+    color: var(--text-primary, #f4f4f5);
+}
+
+@media (max-width: 768px)
+{
+    .app-bottom-nav
+    {
+        display: flex;
+        align-items: stretch;
+    }
+
+    .site-sidebar
+    {
+        display: none !important;
+    }
+
+    .main-wrap
+    {
+        margin-left: 0 !important;
+        padding-bottom: calc(52px + 1.65rem + env(safe-area-inset-bottom, 0px));
+    }
+
+    body .site-footer:not(.site-footer--app):not(.site-footer--scroll-gated)
+    {
+        padding-bottom: calc(4rem + 1.65rem + env(safe-area-inset-bottom, 0px));
+    }
+}
+
+@media (min-width: 769px)
+{
+    .app-bottom-nav
+    {
+        display: none !important;
+    }
+}

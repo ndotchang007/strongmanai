@@ -1,0 +1,614 @@
+body.customize-page
+{
+    --customize-gap: 1.25rem;
+    --customize-card-pad: 1.25rem;
+    --customize-stack: 0.85rem;
+    --customize-stack-tight: 0.45rem;
+    background: linear-gradient(165deg, #121212 0%, #18130f 45%, #121212 100%);
+}
+
+body.customize-page .main-wrap
+{
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.customize-main
+{
+    width: 100%;
+    max-width: 520px;
+    margin: 0 auto;
+    padding:
+        var(--customize-gap)
+        max(1.25rem, env(safe-area-inset-right, 0px))
+        calc(var(--customize-gap) * 2.8)
+        max(1.25rem, env(safe-area-inset-left, 0px));
+    color: #f4f4f5;
+    font-family: var(--font, "DM Sans", system-ui, sans-serif);
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: var(--customize-gap);
+}
+
+.customize-main > *
+{
+    margin: 0;
+}
+
+.customize-rocky-setup-alert
+{
+    margin: 0;
+}
+
+.customize-setup-banner
+{
+    padding: 1rem 1.1rem;
+    border-radius: 14px;
+    border: 1px solid rgba(245, 158, 11, 0.35);
+    background: rgba(245, 158, 11, 0.08);
+}
+
+.customize-setup-banner-title
+{
+    margin: 0 0 0.35rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #fbbf24;
+}
+
+.customize-setup-banner-text
+{
+    margin: 0;
+    font-size: 0.88rem;
+    line-height: 1.5;
+    color: #d4d4d8;
+}
+
+.rocky-sport-alerts
+{
+    display: flex;
+    flex-direction: column;
+    gap: var(--customize-gap);
+}
+
+.rocky-sport-alerts[hidden]
+{
+    display: none;
+}
+
+/* Eddie hero */
+.buddy-hero
+{
+    margin: 0;
+}
+
+.buddy-hero-eddie
+{
+    display: flex;
+    gap: 0.85rem;
+    align-items: flex-start;
+}
+
+.buddy-hero-mark
+{
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #ffb347;
+    background: linear-gradient(145deg, rgba(255, 140, 0, 0.28), rgba(180, 60, 0, 0.35));
+    border: 2px solid rgba(255, 140, 0, 0.45);
+}
+
+.buddy-hero-avatar
+{
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 140, 0, 0.45);
+    flex-shrink: 0;
+    background: #111;
+}
+
+.buddy-hero-bubble
+{
+    flex: 1;
+    padding: 0.85rem 1rem;
+    border-radius: 16px 16px 16px 6px;
+    border: 1px solid rgba(255, 140, 0, 0.22);
+    background: rgba(255, 140, 0, 0.08);
+}
+
+.buddy-hero-greeting
+{
+    margin: 0 0 0.35rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #ffb347;
+}
+
+.buddy-hero-line
+{
+    margin: 0;
+    font-size: 0.92rem;
+    line-height: 1.55;
+    color: rgba(255, 255, 255, 0.82);
+}
+
+.user-settings-hero
+{
+    margin: 0;
+}
+
+.user-settings-eyebrow
+{
+    margin: 0 0 0.35rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #ff9f40;
+}
+
+.user-settings-title
+{
+    margin: 0 0 0.45rem;
+    font-size: 1.55rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+}
+
+.user-settings-lead
+{
+    margin: 0 0 0.65rem;
+    font-size: 0.92rem;
+    line-height: 1.55;
+    color: rgba(255, 255, 255, 0.72);
+}
+
+.user-settings-info-link
+{
+    display: inline-flex;
+    font-size: 0.84rem;
+    font-weight: 700;
+    color: #ffb347;
+    text-decoration: none;
+}
+
+.user-settings-info-link:hover
+{
+    text-decoration: underline;
+}
+
+.user-account-section
+{
+    margin: 0;
+}
+
+.buddy-input
+{
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.customize-completion
+{
+    display: inline-block;
+    margin: 0;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.55);
+}
+
+.customize-completion.is-complete
+{
+    color: #ffb347;
+}
+
+.buddy-form-wrap
+{
+    display: flex;
+    flex-direction: column;
+    gap: var(--customize-gap);
+}
+
+.buddy-form-wrap > *
+{
+    margin: 0;
+}
+
+#customize-form-mount
+{
+    display: flex;
+    flex-direction: column;
+    gap: var(--customize-gap);
+}
+
+#customize-form-mount > *
+{
+    margin: 0;
+}
+
+body.customize-page .sports-editor-mount
+{
+    margin: 0;
+    padding: var(--customize-card-pad);
+    border-radius: 16px;
+    border: 1px solid rgba(100, 100, 100, 0.42);
+    background: rgba(255, 255, 255, 0.03);
+    box-sizing: border-box;
+}
+
+body.customize-page .sports-editor-header
+{
+    margin-bottom: 0.85rem;
+}
+
+/* Conversational blocks */
+.buddy-form
+{
+    display: flex;
+    flex-direction: column;
+    gap: var(--customize-gap);
+}
+
+.buddy-form > *
+{
+    margin: 0;
+}
+
+.buddy-block
+{
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: var(--customize-card-pad);
+    border-radius: 16px;
+    border: 1px solid rgba(100, 100, 100, 0.42);
+    background: rgba(255, 255, 255, 0.03);
+    box-sizing: border-box;
+}
+
+.buddy-block > * + *
+{
+    margin-top: var(--customize-stack);
+}
+
+.buddy-subprompt + .buddy-pills,
+.buddy-subprompt + .buddy-days,
+.buddy-subprompt + .buddy-notes,
+.buddy-subprompt + .buddy-notes-hint,
+.buddy-notes-hint + .buddy-notes,
+.buddy-known-header + .buddy-known-notes
+{
+    margin-top: var(--customize-stack-tight);
+}
+
+.buddy-block--compact
+{
+    padding-bottom: var(--customize-card-pad);
+}
+
+.buddy-block--notes
+{
+    margin: 0;
+    border-color: rgba(255, 140, 0, 0.18);
+    background: rgba(255, 140, 0, 0.04);
+}
+
+.buddy-prompt
+{
+    margin: 0;
+    font-size: 0.98rem;
+    font-weight: 600;
+    line-height: 1.4;
+    color: rgba(255, 255, 255, 0.95);
+}
+
+.buddy-subprompt
+{
+    margin: 0;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.48);
+}
+
+.buddy-optional
+{
+    font-weight: 500;
+    text-transform: none;
+    letter-spacing: 0;
+    color: rgba(255, 255, 255, 0.38);
+    font-size: 0.72rem;
+}
+
+.buddy-field
+{
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.7rem 0.85rem;
+    border-radius: 12px;
+    border: 1px solid rgba(100, 100, 100, 0.55);
+    background: rgba(0, 0, 0, 0.28);
+    color: #fff;
+    font-family: var(--font, "DM Sans", system-ui, sans-serif);
+    font-size: 0.95rem;
+}
+
+.buddy-field:focus
+{
+    outline: none;
+    border-color: rgba(255, 140, 0, 0.5);
+    box-shadow: 0 0 0 2px rgba(255, 140, 0, 0.15);
+}
+
+.buddy-select-hidden
+{
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.buddy-pills
+{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.buddy-pill
+{
+    font-family: var(--font, "DM Sans", system-ui, sans-serif);
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 0.45rem 0.85rem;
+    border-radius: 999px;
+    border: 1px solid rgba(100, 100, 100, 0.55);
+    background: rgba(255, 255, 255, 0.04);
+    color: rgba(255, 255, 255, 0.88);
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.buddy-pill:hover
+{
+    border-color: rgba(255, 140, 0, 0.35);
+}
+
+.buddy-pill.is-active
+{
+    border-color: rgba(255, 140, 0, 0.55);
+    background: rgba(255, 140, 0, 0.18);
+    color: #ffd4a8;
+}
+
+.buddy-days
+{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+.buddy-day
+{
+    cursor: pointer;
+}
+
+.buddy-day input
+{
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.buddy-day span
+{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.1rem;
+    height: 2.1rem;
+    padding: 0 0.45rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    border: 1px solid rgba(100, 100, 100, 0.5);
+    background: rgba(255, 255, 255, 0.04);
+    color: rgba(255, 255, 255, 0.8);
+    transition: border-color 0.15s, background 0.15s;
+}
+
+.buddy-day input:checked + span
+{
+    border-color: rgba(255, 140, 0, 0.55);
+    background: rgba(255, 140, 0, 0.2);
+    color: #ffd4a8;
+}
+
+.buddy-sport-tip,
+.customize-sport-tip
+{
+    margin: 0.5rem 0 0;
+    padding: 0.55rem 0.7rem;
+    border-radius: 10px;
+    font-size: 0.82rem;
+    line-height: 1.5;
+    border: 1px solid rgba(255, 140, 0, 0.2);
+    background: rgba(255, 140, 0, 0.06);
+    color: rgba(255, 255, 255, 0.88);
+}
+
+.buddy-today-card,
+.customize-hint-card
+{
+    margin: 0;
+    padding: 0.75rem 0.9rem;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 159, 64, 0.28);
+    background: rgba(255, 140, 0, 0.08);
+    font-size: 0.88rem;
+    line-height: 1.5;
+}
+
+.buddy-notes-hint
+{
+    margin: 0;
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.55);
+    line-height: 1.45;
+}
+
+.buddy-known-header
+{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin: 0;
+}
+
+.buddy-known-header .buddy-subprompt
+{
+    margin: 0;
+}
+
+.buddy-known-customize-btn
+{
+    display: inline-flex;
+    align-items: center;
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 140, 0, 0.45);
+    background: rgba(255, 140, 0, 0.12);
+    color: #ffb347;
+    font-family: var(--font, "DM Sans", system-ui, sans-serif);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-decoration: none;
+}
+
+.buddy-known-customize-btn:hover
+{
+    border-color: rgba(255, 140, 0, 0.65);
+    background: rgba(255, 140, 0, 0.2);
+}
+
+.buddy-known-notes
+{
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0.85rem 0.95rem;
+    border-radius: 12px;
+    border: 1px solid rgba(100, 100, 100, 0.45);
+    background: rgba(255, 255, 255, 0.04);
+    color: rgba(255, 255, 255, 0.88);
+    font-family: var(--font, "DM Sans", system-ui, sans-serif);
+    font-size: 0.9rem;
+    line-height: 1.45;
+    word-break: break-word;
+}
+
+.buddy-known-notes--empty
+{
+    color: rgba(255, 255, 255, 0.45);
+    font-style: italic;
+}
+
+.buddy-notes
+{
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0.85rem 0.95rem;
+    border-radius: 12px;
+    border: 1px solid rgba(100, 100, 100, 0.5);
+    background: rgba(0, 0, 0, 0.22);
+    color: #fff;
+    font-family: var(--font, "DM Sans", system-ui, sans-serif);
+    font-size: 0.92rem;
+    line-height: 1.45;
+    resize: vertical;
+    min-height: 4.5rem;
+}
+
+.customize-status
+{
+    margin: 0.75rem 0 0;
+    font-size: 0.85rem;
+    color: #8fd49a;
+}
+
+.customize-status--error
+{
+    color: #ff8f8f;
+}
+
+.customize-actions
+{
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+}
+
+.customize-save-btn
+{
+    width: 100%;
+    font-family: var(--font, "DM Sans", system-ui, sans-serif);
+    font-size: 0.95rem;
+    font-weight: 700;
+    padding: 0.75rem 1.15rem;
+    border-radius: 999px;
+    border: none;
+    cursor: pointer;
+    background: linear-gradient(135deg, #ff8c00, #ff6a00);
+    color: #111;
+}
+
+.customize-save-btn:disabled
+{
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.customize-secondary-link
+{
+    text-align: center;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.65);
+    text-decoration: none;
+}
+
+.customize-secondary-link:hover
+{
+    color: #ff9f40;
+}
+
+.visually-hidden
+{
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}

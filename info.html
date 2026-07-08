@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="strongman-api-base" content="http://127.0.0.1:8080/api/v1">
+    <title>Strongman AI – How to use</title>
+    <link rel="icon" type="image/png" href="assets/logo.png">
+    <link rel="apple-touch-icon" href="assets/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/home.css">
+    <link rel="stylesheet" href="css/app-nav.css">
+    <link rel="stylesheet" href="css/notification-bell.css">
+    <link rel="stylesheet" href="css/settings-app.css">
+    <link rel="stylesheet" href="css/settings-buddy.css">
+    <link rel="stylesheet" href="css/surveys.css">
+    <link rel="stylesheet" href="css/versions.css">
+    <link rel="stylesheet" href="css/info.css">
+    <link rel="stylesheet" href="css/server-wake.css">
+</head>
+<body class="info-page" data-current-page="info">
+    <aside class="site-sidebar" id="site-sidebar" aria-label="Main navigation">
+        <div class="sidebar-brand">
+            <span class="sidebar-logo">STRONGMAN <span class="sidebar-logo-ai">AI</span></span>
+        </div>
+        <nav class="sidebar-nav" aria-label="App sections"></nav>
+        <div class="sidebar-bottom">
+            <div class="sidebar-profile-wrap">
+                <button type="button" class="sidebar-profile sidebar-profile-trigger" id="sidebar-profile-trigger" aria-label="Profile menu" aria-expanded="false" aria-haspopup="true" aria-controls="sidebar-profile-menu">
+                    <span class="sidebar-profile-avatar" aria-hidden="true"></span>
+                    <span class="sidebar-label">Profile</span>
+                </button>
+                <div class="sidebar-profile-menu" id="sidebar-profile-menu" role="menu" aria-hidden="true" hidden>
+                    <a href="/profile" class="sidebar-profile-menu-item" role="menuitem">View profile</a>
+                    <button type="button" class="sidebar-profile-menu-item sidebar-profile-menu-item--button" role="menuitem" id="sidebar-profile-logout">Log out</button>
+                </div>
+            </div>
+            <button type="button" class="sidebar-link sidebar-link-more sidebar-settings-trigger" id="sidebar-settings-trigger" aria-label="Settings" aria-haspopup="dialog" aria-expanded="false" aria-controls="home-settings-dialog">
+                <span class="sidebar-label">Settings</span>
+            </button>
+        </div>
+    </aside>
+    <div class="main-wrap">
+        <main class="info-main">
+            <header class="info-hero">
+                <p class="info-eyebrow">Strongman AI · v1.1</p>
+                <h1 class="info-title">How to use Strongman AI</h1>
+                <p class="info-lead">A quick guide to get the most out of your dashboard, Rocky the coach, and your training log — without overthinking it.</p>
+            </header>
+
+            <section class="info-section" aria-labelledby="info-start-heading">
+                <h2 class="info-section-title" id="info-start-heading">Start here</h2>
+                <div class="info-steps">
+                    <div class="info-step">
+                        <span class="info-step-num">1</span>
+                        <div class="info-step-body">
+                            <strong>Fill in User settings</strong>
+                            <span>Add your account details, sports, practice nights, and goals. Rocky uses this to coach around your real week — not a generic template.</span>
+                        </div>
+                    </div>
+                    <div class="info-step">
+                        <span class="info-step-num">2</span>
+                        <div class="info-step-body">
+                            <strong>Log your workouts</strong>
+                            <span>Hit <em>Start workout</em> on Home or open Log. Even a short session helps Rocky spot patterns and suggest progressions.</span>
+                        </div>
+                    </div>
+                    <div class="info-step">
+                        <span class="info-step-num">3</span>
+                        <div class="info-step-body">
+                            <strong>Chat with Rocky</strong>
+                            <span>Ask for session ideas, form cues, or adjustments on game days. Keep messages specific — sport, time available, and how you feel.</span>
+                        </div>
+                    </div>
+                    <div class="info-step">
+                        <span class="info-step-num">4</span>
+                        <div class="info-step-body">
+                            <strong>Check Home for coaching nudges</strong>
+                            <span>The dashboard calls out streaks, split days, and habits. Use it as a daily check-in, not a grade.</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="info-links">
+                    <a href="/customize" class="info-link-btn">Open User settings</a>
+                    <a href="/home" class="info-link-btn info-link-btn--ghost">Back to Home</a>
+                </div>
+            </section>
+
+            <section class="info-section" aria-labelledby="info-optimal-heading">
+                <h2 class="info-section-title" id="info-optimal-heading">Use it optimally</h2>
+                <ul>
+                    <li><strong>Be honest about time.</strong> School-night and weekend caps in User settings keep sessions realistic.</li>
+                    <li><strong>List lifts you care about.</strong> Favorite movements help Log suggest overload on the exercises that matter to you.</li>
+                    <li><strong>Log consistently.</strong> Three sessions beat one perfect week — Rocky’s callouts get sharper with data.</li>
+                    <li><strong>Separate Settings from User settings.</strong> Settings (sidebar menu) is for theme, notifications, and privacy. User settings (under You) is for you as an athlete.</li>
+                    <li><strong>Experimental mode</strong> in Settings → Labs unlocks in-progress features. Turn it on only if you’re okay with rough edges.</li>
+                </ul>
+            </section>
+
+            <section class="info-section" aria-labelledby="info-versions-heading">
+                <h2 class="info-section-title" id="info-versions-heading">Version history</h2>
+                <p>Current release and patch notes — same card layout as our surveys gallery.</p>
+                <div id="info-versions-mount" class="info-versions-mount"></div>
+                <div class="info-links">
+                    <a href="/versions" class="info-link-btn info-link-btn--ghost" id="info-versions-all">All releases</a>
+                </div>
+            </section>
+
+            <section class="info-section" aria-labelledby="info-nav-heading">
+                <h2 class="info-section-title" id="info-nav-heading">Where things live</h2>
+                <ul>
+                    <li><strong>Home</strong> — dashboard, stats, and coaching nudges</li>
+                    <li><strong>Log</strong> — track sets, reps, and PRs</li>
+                    <li><strong>Coach</strong> — chat with Rocky</li>
+                    <li><strong>Rank</strong> — leaderboards</li>
+                    <li><strong>You</strong> — public profile; open the profile menu for User settings</li>
+                    <li><strong>Settings</strong> — app preferences (theme, units, notifications)</li>
+                    <li><strong>Patch notes</strong> — <a href="/versions/v1.1">Version 1.1 release notes</a></li>
+                </ul>
+            </section>
+        </main>
+        <footer class="site-footer site-footer--compact">
+            <div class="footer-inner footer-inner--compact">
+                <p class="footer-logo">STRONGMAN <span class="footer-logo-ai">AI</span></p>
+                <div class="footer-compact-links">
+                    <a href="/legal#terms" class="footer-link">Terms</a>
+                    <a href="/legal#privacy" class="footer-link">Privacy</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <div class="home-settings-backdrop" id="home-settings-backdrop" aria-hidden="true"></div>
+    <div class="home-settings-dialog settings-buddy settings-hub" id="home-settings-dialog" role="dialog" aria-modal="true" aria-labelledby="home-settings-title" aria-hidden="true">
+        <div class="home-settings-panel">
+            <header class="home-settings-header">
+                <div class="settings-hub-brand">
+                    <span class="settings-hub-mark" aria-hidden="true">SM</span>
+                    <div class="settings-hub-brand-text">
+                        <span class="settings-hub-eyebrow">Strongman AI</span>
+                        <span class="settings-hub-title-text">Settings</span>
+                    </div>
+                </div>
+                <h2 class="home-settings-title visually-hidden" id="home-settings-title">Settings</h2>
+                <button type="button" class="home-settings-close" id="home-settings-close" aria-label="Close settings">×</button>
+            </header>
+            <div class="home-settings-body">
+                <p class="settings-hub-intro">Theme, notifications, and app preferences. Account and training details live in User settings.</p>
+                <section class="home-settings-section settings-buddy-card" aria-labelledby="settings-appearance-heading">
+                    <h3 class="home-settings-section-title" id="settings-appearance-heading">Appearance</h3>
+                    <div class="home-settings-theme-row settings-theme-pills" role="group" aria-label="Color theme">
+                        <label class="settings-theme-pill"><input type="radio" name="home-theme" value="dark" class="home-settings-radio"> Dark</label>
+                        <label class="settings-theme-pill"><input type="radio" name="home-theme" value="light" class="home-settings-radio"> Light</label>
+                        <label class="settings-theme-pill"><input type="radio" name="home-theme" value="system" class="home-settings-radio"> Auto</label>
+                    </div>
+                </section>
+                <section class="home-settings-section settings-buddy-card" aria-labelledby="settings-units-heading">
+                    <h3 class="home-settings-section-title" id="settings-units-heading">Units</h3>
+                    <select id="settings-units-select" class="home-settings-select settings-buddy-select">
+                        <option value="imperial">Imperial (lb, ft)</option>
+                        <option value="metric">Metric (kg, m)</option>
+                    </select>
+                </section>
+                <a href="/info" class="settings-hub-training-card settings-hub-info-card" id="settings-hub-info-card">
+                    <span class="settings-hub-training-kicker">Guide</span>
+                    <span class="settings-hub-training-title">How to use Strongman AI</span>
+                    <span class="settings-hub-training-desc">Setup steps, tips for Rocky, and where everything lives in the app.</span>
+                    <span class="settings-hub-training-arrow">Open guide →</span>
+                </a>
+                <section class="home-settings-section settings-buddy-card settings-hub-labs" aria-labelledby="settings-labs-heading">
+                    <h3 class="home-settings-section-title" id="settings-labs-heading">Labs <span class="settings-hub-labs-badge">Beta</span></h3>
+                    <div class="settings-hub-toggle-row">
+                        <div class="settings-hub-toggle-copy">
+                            <span class="settings-hub-toggle-label">Experimental mode</span>
+                            <span class="settings-hub-toggle-hint">Try in-progress features before they ship.</span>
+                        </div>
+                        <label class="settings-hub-switch" aria-label="Enable experimental mode">
+                            <input type="checkbox" id="settings-experimental-mode" class="home-settings-checkbox">
+                            <span class="settings-hub-switch-track" aria-hidden="true"></span>
+                        </label>
+                    </div>
+                </section>
+                <section class="home-settings-section home-settings-section--footer settings-buddy-card" aria-labelledby="settings-about-heading">
+                    <h3 class="home-settings-section-title" id="settings-about-heading">About</h3>
+                    <p class="home-settings-meta">Strongman AI v1.1</p>
+                    <div class="home-settings-inline-links">
+                        <a href="/legal#terms" class="home-settings-inline-link">Terms</a>
+                        <span class="home-settings-sep" aria-hidden="true">·</span>
+                        <a href="/legal#privacy" class="home-settings-inline-link">Privacy</a>
+                        <span class="home-settings-sep" aria-hidden="true">·</span>
+                        <a href="/versions" class="home-settings-inline-link">Patch notes</a>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <script src="shared/version-catalog.js"></script>
+    <script src="shared/api.js"></script>
+    <script src="shared/notification-bell.js"></script>
+    <script src="shared/server-wake.js"></script>
+    <script src="shared/user-avatar.js"></script>
+    <script src="shared/app-nav.js"></script>
+    <script src="shared/sidebar-profile-menu.js"></script>
+    <script src="shared/auth-guard.js"></script>
+    <script src="shared/settings-popup.js"></script>
+    <script src="js/info.js"></script>
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="strongman-api-base" content="http://127.0.0.1:8080/api/v1">
+    <title>Strongman AI – Leaderboards</title>
+    <link rel="icon" type="image/png" href="assets/logo.png">
+    <link rel="apple-touch-icon" href="assets/logo.png">
+    <link rel="stylesheet" href="css/home.css">
+    <link rel="stylesheet" href="css/leaderboard.css">
+</head>
+<body class="lb-public-page" data-leaderboard-public="true">
+    <header class="lb-public-header">
+        <a href="/" class="lb-public-brand">STRONGMAN <span>AI</span></a>
+        <nav class="lb-public-nav" aria-label="Account">
+            <a href="/login">Sign in</a>
+            <a href="/signup">Sign up</a>
+        </nav>
+    </header>
+    <div class="main-wrap">
+        <main class="lb-page">
+            <section class="lb-section lb-section--leaderboards" aria-labelledby="lb-leaderboards-heading">
+                <h1 class="lb-section-title" id="lb-leaderboards-heading">Leaderboards</h1>
+                <p class="lb-public-banner" id="lb-public-banner">
+                    <a href="/login">Sign in</a> or <a href="/signup">create an account</a> to track your rank.
+                </p>
+                <div class="lb-filter-rows">
+                    <div class="lb-filter-row" role="group" aria-label="Leaderboard audience">
+                        <span class="lb-filter-label">Filters:</span>
+                        <button type="button" class="lb-filter-btn" data-group="audience" data-value="friends">Friends</button>
+                        <span class="lb-filter-sep">/</span>
+                        <button type="button" class="lb-filter-btn active" data-group="audience" data-value="global">Global</button>
+                        <span class="lb-filter-sep">/</span>
+                        <button type="button" class="lb-filter-btn" data-group="audience" data-value="followers">Followers</button>
+                    </div>
+                    <div class="lb-filter-row" role="group" aria-label="Leaderboard type">
+                        <span class="lb-filter-label">Leaderboards:</span>
+                        <button type="button" class="lb-filter-btn active" data-group="mode" data-value="exercises">Exercises</button>
+                        <span class="lb-filter-sep">/</span>
+                        <button type="button" class="lb-filter-btn" data-group="mode" data-value="streak">Streak</button>
+                        <span class="lb-filter-sep">/</span>
+                        <button type="button" class="lb-filter-btn" data-group="mode" data-value="times">Times</button>
+                    </div>
+                    <div class="lb-picker-row" id="lb-exercise-picker">
+                        <label class="lb-picker-label" for="lb-exercise-search">Exercise:</label>
+                        <input type="search" class="lb-picker-input" id="lb-exercise-search" list="lb-exercise-suggestions" value="Bench press" placeholder="Search exercise…" autocomplete="off" spellcheck="false" aria-label="Exercise for leaderboard" aria-describedby="lb-exercise-hint">
+                        <datalist id="lb-exercise-suggestions"></datalist>
+                    </div>
+                    <p class="lb-exercise-hint" id="lb-exercise-hint" hidden role="status" aria-live="polite"></p>
+                    <div class="lb-picker-row" id="lb-times-picker" hidden>
+                        <label class="lb-picker-label" for="lb-times-search">Event:</label>
+                        <input type="search" class="lb-picker-input" id="lb-times-search" list="lb-times-suggestions" value="Yoke walk" placeholder="Search timed event…" autocomplete="off" spellcheck="false" aria-label="Timed event for leaderboard">
+                        <datalist id="lb-times-suggestions"></datalist>
+                    </div>
+                </div>
+                <div class="lb-table-wrap">
+                    <table class="lb-table">
+                        <thead>
+                            <tr>
+                                <th id="lb-th-rank">Rank</th>
+                                <th>Username</th>
+                                <th id="lb-th-metric">Value</th>
+                                <th id="lb-th-skill">Skill level</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboard-body">
+                        </tbody>
+                    </table>
+                </div>
+                <div class="lb-user-rank-wrap">
+                    <div class="lb-user-rank" id="leaderboard-user-row" aria-label="Your rank">
+                        <span id="lb-user-rank-num">—</span>
+                        <span id="lb-user-name">—</span>
+                        <span class="lb-ur-col-stat" id="lb-user-metric">—</span>
+                        <span class="lb-ur-col-stat" id="lb-user-skill">—</span>
+                    </div>
+                </div>
+                <p class="lb-message" id="leaderboard-message"></p>
+            </section>
+
+            <section class="lb-section lb-section--competitions" aria-labelledby="lb-comp-heading">
+                <h2 class="lb-section-title" id="lb-comp-heading">Competitions</h2>
+                <p class="lb-comp-empty lb-comp-empty--public" id="lb-comp-public-note">
+                    <a href="/login">Sign in</a> to create challenges with friends, log progress after workouts, and see your competition cards here.
+                </p>
+            </section>
+        </main>
+        <footer class="site-footer">
+            <div class="footer-inner">
+                <div class="footer-col footer-col-brand">
+                    <p class="footer-logo">STRONGMAN <span class="footer-logo-ai">AI</span></p>
+                    <p class="footer-tagline">BETTER TRAINING. FASTER RESULTS.</p>
+                    <p class="footer-section-title">SOCIALS</p>
+                    <div class="footer-socials">
+                        <a href="https://www.instagram.com/strongmanai/" class="footer-link" target="_blank" rel="noopener noreferrer">Instagram</a>
+                    </div>
+                </div>
+                <div class="footer-col">
+                    <p class="footer-section-title">REPORT AN ISSUE</p>
+                    <button type="button" class="footer-link-button" data-email-kind="bug">REPORT A BUG</button>
+                    <a href="#" class="footer-link" data-email-kind="rate">RATE US</a>
+                    <a href="#" class="footer-link" data-email-kind="suggestions">SUGGESTIONS</a>
+                    <p class="footer-section-title footer-section-title--spaced">MODELS</p>
+                    <span class="footer-text">EDDIE</span>
+                    <span class="footer-text footer-placeholder">---</span>
+                    <span class="footer-text footer-placeholder">---</span>
+                    <span class="footer-text footer-placeholder">---</span>
+                    <p class="footer-section-title footer-section-title--spaced">WEB VERSIONS</p>
+                    <span class="footer-text">VERSION 0.1</span>
+                </div>
+                <div class="footer-col">
+                    <p class="footer-section-title">TERMS + POLICIES</p>
+                    <a href="/legal#terms" class="footer-link">TERMS OF SERVICE</a>
+                    <a href="/legal#privacy" class="footer-link">PRIVACY POLICY</a>
+                    <p class="footer-section-title footer-section-title--spaced">STATISTICS</p>
+                    <a href="/#stat-accounts-created" class="footer-link">USER COUNT</a>
+                    <a href="/#stat-lifts-recorded" class="footer-link">LIFT COUNT</a>
+                    <a href="/#stat-workouts-tracked" class="footer-link">WORKOUT COUNT</a>
+                    <a href="/#stat-active-users" class="footer-link">ACTIVE USERS</a>
+                    <p class="footer-section-title footer-section-title--spaced">COMPANY</p>
+                    <a href="#" class="footer-link">STRONGMAN AI</a>
+                    <a href="#" class="footer-link" data-email-kind="questions">QUESTIONS</a>
+                    <a href="#" class="footer-link">HIRING</a>
+                    <p class="footer-section-title footer-section-title--spaced">CONTRIBUTORS</p>
+                    <a href="/about" class="footer-link">OUR TEAM</a>
+                    <p class="footer-section-title footer-section-title--spaced">CONTACT</p>
+                    <button type="button" class="footer-link-button" data-email-kind="contact">CONTACT US</button>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <div id="footer-email-overlay" class="footer-email-overlay" hidden>
+        <div class="footer-email-dialog" role="dialog" aria-modal="true" aria-labelledby="footer-email-heading">
+            <button type="button" class="footer-email-close" id="footer-email-close" aria-label="Close">&times;</button>
+            <h2 id="footer-email-heading" class="footer-email-title">Send email</h2>
+            <p class="footer-email-to">To: <a href="mailto:strongmanaioutreach@gmail.com" class="footer-email-to-link">strongmanaioutreach@gmail.com</a></p>
+            <div class="footer-email-fields">
+                <label class="footer-email-label" for="footer-email-subject">Subject</label>
+                <input type="text" class="footer-email-input" id="footer-email-subject" autocomplete="off">
+                <label class="footer-email-label" for="footer-email-body">Message</label>
+                <textarea class="footer-email-textarea" id="footer-email-body" rows="6" spellcheck="true"></textarea>
+            </div>
+            <div class="footer-email-actions">
+                <button type="button" class="footer-email-btn footer-email-btn--secondary" id="footer-email-cancel">Cancel</button>
+                <button type="button" class="footer-email-btn footer-email-btn--primary" id="footer-email-open">Open in email app</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="shared/api.js"></script>
+    <script src="shared/exercise-database.js"></script>
+    <script src="shared/site-footer-email.js"></script>
+    <script src="js/leaderboard.js"></script>
+</body>
+</html>

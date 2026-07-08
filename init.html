@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="strongman-api-base" content="http://127.0.0.1:8080/api/v1">
+  <title>Set up your profile – Strongman AI</title>
+  <link rel="icon" type="image/png" href="assets/logo.png">
+  <link rel="apple-touch-icon" href="assets/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/index.css">
+  <link rel="stylesheet" href="css/init.css">
+  <link rel="stylesheet" href="css/interactions.css">
+  <link rel="stylesheet" href="css/server-wake.css">
+  <link rel="stylesheet" href="css/info-tip.css">
+</head>
+<body class="init-page">
+  <div class="init-ambient" aria-hidden="true">
+    <span class="init-ambient-orb init-ambient-orb--a"></span>
+    <span class="init-ambient-orb init-ambient-orb--b"></span>
+  </div>
+
+  <header class="init-top" id="init-top">
+    <a href="/home" class="init-brand" aria-label="Strongman AI home">
+      <img src="assets/logo.png" alt="" class="init-brand-logo" width="40" height="40" decoding="async">
+      <span class="init-brand-wordmark">STRONGMAN <span class="init-brand-accent">AI</span></span>
+    </a>
+
+    <nav class="init-seg-bar" id="init-seg-bar" aria-label="Setup progress" hidden>
+      <div class="init-seg-bar-labels">
+        <span class="init-seg-bar-label" data-seg="goals">Goals</span>
+        <span class="init-seg-bar-label" data-seg="setup">Setup</span>
+        <span class="init-seg-bar-label" data-seg="optional">Optional</span>
+        <span class="init-seg-bar-label" data-seg="sports">Sports</span>
+      </div>
+      <div class="init-seg-bar-track" aria-hidden="true">
+        <div class="init-seg-bar-segments">
+          <span class="init-seg-bar-seg init-seg-bar-seg--goals" style="--seg-weight: 2"></span>
+          <span class="init-seg-bar-seg init-seg-bar-seg--setup" style="--seg-weight: 3"></span>
+          <span class="init-seg-bar-seg init-seg-bar-seg--optional" style="--seg-weight: 3"></span>
+          <span class="init-seg-bar-seg init-seg-bar-seg--sports" style="--seg-weight: 1"></span>
+        </div>
+        <div class="init-seg-bar-fill" id="init-seg-bar-fill"></div>
+      </div>
+    </nav>
+  </header>
+
+  <main class="init-main slideshow" id="slideshow">
+    <!-- Welcome -->
+    <section class="init-slide is-active" data-slide="welcome" aria-labelledby="welcome-heading">
+      <div class="init-card init-card--hero">
+        <p class="init-eyebrow">Account setup</p>
+        <h1 class="init-hero-title" id="welcome-heading">Built for student athletes</h1>
+        <p class="init-hero-lede">Balance practice, competition, and lifting — with a coach that fits your real schedule.</p>
+        <ul class="init-hero-points">
+          <li>Sport performance, physique, strength, or general health</li>
+          <li>Shorter sessions on practice &amp; game/meet days</li>
+          <li>Takes about two minutes</li>
+        </ul>
+        <button type="button" class="init-btn init-btn--primary init-btn--lg" id="btn-welcome-continue">Get started</button>
+        <p class="init-hero-hint">
+          <span class="init-hero-hint-desktop">Press <kbd>Space</kbd> to continue</span>
+          <span class="init-hero-hint-touch">Tap anywhere to continue</span>
+        </p>
+      </div>
+    </section>
+
+    <!-- Basic info -->
+    <section class="init-slide" data-slide="basic" aria-labelledby="basic-heading">
+      <div class="init-card">
+        <p class="init-step-kicker">Before we begin</p>
+        <h2 class="init-card-title" id="basic-heading">Tell us about you</h2>
+        <p class="init-card-desc">This is how you’ll appear on leaderboards and your profile.</p>
+        <form class="init-form" id="form-basic" novalidate>
+          <div class="init-field">
+            <label class="init-label" for="username">Username</label>
+            <input type="text" id="username" class="init-input" placeholder="e.g. atlas_lifts" autocomplete="username" required minlength="3" maxlength="30" pattern="[A-Za-z0-9_]+" aria-describedby="form-basic-error username-hint">
+            <p class="init-hint" id="username-hint">Letters, numbers, and underscores only (3–30 characters).</p>
+          </div>
+          <div class="init-field-row">
+            <div class="init-field">
+              <label class="init-label" for="firstName">First name</label>
+              <input type="text" id="firstName" class="init-input" placeholder="First name" autocomplete="given-name" required maxlength="64" aria-describedby="form-basic-error">
+            </div>
+            <div class="init-field">
+              <label class="init-label" for="lastName">Last name</label>
+              <input type="text" id="lastName" class="init-input" placeholder="Last name" autocomplete="family-name" required maxlength="64" aria-describedby="form-basic-error">
+            </div>
+          </div>
+          <p class="init-error" id="form-basic-error" role="alert" hidden></p>
+          <button type="submit" class="init-btn init-btn--primary init-btn--full">Continue</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- Date of birth -->
+    <section class="init-slide" data-slide="dob" aria-labelledby="dob-heading">
+      <div class="init-card">
+        <p class="init-step-kicker">Eligibility</p>
+        <h2 class="init-card-title" id="dob-heading">Confirm your age</h2>
+        <p class="init-card-desc">Strongman AI is for athletes <strong>16 and older</strong>. We use your birthday only to verify eligibility and improve coaching context.</p>
+        <div class="init-callout init-callout--warn" role="note">
+          <p class="init-callout-title">Who can sign up?</p>
+          <p class="init-callout-text">You must be at least <strong>16 years old</strong>. If you are 16–17, use the app with a parent or coach and train under appropriate supervision.</p>
+        </div>
+        <form class="init-form" id="form-dob" novalidate>
+          <div class="init-field">
+            <label class="init-label" for="dob">Date of birth</label>
+            <input type="date" id="dob" class="init-input init-input--date" required aria-describedby="form-dob-error">
+          </div>
+          <label class="init-check">
+            <input type="checkbox" id="eligibility-confirm" class="init-check-input" required>
+            <span class="init-check-box" aria-hidden="true"></span>
+            <span class="init-check-text">I confirm I am at least 16 years old and eligible to use strength-training software.</span>
+          </label>
+          <p class="init-error" id="form-dob-error" role="alert" hidden></p>
+          <button type="submit" class="init-btn init-btn--primary init-btn--full">Continue</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- Goals: small -->
+    <section class="init-slide init-slide--question" data-slide="small-goals" data-seg="goals" data-seg-step="1" aria-labelledby="small-goals-heading">
+      <div class="init-card init-card--question">
+        <p class="init-seg-kicker">Goals · 1 of 2</p>
+        <h2 class="init-card-title" id="small-goals-heading">What are some small goals you have?</h2>
+        <p class="init-card-desc">Pick anything that would feel like a win this month. Select all that apply.</p>
+        <div class="init-bubble-mount" id="mount-small-goals" data-field="smallGoals" data-multi="true"></div>
+        <p class="init-error init-step-error" id="error-small-goals" role="alert" hidden></p>
+        <div class="init-step-nav">
+          <button type="button" class="init-btn init-btn--ghost" data-action="back">Back</button>
+          <button type="button" class="init-btn init-btn--primary" data-action="next">Continue</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Goals: big -->
+    <section class="init-slide init-slide--question" data-slide="big-goals" data-seg="goals" data-seg-step="2" aria-labelledby="big-goals-heading">
+      <div class="init-card init-card--question">
+        <p class="init-seg-kicker">Goals · 2 of 2</p>
+        <h2 class="init-card-title" id="big-goals-heading">What are some big goals you have?</h2>
+        <p class="init-card-desc">Dream bigger — where do you want to be in a year or two?</p>
+        <div class="init-bubble-mount" id="mount-big-goals" data-field="bigGoals" data-multi="true"></div>
+        <p class="init-error init-step-error" id="error-big-goals" role="alert" hidden></p>
+        <div class="init-step-nav">
+          <button type="button" class="init-btn init-btn--ghost" data-action="back">Back</button>
+          <button type="button" class="init-btn init-btn--primary" data-action="next">Continue</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Setup: discomfort -->
+    <section class="init-slide init-slide--question" data-slide="discomfort" data-seg="setup" data-seg-step="1" aria-labelledby="discomfort-heading">
+      <div class="init-card init-card--question">
+        <p class="init-seg-kicker">Setup · 1 of 3</p>
+        <h2 class="init-card-title" id="discomfort-heading">What discomfort do you have when working out?</h2>
+        <p class="init-card-desc">We’ll steer clear of aggravating movements. Select all that apply.</p>
+        <div class="init-bubble-mount" id="mount-discomfort" data-field="discomforts" data-multi="true"></div>
+        <p class="init-error init-step-error" id="error-discomfort" role="alert" hidden></p>
+        <div class="init-step-nav">
+          <button type="button" class="init-btn init-btn--ghost" data-action="back">Back</button>
+          <button type="button" class="init-btn init-btn--primary" data-action="next">Continue</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Setup: machines -->
+    <section class="init-slide init-slide--question" data-slide="machines" data-seg="setup" data-seg-step="2" aria-labelledby="machines-heading">
+      <div class="init-card init-card--question">
+        <p class="init-seg-kicker">Setup · 2 of 3</p>
+        <h2 class="init-card-title" id="machines-heading">What machines do you have access to?</h2>
+        <p class="init-card-desc">Tap everything available to you — gym, school weight room, or home setup.</p>
+        <div class="init-bubble-mount" id="mount-machines" data-field="machines" data-multi="true"></div>
+        <p class="init-error init-step-error" id="error-machines" role="alert" hidden></p>
+        <div class="init-step-nav">
+          <button type="button" class="init-btn init-btn--ghost" data-action="back">Back</button>
+          <button type="button" class="init-btn init-btn--primary" data-action="next">Continue</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Setup: sliders -->
+    <section class="init-slide init-slide--question" data-slide="sliders" data-seg="setup" data-seg-step="3" aria-labelledby="sliders-heading">
+      <div class="init-card init-card--question">
+        <p class="init-seg-kicker">Setup · 3 of 3</p>
+        <h2 class="init-card-title" id="sliders-heading">A few quick sliders</h2>
+        <p class="init-card-desc">Drag to match your experience and how much time you usually have.</p>
+        <div class="init-slider-stack">
+          <div class="init-slider-block">
+            <div class="init-slider-head">
+              <span class="init-slider-label">Training experience</span>
+              <span class="init-slider-value" id="experience-label">Beginner</span>
+            </div>
+            <input type="range" class="init-slider" id="slider-experience" min="0" max="2" step="1" value="0" aria-valuetext="Beginner">
+            <div class="init-slider-ticks" aria-hidden="true">
+              <span>Beginner</span><span>Intermediate</span><span>Advanced</span>
+            </div>
+          </div>
+          <div class="init-slider-block">
+            <div class="init-slider-head">
+              <span class="init-slider-label">Weeknight sessions</span>
+              <span class="init-slider-value" id="weeknight-label">45 min</span>
+            </div>
+            <input type="range" class="init-slider" id="slider-weeknight" min="0" max="2" step="1" value="1" aria-valuetext="45 minutes">
+            <div class="init-slider-ticks" aria-hidden="true">
+              <span>30 min</span><span>45 min</span><span>60 min</span>
+            </div>
+          </div>
+          <div class="init-slider-block">
+            <div class="init-slider-head">
+              <span class="init-slider-label">Weekend sessions</span>
+              <span class="init-slider-value" id="weekend-label">90 min</span>
+            </div>
+            <input type="range" class="init-slider" id="slider-weekend" min="0" max="2" step="1" value="1" aria-valuetext="90 minutes">
+            <div class="init-slider-ticks" aria-hidden="true">
+              <span>60 min</span><span>90 min</span><span>2 hr</span>
+            </div>
+          </div>
+        </div>
+        <p class="init-error init-step-error" id="error-sliders" role="alert" hidden></p>
+        <div class="init-step-nav">
+          <button type="button" class="init-btn init-btn--ghost" data-action="back">Back</button>
+          <button type="button" class="init-btn init-btn--primary" data-action="next">Continue</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Optional: favorite exercises -->
+    <section class="init-slide init-slide--question" data-slide="favorite-exercises" data-seg="optional" data-seg-step="1" data-optional="true" aria-labelledby="favorite-exercises-heading">
+      <div class="init-card init-card--question">
+        <p class="init-seg-kicker">Optional · 1 of 3</p>
+        <h2 class="init-card-title" id="favorite-exercises-heading">Favorite exercises?</h2>
+        <p class="init-card-desc">Pick lifts you love — or use search/create to add your own. Skip if you’re not sure yet.</p>
+        <div class="init-bubble-mount" id="mount-favorite-exercises" data-field="favoriteExercises" data-multi="true"></div>
+        <div class="init-step-nav">
+          <button type="button" class="init-btn init-btn--ghost" data-action="back">Back</button>
+          <button type="button" class="init-btn init-btn--ghost" data-action="skip">Skip</button>
+          <button type="button" class="init-btn init-btn--primary" data-action="next">Continue</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Optional: least favorite exercises -->
+    <section class="init-slide init-slide--question" data-slide="least-favorite-exercises" data-seg="optional" data-seg-step="2" data-optional="true" aria-labelledby="least-favorite-exercises-heading">
+      <div class="init-card init-card--question">
+        <p class="init-seg-kicker">Optional · 2 of 3</p>
+        <h2 class="init-card-title" id="least-favorite-exercises-heading">Least favorite exercises?</h2>
+        <p class="init-card-desc">We’ll de-emphasize these when we can. Totally optional.</p>
+        <div class="init-bubble-mount" id="mount-least-favorite-exercises" data-field="leastFavoriteExercises" data-multi="true"></div>
+        <div class="init-step-nav">
+          <button type="button" class="init-btn init-btn--ghost" data-action="back">Back</button>
+          <button type="button" class="init-btn init-btn--ghost" data-action="skip">Skip</button>
+          <button type="button" class="init-btn init-btn--primary" data-action="next">Continue</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Optional: reason for trying -->
+    <section class="init-slide init-slide--question" data-slide="try-reason" data-seg="optional" data-seg-step="3" data-optional="true" aria-labelledby="try-reason-heading">
+      <div class="init-card init-card--question">
+        <p class="init-seg-kicker">Optional · 3 of 3</p>
+        <h2 class="init-card-title" id="try-reason-heading">Reason for trying Strongman AI?</h2>
+        <p class="init-card-desc">Helps Rocky tailor your coaching voice. Select all that apply, or skip.</p>
+        <div class="init-bubble-mount" id="mount-try-reason" data-field="tryReason" data-multi="true"></div>
+        <div class="init-step-nav">
+          <button type="button" class="init-btn init-btn--ghost" data-action="back">Back</button>
+          <button type="button" class="init-btn init-btn--ghost" data-action="skip">Skip</button>
+          <button type="button" class="init-btn init-btn--primary" data-action="next">Continue</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sports -->
+    <section class="init-slide init-slide--question" data-slide="sports" data-seg="sports" data-seg-step="1" aria-labelledby="sports-heading">
+      <div class="init-card init-card--question">
+        <p class="init-seg-kicker">Sports</p>
+        <h2 class="init-card-title" id="sports-heading">What sports do you play?</h2>
+        <p class="init-card-desc">Select every sport you’re in — school, club, or rec. You’ll set practice and game days on the next screen.</p>
+        <div class="init-bubble-mount init-bubble-mount--sports" id="mount-sports" data-field="sportSelections" data-multi="true"></div>
+        <p class="init-card-desc init-card-desc--tight">What grade are you in?</p>
+        <div class="init-grade-row" id="init-grade-row" role="group" aria-label="Grade level">
+          <button type="button" class="init-grade-pill" data-grade="9">9th</button>
+          <button type="button" class="init-grade-pill" data-grade="10">10th</button>
+          <button type="button" class="init-grade-pill" data-grade="11">11th</button>
+          <button type="button" class="init-grade-pill" data-grade="12">12th</button>
+        </div>
+        <p class="init-error init-step-error" id="error-sports" role="alert" hidden></p>
+        <div class="init-step-nav">
+          <button type="button" class="init-btn init-btn--ghost" data-action="back">Back</button>
+          <button type="button" class="init-btn init-btn--primary" id="btn-finish">Finish setup</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Thanks -->
+    <section class="init-slide" data-slide="thanks" aria-labelledby="thanks-heading">
+      <div class="init-card init-card--hero init-card--thanks" id="thanks-card">
+        <div class="init-thanks-icon" aria-hidden="true">✓</div>
+        <h2 class="init-hero-title init-hero-title--sm" id="thanks-heading">You’re all set</h2>
+        <p class="init-hero-lede" id="thanks-subtitle">Taking you to your home feed…</p>
+        <div class="init-spinner" aria-hidden="true"></div>
+      </div>
+    </section>
+  </main>
+
+  <datalist id="sport-datalist"></datalist>
+  <script src="shared/name-policy.js"></script>
+  <script src="shared/info-tip.js"></script>
+  <script src="shared/api.js"></script>
+  <script src="shared/known-notes.js"></script>
+  <script src="shared/server-wake.js"></script>
+  <script src="shared/sport-database.js"></script>
+  <script src="shared/athlete-context.js"></script>
+  <script src="js/init.js"></script>
+</body>
+</html>

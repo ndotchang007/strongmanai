@@ -1,0 +1,609 @@
+/* Sparse, friendly settings panel */
+.settings-buddy .home-settings-title
+{
+    font-family: var(--font);
+    font-size: 1.1rem;
+    letter-spacing: -0.01em;
+}
+
+.settings-buddy-lede
+{
+    margin: 0 0 1.15rem;
+    font-size: 0.85rem;
+    line-height: 1.55;
+    color: rgba(255, 255, 255, 0.62);
+}
+
+.settings-buddy-inline
+{
+    color: #ff9f40;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.settings-buddy-inline:hover
+{
+    text-decoration: underline;
+}
+
+/* Shared card shell — every block in the hub uses the same box model */
+.settings-buddy-card,
+.settings-hub .home-settings-body > section.home-settings-section,
+.settings-hub .home-settings-body > a.settings-hub-training-card
+{
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    padding: 1.25rem 1.35rem;
+    border-radius: 14px;
+    border: 1px solid #5c5c5c;
+    background: rgba(255, 255, 255, 0.03);
+    margin: 0;
+}
+
+.settings-buddy-card
+{
+    margin-bottom: 0;
+}
+
+.settings-buddy-card--highlight
+{
+    border-color: rgba(255, 140, 0, 0.32);
+    background: rgba(255, 140, 0, 0.07);
+}
+
+.settings-buddy-card .home-settings-section-title,
+.settings-hub .home-settings-body > section .home-settings-section-title
+{
+    margin: 0 0 0.75rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+}
+
+.settings-buddy-card .home-settings-hint,
+.settings-hub .home-settings-body > section .home-settings-hint
+{
+    margin: 0 0 0.85rem;
+}
+
+.settings-buddy-card .home-settings-toggle,
+.settings-hub .home-settings-body > section .home-settings-toggle
+{
+    margin-top: 0.75rem;
+}
+
+.settings-buddy-card .home-settings-toggle:first-of-type,
+.settings-hub .home-settings-body > section .home-settings-toggle:first-of-type
+{
+    margin-top: 0.35rem;
+}
+
+.settings-buddy-card .home-settings-select,
+.settings-hub .home-settings-body > section .home-settings-select
+{
+    margin-top: 0.15rem;
+}
+
+.settings-theme-pills
+{
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.15rem;
+}
+
+.settings-theme-pill
+{
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.55rem 0.75rem;
+    border-radius: 999px;
+    border: 1px solid #5c5c5c;
+    background: rgba(0, 0, 0, 0.2);
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.settings-theme-pill:has(input:checked)
+{
+    border-color: rgba(255, 140, 0, 0.5);
+    background: rgba(255, 140, 0, 0.15);
+    color: #ffd4a8;
+}
+
+.settings-theme-pill input
+{
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.settings-buddy-select
+{
+    width: 100%;
+}
+
+.settings-buddy-cta
+{
+    display: inline-flex;
+    margin-top: 0.5rem;
+    padding: 0.6rem 1rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-decoration: none;
+    color: #111;
+    background: linear-gradient(135deg, #ff8c00, #ff6a00);
+}
+
+.settings-buddy-details
+{
+    margin-top: 0.5rem;
+    border-radius: 14px;
+    border: 1px solid #5c5c5c;
+    background: rgba(0, 0, 0, 0.15);
+}
+
+.settings-buddy-details summary
+{
+    padding: 0.85rem 1.15rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.72);
+    cursor: pointer;
+    list-style: none;
+}
+
+.settings-buddy-details summary::-webkit-details-marker
+{
+    display: none;
+}
+
+.settings-buddy-details-body
+{
+    padding: 0 1.15rem 1.15rem;
+}
+
+.settings-buddy-details-body .home-settings-section
+{
+    padding-top: 0.85rem;
+    border-top: 1px solid #4a4a4a;
+}
+
+.settings-buddy-details-body .home-settings-section:first-child
+{
+    border-top: none;
+    padding-top: 0;
+}
+
+/* Legacy pages: soften radio rows */
+.home-settings-dialog:not(.settings-buddy) .home-settings-radio-label
+{
+    border-radius: 999px;
+    padding: 0.45rem 0.75rem;
+    border: 1px solid #5c5c5c;
+}
+
+.home-settings-dialog:not(.settings-buddy) .home-settings-theme-row
+{
+    display: flex;
+    gap: 0.4rem;
+}
+
+.home-settings-dialog:not(.settings-buddy) .home-settings-radio-label:has(input:checked)
+{
+    border-color: rgba(255, 140, 0, 0.45);
+    background: rgba(255, 140, 0, 0.12);
+}
+
+/* ── Settings hub (product settings, not training) ── */
+.settings-hub .home-settings-panel
+{
+    max-width: 480px;
+    border-color: #5c5c5c;
+    box-shadow: 0 20px 56px rgba(0, 0, 0, 0.5);
+}
+
+html[data-theme="light"] .settings-hub .home-settings-panel
+{
+    border-color: #b0b0b0;
+    box-shadow: 0 20px 56px rgba(0, 0, 0, 0.1);
+}
+
+.settings-hub .home-settings-header
+{
+    padding: 1.25rem 1.35rem 1.1rem;
+    border-bottom: 1px solid #4a4a4a;
+    background: linear-gradient(180deg, rgba(255, 140, 0, 0.07) 0%, transparent 100%);
+}
+
+html[data-theme="light"] .settings-hub .home-settings-header
+{
+    background: linear-gradient(180deg, rgba(255, 140, 0, 0.1) 0%, transparent 100%);
+}
+
+.settings-hub-brand,
+.settings-hub-intro,
+.settings-hub-training-title,
+.settings-hub-training-desc,
+.settings-hub-toggle-label,
+.settings-hub-toggle-hint,
+.settings-hub-eyebrow,
+.settings-hub-title-text
+{
+    font-family: var(--font);
+}
+
+.settings-hub-brand
+{
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+}
+
+.settings-hub-mark
+{
+    flex-shrink: 0;
+    width: 2.35rem;
+    height: 2.35rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    color: #111;
+    background: linear-gradient(135deg, #ffb347 0%, #ff7a00 100%);
+    box-shadow: 0 4px 14px rgba(255, 120, 0, 0.35);
+}
+
+.settings-hub-brand-text
+{
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    min-width: 0;
+}
+
+.settings-hub-eyebrow
+{
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255, 159, 64, 0.95);
+}
+
+.settings-hub-title-text
+{
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: #fff;
+    line-height: 1.2;
+}
+
+html[data-theme="light"] .settings-hub-title-text
+{
+    color: #1a1a1a;
+}
+
+.settings-hub .home-settings-body
+{
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    padding: 1.25rem 1.35rem 1.5rem;
+}
+
+.settings-hub .home-settings-body > .settings-hub-intro
+{
+    padding: 0;
+    border: none;
+    background: none;
+    margin: 0 0 0.15rem;
+}
+
+.settings-hub .home-settings-section
+{
+    padding: 0;
+    border-bottom: none;
+}
+
+.settings-hub .home-settings-section--danger.settings-buddy-card,
+.settings-hub .home-settings-section--danger
+{
+    padding: 1.25rem 1.35rem;
+    margin-top: 0;
+    border: 1px solid rgba(248, 113, 113, 0.42);
+    border-radius: 14px;
+    background: rgba(127, 29, 29, 0.18);
+}
+
+.settings-hub .home-settings-section--footer
+{
+    margin-top: 0;
+}
+
+.settings-hub-intro
+{
+    margin: 0;
+    font-size: 0.84rem;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.58);
+}
+
+html[data-theme="light"] .settings-hub-intro
+{
+    color: rgba(0, 0, 0, 0.55);
+}
+
+.settings-hub-training-card
+{
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.15s, transform 0.15s;
+    border-color: rgba(255, 140, 0, 0.32);
+    background: linear-gradient(135deg, rgba(255, 140, 0, 0.14) 0%, rgba(255, 100, 0, 0.06) 100%);
+}
+
+.settings-hub-training-card:hover
+{
+    border-color: rgba(255, 140, 0, 0.5);
+    transform: translateY(-1px);
+}
+
+.settings-hub-training-card[hidden]
+{
+    display: none;
+}
+
+.settings-hub-training-kicker
+{
+    display: block;
+    margin-bottom: 0.35rem;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255, 180, 100, 0.95);
+}
+
+.settings-hub-training-title
+{
+    display: block;
+    margin-bottom: 0.35rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+html[data-theme="light"] .settings-hub-training-title
+{
+    color: #1a1a1a;
+}
+
+.settings-hub-training-desc
+{
+    display: block;
+    font-size: 0.82rem;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.62);
+}
+
+html[data-theme="light"] .settings-hub-training-desc
+{
+    color: rgba(0, 0, 0, 0.55);
+}
+
+.settings-hub-training-arrow
+{
+    display: inline-block;
+    margin-top: 0.65rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #ff9f40;
+}
+
+.settings-hub-grid
+{
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+.settings-hub-labs
+{
+    margin-top: 0;
+}
+
+.settings-hub-labs-badge
+{
+    display: inline-block;
+    margin-left: 0.35rem;
+    padding: 0.12rem 0.4rem;
+    border-radius: 999px;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    vertical-align: middle;
+    color: #ffd4a8;
+    background: rgba(255, 140, 0, 0.2);
+    border: 1px solid rgba(255, 140, 0, 0.35);
+}
+
+.settings-hub-toggle-row
+{
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 0.15rem;
+}
+
+.settings-hub-toggle-copy
+{
+    flex: 1;
+    min-width: 0;
+}
+
+.settings-hub-toggle-label
+{
+    display: block;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.92);
+}
+
+html[data-theme="light"] .settings-hub-toggle-label
+{
+    color: #1a1a1a;
+}
+
+.settings-hub-toggle-hint
+{
+    display: block;
+    margin-top: 0.35rem;
+    font-size: 0.78rem;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.52);
+}
+
+html[data-theme="light"] .settings-hub-toggle-hint
+{
+    color: rgba(0, 0, 0, 0.48);
+}
+
+.settings-hub-switch
+{
+    position: relative;
+    flex-shrink: 0;
+    width: 2.65rem;
+    height: 1.5rem;
+    margin-top: 0.15rem;
+}
+
+.settings-hub-switch input
+{
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    cursor: pointer;
+}
+
+.settings-hub-switch-track
+{
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid #5c5c5c;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.settings-hub-switch-track::after
+{
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 1.15rem;
+    height: 1.15rem;
+    border-radius: 50%;
+    background: #d4d4d4;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+    transition: transform 0.2s;
+}
+
+.settings-hub-switch input:checked + .settings-hub-switch-track
+{
+    background: linear-gradient(135deg, #ff9f40, #ff6a00);
+    border-color: rgba(255, 140, 0, 0.6);
+}
+
+.settings-hub-switch input:checked + .settings-hub-switch-track::after
+{
+    transform: translateX(1.15rem);
+}
+
+.settings-hub-switch input:focus-visible + .settings-hub-switch-track
+{
+    outline: 2px solid rgba(255, 140, 0, 0.55);
+    outline-offset: 2px;
+}
+
+.settings-hub .settings-buddy-lede
+{
+    display: none;
+}
+
+.settings-hub-section--hidden-workout
+{
+    display: none !important;
+}
+
+.settings-hub .home-settings-danger-btn
+{
+    margin-top: 0.75rem;
+    padding: 0.6rem 1rem;
+}
+
+.settings-hub .home-settings-meta
+{
+    margin: 0 0 0.65rem;
+}
+
+.settings-hub .home-settings-inline-links
+{
+    margin-top: 0.15rem;
+}
+
+html[data-theme="light"] .settings-buddy-lede,
+html[data-theme="light"] .settings-hub-intro
+{
+    color: rgba(0, 0, 0, 0.55);
+}
+
+html[data-theme="light"] .settings-hub-training-card
+{
+    background: linear-gradient(135deg, rgba(255, 140, 0, 0.12) 0%, rgba(255, 100, 0, 0.05) 100%);
+}
+
+html[data-theme="light"] .settings-buddy-card,
+html[data-theme="light"] .settings-hub .home-settings-body > section.home-settings-section
+{
+    border-color: #c8c8c8;
+    background: rgba(255, 255, 255, 0.65);
+}
+
+html[data-theme="light"] .settings-theme-pill
+{
+    border-color: #c8c8c8;
+    background: rgba(255, 255, 255, 0.8);
+    color: rgba(0, 0, 0, 0.75);
+}
+
+html[data-theme="light"] .settings-theme-pill:has(input:checked)
+{
+    color: #9a4a00;
+}
+
+html[data-theme="light"] .settings-buddy-details
+{
+    border-color: #c8c8c8;
+    background: rgba(255, 255, 255, 0.5);
+}
+
+html[data-theme="light"] .settings-buddy-details summary
+{
+    color: rgba(0, 0, 0, 0.65);
+}

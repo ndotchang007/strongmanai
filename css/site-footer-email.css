@@ -1,0 +1,257 @@
+/* Footer email popup — requires :root tokens from homepage.css / index.css */
+
+.footer-email-overlay
+{
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    background: rgba(0, 0, 0, 0.72);
+    box-sizing: border-box;
+}
+.footer-email-overlay[hidden]
+{
+    display: none !important;
+}
+.footer-email-dialog
+{
+    position: relative;
+    width: 100%;
+    max-width: 440px;
+    padding: 1.75rem 1.5rem 1.5rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-card);
+}
+.footer-email-close
+{
+    position: absolute;
+    top: 0.65rem;
+    right: 0.75rem;
+    width: 2.25rem;
+    height: 2.25rem;
+    border: none;
+    background: transparent;
+    color: #aaa;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: color 0.2s, background-color 0.2s;
+}
+.footer-email-close:hover
+{
+    color: #fff;
+    background: #333;
+}
+.footer-email-title
+{
+    color: var(--text-primary);
+    font-family: var(--font);
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: 0 2rem 0.75rem 0;
+}
+.footer-email-to
+{
+    color: var(--text-muted);
+    font-family: var(--font);
+    font-size: 0.85rem;
+    margin: 0 0 1.25rem;
+}
+.footer-email-to-link
+{
+    color: var(--accent);
+    text-decoration: none;
+}
+.footer-email-to-link:hover
+{
+    text-decoration: underline;
+}
+.footer-email-fields
+{
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+.footer-email-label
+{
+    color: var(--text-muted);
+    font-family: var(--font);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+.footer-email-input,
+.footer-email-textarea
+{
+    width: 100%;
+    padding: 0.65rem 0.75rem;
+    margin-bottom: 0.75rem;
+    box-sizing: border-box;
+    border: 1px solid var(--border-mid);
+    border-radius: var(--radius-sm);
+    background: var(--bg-deep);
+    color: var(--text-primary);
+    font-family: var(--font);
+    font-size: 0.95rem;
+}
+.footer-email-textarea
+{
+    resize: vertical;
+    min-height: 120px;
+    margin-bottom: 0;
+}
+.footer-email-input:focus,
+.footer-email-textarea:focus
+{
+    outline: none;
+    border-color: var(--accent);
+}
+.footer-email-actions
+{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+}
+.footer-email-btn
+{
+    padding: 0.6rem 1.1rem;
+    border-radius: var(--radius-sm);
+    font-family: var(--font);
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: opacity 0.2s, background-color 0.2s;
+}
+.footer-email-btn--secondary
+{
+    background: transparent;
+    color: var(--text-muted);
+    border-color: var(--border-mid);
+}
+.footer-email-btn--secondary:hover
+{
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+}
+.footer-email-btn--primary
+{
+    background: var(--accent);
+    color: #0a0a0a;
+    border-color: var(--accent);
+}
+.footer-email-btn--primary:hover
+{
+    opacity: 0.92;
+}
+
+@media (max-width: 480px)
+{
+    .footer-email-overlay
+    {
+        padding: 1rem max(0.75rem, env(safe-area-inset-left, 0px)) max(1rem, env(safe-area-inset-bottom, 0px)) max(0.75rem, env(safe-area-inset-right, 0px));
+        align-items: flex-end;
+    }
+
+    .footer-email-dialog
+    {
+        max-height: min(92dvh, 640px);
+        overflow-y: auto;
+        border-radius: var(--radius-md) var(--radius-md) 0 0;
+    }
+
+    .footer-email-actions
+    {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+
+    .footer-email-btn
+    {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+/* In-app pages — minimal single-line footer (landing keeps full footer via --scroll-gated) */
+.site-footer--app
+{
+    background: transparent !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 0.65rem clamp(1rem, 3vw, 1.5rem);
+    margin-top: auto;
+}
+
+html[data-theme="light"] .site-footer--app
+{
+    border-top-color: rgba(0, 0, 0, 0.06);
+}
+
+.footer-app-bar
+{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem 0.5rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.footer-app-link
+{
+    font-family: var(--font, var(--font, "DM Sans", system-ui, sans-serif));
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.38);
+    text-decoration: none;
+    background: none;
+    border: none;
+    padding: 0.15rem 0.2rem;
+    cursor: pointer;
+    transition: color 0.15s ease;
+}
+
+html[data-theme="light"] .footer-app-link
+{
+    color: rgba(0, 0, 0, 0.42);
+}
+
+.footer-app-link:hover
+{
+    color: rgba(255, 255, 255, 0.62);
+}
+
+html[data-theme="light"] .footer-app-link:hover
+{
+    color: rgba(0, 0, 0, 0.65);
+}
+
+.footer-app-sep
+{
+    color: rgba(255, 255, 255, 0.18);
+    font-size: 0.72rem;
+    user-select: none;
+}
+
+html[data-theme="light"] .footer-app-sep
+{
+    color: rgba(0, 0, 0, 0.2);
+}
+
+@media (max-width: 768px)
+{
+    body .site-footer--app
+    {
+        padding-bottom: calc(0.65rem + 52px + 1.65rem + env(safe-area-inset-bottom, 0px));
+    }
+}

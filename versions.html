@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="strongman-api-base" content="http://127.0.0.1:8080/api/v1">
+    <title>Version history – Strongman AI</title>
+    <link rel="icon" type="image/png" href="assets/logo.png">
+    <link rel="apple-touch-icon" href="assets/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/index.css">
+    <link rel="stylesheet" href="css/surveys.css">
+    <link rel="stylesheet" href="css/versions.css">
+</head>
+<body class="surveys-page versions-page">
+    <header class="site-header">
+        <a href="/home" class="site-header-logo-link"><span class="site-header-logo">STRONGMAN <span class="site-header-logo-ai">AI</span></span></a>
+        <nav class="site-header-nav">
+            <a href="/info" class="site-header-link">GUIDE</a>
+            <a href="/home" class="site-header-link">HOME</a>
+            <a href="#" class="site-header-link" data-email-kind="bug">REPORT ISSUE</a>
+        </nav>
+    </header>
+
+    <div class="mainContent">
+        <section class="surveys-hero" aria-labelledby="versions-heading">
+            <div class="surveys-hero-grid" aria-hidden="true"></div>
+            <div class="surveys-hero-inner">
+                <p class="section-eyebrow">Patch notes</p>
+                <h1 id="versions-heading" class="surveys-hero-title">Version history</h1>
+                <p class="surveys-hero-lead">What shipped in each Strongman AI web release — fixes, new flows, and product changes worth knowing about.</p>
+            </div>
+        </section>
+
+        <section class="surveys-gallery" aria-label="Release history">
+            <div class="surveys-gallery-inner">
+                <p class="surveys-gallery-label">Releases</p>
+                <div id="versions-gallery"></div>
+            </div>
+        </section>
+    </div>
+
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <div class="footer-col footer-col-brand">
+                <p class="footer-logo">STRONGMAN <span class="footer-logo-ai">AI</span></p>
+                <p class="footer-tagline">BETTER TRAINING. FASTER RESULTS.</p>
+            </div>
+            <div class="footer-col">
+                <p class="footer-section-title footer-section-title--spaced">WEB VERSIONS</p>
+                <span class="footer-text">VERSION 1.1</span>
+                <a href="/versions/v1.1" class="footer-link">V1.1 PATCH NOTES</a>
+            </div>
+            <div class="footer-col">
+                <p class="footer-section-title">COMPANY</p>
+                <a href="/info" class="footer-link">HOW TO USE</a>
+                <a href="/about" class="footer-link">OUR TEAM</a>
+                <a href="/legal#terms" class="footer-link">TERMS OF SERVICE</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="shared/version-catalog.js"></script>
+    <script src="shared/site-footer-email.js"></script>
+    <script src="js/versions.js"></script>
+</body>
+</html>

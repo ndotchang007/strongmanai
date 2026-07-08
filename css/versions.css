@@ -1,0 +1,86 @@
+/* Version history — same card language as surveys gallery */
+
+.versions-page .mainContent {
+  padding-top: 4rem;
+}
+
+.versions-page,
+.versions-page .survey-card,
+.versions-page .survey-detail-card,
+.versions-page .version-patch-list {
+  font-family: var(--font);
+}
+
+.version-patch-section {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.version-patch-heading {
+  margin: 0 0 0.85rem;
+  font-family: var(--font);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.version-patch-list {
+  margin: 0;
+  padding-left: 1.15rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.version-patch-list li {
+  font-family: var(--font);
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+a.survey-card.survey-card--current {
+  border-color: rgba(255, 140, 0, 0.32);
+  background: linear-gradient(155deg, rgba(255, 140, 0, 0.1) 0%, rgba(16, 16, 16, 0.92) 100%);
+}
+
+a.survey-card.survey-card--current:hover {
+  border-color: rgba(255, 140, 0, 0.45);
+}
+
+.info-versions-mount {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.info-versions-mount a.survey-card {
+  margin: 0;
+}
+
+.info-page,
+.info-page .info-main,
+.info-page .info-section,
+.info-page .settings-hub-brand,
+.info-page .home-settings-panel {
+  font-family: var(--font);
+}
+
+.customize-page,
+.customize-page .user-settings-hero,
+.customize-page .buddy-form-wrap {
+  font-family: var(--font);
+}
+
+.settings-hub-brand,
+.settings-hub-intro,
+.settings-hub-training-title,
+.settings-hub-toggle-label,
+.settings-hub-toggle-hint,
+.home-settings-section-title,
+.home-settings-meta {
+  font-family: var(--font);
+}
