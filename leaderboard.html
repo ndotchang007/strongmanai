@@ -5,15 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="strongman-api-base" content="https://strongmanai-api.onrender.com/api/v1">
     <title>Strongman AI – Leaderboards</title>
-    <link rel="icon" type="image/png" href="assets/logo.png">
-    <link rel="apple-touch-icon" href="assets/logo.png">
-    <link rel="stylesheet" href="css/home.css">
-    <link rel="stylesheet" href="css/app-nav.css">
-    <link rel="stylesheet" href="css/notification-bell.css">
-    <link rel="stylesheet" href="css/leaderboard.css">
-    <link rel="stylesheet" href="css/server-wake.css">
-    <link rel="stylesheet" href="css/settings-app.css">
-    <link rel="stylesheet" href="css/workout-dashboard.css">
+    <link rel="icon" type="image/png" href="/assets/logo.png">
+    <link rel="apple-touch-icon" href="/assets/logo.png">
+    <link rel="stylesheet" href="/css/home.css">
+    <link rel="stylesheet" href="/css/app-nav.css">
+    <link rel="stylesheet" href="/css/notification-bell.css">
+    <link rel="stylesheet" href="/css/leaderboard.css">
+    <link rel="stylesheet" href="/css/server-wake.css">
+    <link rel="stylesheet" href="/css/settings-app.css">
+    <link rel="stylesheet" href="/css/workout-dashboard.css">
 </head>
 <body class="leaderboard-page" data-current-page="leaderboards">
     <aside class="site-sidebar" id="site-sidebar" aria-label="Main navigation">
@@ -22,33 +22,33 @@
         </div>
         <nav class="sidebar-nav">
             <a href="/home" class="sidebar-link" data-page="home" aria-label="Home">
-                <img src="assets/icons/home-outline.png" alt="" class="sidebar-icon sidebar-icon-outline">
-                <img src="assets/icons/home-filled.png" alt="" class="sidebar-icon sidebar-icon-filled">
+                <img src="/assets/icons/home-outline.png" alt="" class="sidebar-icon sidebar-icon-outline">
+                <img src="/assets/icons/home-filled.png" alt="" class="sidebar-icon sidebar-icon-filled">
                 <span class="sidebar-label">Home</span>
             </a>
             <a href="/leaderboard" class="sidebar-link" data-page="leaderboard" aria-label="Leaderboard">
-                <img src="assets/icons/trophy-outline.png" alt="" class="sidebar-icon sidebar-icon-outline">
-                <img src="assets/icons/trophy-filled.png" alt="" class="sidebar-icon sidebar-icon-filled">
+                <img src="/assets/icons/trophy-outline.png" alt="" class="sidebar-icon sidebar-icon-outline">
+                <img src="/assets/icons/trophy-filled.png" alt="" class="sidebar-icon sidebar-icon-filled">
                 <span class="sidebar-label">Leaderboard</span>
             </a>
             <a href="/explore" class="sidebar-link" data-page="explore" aria-label="Explore">
-                <img src="assets/icons/explore-outline.png" alt="" class="sidebar-icon sidebar-icon-outline">
-                <img src="assets/icons/explore-filled.png" alt="" class="sidebar-icon sidebar-icon-filled">
+                <img src="/assets/icons/explore-outline.png" alt="" class="sidebar-icon sidebar-icon-outline">
+                <img src="/assets/icons/explore-filled.png" alt="" class="sidebar-icon sidebar-icon-filled">
                 <span class="sidebar-label">Explore</span>
             </a>
             <a href="/generate" class="sidebar-link" data-page="generate" aria-label="Generate">
-                <img src="assets/icons/AI-outline.png" alt="" class="sidebar-icon sidebar-icon-outline">
-                <img src="assets/icons/AI-outline.png" alt="" class="sidebar-icon sidebar-icon-filled">
+                <img src="/assets/icons/AI-outline.png" alt="" class="sidebar-icon sidebar-icon-outline">
+                <img src="/assets/icons/AI-outline.png" alt="" class="sidebar-icon sidebar-icon-filled">
                 <span class="sidebar-label">Generate</span>
             </a>
             <a href="/tracking" class="sidebar-link" data-page="tracking" aria-label="Tracking">
-                <img src="assets/icons/graph-outline.png" alt="" class="sidebar-icon sidebar-icon-outline">
-                <img src="assets/icons/graph-outline.png" alt="" class="sidebar-icon sidebar-icon-filled">
+                <img src="/assets/icons/graph-outline.png" alt="" class="sidebar-icon sidebar-icon-outline">
+                <img src="/assets/icons/graph-outline.png" alt="" class="sidebar-icon sidebar-icon-filled">
                 <span class="sidebar-label">Tracking</span>
             </a>
             <a href="/create" class="sidebar-link" data-page="create" aria-label="Create">
-                <img src="assets/icons/create-outline.png" alt="" class="sidebar-icon sidebar-icon-outline">
-                <img src="assets/icons/create-outline.png" alt="" class="sidebar-icon sidebar-icon-filled">
+                <img src="/assets/icons/create-outline.png" alt="" class="sidebar-icon sidebar-icon-outline">
+                <img src="/assets/icons/create-outline.png" alt="" class="sidebar-icon sidebar-icon-filled">
                 <span class="sidebar-label">Create</span>
             </a>
         </nav>
@@ -64,8 +64,8 @@
                 </div>
             </div>
             <button type="button" class="sidebar-link sidebar-link-more sidebar-settings-trigger" id="sidebar-settings-trigger" aria-label="Settings" aria-haspopup="dialog" aria-expanded="false" aria-controls="home-settings-dialog">
-                <img src="assets/icons/menu-outline.png" alt="" class="sidebar-icon sidebar-icon-outline">
-                <img src="assets/icons/menu-outline.png" alt="" class="sidebar-icon sidebar-icon-filled">
+                <img src="/assets/icons/menu-outline.png" alt="" class="sidebar-icon sidebar-icon-outline">
+                <img src="/assets/icons/menu-outline.png" alt="" class="sidebar-icon sidebar-icon-filled">
                 <span class="sidebar-label">Settings</span>
             </button>
         </div>
@@ -328,22 +328,22 @@
         </div>
     </div>
 
-    <script src="shared/api.js"></script>
-    <script src="shared/exercise-database.js"></script>
-    <script src="shared/competitions-store.js"></script>
-    <script src="shared/notification-bell.js"></script>
-    <script src="shared/server-wake.js"></script>
-    <script src="shared/user-avatar.js"></script>
-    <script src="shared/app-nav.js"></script>
-    <script src="shared/sidebar-profile-menu.js"></script>
-    <script src="shared/auth-guard.js"></script>
-    <script src="shared/site-footer-email.js"></script>
-    <script src="shared/athlete-context.js"></script>
-    <script src="shared/name-policy.js"></script>
-    <script src="shared/known-notes.js"></script>
-    <script src="shared/settings-popup.js"></script>
-    <script src="js/leaderboard.js"></script>
-    <script src="shared/workout-dashboard.js"></script>
+    <script src="/shared/api.js"></script>
+    <script src="/shared/exercise-database.js"></script>
+    <script src="/shared/competitions-store.js"></script>
+    <script src="/shared/notification-bell.js"></script>
+    <script src="/shared/server-wake.js"></script>
+    <script src="/shared/user-avatar.js"></script>
+    <script src="/shared/app-nav.js"></script>
+    <script src="/shared/sidebar-profile-menu.js"></script>
+    <script src="/shared/auth-guard.js"></script>
+    <script src="/shared/site-footer-email.js"></script>
+    <script src="/shared/athlete-context.js"></script>
+    <script src="/shared/name-policy.js"></script>
+    <script src="/shared/known-notes.js"></script>
+    <script src="/shared/settings-popup.js"></script>
+    <script src="/js/leaderboard.js"></script>
+    <script src="/shared/workout-dashboard.js"></script>
     <script>if (window.WorkoutDashboard) window.WorkoutDashboard.init({});</script>
 </body>
 </html>

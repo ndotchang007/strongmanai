@@ -56,6 +56,8 @@ Routing is handled by:
 - `404.html` + `shared/gh-pages-routes.js` — maps paths to the correct HTML file
 - `version.html` / `survey.html` — restore wildcard paths (`/versions/v1.1`, `/survey/...`)
 
+**Asset paths:** HTML uses root-relative URLs (`/css/...`, `/js/...`, `/assets/...`) so styles and scripts load on clean URLs like `/home`, not only `/`.
+
 ## Launch checklist
 
 - [ ] Frontend repo pushed; Pages live on custom domain
