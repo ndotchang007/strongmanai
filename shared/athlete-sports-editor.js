@@ -421,8 +421,19 @@
   function deleteSport() {
     if (!editingKey) return;
     if (sports.length <= 1) {
-      alert('Keep at least one sport, or clear fields if you are between seasons.');
-      return;
+      var user = typeof window.getCurrentUser === 'function' ? window.getCurrentUser() : null;
+      var ctx =
+        user && window.AthleteContext
+          ? window.AthleteContext.loadAthleteContext(user)
+          : null;
+      var sportFocused =
+        ctx &&
+        window.AthleteContext.isSportFocusedGoal &&
+        window.AthleteContext.isSportFocusedGoal(ctx);
+      if (sportFocused) {
+        alert('Keep at least one sport, or clear fields if you are between seasons.');
+        return;
+      }
     }
     if (!window.confirm('Remove this sport from your profile?')) return;
     sports = sports.filter(function (s) {

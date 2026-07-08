@@ -209,6 +209,22 @@
   margin-top: 1.35rem;
 }
 
+.init-step-nav--stack {
+  flex-wrap: wrap;
+}
+
+.init-step-nav--stack .init-btn--skip-sports {
+  flex: 1 1 100%;
+  font-size: 0.82rem;
+}
+
+.init-card-desc-muted {
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--text-muted);
+}
+
 .init-bubble-mount--sports .init-bubble-grid {
   max-height: min(44vh, 440px);
   overflow-y: auto;

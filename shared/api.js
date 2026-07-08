@@ -63,6 +63,7 @@
           firstName: user.firstName,
           lastName: user.lastName,
           profileInitialized: user.profileInitialized,
+          lastSeenVersion: user.lastSeenVersion,
           dateOfBirth: user.dateOfBirth
         })
       );
@@ -212,9 +213,19 @@
     return true;
   }
 
+  function currentAppVersion() {
+    return (window.VERSION_CATALOG && window.VERSION_CATALOG.current) || 'v1.1';
+  }
+
+  function needsCatchup(user) {
+    if (!user || !user.profileInitialized) return false;
+    return user.lastSeenVersion !== currentAppVersion();
+  }
+
   function resolvePostAuthPath(user, nextPath) {
     if (nextPath) return nextPath;
     if (needsProfileInit(user)) return '/init';
+    if (needsCatchup(user)) return '/catchup';
     return '/home';
   }
 
@@ -223,6 +234,7 @@
   window.setCurrentUser = setCurrentUser;
   window.isLoggedIn = isLoggedIn;
   window.needsProfileInit = needsProfileInit;
+  window.needsCatchup = needsCatchup;
   window.resolvePostAuthPath = resolvePostAuthPath;
   window.apiGet = apiGet;
   window.apiPost = apiPost;

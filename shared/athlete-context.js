@@ -85,6 +85,13 @@
     return reason;
   }
 
+  function isSportFocusedGoal(ctx) {
+    if (!ctx) return true;
+    var goal = ctx.primaryGoal;
+    if (!goal && ctx.reason) goal = reasonToPrimaryGoal(ctx.reason);
+    return !goal || goal === 'sport_performance' || goal === 'sports';
+  }
+
   function primaryGoalToReason(goal) {
     if (goal === 'general_health') return 'health';
     if (goal === 'sport_performance') return 'sports';
@@ -313,6 +320,7 @@
   function needsScheduleSetup(user) {
     if (!user) return true;
     var ctx = loadAthleteContext(user);
+    if (!isSportFocusedGoal(ctx)) return false;
     var sports = getSports(ctx);
     if (!sports.length) return true;
     return sports.some(function (entry) {
@@ -385,10 +393,13 @@
       };
     }
     if (!weekend && Array.isArray(ctx.schoolDays) && ctx.schoolDays.indexOf(wd) !== -1) {
+      var weeknightHint = isSportFocusedGoal(ctx)
+        ? 'Efficient session after school (~' + maxMin + ' min)'
+        : 'Efficient weekday session (~' + maxMin + ' min)';
       return {
         kind: 'weeknight',
         label: 'Weeknight',
-        hint: 'Efficient session after school (~' + maxMin + ' min)',
+        hint: weeknightHint,
         maxMinutes: maxMin,
       };
     }
@@ -402,6 +413,13 @@
 
   function getDashboardSubtitle(user) {
     var ctx = loadAthleteContext(user);
+    if (!isSportFocusedGoal(ctx)) {
+      var goal = GOAL_LABELS[ctx.primaryGoal] || ctx.primaryGoal;
+      var parts = [];
+      if (goal) parts.push(goal);
+      parts.push('~' + (ctx.schoolNightMaxMinutes || 45) + ' min weekdays');
+      return parts.join(' · ');
+    }
     var sports = getSports(ctx);
     if (!sports.length) return '';
     var parts = [];
@@ -450,13 +468,16 @@
   }
 
   function isProfileComplete(ctx) {
-    if (!ctx) return false;
+    if (!ctx || !ctx.primaryGoal) return false;
+    if (!isSportFocusedGoal(ctx)) {
+      return !!(ctx.schoolNightMaxMinutes && ctx.weekendMaxMinutes);
+    }
     var sports = getSports(ctx);
     if (!sports.length) return false;
     var hasSchedule = sports.some(function (s) {
       return (s.practiceDays && s.practiceDays.length) || (s.gameDays && s.gameDays.length);
     });
-    return !!(ctx.primaryGoal && hasSchedule && sports.every(function (s) {
+    return !!(hasSchedule && sports.every(function (s) {
       return !!s.sport;
     }));
   }
@@ -481,6 +502,8 @@
 
   function needsGlobalSportsSetup(user) {
     if (!user) return true;
+    var ctx = loadAthleteContext(user);
+    if (!isSportFocusedGoal(ctx)) return false;
     var raw =
       user.athleteContext && typeof user.athleteContext === 'object'
         ? user.athleteContext
@@ -530,12 +553,25 @@
     if (!user) return '';
     var ctx = loadAthleteContext(user);
     var sports = getSports(ctx);
+    var sportFocused = isSportFocusedGoal(ctx);
     var lines = ['[Athlete context — tailor advice and workouts to schedule and goals]'];
-    lines.push('Profile: high school student-athlete using Strongman AI.');
+
+    if (ctx.primaryGoal === 'general_health') {
+      lines.push(
+        'Profile: person training for general health and daily exercise using Strongman AI.'
+      );
+    } else if (ctx.primaryGoal === 'strength' || ctx.primaryGoal === 'aesthetics') {
+      lines.push('Profile: recreational lifter using Strongman AI.');
+    } else if (sportFocused) {
+      lines.push('Profile: high school student-athlete using Strongman AI.');
+    } else {
+      lines.push('Profile: person using Strongman AI for structured training.');
+    }
 
     if (ctx.gradeLevel) lines.push('Grade: ' + ctx.gradeLevel);
 
-    sports.forEach(function (entry, i) {
+    if (sportFocused || sports.length) {
+      sports.forEach(function (entry, i) {
       var comp = competitionLabelForEntry(entry);
       var sportLine = 'Sport ' + (i + 1) + ': ' + entry.sport;
       if (entry.programType && PROGRAM_LABELS[entry.programType]) {
@@ -580,6 +616,7 @@
         );
       }
     });
+    }
 
     var goal = GOAL_LABELS[ctx.primaryGoal] || ctx.primaryGoal;
     if (goal) lines.push('Primary goal (prioritize in workouts): ' + goal);
@@ -600,6 +637,10 @@
       lines.push('Practice day — complementary gym work; account for practice fatigue.');
     } else if (hint.kind === 'weeknight') {
       lines.push('Weeknight — keep sessions efficient and focused.');
+    } else if (!sportFocused) {
+      lines.push(
+        'No sport schedule on file — plan around session caps and the primary goal; do not assume practice or game days.'
+      );
     }
 
     var notes = localExtras.notes || ctx.notes;
@@ -654,6 +695,7 @@
     wrapPromptWithContext: wrapPromptWithContext,
     buildThreadPayload: buildThreadPayload,
     isProfileComplete: isProfileComplete,
+    isSportFocusedGoal: isSportFocusedGoal,
     hasNullSportFieldValue: hasNullSportFieldValue,
     needsGlobalSportsSetup: needsGlobalSportsSetup,
     needsScheduleSetup: needsScheduleSetup,

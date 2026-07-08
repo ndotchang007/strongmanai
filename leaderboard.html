@@ -97,11 +97,6 @@
                         <datalist id="lb-exercise-suggestions"></datalist>
                     </div>
                     <p class="lb-exercise-hint" id="lb-exercise-hint" hidden role="status" aria-live="polite"></p>
-                    <div class="lb-picker-row" id="lb-times-picker" hidden>
-                        <label class="lb-picker-label" for="lb-times-search">Event:</label>
-                        <input type="search" class="lb-picker-input" id="lb-times-search" list="lb-times-suggestions" value="Yoke walk" placeholder="Search timed event…" autocomplete="off" spellcheck="false" aria-label="Timed event for leaderboard">
-                        <datalist id="lb-times-suggestions"></datalist>
-                    </div>
                 </div>
                 <div class="lb-table-wrap">
                     <table class="lb-table">
@@ -329,6 +324,7 @@
     </div>
 
     <script src="/shared/api.js"></script>
+    <script src="/shared/units.js"></script>
     <script src="/shared/exercise-database.js"></script>
     <script src="/shared/competitions-store.js"></script>
     <script src="/shared/notification-bell.js"></script>

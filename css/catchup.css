@@ -1,0 +1,120 @@
+/* Catch-up flow for returning v0.1 athletes */
+
+.catchup-page {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.catchup-main {
+  max-width: 36rem;
+}
+
+.catchup-progress {
+  width: min(100%, 22rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  align-items: stretch;
+}
+
+.catchup-progress-track {
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.catchup-progress-fill {
+  height: 100%;
+  width: 25%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgba(255, 140, 0, 0.85), rgba(255, 180, 80, 0.95));
+  transition: width 0.35s ease;
+}
+
+.catchup-progress-label {
+  margin: 0;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.catchup-feature-list {
+  margin: 1rem 0 0.75rem;
+  padding-left: 1.15rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.catchup-feature-list li {
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.catchup-more-link-wrap {
+  margin: 0 0 1.25rem;
+}
+
+.catchup-inline-link {
+  color: var(--accent, #ff8c00);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.catchup-inline-link:hover {
+  text-decoration: underline;
+}
+
+.catchup-field {
+  margin: 1rem 0 1.25rem;
+}
+
+.catchup-label {
+  display: block;
+  margin-bottom: 0.45rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.catchup-select {
+  width: 100%;
+  padding: 0.75rem 0.85rem;
+  border-radius: 10px;
+  border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.12));
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 0.95rem;
+}
+
+.catchup-checklist {
+  margin: 0 0 1.25rem;
+  padding-left: 1.15rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.catchup-checklist li {
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.catchup-skip-note {
+  margin: 1rem 0 0;
+  font-size: 0.85rem;
+  color: #f87171;
+  text-align: center;
+}
+
+.init-step-nav--center {
+  justify-content: center;
+}

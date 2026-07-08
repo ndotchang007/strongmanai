@@ -15,13 +15,21 @@
 </head>
 <body class="surveys-page">
     <header class="site-header">
-        <a href="/" class="site-header-logo-link"><span class="site-header-logo">STRONGMAN <span class="site-header-logo-ai">AI</span></span></a>
-        <nav class="site-header-nav">
-            <a href="/surveys" class="site-header-link">SURVEYS</a>
-            <a href="#" class="site-header-link" data-email-kind="bug">REPORT ISSUE</a>
-            <a href="/login" class="site-header-link">LOGIN</a>
-            <a href="/leaderboards" class="site-header-link">VIEW LEADERBOARDS</a>
-        </nav>
+        <div class="site-header-island">
+            <a href="/" class="site-header-logo-link">
+                <img src="/assets/logo.png" alt="Strongman AI" class="site-header-logo-img" width="34" height="34" decoding="async">
+            </a>
+            <span class="site-header-divider" aria-hidden="true"></span>
+            <button type="button" class="site-header-menu-btn" aria-label="Open menu" aria-expanded="false" aria-controls="site-header-nav">
+                <span class="site-header-menu-bars" aria-hidden="true"><span></span><span></span><span></span></span>
+            </button>
+            <nav class="site-header-nav" id="site-header-nav">
+                <a href="/surveys" class="site-header-link">SURVEYS</a>
+                <a href="#" class="site-header-link" data-email-kind="bug">REPORT ISSUE</a>
+                <a href="/login" class="site-header-link">LOGIN</a>
+                <a href="/leaderboards" class="site-header-link">VIEW LEADERBOARDS</a>
+            </nav>
+        </div>
     </header>
 
     <div class="mainContent">
@@ -99,6 +107,7 @@
 
     <script src="/shared/surveys-catalog.js"></script>
     <script src="/shared/site-footer-email.js"></script>
+    <script src="/shared/site-header.js"></script>
     <script src="/js/surveys.js"></script>
 </body>
 </html>

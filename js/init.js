@@ -535,7 +535,11 @@
     if (!window.SportDatabase || typeof window.SportDatabase.listAllNames !== 'function') {
       return [];
     }
-    return window.SportDatabase.listAllNames({ excludeGeneral: true });
+    return window.SportDatabase.listAllNames({ excludeGeneral: false });
+  }
+
+  function isSportFocusedReason(reason) {
+    return reason === 'sports';
   }
 
   function mountBubbleField(mountEl) {
@@ -813,8 +817,12 @@
       }
     }
     if (key === 'sports') {
-      if (!data.sportSelections || !data.sportSelections.length) {
-        return 'Select at least one sport you play.';
+      if (data.noSports) return '';
+      if (
+        isSportFocusedReason(inferReasonFromGoals(data)) &&
+        (!data.sportSelections || !data.sportSelections.length)
+      ) {
+        return 'Select at least one sport you play, or tap “No sport — general fitness”.';
       }
     }
     return '';
@@ -880,8 +888,8 @@
     }
     if (/physique|muscle|transform/.test(all)) return 'aesthetics';
     if (/max|pr|lift|stronger/.test(all)) return 'strength';
-    if (/health|injury|sleep|stress|energy/.test(all)) return 'health';
-    return 'sports';
+    if (/health|injury|sleep|stress|energy|consistent|habit/.test(all)) return 'health';
+    return 'health';
   }
 
   function buildNotes(data) {
@@ -952,17 +960,23 @@
 
   function buildAthleteContextPayload(data) {
     var AC = window.AthleteContext;
-    var sports = sportsFromSelections(data.sportSelections);
+    var reason = inferReasonFromGoals(data);
+    var sportFocused = isSportFocusedReason(reason) && !data.noSports;
+    var hasSportSelections = !!(data.sportSelections && data.sportSelections.length);
+    var sports =
+      !data.noSports && (sportFocused || hasSportSelections)
+        ? sportsFromSelections(data.sportSelections)
+        : [];
     var first = sports[0] || null;
     var schedule = mergeScheduleFromSports(sports);
-    var primaryGoal = AC ? AC.reasonToPrimaryGoal(inferReasonFromGoals(data)) : 'sport_performance';
+    var primaryGoal = AC ? AC.reasonToPrimaryGoal(reason) : 'general_health';
     return {
       sports: sports,
       sport: first ? first.sport : null,
       sportId: first ? first.sportId : null,
       position: first ? first.position : null,
-      gradeLevel: data.gradeLevel || null,
-      seasonPhase: first ? first.seasonPhase : 'in_season',
+      gradeLevel: sportFocused ? data.gradeLevel || null : null,
+      seasonPhase: first ? first.seasonPhase : null,
       primaryGoal: primaryGoal,
       schoolDays: [1, 2, 3, 4, 5],
       practiceDays: schedule.practiceDays,
@@ -997,19 +1011,31 @@
       reason: inferReasonFromGoals(data),
       source: data.source || (data.tryReason && data.tryReason[0]) || null,
       profileInitialized: true,
+      lastSeenVersion:
+        (window.VERSION_CATALOG && window.VERSION_CATALOG.current) || 'v1.1',
       athleteContext: buildAthleteContextPayload(data),
     };
   }
 
   function finishAndRedirect() {
     showSlide(ACTIVE_SLIDE_ORDER.indexOf('thanks'));
+    var data = getInitData();
+    var sportFocused = isSportFocusedReason(inferReasonFromGoals(data)) && !data.noSports;
     var dest = REFINE_MODE ? REFINE_RETURN_PATH : HOMEPAGE_PATH;
     var thanksSubtitle = document.getElementById('thanks-subtitle');
     if (!REFINE_MODE) {
-      dest = '/customize?setup=1';
-      if (thanksSubtitle) {
-        thanksSubtitle.textContent =
-          'Next up: set your practice nights and game days so Rocky can coach around your real schedule…';
+      if (sportFocused) {
+        dest = '/customize?setup=1';
+        if (thanksSubtitle) {
+          thanksSubtitle.textContent =
+            'Next up: set your practice nights and game days so Rocky can coach around your real schedule…';
+        }
+      } else {
+        dest = '/home';
+        if (thanksSubtitle) {
+          thanksSubtitle.textContent =
+            'You\'re ready to log workouts, chat with Rocky, and build your daily habit…';
+        }
       }
     } else if (thanksSubtitle) {
       thanksSubtitle.textContent = 'Taking you back to your settings…';
@@ -1158,6 +1184,20 @@
   var btnFinish = document.getElementById('btn-finish');
   if (btnFinish) {
     btnFinish.addEventListener('click', handleFinish);
+  }
+
+  var btnSkipSports = document.getElementById('btn-skip-sports');
+  if (btnSkipSports) {
+    btnSkipSports.addEventListener('click', function () {
+      if (slideKeyAt(currentIndex) !== 'sports' || proceedInFlight) return;
+      var data = getInitData();
+      data.noSports = true;
+      data.sportSelections = [];
+      data.gradeLevel = null;
+      setInitData(data);
+      hideStepError('sports');
+      handleFinish();
+    });
   }
 
   function restoreFields() {

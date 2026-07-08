@@ -149,45 +149,82 @@
         : ctx && ctx.sport
           ? ctx.sport
           : 'my sport';
+    var sportFocused = AC && ctx && AC.isSportFocusedGoal ? AC.isSportFocusedGoal(ctx) : sports.length > 0;
     var comp = AC && ctx ? AC.competitionLabel(ctx) : 'Game';
 
-    var prompts = [
-      { label: 'Feeling sick', text: "I'm sick today — what should I do about training?" },
-      { label: 'Really sore', text: "I'm really sore from yesterday. Should I train today and how hard?" },
-      {
-        label: hint && hint.kind === 'game' ? comp + ' day' : comp + ' tomorrow',
-        text:
-          hint && hint.kind === 'game'
-            ? 'Light recovery session for ' + comp.toLowerCase() + ' day (~' + Math.min(30, maxMin) + ' min)'
-            : comp + ' tomorrow — program a short complementary lift (~' + maxMin + ' min), nothing that will hurt performance',
-      },
-      {
-        label: 'Practice day',
-        text:
-          'Practice day — ' +
-          maxMin +
-          ' min gym session for ' +
-          sport +
-          ' that complements practice, not duplicates it',
-      },
-      {
-        label: 'Build session',
-        text:
-          'Put together a ' +
-          maxMin +
-          '-minute session for ' +
-          sport +
-          ' — hit my main goal',
-      },
-      {
-        label: 'Off-season',
-        text:
-          'Off-season hypertrophy session (~' +
-          (ctx && ctx.weekendMaxMinutes ? ctx.weekendMaxMinutes : 90) +
-          ' min) for ' +
-          sport,
-      },
-    ];
+    var prompts;
+    if (!sportFocused) {
+      prompts = [
+        { label: 'Feeling sick', text: "I'm sick today — what should I do about training?" },
+        { label: 'Really sore', text: "I'm really sore from yesterday. Should I train today and how hard?" },
+        {
+          label: '30-min workout',
+          text:
+            'Put together a ' +
+            maxMin +
+            '-minute full-body session for general fitness — nothing crazy, just move well',
+        },
+        {
+          label: 'Build habit',
+          text:
+            'I need a simple consistent routine I can stick to — about ' +
+            maxMin +
+            ' minutes today',
+        },
+        {
+          label: 'Low impact',
+          text:
+            'Low-impact training day — joints feel tired, keep it around ' +
+            Math.min(40, maxMin) +
+            ' minutes',
+        },
+        {
+          label: 'Recovery / mobility',
+          text:
+            'Recovery and mobility focus today (~' +
+            Math.min(35, maxMin) +
+            ' min) — help me stay active without overdoing it',
+        },
+      ];
+    } else {
+      prompts = [
+        { label: 'Feeling sick', text: "I'm sick today — what should I do about training?" },
+        { label: 'Really sore', text: "I'm really sore from yesterday. Should I train today and how hard?" },
+        {
+          label: hint && hint.kind === 'game' ? comp + ' day' : comp + ' tomorrow',
+          text:
+            hint && hint.kind === 'game'
+              ? 'Light recovery session for ' + comp.toLowerCase() + ' day (~' + Math.min(30, maxMin) + ' min)'
+              : comp + ' tomorrow — program a short complementary lift (~' + maxMin + ' min), nothing that will hurt performance',
+        },
+        {
+          label: 'Practice day',
+          text:
+            'Practice day — ' +
+            maxMin +
+            ' min gym session for ' +
+            sport +
+            ' that complements practice, not duplicates it',
+        },
+        {
+          label: 'Build session',
+          text:
+            'Put together a ' +
+            maxMin +
+            '-minute session for ' +
+            sport +
+            ' — hit my main goal',
+        },
+        {
+          label: 'Off-season',
+          text:
+            'Off-season hypertrophy session (~' +
+            (ctx && ctx.weekendMaxMinutes ? ctx.weekendMaxMinutes : 90) +
+            ' min) for ' +
+            sport,
+        },
+      ];
+    }
 
     this.chipsEl.innerHTML = '';
     var self = this;
@@ -328,8 +365,21 @@
   CoachThread.prototype.renderWelcome = function () {
     var bubble = document.createElement('div');
     bubble.className = 'coach-msg coach-msg--assistant coach-msg--welcome';
-    bubble.textContent =
-      "Yo — Rocky here. I already got your sport and schedule from your profile. Tell me how you're feeling — beat up, sick, short on sleep — and we'll work with it. Need a workout or just straight talk? Hit me, or tap something below.";
+    var AC = window.AthleteContext;
+    var user = typeof window.getCurrentUser === 'function' ? window.getCurrentUser() : null;
+    var ctx = AC && user ? AC.loadAthleteContext(user) : null;
+    var sports = AC && ctx && AC.getSports ? AC.getSports(ctx) : [];
+    var sportFocused = AC && ctx && AC.isSportFocusedGoal ? AC.isSportFocusedGoal(ctx) : sports.length > 0;
+    if (!sportFocused) {
+      bubble.textContent =
+        "Yo — Rocky here. I've got your goals and session caps from your profile. Tell me how you're feeling — beat up, short on time, or ready to move — and we'll build something that fits. Need a workout or just straight talk? Hit me, or tap something below.";
+    } else if (sports.length) {
+      bubble.textContent =
+        "Yo — Rocky here. I already got your sport and schedule from your profile. Tell me how you're feeling — beat up, sick, short on sleep — and we'll work with it. Need a workout or just straight talk? Hit me, or tap something below.";
+    } else {
+      bubble.textContent =
+        "Yo — Rocky here. When you get a chance, add your sport schedule in User settings — until then, tell me what you need and we'll work with it. Need a workout or just straight talk? Hit me, or tap something below.";
+    }
     return this.createChatRow('assistant', bubble);
   };
 

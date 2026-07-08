@@ -367,25 +367,35 @@
     }
     var form = readForm(opts);
     var statusEl = el(p + 'status');
-    if (!form.sports || !form.sports.length) {
+    var sportFocused =
+      window.AthleteContext &&
+      typeof window.AthleteContext.isSportFocusedGoal === 'function' &&
+      window.AthleteContext.isSportFocusedGoal({ primaryGoal: form.primaryGoal });
+    if (sportFocused && (!form.sports || !form.sports.length)) {
       setStatus(statusEl, 'Add at least one sport.', true);
       return Promise.resolve(false);
     }
-    var missingSeason = form.sports.filter(function (s) {
-      return s && s.sport && !s.seasonPhase;
-    });
-    if (missingSeason.length) {
-      setStatus(statusEl, 'Pick a season phase for each sport (edit the sport card).', true);
-      return Promise.resolve(false);
+    if (sportFocused) {
+      var missingSeason = form.sports.filter(function (s) {
+        return s && s.sport && !s.seasonPhase;
+      });
+      if (missingSeason.length) {
+        setStatus(statusEl, 'Pick a season phase for each sport (edit the sport card).', true);
+        return Promise.resolve(false);
+      }
+      var incompleteSchedule = form.sports.filter(function (s) {
+        return (
+          s &&
+          s.sport &&
+          !(s.practiceDays && s.practiceDays.length) &&
+          !(s.gameDays && s.gameDays.length)
+        );
+      });
+      if (incompleteSchedule.length) {
+        setStatus(statusEl, 'Add practice or game days for each sport (edit the sport card).', true);
+        return Promise.resolve(false);
+      }
     }
-    var incompleteSchedule = form.sports.filter(function (s) {
-      return (
-        s &&
-        s.sport &&
-        !(s.practiceDays && s.practiceDays.length) &&
-        !(s.gameDays && s.gameDays.length)
-      );
-    });
     var ctx = loadContext(u);
     var fields = resolveCoachNotesFields(ctx);
     var knownNotes = ctx.knownNotes != null ? ctx.knownNotes : fields.known || null;

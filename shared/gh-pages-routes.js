@@ -10,6 +10,7 @@
     '/home': 'home.html',
     '/profile': 'profile.html',
     '/init': 'init.html',
+    '/catchup': 'catchup.html',
     '/leaderboard': 'leaderboard.html',
     '/leaderboards': 'leaderboards.html',
     '/tracking': 'create.html',

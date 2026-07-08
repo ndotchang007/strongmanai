@@ -17,6 +17,20 @@
   border-top: 1px solid var(--border-subtle);
 }
 
+.version-patch-section + .version-patch-section {
+  margin-top: 1.5rem;
+}
+
+.version-patch-section + .version-patch-section .version-patch-heading::before {
+  content: '';
+  display: block;
+  width: 2.5rem;
+  height: 2px;
+  margin-bottom: 0.85rem;
+  background: rgba(255, 140, 0, 0.45);
+  border-radius: 999px;
+}
+
 .version-patch-heading {
   margin: 0 0 0.85rem;
   font-family: var(--font);

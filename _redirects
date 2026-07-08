@@ -4,6 +4,7 @@
 /home       /home.html        200
 /profile    /profile.html     200
 /init       /init.html        200
+/catchup    /catchup.html     200
 /leaderboard    /leaderboard.html     200
 /leaderboards   /leaderboards.html    200
 /tracking   /create.html      200

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="strongman-api-base" content="https://strongmanai-api.onrender.com/api/v1">
+  <title>Welcome to v1.1 – Strongman AI</title>
+  <link rel="icon" type="image/png" href="/assets/logo.png">
+  <link rel="apple-touch-icon" href="/assets/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/index.css">
+  <link rel="stylesheet" href="/css/init.css">
+  <link rel="stylesheet" href="/css/catchup.css">
+  <link rel="stylesheet" href="/css/server-wake.css">
+</head>
+<body class="catchup-page">
+  <div class="init-ambient" aria-hidden="true">
+    <span class="init-ambient-orb init-ambient-orb--a"></span>
+    <span class="init-ambient-orb init-ambient-orb--b"></span>
+  </div>
+
+  <header class="init-top" id="catchup-top">
+    <a href="/home" class="init-brand" aria-label="Strongman AI home">
+      <img src="/assets/logo.png" alt="" class="init-brand-logo" width="40" height="40" decoding="async">
+      <span class="init-brand-wordmark">STRONGMAN <span class="init-brand-accent">AI</span></span>
+    </a>
+    <nav class="catchup-progress" id="catchup-progress" aria-label="Catch-up progress">
+      <div class="catchup-progress-track" aria-hidden="true">
+        <div class="catchup-progress-fill" id="catchup-progress-fill"></div>
+      </div>
+      <p class="catchup-progress-label" id="catchup-progress-label">Step 1 of 4</p>
+    </nav>
+  </header>
+
+  <main class="init-main catchup-main" id="catchup-slideshow">
+    <section class="init-slide is-active" data-slide="welcome" aria-labelledby="catchup-welcome-heading">
+      <div class="init-card init-card--hero">
+        <p class="init-eyebrow">Version 1.1</p>
+        <h1 class="init-hero-title" id="catchup-welcome-heading">Welcome back</h1>
+        <p class="init-hero-lede">Strongman AI got a major update since v0.1. This quick walkthrough covers what changed and makes sure your profile is ready for the new experience.</p>
+        <ul class="init-hero-points">
+          <li>See what shipped in v1.1</li>
+          <li>Confirm your units and preferences</li>
+          <li>Jump back into training in under a minute</li>
+        </ul>
+        <div class="init-step-nav init-step-nav--center">
+          <button type="button" class="init-btn init-btn--primary init-btn--lg" id="catchup-btn-start">Get started</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="init-slide" data-slide="whats-new" aria-labelledby="catchup-new-heading">
+      <div class="init-card">
+        <p class="init-eyebrow">What&apos;s new</p>
+        <h2 class="init-card-title" id="catchup-new-heading">Major features in v1.1</h2>
+        <p class="init-card-desc">Here is what you will notice right away after this catch-up.</p>
+        <ul class="catchup-feature-list" id="catchup-feature-list"></ul>
+        <p class="catchup-more-link-wrap">
+          <a href="/versions/v1.1" class="catchup-inline-link" target="_blank" rel="noopener">Read full patch notes</a>
+        </p>
+        <div class="init-step-nav">
+          <button type="button" class="init-btn init-btn--ghost" data-catchup-back>Back</button>
+          <button type="button" class="init-btn init-btn--primary" data-catchup-next>Continue</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="init-slide" data-slide="setup" aria-labelledby="catchup-setup-heading">
+      <div class="init-card">
+        <p class="init-eyebrow">Quick setup</p>
+        <h2 class="init-card-title" id="catchup-setup-heading">Confirm your preferences</h2>
+        <p class="init-card-desc">Leaderboards and logging now respect your unit choice everywhere in the app.</p>
+        <div class="catchup-field">
+          <label class="catchup-label" for="catchup-units">Weight &amp; distance units</label>
+          <select id="catchup-units" class="catchup-select">
+            <option value="imperial">Imperial (lb, ft)</option>
+            <option value="metric">Metric (kg, m)</option>
+          </select>
+        </div>
+        <ul class="catchup-checklist">
+          <li><a href="/customize" class="catchup-inline-link">Review your training profile</a> — set your goal and weekday session caps (sports optional)</li>
+          <li><a href="/info" class="catchup-inline-link">Open the how-to guide</a> — setup tips and coach workflows</li>
+          <li><a href="/init?refine=1" class="catchup-inline-link">Update training goals</a> — optional questionnaire refresh</li>
+        </ul>
+        <div class="init-step-nav">
+          <button type="button" class="init-btn init-btn--ghost" data-catchup-back>Back</button>
+          <button type="button" class="init-btn init-btn--primary" data-catchup-next>Continue</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="init-slide" data-slide="done" aria-labelledby="catchup-done-heading">
+      <div class="init-card init-card--hero">
+        <p class="init-eyebrow">All set</p>
+        <h2 class="init-hero-title" id="catchup-done-heading">You&apos;re on v1.1</h2>
+        <p class="init-hero-lede" id="catchup-done-lede">Your account is updated. Head to Home to log a workout, chat with Rocky, or check the leaderboards.</p>
+        <div class="init-step-nav init-step-nav--center">
+          <button type="button" class="init-btn init-btn--primary init-btn--lg" id="catchup-btn-finish">Go to Home</button>
+        </div>
+        <p class="catchup-skip-note" id="catchup-error" hidden role="alert"></p>
+      </div>
+    </section>
+  </main>
+
+  <script src="/shared/gh-pages-routes.js" data-restore="1"></script>
+  <script src="/shared/api.js"></script>
+  <script src="/shared/units.js"></script>
+  <script src="/shared/version-catalog.js"></script>
+  <script src="/shared/auth-guard.js"></script>
+  <script src="/js/catchup.js"></script>
+</body>
+</html>

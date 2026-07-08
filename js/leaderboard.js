@@ -23,12 +23,9 @@
   var thMetric = document.getElementById('lb-th-metric');
   var thSkill = document.getElementById('lb-th-skill');
   var exercisePickerRow = document.getElementById('lb-exercise-picker');
-  var timesPickerRow = document.getElementById('lb-times-picker');
   var exerciseSearch = document.getElementById('lb-exercise-search');
   var exerciseSuggestions = document.getElementById('lb-exercise-suggestions');
   var exerciseHint = document.getElementById('lb-exercise-hint');
-  var timesSearch = document.getElementById('lb-times-search');
-  var timesSuggestions = document.getElementById('lb-times-suggestions');
 
   var state = {
     audience: 'global',
@@ -196,6 +193,28 @@
     return raw.charAt(0).toUpperCase() + raw.slice(1);
   }
 
+  function weightUnitsLabel() {
+    if (window.Units && typeof window.Units.weightLabel === 'function') {
+      return window.Units.weightLabel();
+    }
+    return 'lb';
+  }
+
+  function formatLiftWeight(rawWeight) {
+    if (rawWeight == null || isNaN(Number(rawWeight))) return '—';
+    var n = Number(rawWeight);
+    if (window.Units && typeof window.Units.convertWeight === 'function') {
+      var units = window.Units.getUnits ? window.Units.getUnits() : 'imperial';
+      var converted = window.Units.convertWeight(n, 'imperial', units);
+      if (converted == null) return String(n);
+      var label = window.Units.weightLabel(units);
+      return (
+        String(units === 'metric' ? converted : Math.round(converted)) + ' ' + label
+      );
+    }
+    return String(n) + ' lb';
+  }
+
   function exerciseSlug(label) {
     return String(label || '')
       .toLowerCase()
@@ -280,6 +299,9 @@
         if (ex && ex.name) labels.push(ex.name);
       });
     }
+    TIMED_EVENT_DEFAULTS.forEach(function (name) {
+      if (labels.indexOf(name) === -1) labels.push(name);
+    });
     var WL = window.WorkoutLog;
     if (WL && typeof WL.getSessions === 'function') {
       collectExerciseOptionsFromSessions(WL.getSessions()).forEach(function (row) {
@@ -299,37 +321,18 @@
     populateDatalist(exerciseSuggestions, labels);
   }
 
-  function populateTimesSuggestions() {
-    var labels = [];
-    var ED = exerciseDb();
-    if (ED && Array.isArray(ED.catalog)) {
-      ED.catalog
-        .filter(function (ex) {
-          return ex && ex.category === 'events';
-        })
-        .forEach(function (ex) {
-          labels.push(ex.name);
-        });
-    }
-    TIMED_EVENT_DEFAULTS.forEach(function (name) {
-      if (labels.indexOf(name) === -1) labels.push(name);
-    });
-    parseFavoriteMovementLines().forEach(function (f) {
-      var resolved = resolveExerciseInput(f);
-      if (resolved.valid && labels.indexOf(resolved.label) === -1) labels.push(resolved.label);
-    });
-    populateDatalist(timesSuggestions, labels);
-  }
-
   function updatePickerVisibility() {
     var mode = state.mode;
-    if (exercisePickerRow) exercisePickerRow.hidden = mode !== 'exercises';
-    if (timesPickerRow) timesPickerRow.hidden = mode !== 'times';
+    if (exercisePickerRow) exercisePickerRow.hidden = mode === 'streak';
+  }
+
+  function activeExerciseFallback() {
+    return state.mode === 'times' ? DEFAULT_TIME_EVENT : DEFAULT_EXERCISE;
   }
 
   function syntheticTimeMinutes(user) {
     var id = user && user.id != null ? Number(user.id) : 0;
-    var eventSlug = queryFromSearchInput(timesSearch, DEFAULT_TIME_EVENT).slug;
+    var eventSlug = queryFromSearchInput(exerciseSearch, DEFAULT_TIME_EVENT).slug;
     var slugHash = 0;
     for (var i = 0; i < eventSlug.length; i++) {
       slugHash += eventSlug.charCodeAt(i);
@@ -349,7 +352,7 @@
       }
       return '—';
     }
-    if (user.liftWeight != null) return String(user.liftWeight);
+    if (user.liftWeight != null) return formatLiftWeight(user.liftWeight);
     return '—';
   }
 
@@ -362,7 +365,7 @@
       }
       return 'none recorded';
     }
-    if (user.liftWeight != null) return String(user.liftWeight);
+    if (user.liftWeight != null) return formatLiftWeight(user.liftWeight);
     return 'none recorded';
   }
 
@@ -373,7 +376,7 @@
     } else if (mode === 'streak') {
       thMetric.textContent = 'Streak';
     } else {
-      thMetric.textContent = 'Value (lb)';
+      thMetric.textContent = 'Value (' + weightUnitsLabel() + ')';
     }
     thSkill.textContent = 'Skill level';
   }
@@ -605,10 +608,10 @@
         label: validated.label,
         slug: validated.slug
       });
-    } else if (state.mode === 'times' && timesSearch) {
+    } else if (state.mode === 'times' && exerciseSearch) {
       hideExerciseHint();
       lbSearchAppliedKey = exerciseQueryCacheKey(
-        queryFromSearchInput(timesSearch, DEFAULT_TIME_EVENT)
+        queryFromSearchInput(exerciseSearch, DEFAULT_TIME_EVENT)
       );
     } else {
       hideExerciseHint();
@@ -622,7 +625,10 @@
       .then(function () {
         if (!lbRows.length && state.mode === 'times') {
           renderLeaderboard([]);
-          if (messageEl) messageEl.textContent = 'Timed event leaderboards use logged workout data when available.';
+          if (messageEl) {
+            messageEl.textContent =
+              'Timed exercise leaderboards use logged workout data when available.';
+          }
           return;
         }
         renderLeaderboard(lbRows);
@@ -640,29 +646,28 @@
   }
 
   function commitExerciseSearch() {
-    if (state.mode !== 'exercises' || !exerciseSearch) return;
-    var validated = validatedExerciseQuery();
-    var key = exerciseQueryCacheKey({
-      label: validated.valid ? validated.label : validated.rawLabel,
-      slug: validated.slug
-    });
-    if (!validated.valid) {
+    if ((state.mode !== 'exercises' && state.mode !== 'times') || !exerciseSearch) return;
+    if (state.mode === 'exercises') {
+      var validated = validatedExerciseQuery();
+      var key = exerciseQueryCacheKey({
+        label: validated.valid ? validated.label : validated.rawLabel,
+        slug: validated.slug
+      });
+      if (!validated.valid) {
+        if (key === lbSearchAppliedKey) return;
+        lbSearchAppliedKey = key;
+        loadLeaderboard();
+        return;
+      }
       if (key === lbSearchAppliedKey) return;
       lbSearchAppliedKey = key;
       loadLeaderboard();
       return;
     }
-    if (key === lbSearchAppliedKey) return;
-    lbSearchAppliedKey = key;
-    loadLeaderboard();
-  }
-
-  function commitTimesSearch() {
-    if (state.mode !== 'times' || !timesSearch) return;
-    var q = queryFromSearchInput(timesSearch, DEFAULT_TIME_EVENT);
-    var key = exerciseQueryCacheKey(q);
-    if (key === lbSearchAppliedKey) return;
-    lbSearchAppliedKey = key;
+    var q = queryFromSearchInput(exerciseSearch, DEFAULT_TIME_EVENT);
+    var timesKey = exerciseQueryCacheKey(q);
+    if (timesKey === lbSearchAppliedKey) return;
+    lbSearchAppliedKey = timesKey;
     loadLeaderboard();
   }
 
@@ -713,24 +718,27 @@
       if (group === 'mode') {
         lbSearchAppliedKey = '';
         updatePickerVisibility();
+        if (exerciseSearch) {
+          var fallback = activeExerciseFallback();
+          exerciseSearch.value = fallback.label;
+          exerciseSearch.placeholder =
+            value === 'times' ? 'Search timed exercise…' : 'Search exercise…';
+        }
       }
       loadLeaderboard();
     });
   });
 
   wirePickerSearch(exerciseSearch, commitExerciseSearch);
-  wirePickerSearch(timesSearch, commitTimesSearch);
 
   function initLeaderboardExerciseDb() {
     var ED = exerciseDb();
     if (ED && typeof ED.fetch === 'function') {
       return ED.fetch().then(function () {
         populateExerciseSuggestions();
-        populateTimesSuggestions();
       });
     }
     populateExerciseSuggestions();
-    populateTimesSuggestions();
     return Promise.resolve();
   }
 

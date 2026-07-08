@@ -52,11 +52,11 @@
     <section class="init-slide is-active" data-slide="welcome" aria-labelledby="welcome-heading">
       <div class="init-card init-card--hero">
         <p class="init-eyebrow">Account setup</p>
-        <h1 class="init-hero-title" id="welcome-heading">Built for student athletes</h1>
-        <p class="init-hero-lede">Balance practice, competition, and lifting — with a coach that fits your real schedule.</p>
+        <h1 class="init-hero-title" id="welcome-heading">Training that fits your life</h1>
+        <p class="init-hero-lede">Whether you play a sport or just want consistent daily exercise, Rocky plans sessions around your real schedule and goals.</p>
         <ul class="init-hero-points">
           <li>Sport performance, physique, strength, or general health</li>
-          <li>Shorter sessions on practice &amp; game/meet days</li>
+          <li>Shorter sessions on busy weeknights when you need them</li>
           <li>Takes about two minutes</li>
         </ul>
         <button type="button" class="init-btn init-btn--primary init-btn--lg" id="btn-welcome-continue">Get started</button>
@@ -276,10 +276,10 @@
     <section class="init-slide init-slide--question" data-slide="sports" data-seg="sports" data-seg-step="1" aria-labelledby="sports-heading">
       <div class="init-card init-card--question">
         <p class="init-seg-kicker">Sports</p>
-        <h2 class="init-card-title" id="sports-heading">What sports do you play?</h2>
-        <p class="init-card-desc">Select every sport you’re in — school, club, or rec. You’ll set practice and game days on the next screen.</p>
+        <h2 class="init-card-title" id="sports-heading">Do you play a sport?</h2>
+        <p class="init-card-desc">If you're in-season, select your sport(s) — school, club, or rec. You'll set practice and game days next. Training for general health or daily exercise? Skip this step.</p>
         <div class="init-bubble-mount init-bubble-mount--sports" id="mount-sports" data-field="sportSelections" data-multi="true"></div>
-        <p class="init-card-desc init-card-desc--tight">What grade are you in?</p>
+        <p class="init-card-desc init-card-desc--tight">What grade are you in? <span class="init-card-desc-muted">Optional — for student athletes</span></p>
         <div class="init-grade-row" id="init-grade-row" role="group" aria-label="Grade level">
           <button type="button" class="init-grade-pill" data-grade="9">9th</button>
           <button type="button" class="init-grade-pill" data-grade="10">10th</button>
@@ -287,9 +287,10 @@
           <button type="button" class="init-grade-pill" data-grade="12">12th</button>
         </div>
         <p class="init-error init-step-error" id="error-sports" role="alert" hidden></p>
-        <div class="init-step-nav">
+        <div class="init-step-nav init-step-nav--stack">
           <button type="button" class="init-btn init-btn--ghost" data-action="back">Back</button>
           <button type="button" class="init-btn init-btn--primary" id="btn-finish">Finish setup</button>
+          <button type="button" class="init-btn init-btn--ghost init-btn--skip-sports" id="btn-skip-sports">No sport — general fitness</button>
         </div>
       </div>
     </section>

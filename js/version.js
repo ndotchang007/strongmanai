@@ -30,12 +30,41 @@
       '</div>';
   }
 
-  function renderRelease(data) {
-    var patches = (data.highlights || [])
+  function renderPatchSection(title, items, headingId) {
+    if (!items || !items.length) return '';
+    var list = items
       .map(function (item) {
         return '<li>' + escapeHtml(item) + '</li>';
       })
       .join('');
+    return (
+      '<section class="version-patch-section" aria-labelledby="' +
+      headingId +
+      '">' +
+      '<h2 class="version-patch-heading" id="' +
+      headingId +
+      '">' +
+      escapeHtml(title) +
+      '</h2>' +
+      '<ul class="version-patch-list">' +
+      list +
+      '</ul>' +
+      '</section>'
+    );
+  }
+
+  function patchItems(data, key) {
+    if (Array.isArray(data[key]) && data[key].length) return data[key];
+    if (key === 'majorFeatures' && Array.isArray(data.highlights)) return data.highlights;
+    return [];
+  }
+
+  function renderRelease(data) {
+    var slugSafe = String(data.slug || 'release').replace(/[^a-z0-9-]/gi, '');
+    var sections =
+      renderPatchSection('Major features', patchItems(data, 'majorFeatures'), 'version-major-' + slugSafe) +
+      renderPatchSection('Minor fixes', patchItems(data, 'minorFixes'), 'version-fixes-' + slugSafe) +
+      renderPatchSection('Minor changes', patchItems(data, 'minorChanges'), 'version-changes-' + slugSafe);
 
     root.innerHTML =
       '<a href="/versions" class="survey-detail-back">' +
@@ -59,12 +88,7 @@
       '<p class="survey-detail-summary">' +
       escapeHtml(data.summary) +
       '</p>' +
-      '<section class="version-patch-section" aria-labelledby="version-patch-heading">' +
-      '<h2 class="version-patch-heading" id="version-patch-heading">Patch notes</h2>' +
-      '<ul class="version-patch-list">' +
-      patches +
-      '</ul>' +
-      '</section>' +
+      sections +
       '</article>';
   }
 

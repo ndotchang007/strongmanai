@@ -5,6 +5,12 @@
 
   function needsSportsSetup(user) {
     if (!window.AthleteContext) return true;
+    var ctx = window.AthleteContext.loadAthleteContext(user);
+    if (typeof window.AthleteContext.isSportFocusedGoal === 'function') {
+      if (!window.AthleteContext.isSportFocusedGoal(ctx)) {
+        return !window.AthleteContext.isProfileComplete(ctx);
+      }
+    }
     if (typeof window.AthleteContext.needsGlobalSportsSetup === 'function') {
       if (window.AthleteContext.needsGlobalSportsSetup(user)) return true;
     }
@@ -15,6 +21,56 @@
       return window.AthleteContext.hasNullSportFieldValue(user);
     }
     return true;
+  }
+
+  function updateGlobalAlertCopy(el, user) {
+    if (!el || !window.AthleteContext) return;
+    var titleEl = el.querySelector('.dash-rocky-setup-title');
+    var textEl = el.querySelector('.dash-rocky-setup-text');
+    if (!titleEl || !textEl) return;
+
+    var ctx = window.AthleteContext.loadAthleteContext(user);
+    var sportFocused =
+      typeof window.AthleteContext.isSportFocusedGoal === 'function'
+        ? window.AthleteContext.isSportFocusedGoal(ctx)
+        : true;
+    var link = el.querySelector('.dash-rocky-setup-link');
+    var linkHref = link ? link.getAttribute('href') || '/customize' : '/customize';
+    var linkLabel =
+      link && link.textContent ? link.textContent.trim() : 'Finish in User settings →';
+
+    if (!sportFocused) {
+      titleEl.textContent = 'Quick tune-up — set your training preferences.';
+      textEl.innerHTML =
+        'Pick your goal and weekday session caps so Rocky can plan around your real week. ' +
+        '<a href="' +
+        linkHref +
+        '" class="dash-rocky-setup-link">' +
+        linkLabel +
+        '</a>';
+      return;
+    }
+
+    if (window.AthleteContext.needsGlobalSportsSetup(user)) {
+      titleEl.textContent = "Hold it — you haven't told me your sports yet.";
+      textEl.innerHTML =
+        'Add your sport(s), practice nights, and game days so Rocky can coach you for real. ' +
+        '<a href="' +
+        linkHref +
+        '" class="dash-rocky-setup-link">' +
+        linkLabel +
+        '</a>';
+      return;
+    }
+
+    titleEl.textContent = "Hold it — your schedule isn't set up yet.";
+    textEl.innerHTML =
+      'Add practice nights and game days for each sport so Rocky can plan lifting around your real week. ' +
+      '<a href="' +
+      linkHref +
+      '" class="dash-rocky-setup-link">' +
+      linkLabel +
+      '</a>';
   }
 
   function getDismissedKeys() {
@@ -38,9 +94,10 @@
     renderSportAlerts();
   }
 
-  function renderGlobalAlerts(show) {
+  function renderGlobalAlerts(show, user) {
     document.querySelectorAll('[data-rocky-setup-alert]').forEach(function (el) {
       el.hidden = !show;
+      if (show) updateGlobalAlertCopy(el, user);
     });
   }
 
@@ -48,6 +105,17 @@
     var mounts = document.querySelectorAll('[data-rocky-sport-alerts]');
     if (!mounts.length || !window.AthleteContext) return;
     var user = typeof window.getCurrentUser === 'function' ? window.getCurrentUser() : null;
+    var ctx = window.AthleteContext.loadAthleteContext(user);
+    if (
+      typeof window.AthleteContext.isSportFocusedGoal === 'function' &&
+      !window.AthleteContext.isSportFocusedGoal(ctx)
+    ) {
+      mounts.forEach(function (mount) {
+        mount.innerHTML = '';
+        mount.hidden = true;
+      });
+      return;
+    }
     var issues =
       typeof window.AthleteContext.getSportsWithSetupIssues === 'function'
         ? window.AthleteContext.getSportsWithSetupIssues(user)
@@ -107,7 +175,7 @@
 
   function renderAll() {
     var user = typeof window.getCurrentUser === 'function' ? window.getCurrentUser() : null;
-    renderGlobalAlerts(needsSportsSetup(user));
+    renderGlobalAlerts(needsSportsSetup(user), user);
     renderSportAlerts();
   }
 

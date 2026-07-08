@@ -3,6 +3,7 @@
  * Public routes: landing (/), public leaderboards, about, login, signup, legal.
  * Unauthenticated visitors are sent to /login with a ?next= return path.
  * Users who have not finished profile initialization are sent to /init on first login.
+ * Returning v0.1 users who have not seen the current release are sent to /catchup.
  */
 (function () {
   if (typeof window === 'undefined' || !window.location) return;
@@ -52,9 +53,33 @@
   }
 
   if (!needsInit && path === '/init') {
+    var refineMode = /(?:^|[?&])refine=1(?:&|$)/.test(window.location.search || '');
+    if (!refineMode) {
+      try {
+        window.location.replace('/home');
+      } catch (e4) {
+        window.location.href = '/home';
+      }
+      return;
+    }
+  }
+
+  var needsCatchupFlow =
+    typeof window.needsCatchup === 'function' ? window.needsCatchup(u) : false;
+
+  if (needsCatchupFlow && path !== '/catchup' && path !== '/init') {
+    try {
+      window.location.replace('/catchup');
+    } catch (e5) {
+      window.location.href = '/catchup';
+    }
+    return;
+  }
+
+  if (!needsCatchupFlow && path === '/catchup') {
     try {
       window.location.replace('/home');
-    } catch (e4) {
+    } catch (e6) {
       window.location.href = '/home';
     }
   }
