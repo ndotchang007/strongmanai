@@ -246,6 +246,16 @@ body.customize-page .sports-editor-mount
     box-sizing: border-box;
 }
 
+body.customize-page .split-editor-mount
+{
+    margin: 0;
+    padding: var(--customize-card-pad);
+    border-radius: 16px;
+    border: 1px solid rgba(100, 100, 100, 0.42);
+    background: rgba(255, 255, 255, 0.03);
+    box-sizing: border-box;
+}
+
 body.customize-page .sports-editor-header
 {
     margin-bottom: 0.85rem;

@@ -564,35 +564,13 @@
 
   function initCtaHeadlineRotation() {
     var wordEl = document.getElementById('page3-cta-rotate-word');
-    var boxEl = document.getElementById('page3-cta-rotate');
-    if (!wordEl || !boxEl) return;
+    if (!wordEl) return;
 
     var phrases = ['next PR', 'best season', 'physique transformation'];
     var idx = 0;
     var reduced =
       typeof window.matchMedia === 'function' &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    function measurePhraseWidth(text) {
-      var probe = document.createElement('span');
-      probe.className = wordEl.className;
-      probe.style.cssText =
-        'position:absolute;visibility:hidden;white-space:nowrap;pointer-events:none;font:inherit;letter-spacing:inherit;';
-      probe.textContent = text;
-      boxEl.appendChild(probe);
-      var w = probe.offsetWidth;
-      boxEl.removeChild(probe);
-      return w;
-    }
-
-    function setBoxWidth(text) {
-      boxEl.style.width = measurePhraseWidth(text) + 'px';
-    }
-
-    setBoxWidth(phrases[0]);
-    window.addEventListener('resize', function () {
-      setBoxWidth(phrases[idx]);
-    });
 
     if (reduced) return;
 
@@ -601,13 +579,12 @@
       setTimeout(function () {
         idx = (idx + 1) % phrases.length;
         wordEl.textContent = phrases[idx];
-        setBoxWidth(phrases[idx]);
         wordEl.classList.remove('page3-cta-rotate-word--out');
         wordEl.classList.add('page3-cta-rotate-word--in');
         void wordEl.offsetWidth;
         wordEl.classList.remove('page3-cta-rotate-word--in');
-      }, 400);
-    }, 3400);
+      }, 260);
+    }, 2200);
   }
 
   initCtaHeadlineRotation();

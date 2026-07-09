@@ -1,5 +1,6 @@
 (function () {
   var mount = document.getElementById('customize-sports-mount');
+  var splitMount = document.getElementById('split') || document.getElementById('customize-split-mount');
   var formMount = document.getElementById('customize-form-mount');
   var saveBtn = document.getElementById('customize-save-btn');
   var completionEl = document.getElementById('customize-completion');
@@ -60,6 +61,19 @@
     if (window.UserAccountForm) window.UserAccountForm.mount('user-account-mount');
   }
 
+  function mountSplitEditor() {
+    if (!splitMount || !window.WorkoutSplitEditor) return;
+    if (splitMount.getAttribute('data-split-editor-mounted') === '1') {
+      window.WorkoutSplitEditor.loadActiveSplit();
+      return;
+    }
+    window.WorkoutSplitEditor.mount(splitMount, {
+      manageLibrary: true,
+      onChange: function () {},
+    });
+    splitMount.setAttribute('data-split-editor-mounted', '1');
+  }
+
   function mountSportsEditor(user) {
     if (!mount || !window.AthleteSportsEditor) return;
     var ctx = window.AthleteProfileForm
@@ -105,6 +119,7 @@
   function loadForm() {
     var user = typeof window.getCurrentUser === 'function' ? window.getCurrentUser() : null;
     mountSportsEditor(user);
+    mountSplitEditor();
     if (window.AthleteProfileForm) {
       window.AthleteProfileForm.loadIntoForm(user, FORM_OPTS);
     }
@@ -133,6 +148,10 @@
       accountSave
         .then(function () {
           return window.AthleteProfileForm.persist(null, FORM_OPTS);
+        })
+        .then(function () {
+          if (window.WorkoutSplitEditor) window.WorkoutSplitEditor.saveActiveSplit();
+          return null;
         })
         .then(function () {
           loadForm();

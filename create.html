@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="/css/app-nav.css">
     <link rel="stylesheet" href="/css/notification-bell.css">
     <link rel="stylesheet" href="/css/create.css">
+    <link rel="stylesheet" href="/css/athlete-sports.css">
     <link rel="stylesheet" href="/css/server-wake.css">
     <link rel="stylesheet" href="/css/coach.css">
     <link rel="stylesheet" href="/css/ai-generating.css">
@@ -609,71 +610,9 @@
                 <form class="create-form create-form--split" id="create-split-form">
                     <div class="create-split-lede">
                         <h2 class="create-split-heading">Weekly split</h2>
-                        <p class="create-split-hint">Build one or more routines. Pick the active split — Home and “Start workout” use it to pre-fill today’s exercises.</p>
+                        <p class="create-split-hint">Build your week like sports in User settings — tap each day to add exercises. Weights come from Rocky when you start a workout.</p>
                     </div>
-                    <div class="create-split-picker" id="create-split-picker">
-                        <label class="create-split-picker-label" for="create-split-select">Active split</label>
-                        <div class="create-split-picker-row">
-                            <select id="create-split-select" class="create-input create-split-select" aria-label="Select workout split"></select>
-                            <button type="button" class="create-split-picker-btn" id="create-split-new-btn">New</button>
-                            <button type="button" class="create-split-picker-btn" id="create-split-dup-btn">Duplicate</button>
-                            <button type="button" class="create-split-picker-btn create-split-picker-btn--danger" id="create-split-del-btn">Delete</button>
-                        </div>
-                    </div>
-                    <div class="create-field">
-                        <label for="create-split-program-name">Program name <span class="create-optional">(optional)</span></label>
-                        <input type="text" id="create-split-program-name" class="create-input" placeholder="e.g. Upper / Lower / Events" autocomplete="off">
-                    </div>
-                    <div class="create-split-days" role="group" aria-label="Day names Monday through Sunday">
-                        <div class="create-split-day-row">
-                            <span class="create-split-day-letter" aria-hidden="true">M</span>
-                            <label class="create-split-day-label" for="create-split-day-0">Monday</label>
-                            <input type="text" id="create-split-day-0" class="create-input create-split-day-input" data-split-day="0" maxlength="80" autocomplete="off">
-                        </div>
-                        <div class="create-split-day-row">
-                            <span class="create-split-day-letter" aria-hidden="true">T</span>
-                            <label class="create-split-day-label" for="create-split-day-1">Tuesday</label>
-                            <input type="text" id="create-split-day-1" class="create-input create-split-day-input" data-split-day="1" maxlength="80" autocomplete="off">
-                        </div>
-                        <div class="create-split-day-row">
-                            <span class="create-split-day-letter" aria-hidden="true">W</span>
-                            <label class="create-split-day-label" for="create-split-day-2">Wednesday</label>
-                            <input type="text" id="create-split-day-2" class="create-input create-split-day-input" data-split-day="2" maxlength="80" autocomplete="off">
-                        </div>
-                        <div class="create-split-day-row">
-                            <span class="create-split-day-letter" aria-hidden="true">T</span>
-                            <label class="create-split-day-label" for="create-split-day-3">Thursday</label>
-                            <input type="text" id="create-split-day-3" class="create-input create-split-day-input" data-split-day="3" maxlength="80" autocomplete="off">
-                        </div>
-                        <div class="create-split-day-row">
-                            <span class="create-split-day-letter" aria-hidden="true">F</span>
-                            <label class="create-split-day-label" for="create-split-day-4">Friday</label>
-                            <input type="text" id="create-split-day-4" class="create-input create-split-day-input" data-split-day="4" maxlength="80" autocomplete="off">
-                        </div>
-                        <div class="create-split-day-row">
-                            <span class="create-split-day-letter" aria-hidden="true">S</span>
-                            <label class="create-split-day-label" for="create-split-day-5">Saturday</label>
-                            <input type="text" id="create-split-day-5" class="create-input create-split-day-input" data-split-day="5" maxlength="80" autocomplete="off">
-                        </div>
-                        <div class="create-split-day-row">
-                            <span class="create-split-day-letter" aria-hidden="true">S</span>
-                            <label class="create-split-day-label" for="create-split-day-6">Sunday</label>
-                            <input type="text" id="create-split-day-6" class="create-input create-split-day-input" data-split-day="6" maxlength="80" autocomplete="off">
-                        </div>
-                    </div>
-                    <div class="create-split-routines" aria-labelledby="create-split-routines-heading">
-                        <h3 class="create-split-routines-title" id="create-split-routines-heading">Exercise templates</h3>
-                        <p class="create-split-hint">Optional — one lift per line (e.g. <span class="create-split-example">Bench Press · 4×8 @ 185</span>). Pre-fills the log on matching days.</p>
-                        <div class="create-split-routine-grid">
-                            <label class="create-split-routine-block" for="create-split-exercises-0"><span class="create-split-routine-day">Mon</span><textarea id="create-split-exercises-0" class="create-textarea create-split-routine-input" rows="3" placeholder="Exercises for Monday" data-split-exercises="0"></textarea></label>
-                            <label class="create-split-routine-block" for="create-split-exercises-1"><span class="create-split-routine-day">Tue</span><textarea id="create-split-exercises-1" class="create-textarea create-split-routine-input" rows="3" placeholder="Exercises for Tuesday" data-split-exercises="1"></textarea></label>
-                            <label class="create-split-routine-block" for="create-split-exercises-2"><span class="create-split-routine-day">Wed</span><textarea id="create-split-exercises-2" class="create-textarea create-split-routine-input" rows="3" placeholder="Exercises for Wednesday" data-split-exercises="2"></textarea></label>
-                            <label class="create-split-routine-block" for="create-split-exercises-3"><span class="create-split-routine-day">Thu</span><textarea id="create-split-exercises-3" class="create-textarea create-split-routine-input" rows="3" placeholder="Exercises for Thursday" data-split-exercises="3"></textarea></label>
-                            <label class="create-split-routine-block" for="create-split-exercises-4"><span class="create-split-routine-day">Fri</span><textarea id="create-split-exercises-4" class="create-textarea create-split-routine-input" rows="3" placeholder="Exercises for Friday" data-split-exercises="4"></textarea></label>
-                            <label class="create-split-routine-block" for="create-split-exercises-5"><span class="create-split-routine-day">Sat</span><textarea id="create-split-exercises-5" class="create-textarea create-split-routine-input" rows="3" placeholder="Exercises for Saturday" data-split-exercises="5"></textarea></label>
-                            <label class="create-split-routine-block" for="create-split-exercises-6"><span class="create-split-routine-day">Sun</span><textarea id="create-split-exercises-6" class="create-textarea create-split-routine-input" rows="3" placeholder="Exercises for Sunday" data-split-exercises="6"></textarea></label>
-                        </div>
-                    </div>
+                    <div id="create-split-editor-mount" class="split-editor-mount sports-editor-mount"></div>
                     <p class="create-error" id="create-split-error" role="alert" hidden></p>
                     <button type="submit" class="create-submit">Save split</button>
                 </form>
@@ -1031,6 +970,8 @@
     <script src="/shared/workout-archive.js"></script>
     <script src="/shared/site-footer-email.js"></script>
     <script src="/shared/workout-split.js"></script>
+    <script src="/shared/workout-split-library.js"></script>
+    <script src="/shared/workout-split-editor.js"></script>
     <script src="/shared/split-recommendations.js"></script>
     <script src="/shared/routine-import.js"></script>
     <script src="/shared/workout-log.js"></script>

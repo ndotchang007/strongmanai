@@ -477,6 +477,127 @@
     line-height: 1.4;
 }
 
+.split-editor-mount
+{
+    margin: 0 0 1.25rem;
+}
+
+.split-editor-picker
+{
+    margin-bottom: 1rem;
+}
+
+.split-editor-program
+{
+    margin-bottom: 0.75rem;
+}
+
+.split-day-card--rest
+{
+    opacity: 0.88;
+}
+
+.split-day-modal-hint
+{
+    margin: 0;
+    font-size: 0.78rem;
+    line-height: 1.45;
+    color: var(--text-muted, rgba(255, 255, 255, 0.55));
+}
+
+.split-exercise-list
+{
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+}
+
+.split-exercise-row
+{
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 0.45rem;
+    align-items: center;
+}
+
+.split-exercise-name
+{
+    min-width: 0;
+}
+
+.split-exercise-prescription
+{
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.split-exercise-sets,
+.split-exercise-reps
+{
+    width: 3rem;
+    text-align: center;
+    padding-left: 0.35rem;
+    padding-right: 0.35rem;
+}
+
+.split-exercise-times
+{
+    color: var(--text-muted, rgba(255, 255, 255, 0.45));
+    font-size: 0.85rem;
+}
+
+.split-exercise-remove
+{
+    width: 2rem;
+    height: 2rem;
+    border: none;
+    border-radius: 8px;
+    background: rgba(248, 113, 113, 0.12);
+    color: #fca5a5;
+    font-size: 1.1rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.split-exercise-add
+{
+    align-self: flex-start;
+    margin-top: 0.15rem;
+    padding: 0.45rem 0.75rem;
+    border-radius: 999px;
+    border: 1px dashed rgba(255, 140, 0, 0.45);
+    background: transparent;
+    color: #ffb04d;
+    font: inherit;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.split-exercise-add:hover
+{
+    background: rgba(255, 140, 0, 0.08);
+}
+
+@media (max-width: 640px)
+{
+    .split-exercise-row
+    {
+        grid-template-columns: 1fr;
+    }
+
+    .split-exercise-prescription
+    {
+        justify-content: flex-start;
+    }
+
+    .split-exercise-remove
+    {
+        justify-self: start;
+    }
+}
+
 .create-split-picker
 {
     margin: 0 0 1.1rem;

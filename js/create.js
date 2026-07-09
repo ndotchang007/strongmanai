@@ -42,55 +42,26 @@
     splitInp.value = WS.splitFieldLineForDate(null, d);
   }
 
-  function loadSplitEditorForm() {
-    var WS = window.WorkoutSplit;
-    var RI = window.RoutineImport;
-    if (!WS) return;
-    var state = WS.load();
-    var nameEl = document.getElementById('create-split-program-name');
-    if (nameEl) nameEl.value = state.programName || '';
-    for (var i = 0; i < 7; i++) {
-      var inp = document.getElementById('create-split-day-' + i);
-      if (inp) inp.value = state.days[i] && state.days[i] !== '—' ? state.days[i] : '';
-      var ta = document.getElementById('create-split-exercises-' + i);
-      if (ta) {
-        var plan = state.dayPlans && state.dayPlans[i];
-        if (plan && plan.exercises && plan.exercises.length) {
-          ta.value = plan.exercises
-            .map(function (ex) {
-              var line = (ex.name || 'Exercise') + ' · ' + (ex.sets || '0') + '×' + (ex.reps || '0');
-              if (ex.weight) line += ' @ ' + ex.weight;
-              return line;
-            })
-            .join('\n');
-        } else {
-          ta.value = '';
-        }
-      }
+  function mountSplitEditor() {
+    var mount = document.getElementById('create-split-editor-mount');
+    if (!mount || !window.WorkoutSplitEditor) return;
+    if (mount.getAttribute('data-split-editor-mounted') === '1') {
+      window.WorkoutSplitEditor.loadActiveSplit();
+      return;
     }
+    window.WorkoutSplitEditor.mount(mount, {
+      manageLibrary: true,
+      onChange: function () {
+        applySplitAutofillFromPicker();
+        refreshSplitBadges();
+      },
+    });
+    mount.setAttribute('data-split-editor-mounted', '1');
   }
 
-  function parseSplitRoutineTextareas() {
-    var RI = window.RoutineImport;
-    var dayPlans = [];
-    for (var i = 0; i < 7; i++) {
-      var ta = document.getElementById('create-split-exercises-' + i);
-      var text = ta && ta.value ? ta.value.trim() : '';
-      if (!text) {
-        dayPlans.push(null);
-        continue;
-      }
-      var exercises = [];
-      text.split(/\n/).forEach(function (line) {
-        if (!RI) return;
-        var ex = RI.parseExerciseLine(line);
-        if (ex && ex.name) exercises.push(ex);
-      });
-      var dayInp = document.getElementById('create-split-day-' + i);
-      var title = dayInp && dayInp.value.trim() ? dayInp.value.trim() : 'Workout';
-      dayPlans.push(exercises.length ? { title: title, exercises: exercises } : null);
-    }
-    return dayPlans;
+  function loadSplitEditorForm() {
+    mountSplitEditor();
+    if (window.WorkoutSplitEditor) window.WorkoutSplitEditor.loadActiveSplit();
   }
 
   function dateFromDatetimeLocal(val) {
@@ -139,25 +110,10 @@
   }
 
   function renderSplitPickerSelect() {
-    var WS = window.WorkoutSplit;
-    var sel = document.getElementById('create-split-select');
-    if (!WS || !sel) return;
-    var lib = WS.loadLibrary ? WS.loadLibrary() : null;
-    var splits = lib && lib.splits ? lib.splits : [];
-    var activeId = WS.getActiveSplitId ? WS.getActiveSplitId() : null;
-    var unseen = lib && lib.unseenSplitIds ? lib.unseenSplitIds : [];
-    sel.innerHTML = '';
-    splits.forEach(function (s) {
-      var opt = document.createElement('option');
-      opt.value = s.id;
-      var label = s.programName || 'Untitled split';
-      if (s.source === 'ai') label += ' · AI';
-      if (unseen.indexOf(s.id) >= 0) label += ' · New';
-      opt.textContent = label;
-      if (s.id === activeId) opt.selected = true;
-      sel.appendChild(opt);
-    });
     refreshSplitBadges();
+    if (window.WorkoutSplitEditor && typeof window.WorkoutSplitEditor.renderLibrary === 'function') {
+      window.WorkoutSplitEditor.renderLibrary();
+    }
   }
 
   function applyTodayRoutineIfEmpty(force, withRecommendations) {
@@ -204,7 +160,7 @@
         workoutTracker.loadFromLegacyExercises(exercises);
         showRockySplitRec(
           'Split loaded',
-          'Could not reach Rocky for load suggestions right now. Template weights from your split are in the logbook.'
+          'Could not reach Rocky for load suggestions right now. Enter weights yourself in the logbook.'
         );
         updateLiftsCount();
         refreshOverloadCoachUi();
@@ -454,77 +410,23 @@
   }
 
   renderSplitPickerSelect();
+  mountSplitEditor();
   window.addEventListener('strongman:splits-updated', function () {
     renderSplitPickerSelect();
     if (panelSplit && !panelSplit.hidden) loadSplitEditorForm();
   });
 
-  var splitSelectEl = document.getElementById('create-split-select');
-  if (splitSelectEl && window.WorkoutSplit) {
-    splitSelectEl.addEventListener('change', function () {
-      var id = splitSelectEl.value;
-      if (!id) return;
-      window.WorkoutSplit.setActiveSplit(id);
-      loadSplitEditorForm();
-      applySplitAutofillFromPicker();
-    });
-  }
-  var splitNewBtn = document.getElementById('create-split-new-btn');
-  if (splitNewBtn && window.WorkoutSplit) {
-    splitNewBtn.addEventListener('click', function () {
-      var name = window.prompt('Name for your new split:', 'My split');
-      if (name == null) return;
-      window.WorkoutSplit.createSplit(name.trim() || 'My split');
-      loadSplitEditorForm();
-      renderSplitPickerSelect();
-    });
-  }
-  var splitDupBtn = document.getElementById('create-split-dup-btn');
-  if (splitDupBtn && window.WorkoutSplit) {
-    splitDupBtn.addEventListener('click', function () {
-      var id = window.WorkoutSplit.getActiveSplitId();
-      if (!id) return;
-      window.WorkoutSplit.duplicateSplit(id);
-      loadSplitEditorForm();
-      renderSplitPickerSelect();
-    });
-  }
-  var splitDelBtn = document.getElementById('create-split-del-btn');
-  if (splitDelBtn && window.WorkoutSplit) {
-    splitDelBtn.addEventListener('click', function () {
-      var id = window.WorkoutSplit.getActiveSplitId();
-      if (!id) return;
-      if (!window.confirm('Delete this split? You need at least one split saved.')) return;
-      if (!window.WorkoutSplit.deleteSplit(id)) {
-        window.alert('Keep at least one split.');
-        return;
-      }
-      loadSplitEditorForm();
-      renderSplitPickerSelect();
-    });
-  }
-
   var splitFormEl = document.getElementById('create-split-form');
   var splitMessageEl = document.getElementById('create-split-message');
   var splitErrorEl = document.getElementById('create-split-error');
-  if (splitFormEl && window.WorkoutSplit) {
+  if (splitFormEl && window.WorkoutSplitEditor) {
     splitFormEl.addEventListener('submit', function (e) {
       e.preventDefault();
       if (splitErrorEl) {
         splitErrorEl.textContent = '';
         splitErrorEl.hidden = true;
       }
-      var days = [];
-      for (var i = 0; i < 7; i++) {
-        var di = document.getElementById('create-split-day-' + i);
-        days.push(di && di.value ? di.value.trim() : '');
-      }
-      var pn = document.getElementById('create-split-program-name');
-      window.WorkoutSplit.save({
-        programName: pn && pn.value ? pn.value.trim() : '',
-        days: days,
-        dayPlans: parseSplitRoutineTextareas()
-      });
+      window.WorkoutSplitEditor.saveActiveSplit();
       renderSplitPickerSelect();
       if (splitMessageEl) {
         splitMessageEl.textContent = 'Split saved. Start workout from Home uses this routine for today.';

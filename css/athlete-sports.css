@@ -395,3 +395,160 @@
 .sport-modal-save {
   width: auto;
 }
+
+.split-day-modal-hint {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--text-muted, #a1a1aa);
+}
+
+.split-exercise-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.split-exercise-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 0.45rem;
+  align-items: center;
+}
+
+.split-exercise-name {
+  min-width: 0;
+}
+
+.split-exercise-prescription {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.split-exercise-sets,
+.split-exercise-reps {
+  width: 3rem;
+  text-align: center;
+}
+
+.split-exercise-times {
+  color: var(--text-muted, #a1a1aa);
+  font-size: 0.85rem;
+}
+
+.split-exercise-remove {
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  border-radius: 8px;
+  background: rgba(248, 113, 113, 0.12);
+  color: #fca5a5;
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.split-exercise-add {
+  align-self: flex-start;
+  margin-top: 0.15rem;
+  padding: 0.45rem 0.75rem;
+  border-radius: 999px;
+  border: 1px dashed rgba(255, 140, 0, 0.45);
+  background: transparent;
+  color: #ffb04d;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.split-day-card--rest {
+  opacity: 0.88;
+}
+
+.split-library-mount {
+  margin-bottom: 0.75rem;
+}
+
+.split-week-mount {
+  margin-top: 0.25rem;
+}
+
+.split-library-header {
+  margin-bottom: 0.85rem;
+}
+
+.split-library-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.split-library-action-btn {
+  padding: 0.5rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary, #f4f4f5);
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.split-library-action-btn--danger {
+  border-color: rgba(248, 113, 113, 0.35);
+  color: #fca5a5;
+}
+
+.split-library-grid {
+  margin-bottom: 0.25rem;
+}
+
+.split-library-grid--compact {
+  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+  gap: 0.65rem;
+}
+
+.split-library-card {
+  position: relative;
+  padding-top: 1.75rem;
+}
+
+.split-library-card--highlight {
+  border-color: rgba(255, 140, 0, 0.58);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 140, 0, 0.2),
+    0 10px 28px rgba(255, 140, 0, 0.1);
+}
+
+.split-library-card--highlight:hover {
+  border-color: rgba(255, 140, 0, 0.72);
+}
+
+.split-library-card-tag {
+  position: absolute;
+  top: 0.55rem;
+  left: 0.65rem;
+  z-index: 1;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ff8c00, #ff6a00);
+  color: #111;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.split-library-mount--dash {
+  width: 100%;
+}
+
+.split-library-mount--dash .split-library-grid {
+  margin-bottom: 0.35rem;
+}

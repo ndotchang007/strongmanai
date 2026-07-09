@@ -146,8 +146,8 @@
     }
     if (result.insufficientHistory) {
       return {
-        title: 'Split loaded — template weights only',
-        body: 'Rocky needs a few logged sessions before suggesting loads. Use the template from your split for now.',
+        title: 'Split loaded — sets & reps only',
+        body: 'Rocky needs a few logged sessions before suggesting weights. Your exercises are in the logbook — add loads as you go.',
       };
     }
     var recs = result.recommendations || [];

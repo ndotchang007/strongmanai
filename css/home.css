@@ -818,17 +818,9 @@ button.sidebar-profile
     margin: 0 0 0.75rem;
 }
 
-.dash-split-select
+.dash-split-picker-row .split-library-mount
 {
     width: 100%;
-    max-width: 22rem;
-    padding: 0.55rem 0.7rem;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    background: rgba(0, 0, 0, 0.25);
-    color: var(--text-primary, #fff);
-    font: inherit;
-    font-size: 0.88rem;
 }
 
 .dash-section-title .split-tab-badge

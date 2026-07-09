@@ -171,11 +171,10 @@
         <section class="dash-split-preview" id="dash-split-section" hidden aria-labelledby="dash-split-heading">
             <div class="dash-section-head">
                 <h2 class="dash-section-title" id="dash-split-heading">This week's split<span class="split-tab-badge" id="dash-split-badge" hidden aria-label="New AI split saved"></span></h2>
-                <a href="/create#split" class="dash-section-link" id="dash-split-edit-link">Edit</a>
+                <a href="/customize#split" class="dash-section-link" id="dash-split-edit-link">Edit</a>
             </div>
             <div class="dash-split-picker-row">
-                <label class="visually-hidden" for="dash-split-select">Active workout split</label>
-                <select id="dash-split-select" class="dash-split-select" aria-label="Active workout split"></select>
+                <div id="dash-split-library" class="split-library-mount split-library-mount--dash" aria-label="Workout splits"></div>
             </div>
             <div class="dash-split-grid" id="day-split"></div>
         </section>
@@ -317,6 +316,7 @@
     <script src="/shared/auth-guard.js"></script>
     <script src="/shared/site-footer-email.js"></script>
     <script src="/shared/workout-split.js"></script>
+    <script src="/shared/workout-split-library.js"></script>
     <script src="/shared/split-recommendations.js"></script>
     <script src="/shared/workout-log.js"></script>
     <script src="/shared/training-sync.js"></script>

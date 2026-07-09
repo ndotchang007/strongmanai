@@ -442,7 +442,7 @@
       });
       card.appendChild(saveBtn);
       var logLink = document.createElement('a');
-      logLink.href = '/create#split';
+      logLink.href = '/customize#split';
       logLink.className = 'coach-routine-edit';
       logLink.textContent = 'Customize in Log → Split';
       card.appendChild(logLink);

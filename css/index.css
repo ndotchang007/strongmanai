@@ -1906,24 +1906,30 @@ header.site-header
 
 .page3-cta-headline
 {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.06em;
     margin: 0 0 1rem;
     font-family: var(--font-display);
     font-size: clamp(2rem, 5.5vw, 3.35rem);
     font-weight: 700;
     letter-spacing: -0.04em;
-    line-height: 1.08;
+    line-height: 1.1;
     color: var(--text-primary);
+}
+
+.page3-cta-headline-line
+{
+    display: block;
 }
 
 .page3-cta-rotate
 {
-    display: inline-block;
-    vertical-align: bottom;
-    position: relative;
-    min-height: 1.1em;
-    margin: 0 0.2em;
+    display: block;
+    min-height: 1.15em;
+    margin: 0.08em 0 0.1em;
     color: var(--accent);
-    transition: width 0.45s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .page3-cta-rotate-word
@@ -1934,19 +1940,19 @@ header.site-header
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
-    transition: opacity 0.4s ease, transform 0.4s ease;
+    transition: opacity 0.26s ease, transform 0.26s ease;
 }
 
 .page3-cta-rotate-word--out
 {
     opacity: 0;
-    transform: translateY(-0.4em);
+    transform: translateY(-0.35em);
 }
 
 .page3-cta-rotate-word--in
 {
     opacity: 0;
-    transform: translateY(0.4em);
+    transform: translateY(0.35em);
 }
 
 .page3-cta-sub

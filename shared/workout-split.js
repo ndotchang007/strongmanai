@@ -71,6 +71,15 @@
     return out;
   }
 
+  function templateExercise(ex) {
+    return {
+      name: ex && ex.name != null ? String(ex.name) : '',
+      sets: ex && ex.sets != null ? String(ex.sets) : '',
+      reps: ex && ex.reps != null ? String(ex.reps) : '',
+      weight: '',
+    };
+  }
+
   function normalizeDayPlans(plans, days) {
     var out = [];
     for (var i = 0; i < 7; i++) {
@@ -81,12 +90,7 @@
       }
       var exercises = Array.isArray(p.exercises)
         ? p.exercises.map(function (ex) {
-            return {
-              name: ex && ex.name != null ? String(ex.name) : '',
-              sets: ex && ex.sets != null ? String(ex.sets) : '',
-              reps: ex && ex.reps != null ? String(ex.reps) : '',
-              weight: ex && ex.weight != null ? String(ex.weight) : '',
-            };
+            return templateExercise(ex);
           })
         : [];
       out.push({
@@ -387,16 +391,15 @@
           if (window.RoutineImport && typeof window.RoutineImport.parseExerciseLine === 'function') {
             var parsed = window.RoutineImport.parseExerciseLine(line);
             if (parsed && parsed.name) {
-              exercises.push(parsed);
+              exercises.push(templateExercise(parsed));
               return;
             }
           }
-          exercises.push({
+          exercises.push(templateExercise({
             name: ex.name,
-            sets: ex.sets != null ? String(ex.sets) : '',
-            reps: ex.reps != null ? String(ex.reps) : '',
-            weight: ex.weight != null ? String(ex.weight) : '',
-          });
+            sets: ex.sets,
+            reps: ex.reps,
+          }));
         });
       });
     }
@@ -463,15 +466,10 @@
     if (!plan || !Array.isArray(plan.exercises)) return [];
     return plan.exercises
       .filter(function (ex) {
-        return ex && (ex.name || ex.sets || ex.reps || ex.weight);
+        return ex && (ex.name || ex.sets || ex.reps);
       })
       .map(function (ex) {
-        return {
-          name: ex.name || '',
-          sets: ex.sets || '',
-          reps: ex.reps || '',
-          weight: ex.weight || '',
-        };
+        return templateExercise(ex);
       });
   }
 
