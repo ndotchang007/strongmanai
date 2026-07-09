@@ -56,6 +56,7 @@
   var lbFollowingIds = [];
   var lbFriendIds = [];
   var lbExerciseValid = true;
+  var lbTimesPrefsSaveTimer = null;
 
   function boardEl(mode) {
     return document.getElementById(LB_BOARD_IDS[mode]);
@@ -133,6 +134,51 @@
     var empty = !sport && !distance && !event;
     var valid = !!(sport && distance && event);
     return { sport: sport, distance: distance, event: event, valid: valid, empty: empty };
+  }
+
+  function restoreTimesPreferencesFromUser() {
+    if (!timeSport || !timeDistance || !timeEvent) return false;
+    var u = window.getCurrentUser && window.getCurrentUser();
+    var lt = u && u.athleteContext && u.athleteContext.leaderboardTimes;
+    if (!lt || typeof lt !== 'object') return false;
+    var sport = String(lt.sport || '').trim();
+    var distance = String(lt.distance || '').trim();
+    var event = String(lt.event || '').trim();
+    if (!sport || !distance || !event) return false;
+    timeSport.value = sport;
+    timeDistance.value = distance;
+    timeEvent.value = event;
+    return true;
+  }
+
+  function saveTimesPreferencesToDb(tq) {
+    if (isPublicLeaderboard || !tq || !tq.valid) return;
+    var u = window.getCurrentUser && window.getCurrentUser();
+    if (!u || u.id == null || !u.token || !window.apiPut) return;
+    if (lbTimesPrefsSaveTimer) clearTimeout(lbTimesPrefsSaveTimer);
+    lbTimesPrefsSaveTimer = setTimeout(function () {
+      lbTimesPrefsSaveTimer = null;
+      var prev =
+        u.athleteContext && typeof u.athleteContext === 'object' ? u.athleteContext : {};
+      var athleteContext = Object.assign({}, prev, {
+        leaderboardTimes: {
+          sport: tq.sport,
+          distance: tq.distance,
+          event: tq.event,
+        },
+      });
+      window
+        .apiPut('/users/' + u.id, { athleteContext: athleteContext })
+        .then(function (res) {
+          return res.ok ? res.json() : null;
+        })
+        .then(function (updated) {
+          if (updated && window.setCurrentUser) {
+            window.setCurrentUser(Object.assign({}, u, updated));
+          }
+        })
+        .catch(function () {});
+    }, 600);
   }
 
   function timesQueryCacheKey(q) {
@@ -838,6 +884,7 @@
       }
       if (timesKey === lbSearchAppliedKey) return;
       lbSearchAppliedKey = timesKey;
+      saveTimesPreferencesToDb(tq);
       loadLeaderboard();
     }
   }
@@ -915,7 +962,10 @@
   showBoard(state.mode);
 
   initLeaderboardExerciseDb().then(function () {
+    var restoredTimes = restoreTimesPreferencesFromUser();
     if (state.mode === 'streak') {
+      loadLeaderboard();
+    } else if (state.mode === 'times' && restoredTimes) {
       loadLeaderboard();
     } else {
       renderEmptyBoard(

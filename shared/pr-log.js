@@ -193,8 +193,18 @@
       }, Promise.resolve(0));
   }
 
+  function enrichTimedRecord(record) {
+    if (
+      window.TimedEventFields &&
+      typeof window.TimedEventFields.enrichRecord === 'function'
+    ) {
+      return window.TimedEventFields.enrichRecord(record);
+    }
+    return record;
+  }
+
   function addRecord(record) {
-    record = ensureClientId(record);
+    record = ensureClientId(enrichTimedRecord(record));
     record.createdAt = record.createdAt || new Date().toISOString();
     var store = loadStore();
     store.records.unshift(record);

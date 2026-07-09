@@ -801,12 +801,41 @@
 
       var record = {
         discipline: discipline,
+        sport: discipline,
         eventLabel: eventLabel,
         valueDisplay: valueDisplay,
         notes: notes,
         date: datePart,
         time: timePart
       };
+
+      if (discipline === 'running') {
+        var runParts =
+          window.TimedEventFields && window.TimedEventFields.parseRunningEvent
+            ? window.TimedEventFields.parseRunningEvent(eventLabel)
+            : { distance: eventLabel, event: eventLabel };
+        record.distance = runParts.distance;
+        record.event = runParts.event;
+      } else if (discipline === 'swimming') {
+        var swimParts =
+          window.TimedEventFields && window.TimedEventFields.parseSwimmingEvent
+            ? window.TimedEventFields.parseSwimmingEvent(
+                (document.getElementById('tracking-pr-swim-event') || {}).value.trim()
+              )
+            : { distance: '', event: '' };
+        record.distance = swimParts.distance;
+        record.event = swimParts.event;
+        var courseVal = (document.getElementById('tracking-pr-swim-course') || {}).value;
+        if (courseVal) record.course = courseVal;
+      }
+
+      if (
+        window.TimedEventFields &&
+        typeof window.TimedEventFields.parseTimeDisplaySeconds === 'function'
+      ) {
+        var valueSeconds = window.TimedEventFields.parseTimeDisplaySeconds(valueDisplay);
+        if (valueSeconds != null) record.valueSeconds = valueSeconds;
+      }
 
       PR.addRecord(record);
       setPrFormMessage('Personal record saved.', false);
