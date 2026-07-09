@@ -93,30 +93,52 @@
                     </div>
                     <div class="lb-picker-row" id="lb-exercise-picker">
                         <label class="lb-picker-label" for="lb-exercise-search">Exercise:</label>
-                        <input type="search" class="lb-picker-input" id="lb-exercise-search" list="lb-exercise-suggestions" value="Bench press" placeholder="Search exercise…" autocomplete="off" spellcheck="false" aria-label="Exercise for leaderboard" aria-describedby="lb-exercise-hint">
+                        <input type="search" class="lb-picker-input" id="lb-exercise-search" list="lb-exercise-suggestions" value="" placeholder="Search exercise…" autocomplete="off" spellcheck="false" aria-label="Exercise for leaderboard" aria-describedby="lb-exercise-hint">
                         <datalist id="lb-exercise-suggestions"></datalist>
+                    </div>
+                    <div class="lb-picker-row" id="lb-times-picker" hidden>
+                        <label class="lb-picker-label" for="lb-time-sport">Sport:</label>
+                        <select class="lb-picker-input lb-picker-select" id="lb-time-sport" aria-label="Sport for times leaderboard">
+                            <option value="" selected disabled>Select sport</option>
+                            <option value="running">Running</option>
+                            <option value="swimming">Swimming</option>
+                        </select>
+                        <label class="lb-picker-label" for="lb-time-distance">Distance:</label>
+                        <input type="text" class="lb-picker-input" id="lb-time-distance" value="" placeholder="e.g. 50m, 5K" autocomplete="off" spellcheck="false" aria-label="Distance">
+                        <label class="lb-picker-label" for="lb-time-event">Event:</label>
+                        <input type="text" class="lb-picker-input" id="lb-time-event" value="" placeholder="e.g. Freestyle" autocomplete="off" spellcheck="false" aria-label="Event">
                     </div>
                     <p class="lb-exercise-hint" id="lb-exercise-hint" hidden role="status" aria-live="polite"></p>
                 </div>
-                <div class="lb-table-wrap">
-                    <table class="lb-table">
-                        <thead>
-                            <tr>
-                                <th id="lb-th-rank">Rank</th>
-                                <th>Username</th>
-                                <th id="lb-th-metric">Value</th>
-                                <th id="lb-th-skill">Skill level</th>
-                            </tr>
-                        </thead>
-                        <tbody id="leaderboard-body">
-                        </tbody>
-                    </table>
+                <div class="lb-table-wrap" id="lb-table-wrap">
+                    <div class="lb-table-pin lb-table-pin--top" id="lb-table-pin-top" hidden aria-hidden="true"></div>
+                    <div class="lb-table-scroll" id="lb-table-scroll">
+                        <table class="lb-table">
+                            <thead>
+                                <tr>
+                                    <th id="lb-th-rank">Rank</th>
+                                    <th>Username</th>
+                                    <th id="lb-th-intensity" class="lb-col-exercises">Intensity</th>
+                                    <th id="lb-th-weight" class="lb-col-exercises">Weight</th>
+                                    <th id="lb-th-reps" class="lb-col-exercises">Reps</th>
+                                    <th id="lb-th-metric" class="lb-col-times lb-col-streak" hidden>Metric</th>
+                                    <th id="lb-th-skill">Skill level</th>
+                                </tr>
+                            </thead>
+                            <tbody id="leaderboard-body">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="lb-table-pin lb-table-pin--bottom" id="lb-table-pin-bottom" hidden aria-hidden="true"></div>
                 </div>
                 <div class="lb-user-rank-wrap">
-                    <div class="lb-user-rank" id="leaderboard-user-row" aria-label="Your rank">
+                    <div class="lb-user-rank lb-user-rank--exercises" id="leaderboard-user-row" aria-label="Your rank">
                         <span id="lb-user-rank-num">—</span>
                         <span id="lb-user-name">—</span>
-                        <span class="lb-ur-col-stat" id="lb-user-metric">—</span>
+                        <span class="lb-ur-col-stat lb-ur-exercises" id="lb-user-intensity">—</span>
+                        <span class="lb-ur-col-stat lb-ur-exercises" id="lb-user-weight">—</span>
+                        <span class="lb-ur-col-stat lb-ur-exercises" id="lb-user-reps">—</span>
+                        <span class="lb-ur-col-stat lb-ur-metric" id="lb-user-metric" hidden>—</span>
                         <span class="lb-ur-col-stat" id="lb-user-skill">—</span>
                     </div>
                 </div>
@@ -195,7 +217,7 @@
                 <label class="footer-email-label" for="lb-comp-field-goal">Goal</label>
                 <input type="text" id="lb-comp-field-goal" class="footer-email-input" autocomplete="off" maxlength="200" placeholder="e.g. Increase bench press by 45 lb">
                 <label class="footer-email-label" for="lb-comp-field-weight">Target increase (lb)</label>
-                <input type="number" id="lb-comp-field-weight" class="footer-email-input" min="1" max="9999" step="0.5" placeholder="45">
+                <input type="number" id="lb-comp-field-weight" class="footer-email-input" min="1" max="9999" step="0.5" placeholder="">
                 <label class="footer-email-label" for="lb-comp-field-end">End date</label>
                 <input type="date" id="lb-comp-field-end" class="footer-email-input">
             </div>

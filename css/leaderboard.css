@@ -168,6 +168,19 @@
     -webkit-appearance: none;
 }
 
+.lb-picker-select
+{
+    flex: 1 1 8rem;
+    min-width: 8rem;
+    max-width: 12rem;
+    cursor: pointer;
+}
+
+.lb-picker-select option[disabled]
+{
+    color: var(--text-muted);
+}
+
 .lb-exercise-hint
 {
     width: 100%;
@@ -219,6 +232,7 @@
 
 .lb-table-wrap
 {
+    position: relative;
     border-radius: var(--radius-md);
     overflow: hidden;
     border: 1px solid var(--border-mid);
@@ -226,6 +240,79 @@
     backdrop-filter: blur(20px) saturate(1.2);
     -webkit-backdrop-filter: blur(20px) saturate(1.2);
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+}
+
+.lb-table-scroll
+{
+    max-height: calc(10 * 2.75rem + 2.5rem);
+    overflow-y: auto;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.lb-table-scroll .lb-table thead
+{
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+
+.lb-table-pin
+{
+    position: relative;
+    z-index: 3;
+    background: rgba(255, 140, 0, 0.12);
+    border-top: 1px solid rgba(255, 140, 0, 0.35);
+    border-bottom: 1px solid rgba(255, 140, 0, 0.35);
+}
+
+.lb-table-pin--top
+{
+    border-bottom-width: 1px;
+    border-top: none;
+}
+
+.lb-table-pin--bottom
+{
+    border-top-width: 1px;
+    border-bottom: none;
+}
+
+.lb-table-pin table
+{
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font);
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+}
+
+.lb-table-pin td
+{
+    padding: 0.7rem 1rem;
+    vertical-align: middle;
+}
+
+.lb-table-pin td:nth-child(1)
+{
+    width: 3.5rem;
+    color: var(--text-muted);
+}
+
+.lb-table-pin .lb-row-self td
+{
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.lb-table tbody tr.lb-row-self
+{
+    background: rgba(255, 140, 0, 0.08);
+}
+
+.lb-table tbody tr.lb-row-self:hover
+{
+    background: rgba(255, 140, 0, 0.14);
 }
 
 .lb-table
@@ -312,7 +399,7 @@
 .lb-user-rank
 {
     display: grid;
-    grid-template-columns: 3.5rem 1fr auto auto;
+    grid-template-columns: 3.5rem 1fr auto auto auto auto;
     align-items: center;
     gap: 0.5rem;
     padding: 0.85rem 1rem;
@@ -326,6 +413,18 @@
     backdrop-filter: blur(16px) saturate(1.2);
     -webkit-backdrop-filter: blur(16px) saturate(1.2);
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.18);
+}
+
+.lb-user-rank--times,
+.lb-user-rank--streak
+{
+    grid-template-columns: 3.5rem 1fr auto auto;
+}
+
+.lb-user-rank .lb-ur-metric[hidden],
+.lb-user-rank .lb-ur-exercises[hidden]
+{
+    display: none;
 }
 
 .lb-user-rank .lb-ur-col-stat
@@ -788,6 +887,30 @@
     .lb-table-wrap
     {
         overflow: visible;
+    }
+
+    .lb-table-scroll
+    {
+        max-height: calc(10 * 2.35rem + 2rem);
+    }
+
+    .lb-table thead th:nth-child(4),
+    .lb-table thead th:nth-child(5),
+    .lb-table tbody td:nth-child(4),
+    .lb-table tbody td:nth-child(5)
+    {
+        display: none;
+    }
+
+    .lb-user-rank--exercises
+    {
+        grid-template-columns: 2.5rem 1fr auto auto;
+    }
+
+    .lb-user-rank--exercises #lb-user-weight,
+    .lb-user-rank--exercises #lb-user-reps
+    {
+        display: none;
     }
 
     .lb-table

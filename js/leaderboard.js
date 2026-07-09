@@ -23,32 +23,32 @@
   var thMetric = document.getElementById('lb-th-metric');
   var thSkill = document.getElementById('lb-th-skill');
   var exercisePickerRow = document.getElementById('lb-exercise-picker');
+  var timesPickerRow = document.getElementById('lb-times-picker');
   var exerciseSearch = document.getElementById('lb-exercise-search');
   var exerciseSuggestions = document.getElementById('lb-exercise-suggestions');
   var exerciseHint = document.getElementById('lb-exercise-hint');
+  var timeSport = document.getElementById('lb-time-sport');
+  var timeDistance = document.getElementById('lb-time-distance');
+  var timeEvent = document.getElementById('lb-time-event');
+  var tableScroll = document.getElementById('lb-table-scroll');
+  var pinTop = document.getElementById('lb-table-pin-top');
+  var pinBottom = document.getElementById('lb-table-pin-bottom');
+  var userRankRow = document.getElementById('leaderboard-user-row');
+
+  var LB_VISIBLE_ROWS = 10;
+  var lbUserRowObserver = null;
+  var lbSelfRowEl = null;
+  var lbSelfRowData = null;
 
   var state = {
     audience: 'global',
     mode: 'exercises'
   };
 
-  var DEFAULT_EXERCISE = { label: 'Bench press', slug: 'bench-press' };
-  var DEFAULT_TIME_EVENT = { label: 'Yoke walk', slug: 'yoke-walk' };
   var ADD_EXERCISE_SURVEY_URL = '/survey/exercises';
-  var FAVORITES_LS_KEY = 'strongman-favorite-movements';
-  var TIMED_EVENT_DEFAULTS = [
-    'Yoke walk',
-    'Atlas stones',
-    "Farmer's carry",
-    'Truck pull',
-    'Sandbag carry',
-    'Tire flip',
-    'Husafell stone',
-    'Loading race'
-  ];
   var lbSearchDebounceTimer = null;
   var lbSearchAppliedKey = '';
-  var SKILL_LEVELS = ['beginner', 'intermediate', 'advanced'];
+  var FAVORITES_LS_KEY = 'strongman-favorite-movements';
   var lbRows = null;
   var lbFollowingIds = [];
   var lbFriendIds = [];
@@ -64,7 +64,9 @@
       return { valid: true, label: label, exercise: null, suggestions: [] };
     }
     var trimmed = String(label || '').trim();
-    if (!trimmed) trimmed = DEFAULT_EXERCISE.label;
+    if (!trimmed) {
+      return { valid: false, label: '', exercise: null, suggestions: [] };
+    }
     var match = ED.findByName(trimmed);
     if (match) {
       return { valid: true, label: match.name, exercise: match, suggestions: [] };
@@ -76,7 +78,16 @@
 
   function validatedExerciseQuery() {
     var raw = String(exerciseSearch && exerciseSearch.value ? exerciseSearch.value : '').trim();
-    if (!raw) raw = DEFAULT_EXERCISE.label;
+    if (!raw) {
+      return {
+        valid: false,
+        label: '',
+        slug: '',
+        rawLabel: '',
+        suggestions: [],
+        empty: true
+      };
+    }
     var resolved = resolveExerciseInput(raw);
     return {
       valid: resolved.valid,
@@ -85,6 +96,30 @@
       rawLabel: raw,
       suggestions: resolved.suggestions || []
     };
+  }
+
+  function validatedTimesQuery() {
+    var sport = timeSport && timeSport.value ? String(timeSport.value).trim() : '';
+    var distance = timeDistance && timeDistance.value ? String(timeDistance.value).trim() : '';
+    var event = timeEvent && timeEvent.value ? String(timeEvent.value).trim() : '';
+    var empty = !sport && !distance && !event;
+    var valid = !!(sport && distance && event);
+    return { sport: sport, distance: distance, event: event, valid: valid, empty: empty };
+  }
+
+  function timesQueryCacheKey(q) {
+    return (
+      String(q.sport || '') +
+      '|' +
+      String(q.distance || '').toLowerCase() +
+      '|' +
+      String(q.event || '').toLowerCase()
+    );
+  }
+
+  function tableColspan(mode) {
+    if (mode === 'exercises') return 6;
+    return 4;
   }
 
   function hideExerciseHint() {
@@ -133,25 +168,39 @@
         exerciseSearch.value = name;
         lbExerciseValid = true;
         hideExerciseHint();
-        commitExerciseSearch();
+        commitLeaderboardFilters();
       });
     });
   }
 
   function renderEmptyLeaderboard(message) {
+    clearUserRowPins();
     if (tbody) {
       tbody.innerHTML =
-        '<tr><td colspan="4">' + escapeHtml(message || 'No lifts recorded for this exercise yet.') + '</td></tr>';
+        '<tr><td colspan="' +
+        tableColspan(state.mode) +
+        '">' +
+        escapeHtml(message || 'No entries to show yet.') +
+        '</td></tr>';
     }
     if (messageEl) messageEl.textContent = '';
-    var userRankEl = document.getElementById('lb-user-rank-num');
-    var userNameEl = document.getElementById('lb-user-name');
-    var userMetricEl = document.getElementById('lb-user-metric');
-    var userSkillEl = document.getElementById('lb-user-skill');
-    if (userRankEl) userRankEl.textContent = '—';
-    if (userNameEl) userNameEl.textContent = '—';
-    if (userMetricEl) userMetricEl.textContent = '—';
-    if (userSkillEl) userSkillEl.textContent = '—';
+    resetUserRankBar();
+  }
+
+  function resetUserRankBar() {
+    var ids = [
+      'lb-user-rank-num',
+      'lb-user-name',
+      'lb-user-intensity',
+      'lb-user-weight',
+      'lb-user-reps',
+      'lb-user-metric',
+      'lb-user-skill'
+    ];
+    ids.forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.textContent = '—';
+    });
   }
 
   function escapeHtml(s) {
@@ -215,6 +264,25 @@
     return String(n) + ' lb';
   }
 
+  function formatIntensity(user) {
+    if (user.intensity != null && !isNaN(Number(user.intensity))) {
+      return String(Math.round(Number(user.intensity)));
+    }
+    return '—';
+  }
+
+  function formatReps(user) {
+    if (user.reps != null && !isNaN(Number(user.reps)) && Number(user.reps) > 0) {
+      return String(Number(user.reps));
+    }
+    return '—';
+  }
+
+  function formatTimeDisplay(user) {
+    if (user.timeDisplay) return String(user.timeDisplay);
+    return '—';
+  }
+
   function exerciseSlug(label) {
     return String(label || '')
       .toLowerCase()
@@ -222,25 +290,250 @@
       .replace(/^-+|-+$/g, '');
   }
 
-  function queryFromSearchInput(el, fallback) {
-    var fb = fallback || DEFAULT_EXERCISE;
-    if (!el) return { label: fb.label, slug: fb.slug };
-    var label = String(el.value || '').trim();
-    if (!label) label = fb.label;
-    if (el === exerciseSearch) {
-      var resolved = resolveExerciseInput(label);
-      if (resolved.valid) {
-        label = resolved.label;
+  function exerciseQueryCacheKey(q) {
+    return (q.slug || '') + '|' + String(q.label || '').toLowerCase();
+  }
+
+  function userHasRankedEntry(user, mode) {
+    if (!user) return false;
+    if (mode === 'exercises') {
+      return (
+        user.intensity != null &&
+        !isNaN(Number(user.intensity)) &&
+        Number(user.intensity) > 0
+      );
+    }
+    if (mode === 'streak') {
+      return user.streak != null && !isNaN(Number(user.streak)) && Number(user.streak) > 0;
+    }
+    if (mode === 'times') {
+      return user.timeSeconds != null && !isNaN(Number(user.timeSeconds)) && Number(user.timeSeconds) > 0;
+    }
+    return false;
+  }
+
+  function filterRankedUsers(list, mode) {
+    if (mode === 'exercises') {
+      return list.filter(function (u) {
+        return userHasRankedEntry(u, mode);
+      });
+    }
+    if (mode === 'times') {
+      return list.filter(function (u) {
+        return userHasRankedEntry(u, mode);
+      });
+    }
+    if (mode === 'streak') {
+      return list.filter(function (u) {
+        return userHasRankedEntry(u, mode);
+      });
+    }
+    return list;
+  }
+
+  function streakMetric(user) {
+    var days = user && user.streak != null ? Number(user.streak) : null;
+    if (days != null && !isNaN(days) && days > 0) {
+      return String(days) + (days === 1 ? ' day' : ' days');
+    }
+    return '—';
+  }
+
+  function updateTableHeaders(mode) {
+    if (thMetric) {
+      thMetric.textContent = mode === 'times' ? 'Time' : 'Streak';
+    }
+    if (thSkill) thSkill.textContent = 'Skill level';
+    var thIntensity = document.getElementById('lb-th-intensity');
+    var thWeight = document.getElementById('lb-th-weight');
+    if (thIntensity) thIntensity.textContent = 'Intensity';
+    if (thWeight) thWeight.textContent = 'Weight (' + weightUnitsLabel() + ')';
+    var thReps = document.getElementById('lb-th-reps');
+    if (thReps) thReps.textContent = 'Reps';
+    updateColumnVisibility(mode);
+  }
+
+  function buildRowCellsHtml(user, rank, mode) {
+    if (mode === 'exercises') {
+      return (
+        '<td>' +
+        rank +
+        '</td>' +
+        '<td>' +
+        usernameCellHtml(user) +
+        '</td>' +
+        '<td>' +
+        escapeHtml(formatIntensity(user)) +
+        '</td>' +
+        '<td>' +
+        escapeHtml(formatLiftWeight(user.liftWeight)) +
+        '</td>' +
+        '<td>' +
+        escapeHtml(formatReps(user)) +
+        '</td>' +
+        '<td>' +
+        escapeHtml(formatSkillLevel(user)) +
+        '</td>'
+      );
+    }
+    var metric = mode === 'times' ? formatTimeDisplay(user) : streakMetric(user);
+    return (
+      '<td>' +
+      rank +
+      '</td>' +
+      '<td>' +
+      usernameCellHtml(user) +
+      '</td>' +
+      '<td>' +
+      escapeHtml(metric) +
+      '</td>' +
+      '<td>' +
+      escapeHtml(formatSkillLevel(user)) +
+      '</td>'
+    );
+  }
+
+  function clearUserRowPins() {
+    lbSelfRowEl = null;
+    lbSelfRowData = null;
+    if (lbUserRowObserver) {
+      lbUserRowObserver.disconnect();
+      lbUserRowObserver = null;
+    }
+    if (pinTop) {
+      pinTop.hidden = true;
+      pinTop.innerHTML = '';
+    }
+    if (pinBottom) {
+      pinBottom.hidden = true;
+      pinBottom.innerHTML = '';
+    }
+  }
+
+  function renderPinRow(container, user, rank, mode, position) {
+    if (!container || !user) return;
+    container.innerHTML =
+      '<table><tbody><tr class="lb-row-self">' +
+      buildRowCellsHtml(user, rank, mode) +
+      '</tr></tbody></table>';
+    container.hidden = false;
+    container.setAttribute('aria-hidden', 'false');
+    container.setAttribute('data-pin-position', position);
+  }
+
+  function setupUserRowPinObserver(user, rank, mode) {
+    clearUserRowPins();
+    if (!tableScroll || !user || !lbSelfRowEl) return;
+    lbSelfRowData = { user: user, rank: rank, mode: mode };
+
+    function updatePins(isVisible) {
+      if (!lbSelfRowData) return;
+      if (isVisible) {
+        if (pinTop) {
+          pinTop.hidden = true;
+          pinTop.innerHTML = '';
+        }
+        if (pinBottom) {
+          pinBottom.hidden = true;
+          pinBottom.innerHTML = '';
+        }
+        return;
+      }
+      var rowTop = lbSelfRowEl.offsetTop;
+      var scrollTop = tableScroll.scrollTop;
+      var viewport = tableScroll.clientHeight;
+      if (rowTop < scrollTop) {
+        renderPinRow(pinTop, lbSelfRowData.user, lbSelfRowData.rank, lbSelfRowData.mode, 'top');
+        if (pinBottom) {
+          pinBottom.hidden = true;
+          pinBottom.innerHTML = '';
+        }
+      } else if (rowTop + lbSelfRowEl.offsetHeight > scrollTop + viewport) {
+        renderPinRow(
+          pinBottom,
+          lbSelfRowData.user,
+          lbSelfRowData.rank,
+          lbSelfRowData.mode,
+          'bottom'
+        );
+        if (pinTop) {
+          pinTop.hidden = true;
+          pinTop.innerHTML = '';
+        }
       }
     }
-    return {
-      label: label,
-      slug: exerciseSlug(label) || fb.slug
+
+    if (typeof IntersectionObserver === 'function') {
+      lbUserRowObserver = new IntersectionObserver(
+        function (entries) {
+          var entry = entries[0];
+          updatePins(entry && entry.isIntersecting);
+        },
+        { root: tableScroll, threshold: 0.01 }
+      );
+      lbUserRowObserver.observe(lbSelfRowEl);
+    }
+
+    tableScroll.onscroll = function () {
+      if (!lbSelfRowEl || !lbSelfRowData) return;
+      var rect = lbSelfRowEl.getBoundingClientRect();
+      var rootRect = tableScroll.getBoundingClientRect();
+      var visible =
+        rect.bottom > rootRect.top + 2 && rect.top < rootRect.bottom - 2;
+      updatePins(visible);
     };
   }
 
-  function exerciseQueryCacheKey(q) {
-    return (q.slug || '') + '|' + String(q.label || '').toLowerCase();
+  function scrollToInitialUserPosition(userIdx, totalRows) {
+    if (!tableScroll || userIdx < 0 || totalRows <= LB_VISIBLE_ROWS) {
+      if (tableScroll) tableScroll.scrollTop = 0;
+      return;
+    }
+    if (userIdx < LB_VISIBLE_ROWS) {
+      tableScroll.scrollTop = 0;
+      return;
+    }
+    var rowHeight = lbSelfRowEl ? lbSelfRowEl.offsetHeight : 44;
+    var targetTop = Math.max(0, (userIdx - LB_VISIBLE_ROWS + 1) * rowHeight);
+    tableScroll.scrollTop = targetTop;
+  }
+
+  function updateUserRankBar(rowUser, rank, mode, currentUser) {
+    if (isPublicLeaderboard) return;
+    var userRankEl = document.getElementById('lb-user-rank-num');
+    var userNameEl = document.getElementById('lb-user-name');
+    var userIntensityEl = document.getElementById('lb-user-intensity');
+    var userWeightEl = document.getElementById('lb-user-weight');
+    var userRepsEl = document.getElementById('lb-user-reps');
+    var userMetricEl = document.getElementById('lb-user-metric');
+    var userSkillEl = document.getElementById('lb-user-skill');
+
+    if (currentUser && rowUser) {
+      if (userRankEl) userRankEl.textContent = String(rank);
+      if (userNameEl) userNameEl.textContent = rowUser.username || currentUser.username || '—';
+      if (mode === 'exercises') {
+        if (userIntensityEl) userIntensityEl.textContent = formatIntensity(rowUser);
+        if (userWeightEl) userWeightEl.textContent = formatLiftWeight(rowUser.liftWeight);
+        if (userRepsEl) userRepsEl.textContent = formatReps(rowUser);
+      } else if (userMetricEl) {
+        userMetricEl.textContent =
+          mode === 'times' ? formatTimeDisplay(rowUser) : streakMetric(rowUser);
+      }
+      if (userSkillEl) userSkillEl.textContent = formatSkillLevel(rowUser);
+    } else if (currentUser) {
+      if (userRankEl) userRankEl.textContent = '—';
+      if (userNameEl) userNameEl.textContent = currentUser.username || '—';
+      if (mode === 'exercises') {
+        if (userIntensityEl) userIntensityEl.textContent = 'none recorded';
+        if (userWeightEl) userWeightEl.textContent = '—';
+        if (userRepsEl) userRepsEl.textContent = '—';
+      } else if (userMetricEl) {
+        userMetricEl.textContent = 'none recorded';
+      }
+      if (userSkillEl) userSkillEl.textContent = formatSkillLevel(currentUser);
+    } else {
+      resetUserRankBar();
+    }
   }
 
   function parseFavoriteMovementLines() {
@@ -299,9 +592,6 @@
         if (ex && ex.name) labels.push(ex.name);
       });
     }
-    TIMED_EVENT_DEFAULTS.forEach(function (name) {
-      if (labels.indexOf(name) === -1) labels.push(name);
-    });
     var WL = window.WorkoutLog;
     if (WL && typeof WL.getSessions === 'function') {
       collectExerciseOptionsFromSessions(WL.getSessions()).forEach(function (row) {
@@ -315,81 +605,46 @@
       var resolved = resolveExerciseInput(f);
       if (resolved.valid && labels.indexOf(resolved.label) === -1) labels.push(resolved.label);
     });
-    if (labels.indexOf(DEFAULT_EXERCISE.label) === -1) {
-      labels.unshift(DEFAULT_EXERCISE.label);
-    }
     populateDatalist(exerciseSuggestions, labels);
   }
 
   function updatePickerVisibility() {
     var mode = state.mode;
-    if (exercisePickerRow) exercisePickerRow.hidden = mode === 'streak';
+    if (exercisePickerRow) exercisePickerRow.hidden = mode !== 'exercises';
+    if (timesPickerRow) timesPickerRow.hidden = mode !== 'times';
   }
 
-  function activeExerciseFallback() {
-    return state.mode === 'times' ? DEFAULT_TIME_EVENT : DEFAULT_EXERCISE;
-  }
-
-  function syntheticTimeMinutes(user) {
-    var id = user && user.id != null ? Number(user.id) : 0;
-    var eventSlug = queryFromSearchInput(exerciseSearch, DEFAULT_TIME_EVENT).slug;
-    var slugHash = 0;
-    for (var i = 0; i < eventSlug.length; i++) {
-      slugHash += eventSlug.charCodeAt(i);
+  function updateColumnVisibility(mode) {
+    document.querySelectorAll('.lb-col-exercises').forEach(function (el) {
+      el.hidden = mode !== 'exercises';
+    });
+    document.querySelectorAll('.lb-col-times, .lb-col-streak').forEach(function (el) {
+      el.hidden = mode === 'exercises';
+    });
+    if (userRankRow) {
+      userRankRow.classList.toggle('lb-user-rank--exercises', mode === 'exercises');
+      userRankRow.classList.toggle('lb-user-rank--times', mode === 'times');
+      userRankRow.classList.toggle('lb-user-rank--streak', mode === 'streak');
     }
-    var base = 8 + (id % 50) + (id % 7) * 0.5 + (slugHash % 25) * 0.15;
-    var mins = Math.floor(base);
-    var secs = Math.floor((base - mins) * 60);
-    return String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
-  }
-
-  function metricForUser(user, mode) {
-    if (mode === 'times') return syntheticTimeMinutes(user);
-    if (mode === 'streak') {
-      var days = user && user.streak != null ? Number(user.streak) : null;
-      if (days != null && !isNaN(days) && days > 0) {
-        return String(days) + (days === 1 ? ' day' : ' days');
-      }
-      return '—';
-    }
-    if (user.liftWeight != null) return formatLiftWeight(user.liftWeight);
-    return '—';
-  }
-
-  function userRowMetric(user, mode) {
-    if (mode === 'times') return syntheticTimeMinutes(user);
-    if (mode === 'streak') {
-      var streakDays = user && user.streak != null ? Number(user.streak) : null;
-      if (streakDays != null && !isNaN(streakDays) && streakDays > 0) {
-        return String(streakDays) + (streakDays === 1 ? ' day' : ' days');
-      }
-      return 'none recorded';
-    }
-    if (user.liftWeight != null) return formatLiftWeight(user.liftWeight);
-    return 'none recorded';
-  }
-
-  function updateTableHeaders(mode) {
-    if (!thMetric || !thSkill) return;
-    if (mode === 'times') {
-      thMetric.textContent = 'Time';
-    } else if (mode === 'streak') {
-      thMetric.textContent = 'Streak';
-    } else {
-      thMetric.textContent = 'Value (' + weightUnitsLabel() + ')';
-    }
-    thSkill.textContent = 'Skill level';
+    var urEx = document.querySelectorAll('.lb-ur-exercises');
+    var urMetric = document.querySelectorAll('.lb-ur-metric');
+    urEx.forEach(function (el) {
+      el.hidden = mode !== 'exercises';
+    });
+    urMetric.forEach(function (el) {
+      el.hidden = mode === 'exercises';
+    });
   }
 
   function sortUsers(users, mode) {
     var list = (users || []).slice();
     if (mode === 'exercises') {
       list.sort(function (a, b) {
-        var wa =
-          a.liftWeight != null && !isNaN(Number(a.liftWeight)) ? Number(a.liftWeight) : -Infinity;
-        var wb =
-          b.liftWeight != null && !isNaN(Number(b.liftWeight)) ? Number(b.liftWeight) : -Infinity;
-        if (wb !== wa) return wb - wa;
+        var ia =
+          a.intensity != null && !isNaN(Number(a.intensity)) ? Number(a.intensity) : -Infinity;
+        var ib =
+          b.intensity != null && !isNaN(Number(b.intensity)) ? Number(b.intensity) : -Infinity;
+        if (ib !== ia) return ib - ia;
         return String(a.username || '').localeCompare(String(b.username || ''));
       });
     } else if (mode === 'streak') {
@@ -401,7 +656,16 @@
       });
     } else {
       list.sort(function (a, b) {
-        return syntheticTimeMinutes(a).localeCompare(syntheticTimeMinutes(b));
+        var ta =
+          a.timeSeconds != null && !isNaN(Number(a.timeSeconds))
+            ? Number(a.timeSeconds)
+            : Infinity;
+        var tb =
+          b.timeSeconds != null && !isNaN(Number(b.timeSeconds))
+            ? Number(b.timeSeconds)
+            : Infinity;
+        if (ta !== tb) return ta - tb;
+        return String(a.username || '').localeCompare(String(b.username || ''));
       });
     }
     return list;
@@ -474,6 +738,7 @@
 
   function renderLeaderboard(users) {
     if (!tbody) return;
+    clearUserRowPins();
     tbody.innerHTML = '';
     var mode = state.mode;
     updateTableHeaders(mode);
@@ -481,81 +746,54 @@
     var scoped = filterByAudience(users, state.audience);
     if (scoped.needsSignIn) {
       tbody.innerHTML =
-        '<tr><td colspan="4">Sign in to see this leaderboard view.</td></tr>';
+        '<tr><td colspan="' +
+        tableColspan(mode) +
+        '">Sign in to see this leaderboard view.</td></tr>';
       return;
     }
 
-    var list = scoped.list;
-    if (mode === 'exercises') {
-      list = list.filter(function (u) {
-        return u.liftWeight != null && !isNaN(Number(u.liftWeight)) && Number(u.liftWeight) > 0;
-      });
-    }
-    list = list.slice(0, 10);
+    var sortedAll = filterRankedUsers(scoped.list, mode);
     var currentUser =
       !isPublicLeaderboard && window.getCurrentUser && window.getCurrentUser();
 
-    if (!list.length) {
-      tbody.innerHTML =
-        '<tr><td colspan="4">' +
-        (mode === 'exercises'
+    if (!sortedAll.length) {
+      var emptyMsg =
+        mode === 'exercises'
           ? 'No lifts recorded for this exercise yet.'
-          : 'No one to show for this view yet.') +
-        '</td></tr>';
-    } else {
-      list.forEach(function (user, i) {
-        var tr = document.createElement('tr');
-        if (currentUser && currentUser.id === user.id) {
-          tr.classList.add('lb-row-self');
-        }
-        tr.innerHTML =
-          '<td>' + (i + 1) + '</td>' +
-          '<td>' + usernameCellHtml(user) + '</td>' +
-          '<td>' + escapeHtml(metricForUser(user, mode)) + '</td>' +
-          '<td>' + escapeHtml(formatSkillLevel(user)) + '</td>';
-        tbody.appendChild(tr);
-      });
-    }
-
-    if (isPublicLeaderboard) {
+          : mode === 'times'
+            ? 'No times logged for this event yet. Log a PR from Tracking.'
+            : 'No one to show for this view yet.';
+      tbody.innerHTML =
+        '<tr><td colspan="' + tableColspan(mode) + '">' + escapeHtml(emptyMsg) + '</td></tr>';
+      updateUserRankBar(null, 0, mode, currentUser);
       return;
     }
 
-    var sortedAll = scoped.list;
-    if (mode === 'exercises') {
-      sortedAll = sortedAll.filter(function (u) {
-        return u.liftWeight != null && !isNaN(Number(u.liftWeight)) && Number(u.liftWeight) > 0;
-      });
-    }
-    var userRankEl = document.getElementById('lb-user-rank-num');
-    var userNameEl = document.getElementById('lb-user-name');
-    var userMetricEl = document.getElementById('lb-user-metric');
-    var userSkillEl = document.getElementById('lb-user-skill');
-
-    if (currentUser && sortedAll.length) {
-      var idx = sortedAll.findIndex(function (u) {
-        return u.id === currentUser.id;
-      });
-      var rowUser = idx >= 0 ? sortedAll[idx] : null;
-      if (rowUser) {
-        if (userRankEl) userRankEl.textContent = String(idx + 1);
-        if (userNameEl) userNameEl.textContent = rowUser.username || currentUser.username || '—';
-        if (userMetricEl) userMetricEl.textContent = userRowMetric(rowUser, mode);
-        if (userSkillEl) userSkillEl.textContent = formatSkillLevel(rowUser);
-      } else {
-        if (userRankEl) userRankEl.textContent = '—';
-        if (userNameEl) userNameEl.textContent = currentUser.username || '—';
-        if (userMetricEl) {
-          userMetricEl.textContent =
-            mode === 'times' ? '00:00' : 'none recorded';
-        }
-        if (userSkillEl) userSkillEl.textContent = formatSkillLevel(currentUser);
+    lbSelfRowEl = null;
+    sortedAll.forEach(function (user, i) {
+      var tr = document.createElement('tr');
+      var rank = i + 1;
+      if (currentUser && currentUser.id === user.id) {
+        tr.classList.add('lb-row-self');
+        lbSelfRowEl = tr;
       }
-    } else {
-      if (userRankEl) userRankEl.textContent = '—';
-      if (userNameEl) userNameEl.textContent = '—';
-      if (userMetricEl) userMetricEl.textContent = '—';
-      if (userSkillEl) userSkillEl.textContent = '—';
+      tr.innerHTML = buildRowCellsHtml(user, rank, mode);
+      tbody.appendChild(tr);
+    });
+
+    var userIdx = currentUser
+      ? sortedAll.findIndex(function (u) {
+          return u.id === currentUser.id;
+        })
+      : -1;
+    var rowUser = userIdx >= 0 ? sortedAll[userIdx] : null;
+    updateUserRankBar(rowUser, userIdx >= 0 ? userIdx + 1 : 0, mode, currentUser);
+
+    if (tableScroll) {
+      scrollToInitialUserPosition(userIdx, sortedAll.length);
+    }
+    if (rowUser && lbSelfRowEl) {
+      setupUserRowPinObserver(rowUser, userIdx + 1, mode);
     }
   }
 
@@ -567,11 +805,26 @@
       });
     }
     if (state.mode === 'times') {
-      return window.apiGet('/users').then(function (res) {
+      var tq = validatedTimesQuery();
+      if (!tq.valid) {
+        return Promise.reject({ code: 'incomplete_times', query: tq });
+      }
+      var timesPath =
+        '/leaderboard/times?sport=' +
+        encodeURIComponent(tq.sport) +
+        '&distance=' +
+        encodeURIComponent(tq.distance) +
+        '&event=' +
+        encodeURIComponent(tq.event);
+      return window.apiGet(timesPath).then(function (res) {
+        if (!res.ok) throw new Error('bad status');
         return res.json();
       });
     }
     var q = validatedExerciseQuery();
+    if (q.empty) {
+      return Promise.reject({ code: 'empty_exercise', query: q });
+    }
     if (!q.valid) {
       return Promise.reject({ code: 'unknown_exercise', query: q });
     }
@@ -587,54 +840,78 @@
   }
 
   function loadLeaderboard() {
-    if (messageEl) messageEl.textContent = 'Loading…';
-    if (tbody) {
-      tbody.innerHTML = '<tr><td colspan="4">Loading…</td></tr>';
-    }
-    if (state.mode === 'exercises' && exerciseSearch) {
+    var mode = state.mode;
+    updateColumnVisibility(mode);
+
+    if (mode === 'exercises') {
       var validated = validatedExerciseQuery();
+      if (validated.empty) {
+        hideExerciseHint();
+        renderEmptyLeaderboard('Search for an exercise to view the leaderboard.');
+        return;
+      }
       if (!validated.valid) {
         lbExerciseValid = false;
         showUnknownExerciseHint(validated.label);
         renderEmptyLeaderboard('Pick a registered exercise to view the leaderboard.');
         return;
       }
-      lbExerciseValid = true;
+    } else if (mode === 'times') {
       hideExerciseHint();
-      if (exerciseSearch.value !== validated.label) {
-        exerciseSearch.value = validated.label;
+      var timesQ = validatedTimesQuery();
+      if (timesQ.empty) {
+        renderEmptyLeaderboard('Select a sport, distance, and event to view times.');
+        return;
       }
-      lbSearchAppliedKey = exerciseQueryCacheKey({
-        label: validated.label,
-        slug: validated.slug
-      });
-    } else if (state.mode === 'times' && exerciseSearch) {
-      hideExerciseHint();
-      lbSearchAppliedKey = exerciseQueryCacheKey(
-        queryFromSearchInput(exerciseSearch, DEFAULT_TIME_EVENT)
-      );
+      if (!timesQ.valid) {
+        renderEmptyLeaderboard('Select a sport, distance, and event to view times.');
+        return;
+      }
     } else {
       hideExerciseHint();
+    }
+
+    if (messageEl) messageEl.textContent = 'Loading…';
+    if (tbody) {
+      tbody.innerHTML =
+        '<tr><td colspan="' + tableColspan(mode) + '">Loading…</td></tr>';
+    }
+
+    if (mode === 'exercises' && exerciseSearch) {
+      var exerciseValidated = validatedExerciseQuery();
+      lbExerciseValid = true;
+      hideExerciseHint();
+      if (exerciseSearch.value !== exerciseValidated.label) {
+        exerciseSearch.value = exerciseValidated.label;
+      }
+      lbSearchAppliedKey = exerciseQueryCacheKey({
+        label: exerciseValidated.label,
+        slug: exerciseValidated.slug
+      });
+    } else if (mode === 'times') {
+      lbSearchAppliedKey = timesQueryCacheKey(validatedTimesQuery());
+    } else {
       lbSearchAppliedKey = '';
     }
+
     fetchLeaderboardRows()
       .then(function (rows) {
         lbRows = Array.isArray(rows) ? rows : [];
         return fetchScopeLists(state.audience);
       })
       .then(function () {
-        if (!lbRows.length && state.mode === 'times') {
-          renderLeaderboard([]);
-          if (messageEl) {
-            messageEl.textContent =
-              'Timed exercise leaderboards use logged workout data when available.';
-          }
-          return;
-        }
         renderLeaderboard(lbRows);
         if (messageEl) messageEl.textContent = '';
       })
       .catch(function (err) {
+        if (err && err.code === 'empty_exercise') {
+          renderEmptyLeaderboard('Search for an exercise to view the leaderboard.');
+          return;
+        }
+        if (err && err.code === 'incomplete_times') {
+          renderEmptyLeaderboard('Select a sport, distance, and event to view times.');
+          return;
+        }
         if (err && err.code === 'unknown_exercise') {
           showUnknownExerciseHint(err.query && err.query.label ? err.query.label : '');
           renderEmptyLeaderboard('Pick a registered exercise to view the leaderboard.');
@@ -645,18 +922,16 @@
       });
   }
 
-  function commitExerciseSearch() {
-    if ((state.mode !== 'exercises' && state.mode !== 'times') || !exerciseSearch) return;
+  function commitLeaderboardFilters() {
     if (state.mode === 'exercises') {
       var validated = validatedExerciseQuery();
       var key = exerciseQueryCacheKey({
         label: validated.valid ? validated.label : validated.rawLabel,
         slug: validated.slug
       });
-      if (!validated.valid) {
-        if (key === lbSearchAppliedKey) return;
-        lbSearchAppliedKey = key;
-        loadLeaderboard();
+      if (validated.empty) {
+        lbSearchAppliedKey = '';
+        renderEmptyLeaderboard('Search for an exercise to view the leaderboard.');
         return;
       }
       if (key === lbSearchAppliedKey) return;
@@ -664,11 +939,18 @@
       loadLeaderboard();
       return;
     }
-    var q = queryFromSearchInput(exerciseSearch, DEFAULT_TIME_EVENT);
-    var timesKey = exerciseQueryCacheKey(q);
-    if (timesKey === lbSearchAppliedKey) return;
-    lbSearchAppliedKey = timesKey;
-    loadLeaderboard();
+    if (state.mode === 'times') {
+      var tq = validatedTimesQuery();
+      var timesKey = timesQueryCacheKey(tq);
+      if (tq.empty) {
+        lbSearchAppliedKey = '';
+        renderEmptyLeaderboard('Select a sport, distance, and event to view times.');
+        return;
+      }
+      if (timesKey === lbSearchAppliedKey) return;
+      lbSearchAppliedKey = timesKey;
+      loadLeaderboard();
+    }
   }
 
   function wirePickerSearch(inputEl, commitFn) {
@@ -718,18 +1000,18 @@
       if (group === 'mode') {
         lbSearchAppliedKey = '';
         updatePickerVisibility();
-        if (exerciseSearch) {
-          var fallback = activeExerciseFallback();
-          exerciseSearch.value = fallback.label;
-          exerciseSearch.placeholder =
-            value === 'times' ? 'Search timed exercise…' : 'Search exercise…';
-        }
+        updateColumnVisibility(value);
       }
       loadLeaderboard();
     });
   });
 
-  wirePickerSearch(exerciseSearch, commitExerciseSearch);
+  wirePickerSearch(exerciseSearch, commitLeaderboardFilters);
+  if (timeSport) {
+    timeSport.addEventListener('change', commitLeaderboardFilters);
+  }
+  wirePickerSearch(timeDistance, commitLeaderboardFilters);
+  wirePickerSearch(timeEvent, commitLeaderboardFilters);
 
   function initLeaderboardExerciseDb() {
     var ED = exerciseDb();
@@ -744,7 +1026,16 @@
 
   initLeaderboardExerciseDb().then(function () {
     updatePickerVisibility();
-    loadLeaderboard();
+    updateColumnVisibility(state.mode);
+    if (state.mode === 'streak') {
+      loadLeaderboard();
+    } else {
+      renderEmptyLeaderboard(
+        state.mode === 'times'
+          ? 'Select a sport, distance, and event to view times.'
+          : 'Search for an exercise to view the leaderboard.'
+      );
+    }
   });
 
   var compState = 'finished';
@@ -1132,12 +1423,6 @@
       }
     }
 
-    function defaultEndDate() {
-      var d = new Date();
-      d.setDate(d.getDate() + 56);
-      return d.toISOString().slice(0, 10);
-    }
-
     if (addBtn) {
       addBtn.addEventListener('click', function () {
         var uid = compUid();
@@ -1147,7 +1432,7 @@
         if (fOppId) fOppId.value = '';
         if (fGoal) fGoal.value = '';
         if (fW) fW.value = '';
-        if (fEnd) fEnd.value = defaultEndDate();
+        if (fEnd) fEnd.value = '';
         loadCompOpponentUsers().then(function () {
           populateCompOpponentSuggestions(fOppList);
           openCompFormOverlay();
