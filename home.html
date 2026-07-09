@@ -9,7 +9,6 @@
     <link rel="apple-touch-icon" href="/assets/logo.png">
     <link rel="stylesheet" href="/css/home.css">
     <link rel="stylesheet" href="/css/server-wake.css">
-    <link rel="stylesheet" href="/css/athlete-sports.css">
     <link rel="stylesheet" href="/css/app-nav.css">
     <link rel="stylesheet" href="/css/workout-dashboard.css">
     <link rel="stylesheet" href="/css/settings-app.css">
@@ -47,16 +46,6 @@
         </div>
         <div class="rocky-sport-alerts" data-rocky-sport-alerts hidden></div>
 
-        <div class="dash-top-bar" id="dash-top-bar" hidden aria-label="Today's workout">
-            <div class="dash-week-complication" id="dash-week-complication">
-                <div class="dash-week-ring" id="dash-week-ring" role="img" aria-label="Days of the week"></div>
-                <div class="dash-week-today">
-                    <p class="dash-week-today-label">Today</p>
-                    <p class="dash-week-today-name" id="dash-week-today-name">—</p>
-                </div>
-            </div>
-        </div>
-
         <header class="dash-header">
             <div class="dash-header-text">
                 <p class="dash-eyebrow">Your dashboard</p>
@@ -65,7 +54,6 @@
                 <div class="dash-rocky-banner" id="dash-rocky-banner" hidden role="status" aria-live="polite"></div>
                 <div class="dash-countdowns" id="dash-countdowns" hidden aria-label="Upcoming events"></div>
                 <p class="dash-sport-tip" id="dash-sport-tip" hidden role="note"></p>
-                <p class="dash-subtitle" id="dash-today-split" hidden></p>
             </div>
         </header>
 
@@ -168,16 +156,6 @@
             </div>
         </section>
 
-        <section class="dash-split-preview" id="dash-split-section" hidden aria-labelledby="dash-split-heading">
-            <div class="dash-section-head">
-                <h2 class="dash-section-title" id="dash-split-heading">This week's split<span class="split-tab-badge" id="dash-split-badge" hidden aria-label="New AI split saved"></span></h2>
-                <a href="/customize#split" class="dash-section-link" id="dash-split-edit-link">Edit</a>
-            </div>
-            <div class="dash-split-picker-row">
-                <div id="dash-split-library" class="split-library-mount split-library-mount--dash" aria-label="Workout splits"></div>
-            </div>
-            <div class="dash-split-grid" id="day-split"></div>
-        </section>
     </main>
     <footer class="site-footer site-footer--compact">
         <div class="footer-inner footer-inner--compact">
@@ -315,9 +293,6 @@
     <script src="/shared/sidebar-profile-menu.js"></script>
     <script src="/shared/auth-guard.js"></script>
     <script src="/shared/site-footer-email.js"></script>
-    <script src="/shared/workout-split.js"></script>
-    <script src="/shared/workout-split-library.js"></script>
-    <script src="/shared/split-recommendations.js"></script>
     <script src="/shared/workout-log.js"></script>
     <script src="/shared/training-sync.js"></script>
     <script src="/shared/rocky-coaching-insights.js"></script>

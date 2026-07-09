@@ -3,12 +3,9 @@
   var athleteContextEl = document.getElementById('dash-athlete-context');
   var countdownsEl = document.getElementById('dash-countdowns');
   var sportTipEl = document.getElementById('dash-sport-tip');
-  var todaySplitEl = document.getElementById('dash-today-split');
   var startBtn = document.getElementById('dash-start-workout');
   var startHintEl = document.getElementById('dash-start-hint');
   var roastsListEl = document.getElementById('dash-roasts-list');
-  var daySplitEl = document.getElementById('day-split');
-  var splitSectionEl = document.getElementById('dash-split-section');
   var rockyBannerEl = document.getElementById('dash-rocky-banner');
 
   function renderRoasts(sessions) {
@@ -149,10 +146,6 @@
       sportTipEl.textContent = '';
       sportTipEl.hidden = true;
     }
-    if (todaySplitEl) {
-      todaySplitEl.textContent = '';
-      todaySplitEl.hidden = true;
-    }
     var AC = window.AthleteContext;
     var user = typeof window.getCurrentUser === 'function' ? window.getCurrentUser() : null;
     if (countdownsEl && AC && user) {
@@ -188,110 +181,6 @@
       ) {
         startHintEl.textContent = AC.getTodayTrainingHint(user).hint;
       }
-    }
-  }
-
-  function refreshSplitBadges() {
-    var WS = window.WorkoutSplit;
-    if (!WS) return;
-    var count = WS.getUnseenSplitCount ? WS.getUnseenSplitCount() : 0;
-    var badge = document.getElementById('dash-split-badge');
-    if (badge) {
-      if (count > 0) {
-        badge.hidden = false;
-        badge.textContent = count > 9 ? '9+' : String(count);
-      } else {
-        badge.hidden = true;
-        badge.textContent = '';
-      }
-    }
-  }
-
-  function renderDashSplitSelect() {
-    var WS = window.WorkoutSplit;
-    var libMount = document.getElementById('dash-split-library');
-    if (!WS || !libMount || !window.WorkoutSplitLibrary) return;
-    window.WorkoutSplitLibrary.render(libMount, {
-      compact: true,
-      showAdd: false,
-      showDuplicate: false,
-      showDelete: false,
-      onSelect: function () {
-        renderSplitPreview();
-      },
-    });
-    refreshSplitBadges();
-  }
-
-  function renderSplitPreview() {
-    var WS = window.WorkoutSplit;
-    if (!WS || !daySplitEl) return;
-    var weekRing = document.getElementById('dash-week-ring');
-    var weekComplication = document.getElementById('dash-week-complication');
-    var weekTodayName = document.getElementById('dash-week-today-name');
-    var topBar = document.getElementById('dash-top-bar');
-    if (!WS.hasUserConfigured || !WS.hasUserConfigured()) {
-      if (splitSectionEl) splitSectionEl.hidden = true;
-      if (topBar) topBar.hidden = true;
-      return;
-    }
-    if (splitSectionEl) splitSectionEl.hidden = false;
-    if (topBar) topBar.hidden = true;
-    renderDashSplitSelect();
-    var state = WS.load();
-    var todayIdx = WS.mondayIndexFromDate(new Date());
-    if (weekComplication) weekComplication.hidden = false;
-    if (weekRing) {
-      weekRing.innerHTML = '';
-      var letters = WS.dayLetters || ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-      for (var li = 0; li < 7; li++) {
-        var span = document.createElement('span');
-        span.className = 'dash-week-letter' + (li === todayIdx ? ' dash-week-letter--today' : '');
-        span.textContent = letters[li] || '—';
-        span.setAttribute('aria-label', (state.days && state.days[li]) || '');
-        weekRing.appendChild(span);
-      }
-    }
-    if (weekTodayName) {
-      var dayLabel = (state.days && state.days[todayIdx]) || '—';
-      var plan = WS.getDayPlan(state, new Date());
-      weekTodayName.textContent = (plan && plan.title) || dayLabel;
-    }
-    if (startHintEl) {
-      var AC = window.AthleteContext;
-      var user = typeof window.getCurrentUser === 'function' ? window.getCurrentUser() : null;
-      var usedAthleteHint = false;
-      if (AC && user) {
-        var ctx = AC.loadAthleteContext(user);
-        if (
-          AC.getSports(ctx).length ||
-          (ctx.practiceDays && ctx.practiceDays.length) ||
-          (ctx.gameDays && ctx.gameDays.length)
-        ) {
-          startHintEl.textContent = AC.getTodayTrainingHint(user).hint;
-          usedAthleteHint = true;
-        }
-      }
-      if (!usedAthleteHint) {
-        var todayIdx = WS.mondayIndexFromDate(new Date());
-        var dayName = (state.days && state.days[todayIdx]) || 'today';
-        startHintEl.textContent = /rest/i.test(dayName) ? 'Rest day — or train anyway' : dayName + ' on deck';
-      }
-    }
-    daySplitEl.innerHTML = '';
-    var letters = WS.dayLetters || ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-    var today = new Date().getDay();
-    var index = (today + 6) % 7;
-    for (var i = 0; i < 7; i++) {
-      var row = document.createElement('div');
-      row.className = 'dash-split-row' + (i === index ? ' dash-split-row--today' : '');
-      row.innerHTML =
-        '<span class="dash-split-day">' +
-        (letters[i] || '—') +
-        '</span><span class="dash-split-name">' +
-        ((state.days && state.days[i]) || '—') +
-        '</span>';
-      daySplitEl.appendChild(row);
     }
   }
 
@@ -375,7 +264,6 @@
     renderStats(sessions);
     renderRoasts(sessions);
     renderAthleteContext();
-    renderSplitPreview();
     refreshWorkoutCta();
     if (window.RockySetupAlert && typeof window.RockySetupAlert.renderAll === 'function') {
       window.RockySetupAlert.renderAll();
@@ -432,14 +320,6 @@
   });
 
   window.addEventListener('storage', function (e) {
-    if (
-      e.key &&
-      window.WorkoutSplit &&
-      typeof window.WorkoutSplit.isSplitStorageKey === 'function' &&
-      window.WorkoutSplit.isSplitStorageKey(e.key)
-    ) {
-      renderSplitPreview();
-    }
     if (e.key && e.key.indexOf('strongman_workouts') === 0) {
       refreshDashboard();
     }
@@ -458,10 +338,6 @@
       }
       refreshWorkoutCta();
     }
-  });
-
-  window.addEventListener('strongman:splits-updated', function () {
-    renderSplitPreview();
   });
 
   window.refreshHomeWorkoutCta = refreshWorkoutCta;
