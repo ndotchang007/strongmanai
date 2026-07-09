@@ -612,6 +612,9 @@
     var mode = state.mode;
     if (exercisePickerRow) exercisePickerRow.hidden = mode !== 'exercises';
     if (timesPickerRow) timesPickerRow.hidden = mode !== 'times';
+    if (exerciseHint && mode !== 'exercises') {
+      hideExerciseHint();
+    }
   }
 
   function updateColumnVisibility(mode) {
@@ -841,6 +844,7 @@
 
   function loadLeaderboard() {
     var mode = state.mode;
+    updatePickerVisibility();
     updateColumnVisibility(mode);
 
     if (mode === 'exercises') {

@@ -122,6 +122,17 @@
     margin: 0 auto;
 }
 
+.lb-picker-row[hidden],
+.lb-exercise-hint[hidden]
+{
+    display: none !important;
+}
+
+.lb-times-picker-row
+{
+    max-width: 42rem;
+}
+
 .lb-picker-label
 {
     font-family: var(--font);
