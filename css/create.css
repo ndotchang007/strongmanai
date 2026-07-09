@@ -477,6 +477,104 @@
     line-height: 1.4;
 }
 
+.create-split-picker
+{
+    margin: 0 0 1.1rem;
+}
+
+.create-split-picker-label
+{
+    display: block;
+    margin-bottom: 0.4rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted, rgba(255, 255, 255, 0.55));
+}
+
+.create-split-picker-row
+{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.create-split-select
+{
+    flex: 1 1 12rem;
+    min-width: 0;
+}
+
+.create-split-picker-btn
+{
+    padding: 0.55rem 0.85rem;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-primary, #fff);
+    font: inherit;
+    font-size: 0.82rem;
+    cursor: pointer;
+}
+
+.create-split-picker-btn--danger
+{
+    border-color: rgba(248, 113, 113, 0.35);
+    color: #fca5a5;
+}
+
+.split-tab-badge
+{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.1rem;
+    height: 1.1rem;
+    margin-left: 0.35rem;
+    padding: 0 0.3rem;
+    border-radius: 999px;
+    background: #ff8c00;
+    color: #111;
+    font-size: 0.62rem;
+    font-weight: 700;
+    line-height: 1;
+    vertical-align: middle;
+}
+
+.split-tab-badge[hidden]
+{
+    display: none !important;
+}
+
+.create-rocky-split-rec
+{
+    margin: 0 0 1rem;
+    padding: 0.9rem 1rem;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 140, 0, 0.28);
+    background: linear-gradient(155deg, rgba(255, 140, 0, 0.12) 0%, rgba(16, 16, 16, 0.92) 100%);
+}
+
+.create-rocky-split-rec-title
+{
+    margin: 0 0 0.45rem;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--text-primary, #fff);
+}
+
+.create-rocky-split-rec-body
+{
+    margin: 0;
+    font-family: inherit;
+    font-size: 0.82rem;
+    line-height: 1.55;
+    white-space: pre-wrap;
+    color: var(--text-secondary, rgba(255, 255, 255, 0.78));
+}
+
 .create-exercises-block
 {
     border: 1px solid rgba(100, 100, 100, 0.5);

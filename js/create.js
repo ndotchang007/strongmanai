@@ -106,14 +106,68 @@
     return new Date();
   }
 
-  function applyTodayRoutineIfEmpty(force) {
+  function showRockySplitRec(title, body) {
+    var box = document.getElementById('create-rocky-split-rec');
+    var titleEl = document.getElementById('create-rocky-split-rec-title');
+    var bodyEl = document.getElementById('create-rocky-split-rec-body');
+    if (!box || !titleEl || !bodyEl) return;
+    if (!title) {
+      box.hidden = true;
+      titleEl.textContent = '';
+      bodyEl.textContent = '';
+      return;
+    }
+    titleEl.textContent = title;
+    bodyEl.textContent = body || '';
+    box.hidden = false;
+  }
+
+  function refreshSplitBadges() {
     var WS = window.WorkoutSplit;
-    if (!WS || !workoutTracker) return;
-    if (!force && workoutTracker.hasExercises()) return;
+    if (!WS) return;
+    var count = WS.getUnseenSplitCount ? WS.getUnseenSplitCount() : 0;
+    var tabBadge = document.getElementById('create-split-tab-badge');
+    if (tabBadge) {
+      if (count > 0) {
+        tabBadge.hidden = false;
+        tabBadge.textContent = count > 9 ? '9+' : String(count);
+      } else {
+        tabBadge.hidden = true;
+        tabBadge.textContent = '';
+      }
+    }
+  }
+
+  function renderSplitPickerSelect() {
+    var WS = window.WorkoutSplit;
+    var sel = document.getElementById('create-split-select');
+    if (!WS || !sel) return;
+    var lib = WS.loadLibrary ? WS.loadLibrary() : null;
+    var splits = lib && lib.splits ? lib.splits : [];
+    var activeId = WS.getActiveSplitId ? WS.getActiveSplitId() : null;
+    var unseen = lib && lib.unseenSplitIds ? lib.unseenSplitIds : [];
+    sel.innerHTML = '';
+    splits.forEach(function (s) {
+      var opt = document.createElement('option');
+      opt.value = s.id;
+      var label = s.programName || 'Untitled split';
+      if (s.source === 'ai') label += ' · AI';
+      if (unseen.indexOf(s.id) >= 0) label += ' · New';
+      opt.textContent = label;
+      if (s.id === activeId) opt.selected = true;
+      sel.appendChild(opt);
+    });
+    refreshSplitBadges();
+  }
+
+  function applyTodayRoutineIfEmpty(force, withRecommendations) {
+    var WS = window.WorkoutSplit;
+    if (!WS || !workoutTracker) return Promise.resolve();
+    if (!force && workoutTracker.hasExercises()) return Promise.resolve();
     var d = dateFromDatetimeLocal(datetimeInput && datetimeInput.value);
     var exercises = WS.exercisesForDate(null, d);
-    if (!exercises.length && !force) return;
-    if (exercises.length) workoutTracker.loadFromLegacyExercises(exercises);
+    if (!exercises.length && !force) return Promise.resolve();
+
     var titleEl = document.getElementById('create-session-title');
     if (titleEl && !titleEl.value.trim()) {
       titleEl.value = WS.defaultSessionTitle(null, d);
@@ -122,7 +176,39 @@
     if (datetimeInput && datetimeInput.value) {
       workoutTracker.setWorkoutDate(datetimeInput.value.split('T')[0]);
     }
-    updateLiftsCount();
+
+    if (!exercises.length) {
+      updateLiftsCount();
+      return Promise.resolve();
+    }
+
+    var shouldRecommend = withRecommendations !== false && (force || withRecommendations === true);
+    if (!shouldRecommend || !window.SplitRecommendations) {
+      workoutTracker.loadFromLegacyExercises(exercises);
+      updateLiftsCount();
+      refreshOverloadCoachUi();
+      return Promise.resolve();
+    }
+
+    showRockySplitRec('Loading Rocky\'s recommendations…', 'Using your split and past workouts.');
+    return window.SplitRecommendations.fetchForExercises(exercises)
+      .then(function (result) {
+        var merged = window.SplitRecommendations.applyToExercises(exercises, result.recommendations);
+        workoutTracker.loadFromLegacyExercises(merged);
+        var msg = window.SplitRecommendations.formatBannerMessage(result, exercises);
+        showRockySplitRec(msg.title, msg.body);
+        updateLiftsCount();
+        refreshOverloadCoachUi();
+      })
+      .catch(function () {
+        workoutTracker.loadFromLegacyExercises(exercises);
+        showRockySplitRec(
+          'Split loaded',
+          'Could not reach Rocky for load suggestions right now. Template weights from your split are in the logbook.'
+        );
+        updateLiftsCount();
+        refreshOverloadCoachUi();
+      });
   }
 
   function trackingSubPanelFromHash() {
@@ -178,7 +264,12 @@
       activateTrackingSubPanel(opts.trackingPanel || trackingSubPanelFromHash());
     }
     if (isSplit) {
+      if (window.WorkoutSplit && window.WorkoutSplit.markAllSplitsSeen) {
+        window.WorkoutSplit.markAllSplitsSeen();
+      }
       loadSplitEditorForm();
+      renderSplitPickerSelect();
+      refreshSplitBadges();
     }
   }
 
@@ -354,12 +445,63 @@
   try {
     if (sessionStorage.getItem('strongman-apply-today-routine') === '1') {
       sessionStorage.removeItem('strongman-apply-today-routine');
-      applyTodayRoutineIfEmpty(true);
+      applyTodayRoutineIfEmpty(true, true);
     } else {
-      applyTodayRoutineIfEmpty(false);
+      applyTodayRoutineIfEmpty(false, false);
     }
   } catch (eApply) {
-    applyTodayRoutineIfEmpty(false);
+    applyTodayRoutineIfEmpty(false, false);
+  }
+
+  renderSplitPickerSelect();
+  window.addEventListener('strongman:splits-updated', function () {
+    renderSplitPickerSelect();
+    if (panelSplit && !panelSplit.hidden) loadSplitEditorForm();
+  });
+
+  var splitSelectEl = document.getElementById('create-split-select');
+  if (splitSelectEl && window.WorkoutSplit) {
+    splitSelectEl.addEventListener('change', function () {
+      var id = splitSelectEl.value;
+      if (!id) return;
+      window.WorkoutSplit.setActiveSplit(id);
+      loadSplitEditorForm();
+      applySplitAutofillFromPicker();
+    });
+  }
+  var splitNewBtn = document.getElementById('create-split-new-btn');
+  if (splitNewBtn && window.WorkoutSplit) {
+    splitNewBtn.addEventListener('click', function () {
+      var name = window.prompt('Name for your new split:', 'My split');
+      if (name == null) return;
+      window.WorkoutSplit.createSplit(name.trim() || 'My split');
+      loadSplitEditorForm();
+      renderSplitPickerSelect();
+    });
+  }
+  var splitDupBtn = document.getElementById('create-split-dup-btn');
+  if (splitDupBtn && window.WorkoutSplit) {
+    splitDupBtn.addEventListener('click', function () {
+      var id = window.WorkoutSplit.getActiveSplitId();
+      if (!id) return;
+      window.WorkoutSplit.duplicateSplit(id);
+      loadSplitEditorForm();
+      renderSplitPickerSelect();
+    });
+  }
+  var splitDelBtn = document.getElementById('create-split-del-btn');
+  if (splitDelBtn && window.WorkoutSplit) {
+    splitDelBtn.addEventListener('click', function () {
+      var id = window.WorkoutSplit.getActiveSplitId();
+      if (!id) return;
+      if (!window.confirm('Delete this split? You need at least one split saved.')) return;
+      if (!window.WorkoutSplit.deleteSplit(id)) {
+        window.alert('Keep at least one split.');
+        return;
+      }
+      loadSplitEditorForm();
+      renderSplitPickerSelect();
+    });
   }
 
   var splitFormEl = document.getElementById('create-split-form');
@@ -383,8 +525,9 @@
         days: days,
         dayPlans: parseSplitRoutineTextareas()
       });
+      renderSplitPickerSelect();
       if (splitMessageEl) {
-        splitMessageEl.textContent = 'Split saved. Log workout uses this for “Split / focus”.';
+        splitMessageEl.textContent = 'Split saved. Start workout from Home uses this routine for today.';
         splitMessageEl.hidden = false;
       }
       applySplitAutofillFromPicker();
@@ -2361,7 +2504,7 @@
         return workoutTracker;
       },
       bootstrapSession: function () {
-        applyTodayRoutineIfEmpty(true);
+        applyTodayRoutineIfEmpty(true, true);
       },
       refreshCoach: refreshOverloadCoachUi,
       onFinish: function (meta) {

@@ -433,9 +433,12 @@
       saveBtn.className = 'coach-primary-btn coach-routine-save';
       saveBtn.textContent = 'Save to split';
       saveBtn.addEventListener('click', function () {
-        window.WorkoutSplit.saveRoutine(msg.routineParsed);
-        saveBtn.textContent = 'Saved ✓';
+        window.WorkoutSplit.saveRoutine(msg.routineParsed, { asNew: true, source: 'ai' });
+        saveBtn.textContent = 'Saved to splits ✓';
         saveBtn.disabled = true;
+        try {
+          window.dispatchEvent(new CustomEvent('strongman:splits-updated'));
+        } catch (eSave) {}
       });
       card.appendChild(saveBtn);
       var logLink = document.createElement('a');
@@ -476,6 +479,12 @@
                 bodyText: plain,
                 source: 'ai',
               });
+            }
+            if (window.WorkoutSplit && typeof window.WorkoutSplit.importAiWorkout === 'function' && workout) {
+              window.WorkoutSplit.importAiWorkout(workout, { activate: false });
+              try {
+                window.dispatchEvent(new CustomEvent('strongman:splits-updated'));
+              } catch (eImp) {}
             }
           },
         })

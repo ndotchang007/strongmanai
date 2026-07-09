@@ -813,6 +813,47 @@ button.sidebar-profile
     color: var(--text-muted);
     line-height: 1.35;
 }
+.dash-split-picker-row
+{
+    margin: 0 0 0.75rem;
+}
+
+.dash-split-select
+{
+    width: 100%;
+    max-width: 22rem;
+    padding: 0.55rem 0.7rem;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(0, 0, 0, 0.25);
+    color: var(--text-primary, #fff);
+    font: inherit;
+    font-size: 0.88rem;
+}
+
+.dash-section-title .split-tab-badge
+{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.1rem;
+    height: 1.1rem;
+    margin-left: 0.4rem;
+    padding: 0 0.3rem;
+    border-radius: 999px;
+    background: #ff8c00;
+    color: #111;
+    font-size: 0.62rem;
+    font-weight: 700;
+    line-height: 1;
+    vertical-align: middle;
+}
+
+.dash-section-title .split-tab-badge[hidden]
+{
+    display: none !important;
+}
+
 .dash-split-grid
 {
     display: flex;

@@ -1915,6 +1915,40 @@ header.site-header
     color: var(--text-primary);
 }
 
+.page3-cta-rotate
+{
+    display: inline-block;
+    vertical-align: bottom;
+    position: relative;
+    min-height: 1.1em;
+    margin: 0 0.2em;
+    color: var(--accent);
+    transition: width 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.page3-cta-rotate-word
+{
+    display: inline-block;
+    white-space: nowrap;
+    background: linear-gradient(135deg, var(--accent) 0%, #ffb347 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.page3-cta-rotate-word--out
+{
+    opacity: 0;
+    transform: translateY(-0.4em);
+}
+
+.page3-cta-rotate-word--in
+{
+    opacity: 0;
+    transform: translateY(0.4em);
+}
+
 .page3-cta-sub
 {
     margin: 0 auto 1.35rem;
@@ -2308,7 +2342,34 @@ header.site-header
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    margin-bottom: 1.25rem;
+    margin-bottom: 1rem;
+}
+
+.hero-slogan
+{
+    margin: 0 0 1rem;
+    font-family: var(--font-display);
+    font-size: clamp(0.92rem, 2.2vw, 1.12rem);
+    font-weight: 600;
+    font-style: italic;
+    letter-spacing: 0.04em;
+    color: var(--text-secondary);
+}
+
+.hero-slogan::before
+{
+    content: "— ";
+    color: var(--accent);
+    font-style: normal;
+    letter-spacing: 0;
+}
+
+.hero-slogan::after
+{
+    content: " —";
+    color: var(--accent);
+    font-style: normal;
+    letter-spacing: 0;
 }
 
 .hero-badge
@@ -2875,6 +2936,8 @@ header.site-header
     .page3-scrub-lead,
     .page3-stat-line { opacity: 1 !important; transform: none !important; }
     .page3-cta-block { opacity: 1 !important; transform: none !important; }
+    .page3-cta-rotate-word { transition: none !important; }
+    .page3-cta-rotate { transition: none !important; }
     .page3-scrub-stage--cta { opacity: 1 !important; pointer-events: auto !important; }
     .page3-scrub-stage--stats { opacity: 1 !important; }
     .site-footer--scroll-gated { display: block !important; opacity: 1 !important; transform: none !important; }

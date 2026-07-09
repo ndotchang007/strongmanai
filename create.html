@@ -49,7 +49,7 @@
                 <nav class="create-mode-tabs" role="tablist" aria-label="Log and progress">
                     <button type="button" class="create-mode-tab active" role="tab" aria-selected="true" aria-controls="create-panel-workout" id="create-tab-workout" data-mode="workout">Today's session</button>
                     <button type="button" class="create-mode-tab" role="tab" aria-selected="false" aria-controls="create-panel-tracking" id="create-tab-tracking" data-mode="tracking">Progress</button>
-                    <button type="button" class="create-mode-tab" role="tab" aria-selected="false" aria-controls="create-panel-split" id="create-tab-split" data-mode="split">Workout split</button>
+                    <button type="button" class="create-mode-tab" role="tab" aria-selected="false" aria-controls="create-panel-split" id="create-tab-split" data-mode="split">Workout split<span class="split-tab-badge" id="create-split-tab-badge" hidden aria-label="New AI split saved"></span></button>
                 </nav>
                 <div class="create-mode-rule" aria-hidden="true"></div>
             </header>
@@ -111,6 +111,10 @@
                 </div>
 
                 <section class="session-zone session-zone--logbook session-logbook-zone">
+                    <div class="create-rocky-split-rec" id="create-rocky-split-rec" hidden role="status" aria-live="polite">
+                        <p class="create-rocky-split-rec-title" id="create-rocky-split-rec-title"></p>
+                        <pre class="create-rocky-split-rec-body" id="create-rocky-split-rec-body"></pre>
+                    </div>
                     <section class="logbook-mode-hero" id="logbook-mode-hero" aria-labelledby="logbook-mode-hero-title">
                         <h2 class="logbook-mode-hero-title" id="logbook-mode-hero-title">Ready to train?</h2>
                         <p class="logbook-mode-hero-lede">Full-screen workout mode with rest timer, Rocky coach, and every logging view — Focus, Cards, Sheet, Timeline, and Map.</p>
@@ -605,7 +609,16 @@
                 <form class="create-form create-form--split" id="create-split-form">
                     <div class="create-split-lede">
                         <h2 class="create-split-heading">Weekly split</h2>
-                        <p class="create-split-hint">Names for Monday → Sunday. Used on Home and to fill “Split / focus” when you log a workout.</p>
+                        <p class="create-split-hint">Build one or more routines. Pick the active split — Home and “Start workout” use it to pre-fill today’s exercises.</p>
+                    </div>
+                    <div class="create-split-picker" id="create-split-picker">
+                        <label class="create-split-picker-label" for="create-split-select">Active split</label>
+                        <div class="create-split-picker-row">
+                            <select id="create-split-select" class="create-input create-split-select" aria-label="Select workout split"></select>
+                            <button type="button" class="create-split-picker-btn" id="create-split-new-btn">New</button>
+                            <button type="button" class="create-split-picker-btn" id="create-split-dup-btn">Duplicate</button>
+                            <button type="button" class="create-split-picker-btn create-split-picker-btn--danger" id="create-split-del-btn">Delete</button>
+                        </div>
                     </div>
                     <div class="create-field">
                         <label for="create-split-program-name">Program name <span class="create-optional">(optional)</span></label>
@@ -1018,6 +1031,7 @@
     <script src="/shared/workout-archive.js"></script>
     <script src="/shared/site-footer-email.js"></script>
     <script src="/shared/workout-split.js"></script>
+    <script src="/shared/split-recommendations.js"></script>
     <script src="/shared/routine-import.js"></script>
     <script src="/shared/workout-log.js"></script>
     <script src="/shared/pr-log.js"></script>

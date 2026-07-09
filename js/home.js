@@ -191,6 +191,44 @@
     }
   }
 
+  function refreshSplitBadges() {
+    var WS = window.WorkoutSplit;
+    if (!WS) return;
+    var count = WS.getUnseenSplitCount ? WS.getUnseenSplitCount() : 0;
+    var badge = document.getElementById('dash-split-badge');
+    if (badge) {
+      if (count > 0) {
+        badge.hidden = false;
+        badge.textContent = count > 9 ? '9+' : String(count);
+      } else {
+        badge.hidden = true;
+        badge.textContent = '';
+      }
+    }
+  }
+
+  function renderDashSplitSelect() {
+    var WS = window.WorkoutSplit;
+    var sel = document.getElementById('dash-split-select');
+    if (!WS || !sel) return;
+    var lib = WS.loadLibrary ? WS.loadLibrary() : null;
+    var splits = lib && lib.splits ? lib.splits : [];
+    var activeId = WS.getActiveSplitId ? WS.getActiveSplitId() : null;
+    var unseen = lib && lib.unseenSplitIds ? lib.unseenSplitIds : [];
+    sel.innerHTML = '';
+    splits.forEach(function (s) {
+      var opt = document.createElement('option');
+      opt.value = s.id;
+      var label = s.programName || 'Untitled split';
+      if (s.source === 'ai') label += ' · AI';
+      if (unseen.indexOf(s.id) >= 0) label += ' · New';
+      opt.textContent = label;
+      if (s.id === activeId) opt.selected = true;
+      sel.appendChild(opt);
+    });
+    refreshSplitBadges();
+  }
+
   function renderSplitPreview() {
     var WS = window.WorkoutSplit;
     if (!WS || !daySplitEl) return;
@@ -205,6 +243,7 @@
     }
     if (splitSectionEl) splitSectionEl.hidden = false;
     if (topBar) topBar.hidden = true;
+    renderDashSplitSelect();
     var state = WS.load();
     var todayIdx = WS.mondayIndexFromDate(new Date());
     if (weekComplication) weekComplication.hidden = false;
@@ -426,6 +465,20 @@
       refreshWorkoutCta();
     }
   });
+
+  window.addEventListener('strongman:splits-updated', function () {
+    renderSplitPreview();
+  });
+
+  var dashSplitSelect = document.getElementById('dash-split-select');
+  if (dashSplitSelect && window.WorkoutSplit) {
+    dashSplitSelect.addEventListener('change', function () {
+      var id = dashSplitSelect.value;
+      if (!id) return;
+      window.WorkoutSplit.setActiveSplit(id);
+      renderSplitPreview();
+    });
+  }
 
   window.refreshHomeWorkoutCta = refreshWorkoutCta;
 })();
