@@ -1,5 +1,5 @@
 (function () {
-  var STORAGE_KEY = 'strongman-coach-memory';
+  var STORAGE_BASE = 'strongman-coach-memory';
 
   var SIGNAL_DEFS = [
     {
@@ -69,18 +69,193 @@
     },
   ];
 
-  function load() {
+  var syncInflight = null;
+  var pushTimer = null;
+
+  function userSuffix() {
     try {
-      var raw = sessionStorage.getItem(STORAGE_KEY);
-      if (raw) return JSON.parse(raw);
+      if (typeof window.getCurrentUser !== 'function') return '_guest';
+      var u = window.getCurrentUser();
+      return u && u.id != null ? '_u' + u.id : '_guest';
+    } catch (e) {
+      return '_guest';
+    }
+  }
+
+  function storageKey() {
+    return STORAGE_BASE + userSuffix();
+  }
+
+  function canSync() {
+    return !!(
+      window.isLoggedIn &&
+      window.isLoggedIn() &&
+      window.getCurrentUser &&
+      window.apiGet &&
+      window.apiPut
+    );
+  }
+
+  function defaultStore() {
+    return { items: [], updatedAt: null, _syncPending: false };
+  }
+
+  function loadStore() {
+    try {
+      var raw = localStorage.getItem(storageKey());
+      if (!raw) return defaultStore();
+      var data = JSON.parse(raw);
+      if (!data || typeof data !== 'object') return defaultStore();
+      if (!Array.isArray(data.items)) {
+        if (Array.isArray(data)) return { items: data, updatedAt: null, _syncPending: false };
+        return defaultStore();
+      }
+      return data;
+    } catch (e) {
+      return defaultStore();
+    }
+  }
+
+  function saveStore(store, opts) {
+    opts = opts || {};
+    try {
+      if (!opts.skipTouch) store.updatedAt = new Date().toISOString();
+      if (!opts.skipSyncFlag) store._syncPending = true;
+      localStorage.setItem(storageKey(), JSON.stringify(store));
+      if (!opts.skipPush) schedulePushToServer();
     } catch (e) {}
-    return [];
+  }
+
+  function stripSyncMeta(store) {
+    return {
+      items: Array.isArray(store.items) ? store.items.slice(-12) : [],
+      updatedAt: store.updatedAt || null,
+    };
+  }
+
+  function storeTimestamp(store) {
+    if (!store) return 0;
+    var t = store.updatedAt || store.serverUpdatedAt;
+    if (!t) return 0;
+    var ms = Date.parse(t);
+    return isNaN(ms) ? 0 : ms;
+  }
+
+  function applyFromServer(store) {
+    if (!store || typeof store !== 'object') return;
+    var next = {
+      items: Array.isArray(store.items) ? store.items.slice(-12) : [],
+      updatedAt: store.updatedAt || store.serverUpdatedAt || new Date().toISOString(),
+      serverUpdatedAt: store.serverUpdatedAt || store.updatedAt || null,
+      _syncPending: false,
+    };
+    try {
+      localStorage.setItem(storageKey(), JSON.stringify(next));
+    } catch (e) {}
+  }
+
+  function load() {
+    return loadStore().items.slice();
   }
 
   function save(items) {
-    try {
-      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(items.slice(-12)));
-    } catch (e) {}
+    var store = loadStore();
+    store.items = (items || []).slice(-12);
+    saveStore(store);
+    return store.items.slice();
+  }
+
+  function pushToServerAsync(store) {
+    if (!canSync()) return Promise.resolve(false);
+    store = store || loadStore();
+    var u = window.getCurrentUser();
+    if (!u || u.id == null) return Promise.resolve(false);
+    var payload = stripSyncMeta(store);
+    return window
+      .apiPut('/users/' + u.id + '/coach-memory', { payload: payload })
+      .then(function (res) {
+        if (!res.ok) return false;
+        return res.json();
+      })
+      .then(function (saved) {
+        if (!saved) return false;
+        applyFromServer(saved);
+        return true;
+      })
+      .catch(function () {
+        return false;
+      });
+  }
+
+  function pullFromServerAsync() {
+    if (!canSync()) return Promise.resolve(null);
+    var u = window.getCurrentUser();
+    if (!u || u.id == null) return Promise.resolve(null);
+    return window
+      .apiGet('/users/' + u.id + '/coach-memory')
+      .then(function (res) {
+        if (!res.ok) throw new Error('bad status');
+        return res.json();
+      })
+      .then(function (body) {
+        return body && typeof body === 'object' ? body : null;
+      })
+      .catch(function () {
+        return null;
+      });
+  }
+
+  function schedulePushToServer() {
+    if (!canSync()) return;
+    if (pushTimer) clearTimeout(pushTimer);
+    pushTimer = setTimeout(function () {
+      pushTimer = null;
+      pushToServerAsync();
+    }, 600);
+  }
+
+  function syncFromServerAsync() {
+    if (!canSync()) return Promise.resolve(false);
+    if (syncInflight) return syncInflight;
+    syncInflight = pullFromServerAsync()
+      .then(function (serverStore) {
+        var localStore = loadStore();
+        var localHasItems = localStore.items && localStore.items.length;
+        if (!serverStore && localHasItems) {
+          return pushToServerAsync(localStore);
+        }
+        if (serverStore && !localHasItems) {
+          applyFromServer(serverStore);
+          return true;
+        }
+        if (serverStore && localHasItems) {
+          var localTs = storeTimestamp(localStore);
+          var serverTs = storeTimestamp(serverStore);
+          if (localStore._syncPending || localTs > serverTs) {
+            return pushToServerAsync(localStore);
+          }
+          if (serverTs > localTs) {
+            applyFromServer(serverStore);
+            return true;
+          }
+          if (localStore._syncPending) return pushToServerAsync(localStore);
+          return true;
+        }
+        return true;
+      })
+      .then(function (ok) {
+        syncInflight = null;
+        return !!ok;
+      })
+      .catch(function () {
+        syncInflight = null;
+        return false;
+      });
+    return syncInflight;
+  }
+
+  function onUserChanged() {
+    if (canSync()) syncFromServerAsync();
   }
 
   function snippetFromMessage(text, maxLen) {
@@ -122,20 +297,16 @@
           break;
         }
       }
-      if (idx >= 0) {
-        items[idx] = hit;
-      } else {
-        items.push(hit);
-      }
+      if (idx >= 0) items[idx] = hit;
+      else items.push(hit);
     });
-    save(items);
-    return items;
+    return save(items);
   }
 
   function clear() {
-    try {
-      sessionStorage.removeItem(STORAGE_KEY);
-    } catch (e) {}
+    var store = defaultStore();
+    saveStore(store, { skipSyncFlag: false });
+    if (canSync()) schedulePushToServer();
     return [];
   }
 
@@ -159,5 +330,7 @@
     scanMessage: scanMessage,
     buildPromptBlock: buildPromptBlock,
     SIGNAL_DEFS: SIGNAL_DEFS,
+    syncFromServerAsync: syncFromServerAsync,
+    onUserChanged: onUserChanged,
   };
 })();

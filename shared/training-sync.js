@@ -20,6 +20,15 @@
     if (window.PRLog && typeof window.PRLog.onUserChanged === 'function') {
       window.PRLog.onUserChanged(u.id);
     }
+    if (window.WorkoutSplit && typeof window.WorkoutSplit.onUserChanged === 'function') {
+      window.WorkoutSplit.onUserChanged(u.id);
+    }
+    if (window.CoachMemory && typeof window.CoachMemory.onUserChanged === 'function') {
+      window.CoachMemory.onUserChanged();
+    }
+    if (window.WorkoutArchive && typeof window.WorkoutArchive.onUserChanged === 'function') {
+      window.WorkoutArchive.onUserChanged();
+    }
     if (window.WorkoutLog && typeof window.WorkoutLog.invalidateCache === 'function') {
       window.WorkoutLog.invalidateCache();
     }
@@ -28,7 +37,7 @@
   function syncAll(opts) {
     opts = opts || {};
     if (!canSync()) {
-      var skipped = { workouts: false, prs: false };
+      var skipped = { workouts: false, prs: false, splits: false, coachMemory: false, templates: false };
       if (opts.callback) opts.callback(skipped);
       return Promise.resolve(skipped);
     }
@@ -46,6 +55,9 @@
 
     var wl = window.WorkoutLog;
     var pr = window.PRLog;
+    var ws = window.WorkoutSplit;
+    var cm = window.CoachMemory;
+    var wa = window.WorkoutArchive;
     var workoutsP =
       wl && typeof wl.syncFromServerAsync === 'function'
         ? wl.syncFromServerAsync()
@@ -58,7 +70,31 @@
             ? pr.syncFromServerAsync()
             : Promise.resolve(false);
         return prsP.then(function (prsOk) {
-          return { workouts: workoutsOk, prs: prsOk };
+          var splitsP =
+            ws && typeof ws.syncFromServerAsync === 'function'
+              ? ws.syncFromServerAsync()
+              : Promise.resolve(false);
+          return splitsP.then(function (splitsOk) {
+            var coachP =
+              cm && typeof cm.syncFromServerAsync === 'function'
+                ? cm.syncFromServerAsync()
+                : Promise.resolve(false);
+            return coachP.then(function (coachOk) {
+              var templatesP =
+                wa && typeof wa.syncFromServerAsync === 'function'
+                  ? wa.syncFromServerAsync()
+                  : Promise.resolve(false);
+              return templatesP.then(function (templatesOk) {
+                return {
+                  workouts: workoutsOk,
+                  prs: prsOk,
+                  splits: splitsOk,
+                  coachMemory: coachOk,
+                  templates: templatesOk,
+                };
+              });
+            });
+          });
         });
       })
       .then(function (result) {
@@ -73,7 +109,7 @@
       })
       .catch(function () {
         syncInflight = null;
-        var fail = { workouts: false, prs: false };
+        var fail = { workouts: false, prs: false, splits: false, coachMemory: false, templates: false };
         if (opts.callback) opts.callback(fail);
         return fail;
       });

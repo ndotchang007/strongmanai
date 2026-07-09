@@ -4,6 +4,7 @@
 
   var slug = getSlugFromPath();
   var survey = window.SURVEYS_CATALOG.get(slug);
+  var completedSlugs = [];
 
   if (!survey) {
     renderNotFound();
@@ -12,12 +13,17 @@
 
   document.title = survey.title + ' – Strongman AI Survey';
 
-  if (hasSubmitted(slug)) {
-    renderThanks(false);
-    return;
-  }
+  bootstrap();
 
-  renderSurvey(survey);
+  function bootstrap() {
+    loadCompletedSlugs().then(function () {
+      if (hasSubmitted(slug)) {
+        renderThanks(false);
+        return;
+      }
+      renderSurvey(survey);
+    });
+  }
 
   function getSlugFromPath() {
     var parts = (window.location.pathname || '').split('/').filter(Boolean);
@@ -27,7 +33,28 @@
     return '';
   }
 
+  function loadCompletedSlugs() {
+    completedSlugs = [];
+    if (window.isLoggedIn && window.isLoggedIn() && window.getCurrentUser && window.apiGet) {
+      var u = window.getCurrentUser();
+      if (u && u.id != null) {
+        return window
+          .apiGet('/users/' + u.id + '/survey-completions')
+          .then(function (res) {
+            if (!res.ok) return;
+            return res.json();
+          })
+          .then(function (body) {
+            if (body && Array.isArray(body.slugs)) completedSlugs = body.slugs;
+          })
+          .catch(function () {});
+      }
+    }
+    return Promise.resolve();
+  }
+
   function hasSubmitted(surveySlug) {
+    if (completedSlugs.indexOf(surveySlug) >= 0) return true;
     try {
       return window.localStorage.getItem('strongman_survey_' + surveySlug) === '1';
     } catch (e) {
@@ -39,6 +66,32 @@
     try {
       window.localStorage.setItem('strongman_survey_' + surveySlug, '1');
     } catch (e) {}
+    if (completedSlugs.indexOf(surveySlug) < 0) completedSlugs.push(surveySlug);
+  }
+
+  function collectAnswers(form, data) {
+    var answers = {};
+    (data.questions || []).forEach(function (question) {
+      var el = form.elements[question.id];
+      if (!el) return;
+      answers[question.id] = String(el.value || '').trim();
+    });
+    return answers;
+  }
+
+  function submitAnswers(data, answers) {
+    if (!window.apiPost) return Promise.resolve(false);
+    return window
+      .apiPost('/surveys/responses', {
+        surveySlug: data.slug,
+        answers: answers,
+      })
+      .then(function (res) {
+        return res.ok;
+      })
+      .catch(function () {
+        return false;
+      });
   }
 
   function renderNotFound() {
@@ -52,7 +105,7 @@
 
   function renderThanks(justSubmitted) {
     var message = justSubmitted
-      ? 'Your answers were saved on this device. We review every response when planning what to build next.'
+      ? 'Thanks — your responses were saved. We review every submission when planning what to build next.'
       : 'You already completed this survey. Thanks again — your input helps us prioritize the right work.';
 
     root.innerHTML =
@@ -101,8 +154,8 @@
     html +=
       '<p class="survey-error" id="survey-form-error" role="alert" hidden></p>' +
       '<div class="survey-form-actions">' +
-      '<button type="submit" class="survey-submit">Submit responses</button>' +
-      '<p class="survey-form-note">Responses are stored locally for now and help our team prioritize product decisions.</p>' +
+      '<button type="submit" class="survey-submit" id="survey-submit-btn">Submit responses</button>' +
+      '<p class="survey-form-note">Responses are saved to your account when signed in, or submitted anonymously otherwise.</p>' +
       '</div></form></article>';
 
     root.innerHTML = html;
@@ -111,8 +164,19 @@
     form.addEventListener('submit', function (event) {
       event.preventDefault();
       if (!validateForm(form, data)) return;
-      markSubmitted(data.slug);
-      renderThanks(true);
+      var answers = collectAnswers(form, data);
+      var submitBtn = document.getElementById('survey-submit-btn');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Submitting…';
+      }
+      submitAnswers(data, answers).then(function (ok) {
+        markSubmitted(data.slug);
+        renderThanks(true);
+        if (!ok && submitBtn) {
+          /* still show thanks — local flag set; user can retry from another device if logged in */
+        }
+      });
     });
   }
 

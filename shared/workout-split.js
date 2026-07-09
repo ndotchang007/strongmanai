@@ -167,13 +167,166 @@
     }
   }
 
-  function saveLibrary(lib) {
+  function saveLibrary(lib, opts) {
+    opts = opts || {};
     try {
+      if (!opts.skipTouch) {
+        lib.updatedAt = new Date().toISOString();
+      }
+      if (!opts.skipSyncFlag) {
+        lib._syncPending = true;
+      }
       localStorage.setItem(getStorageKey(), JSON.stringify(lib));
       try {
         window.dispatchEvent(new CustomEvent('strongman:splits-updated'));
       } catch (e2) {}
+      if (!opts.skipPush) {
+        schedulePushToServer();
+      }
     } catch (e) {}
+  }
+
+  var syncInflight = null;
+  var pushTimer = null;
+
+  function canSync() {
+    return !!(
+      window.isLoggedIn &&
+      window.isLoggedIn() &&
+      window.getCurrentUser &&
+      window.apiGet &&
+      window.apiPut
+    );
+  }
+
+  function stripSyncMeta(lib) {
+    if (!lib || typeof lib !== 'object') return lib;
+    var copy = JSON.parse(JSON.stringify(lib));
+    delete copy._syncPending;
+    delete copy.serverUpdatedAt;
+    return copy;
+  }
+
+  function libraryTimestamp(lib) {
+    if (!lib) return 0;
+    var t = lib.updatedAt || lib.serverUpdatedAt;
+    if (!t) return 0;
+    var ms = Date.parse(t);
+    return isNaN(ms) ? 0 : ms;
+  }
+
+  function applyLibraryFromServer(lib) {
+    if (!lib || typeof lib !== 'object') return;
+    var next = stripSyncMeta(lib);
+    next._syncPending = false;
+    if (lib.serverUpdatedAt) next.serverUpdatedAt = lib.serverUpdatedAt;
+    if (!next.updatedAt && lib.serverUpdatedAt) next.updatedAt = lib.serverUpdatedAt;
+    try {
+      localStorage.setItem(getStorageKey(), JSON.stringify(next));
+      try {
+        window.dispatchEvent(new CustomEvent('strongman:splits-updated'));
+      } catch (e2) {}
+    } catch (e) {}
+  }
+
+  function pushToServerAsync(lib) {
+    if (!canSync()) return Promise.resolve(false);
+    lib = lib || loadLibrary();
+    var u = window.getCurrentUser();
+    if (!u || u.id == null) return Promise.resolve(false);
+    var payload = stripSyncMeta(lib);
+    return window
+      .apiPut('/users/' + u.id + '/workout-splits', { payload: payload })
+      .then(function (res) {
+        if (!res.ok) return false;
+        return res.json();
+      })
+      .then(function (saved) {
+        if (!saved) return false;
+        applyLibraryFromServer(saved);
+        return true;
+      })
+      .catch(function () {
+        return false;
+      });
+  }
+
+  function pullFromServerAsync() {
+    if (!canSync()) return Promise.resolve(null);
+    var u = window.getCurrentUser();
+    if (!u || u.id == null) return Promise.resolve(null);
+    return window
+      .apiGet('/users/' + u.id + '/workout-splits')
+      .then(function (res) {
+        if (!res.ok) throw new Error('bad status');
+        return res.json();
+      })
+      .then(function (body) {
+        if (body == null) return null;
+        if (typeof body !== 'object') return null;
+        return body;
+      })
+      .catch(function () {
+        return null;
+      });
+  }
+
+  function schedulePushToServer() {
+    if (!canSync()) return;
+    if (pushTimer) clearTimeout(pushTimer);
+    pushTimer = setTimeout(function () {
+      pushTimer = null;
+      pushToServerAsync();
+    }, 600);
+  }
+
+  function syncFromServerAsync() {
+    if (!canSync()) return Promise.resolve(false);
+    if (syncInflight) return syncInflight;
+    syncInflight = pullFromServerAsync()
+      .then(function (serverLib) {
+        var localConfigured = hasUserConfigured();
+        var localLib = localConfigured ? loadLibrary() : null;
+        if (!serverLib && localConfigured && localLib) {
+          return pushToServerAsync(localLib);
+        }
+        if (serverLib && !localConfigured) {
+          applyLibraryFromServer(serverLib);
+          return true;
+        }
+        if (serverLib && localLib) {
+          var localTs = libraryTimestamp(localLib);
+          var serverTs = libraryTimestamp(serverLib);
+          if (localLib._syncPending || localTs > serverTs) {
+            return pushToServerAsync(localLib);
+          }
+          if (serverTs > localTs) {
+            applyLibraryFromServer(serverLib);
+            return true;
+          }
+          if (localLib._syncPending) {
+            return pushToServerAsync(localLib);
+          }
+          return true;
+        }
+        return true;
+      })
+      .then(function (ok) {
+        syncInflight = null;
+        return !!ok;
+      })
+      .catch(function () {
+        syncInflight = null;
+        return false;
+      });
+    return syncInflight;
+  }
+
+  function onUserChanged(userId) {
+    migrateLegacyIfNeeded(storageKeyForUser(userId ? String(userId) : null));
+    if (canSync()) {
+      syncFromServerAsync();
+    }
   }
 
   function getActiveSplit(lib) {
@@ -503,5 +656,8 @@
     exercisesForDate: exercisesForDate,
     dayLetters: DAY_LETTERS,
     defaultDays: DEFAULT_DAYS,
+    syncFromServerAsync: syncFromServerAsync,
+    pushToServerAsync: pushToServerAsync,
+    onUserChanged: onUserChanged,
   };
 })();
