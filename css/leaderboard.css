@@ -63,6 +63,21 @@
     display: none !important;
 }
 
+.lb-board[hidden]
+{
+    display: none !important;
+}
+
+.lb-board-filters
+{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.65rem;
+    width: 100%;
+    margin-bottom: clamp(0.75rem, 1.5vw, 1rem);
+}
+
 .lb-table[hidden]
 {
     display: none !important;
@@ -426,6 +441,16 @@
     margin-top: 1rem;
 }
 
+.lb-user-rank--5
+{
+    grid-template-columns: 3.5rem 1fr auto auto auto;
+}
+
+.lb-user-rank--3
+{
+    grid-template-columns: 3.5rem 1fr auto;
+}
+
 .lb-user-rank-heading
 {
     margin: 0 0 0.45rem;
@@ -534,7 +559,8 @@
     color: var(--text-secondary);
 }
 
-.lb-message
+.lb-message,
+.lb-board-message
 {
     margin-top: 1rem;
     font-family: var(--font);
