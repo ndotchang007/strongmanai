@@ -49,6 +49,20 @@
     margin-bottom: clamp(1rem, 2vw, 1.5rem);
 }
 
+.lb-mode-panel
+{
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.65rem;
+    width: 100%;
+}
+
+.lb-mode-panel.is-visible
+{
+    display: flex;
+}
+
 .lb-filter-row
 {
     font-family: var(--font);
@@ -410,7 +424,6 @@
 .lb-user-rank
 {
     display: grid;
-    grid-template-columns: 3.5rem 1fr auto auto auto auto;
     align-items: center;
     gap: 0.5rem;
     padding: 0.85rem 1rem;
@@ -426,19 +439,42 @@
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.18);
 }
 
-.lb-user-rank--times,
-.lb-user-rank--streak
+.lb-user-rank[data-lb-mode="exercises"]
 {
-    grid-template-columns: 3.5rem 1fr auto auto;
+    grid-template-columns: 3.5rem 1fr auto auto auto;
 }
 
-.lb-user-rank .lb-ur-metric[hidden],
-.lb-user-rank .lb-ur-exercises[hidden]
+.lb-user-rank[data-lb-mode="streak"],
+.lb-user-rank[data-lb-mode="times"]
+{
+    grid-template-columns: 3.5rem 1fr auto;
+}
+
+.lb-user-rank[data-lb-mode="exercises"] .lb-ur-stat--metric
 {
     display: none;
 }
 
-.lb-user-rank .lb-ur-col-stat
+.lb-user-rank[data-lb-mode="streak"] .lb-ur-stat--exercises,
+.lb-user-rank[data-lb-mode="times"] .lb-ur-stat--exercises
+{
+    display: none;
+}
+
+.lb-ur-rank
+{
+    color: var(--text-muted);
+}
+
+.lb-ur-name
+{
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.lb-user-rank .lb-ur-stat
 {
     text-align: right;
     white-space: nowrap;
@@ -905,21 +941,21 @@
         max-height: calc(10 * 2.35rem + 2rem);
     }
 
-    .lb-table thead th:nth-child(4),
-    .lb-table thead th:nth-child(5),
-    .lb-table tbody td:nth-child(4),
-    .lb-table tbody td:nth-child(5)
+    .lb-table.lb-table--exercises thead th:nth-child(4),
+    .lb-table.lb-table--exercises tbody td:nth-child(4),
+    .lb-table.lb-table--exercises thead th:nth-child(5),
+    .lb-table.lb-table--exercises tbody td:nth-child(5)
     {
         display: none;
     }
 
-    .lb-user-rank--exercises
+    .lb-user-rank[data-lb-mode="exercises"]
     {
-        grid-template-columns: 2.5rem 1fr auto auto;
+        grid-template-columns: 2.5rem 1fr auto;
     }
 
-    .lb-user-rank--exercises #lb-user-weight,
-    .lb-user-rank--exercises #lb-user-reps
+    .lb-user-rank[data-lb-mode="exercises"] #lb-user-weight,
+    .lb-user-rank[data-lb-mode="exercises"] #lb-user-reps
     {
         display: none;
     }
@@ -958,12 +994,6 @@
         white-space: nowrap;
     }
 
-    .lb-table thead th:nth-child(4),
-    .lb-table tbody td:nth-child(4)
-    {
-        display: none;
-    }
-
     .lb-user-rank
     {
         display: flex;
@@ -972,11 +1002,6 @@
         align-items: baseline;
         font-size: 0.78rem;
         padding: 0.65rem 0.6rem;
-    }
-
-    .lb-user-rank #lb-user-skill
-    {
-        display: none;
     }
 
     .lb-comp-center
@@ -1002,7 +1027,7 @@
         min-width: 0;
     }
 
-    .lb-user-rank .lb-ur-col-stat
+    .lb-user-rank .lb-ur-stat
     {
         flex: 1 1 45%;
         text-align: right;
