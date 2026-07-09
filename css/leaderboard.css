@@ -1005,10 +1005,10 @@
         display: none;
     }
 
-    .lb-table.lb-table--exercises thead th:nth-child(4),
-    .lb-table.lb-table--exercises tbody td:nth-child(4),
-    .lb-table.lb-table--exercises thead th:nth-child(5),
-    .lb-table.lb-table--exercises tbody td:nth-child(5)
+    #lb-table-exercises thead th:nth-child(4),
+    #lb-table-exercises tbody td:nth-child(4),
+    #lb-table-exercises thead th:nth-child(5),
+    #lb-table-exercises tbody td:nth-child(5)
     {
         display: none;
     }
