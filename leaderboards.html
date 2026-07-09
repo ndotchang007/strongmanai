@@ -42,7 +42,7 @@
                         <span class="lb-filter-sep">/</span>
                         <button type="button" class="lb-filter-btn" data-group="mode" data-value="times">Times</button>
                     </div>
-                    <div class="lb-mode-panel is-visible" id="lb-panel-exercises" data-lb-panel="exercises">
+                    <div class="lb-mode-panel" id="lb-panel-exercises" data-lb-panel="exercises">
                         <div class="lb-picker-row">
                             <label class="lb-picker-label" for="lb-exercise-search">Exercise:</label>
                             <input type="search" class="lb-picker-input" id="lb-exercise-search" list="lb-exercise-suggestions" value="" placeholder="Search exercise…" autocomplete="off" spellcheck="false" aria-label="Exercise for leaderboard" aria-describedby="lb-exercise-hint">
@@ -50,7 +50,7 @@
                         </div>
                         <p class="lb-exercise-hint" id="lb-exercise-hint" hidden role="status" aria-live="polite"></p>
                     </div>
-                    <div class="lb-mode-panel" id="lb-panel-times" data-lb-panel="times">
+                    <div class="lb-mode-panel" id="lb-panel-times" data-lb-panel="times" hidden>
                         <div class="lb-picker-row lb-times-picker-row">
                             <label class="lb-picker-label" for="lb-time-sport">Sport:</label>
                             <select class="lb-picker-input lb-picker-select" id="lb-time-sport" aria-label="Sport for times leaderboard">
@@ -67,16 +67,43 @@
                 </div>
                 <div class="lb-table-wrap" id="lb-table-wrap">
                     <div class="lb-table-scroll" id="lb-table-scroll">
-                        <table class="lb-table">
+                        <table class="lb-table" id="lb-table-exercises" data-lb-table="exercises">
                             <thead>
-                                <tr id="lb-thead-row"></tr>
+                                <tr>
+                                    <th scope="col">Rank</th>
+                                    <th scope="col">Username</th>
+                                    <th scope="col">Intensity</th>
+                                    <th scope="col" id="lb-th-weight">Weight (lb)</th>
+                                    <th scope="col">Reps</th>
+                                </tr>
                             </thead>
-                            <tbody id="leaderboard-body">
-                            </tbody>
+                            <tbody id="leaderboard-body-exercises"></tbody>
+                        </table>
+                        <table class="lb-table" id="lb-table-streak" data-lb-table="streak" hidden>
+                            <thead>
+                                <tr>
+                                    <th scope="col">Rank</th>
+                                    <th scope="col">Username</th>
+                                    <th scope="col">Streak</th>
+                                </tr>
+                            </thead>
+                            <tbody id="leaderboard-body-streak"></tbody>
+                        </table>
+                        <table class="lb-table" id="lb-table-times" data-lb-table="times" hidden>
+                            <thead>
+                                <tr>
+                                    <th scope="col">Rank</th>
+                                    <th scope="col">Username</th>
+                                    <th scope="col">Time</th>
+                                </tr>
+                            </thead>
+                            <tbody id="leaderboard-body-times"></tbody>
                         </table>
                     </div>
                 </div>
                 <div class="lb-user-rank-wrap">
+                    <p class="lb-user-rank-heading">Your rank</p>
+                    <div class="lb-user-rank-labels" id="lb-user-rank-labels" data-lb-mode="exercises" aria-hidden="true"></div>
                     <div class="lb-user-rank" id="leaderboard-user-row" data-lb-mode="exercises" aria-label="Your rank">
                         <span class="lb-ur-rank" id="lb-user-rank-num">—</span>
                         <span class="lb-ur-name" id="lb-user-name">—</span>

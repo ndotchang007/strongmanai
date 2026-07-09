@@ -18,12 +18,22 @@
     });
   }
 
-  var tbody = document.getElementById('leaderboard-body');
+  var LB_MODES = ['exercises', 'streak', 'times'];
+  var LB_TABLE_IDS = {
+    exercises: 'lb-table-exercises',
+    streak: 'lb-table-streak',
+    times: 'lb-table-times'
+  };
+  var LB_TBODY_IDS = {
+    exercises: 'leaderboard-body-exercises',
+    streak: 'leaderboard-body-streak',
+    times: 'leaderboard-body-times'
+  };
+
   var messageEl = document.getElementById('leaderboard-message');
-  var lbTable = document.querySelector('.lb-table');
-  var theadRow = document.getElementById('lb-thead-row');
   var panelExercises = document.getElementById('lb-panel-exercises');
   var panelTimes = document.getElementById('lb-panel-times');
+  var userRankLabels = document.getElementById('lb-user-rank-labels');
   var exerciseSearch = document.getElementById('lb-exercise-search');
   var exerciseSuggestions = document.getElementById('lb-exercise-suggestions');
   var exerciseHint = document.getElementById('lb-exercise-hint');
@@ -117,6 +127,50 @@
     );
   }
 
+  function activeTbody() {
+    return document.getElementById(LB_TBODY_IDS[state.mode]);
+  }
+
+  function activeTableEl() {
+    return document.getElementById(LB_TABLE_IDS[state.mode]);
+  }
+
+  function columnLabelsForMode(mode) {
+    if (mode === 'exercises') {
+      return ['Rank', 'Username', 'Intensity', 'Weight (' + weightUnitsLabel() + ')', 'Reps'];
+    }
+    if (mode === 'streak') {
+      return ['Rank', 'Username', 'Streak'];
+    }
+    return ['Rank', 'Username', 'Time'];
+  }
+
+  function renderUserRankLabels(mode) {
+    if (!userRankLabels) return;
+    userRankLabels.setAttribute('data-lb-mode', mode);
+    userRankLabels.innerHTML = columnLabelsForMode(mode)
+      .map(function (label) {
+        return '<span>' + escapeHtml(label) + '</span>';
+      })
+      .join('');
+  }
+
+  function updateWeightHeaderLabel() {
+    var thWeight = document.getElementById('lb-th-weight');
+    if (thWeight) thWeight.textContent = 'Weight (' + weightUnitsLabel() + ')';
+  }
+
+  function applyModeLayout(mode) {
+    LB_MODES.forEach(function (m) {
+      var tableEl = document.getElementById(LB_TABLE_IDS[m]);
+      if (tableEl) tableEl.hidden = m !== mode;
+    });
+    if (userRankRow) userRankRow.setAttribute('data-lb-mode', mode);
+    updateWeightHeaderLabel();
+    renderUserRankLabels(mode);
+    updatePickerVisibility();
+  }
+
   function tableColspan(mode) {
     if (mode === 'exercises') return 5;
     return 3;
@@ -176,8 +230,13 @@
   function renderEmptyLeaderboard(message) {
     applyModeLayout(state.mode);
     clearUserRowPins();
-    if (tbody) {
-      tbody.innerHTML =
+    var tbodyEl = activeTbody();
+    LB_MODES.forEach(function (mode) {
+      var tb = document.getElementById(LB_TBODY_IDS[mode]);
+      if (tb) tb.innerHTML = '';
+    });
+    if (tbodyEl) {
+      tbodyEl.innerHTML =
         '<tr><td colspan="' +
         tableColspan(state.mode) +
         '">' +
@@ -333,38 +392,11 @@
     return '—';
   }
 
-  function renderTableHead(mode) {
-    if (!theadRow) return;
-    var headers = ['Rank', 'Username'];
-    if (mode === 'exercises') {
-      headers.push('Intensity', 'Weight (' + weightUnitsLabel() + ')', 'Reps');
-    } else if (mode === 'streak') {
-      headers.push('Streak');
-    } else {
-      headers.push('Time');
-    }
-    theadRow.innerHTML = headers
-      .map(function (label) {
-        return '<th scope="col">' + escapeHtml(label) + '</th>';
-      })
-      .join('');
-  }
-
   function updatePickerVisibility() {
     var mode = state.mode;
-    if (panelExercises) panelExercises.classList.toggle('is-visible', mode === 'exercises');
-    if (panelTimes) panelTimes.classList.toggle('is-visible', mode === 'times');
+    if (panelExercises) panelExercises.hidden = mode !== 'exercises';
+    if (panelTimes) panelTimes.hidden = mode !== 'times';
     if (mode !== 'exercises') hideExerciseHint();
-  }
-
-  function applyModeLayout(mode) {
-    if (userRankRow) userRankRow.setAttribute('data-lb-mode', mode);
-    if (lbTable) {
-      lbTable.classList.remove('lb-table--exercises', 'lb-table--streak', 'lb-table--times');
-      lbTable.classList.add('lb-table--' + mode);
-    }
-    renderTableHead(mode);
-    updatePickerVisibility();
   }
 
   function buildRowCellsHtml(user, rank, mode) {
@@ -700,15 +732,19 @@
   }
 
   function renderLeaderboard(users) {
-    if (!tbody) return;
+    var tbodyEl = activeTbody();
+    if (!tbodyEl) return;
     clearUserRowPins();
-    tbody.innerHTML = '';
+    LB_MODES.forEach(function (mode) {
+      var tb = document.getElementById(LB_TBODY_IDS[mode]);
+      if (tb) tb.innerHTML = '';
+    });
     var mode = state.mode;
     applyModeLayout(mode);
 
     var scoped = filterByAudience(users, state.audience);
     if (scoped.needsSignIn) {
-      tbody.innerHTML =
+      tbodyEl.innerHTML =
         '<tr><td colspan="' +
         tableColspan(mode) +
         '">Sign in to see this leaderboard view.</td></tr>';
@@ -726,7 +762,7 @@
           : mode === 'times'
             ? 'No times logged for this event yet. Log a PR from Tracking.'
             : 'No one to show for this view yet.';
-      tbody.innerHTML =
+      tbodyEl.innerHTML =
         '<tr><td colspan="' + tableColspan(mode) + '">' + escapeHtml(emptyMsg) + '</td></tr>';
       updateUserRankBar(null, 0, mode, currentUser);
       return;
@@ -741,7 +777,7 @@
         lbSelfRowEl = tr;
       }
       tr.innerHTML = buildRowCellsHtml(user, rank, mode);
-      tbody.appendChild(tr);
+      tbodyEl.appendChild(tr);
     });
 
     var userIdx = currentUser
@@ -835,8 +871,9 @@
     }
 
     if (messageEl) messageEl.textContent = 'Loading…';
-    if (tbody) {
-      tbody.innerHTML =
+    var loadingBody = activeTbody();
+    if (loadingBody) {
+      loadingBody.innerHTML =
         '<tr><td colspan="' + tableColspan(mode) + '">Loading…</td></tr>';
     }
 
@@ -986,8 +1023,9 @@
     return Promise.resolve();
   }
 
+  applyModeLayout(state.mode);
+
   initLeaderboardExerciseDb().then(function () {
-    applyModeLayout(state.mode);
     if (state.mode === 'streak') {
       loadLeaderboard();
     } else {

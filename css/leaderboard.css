@@ -51,16 +51,21 @@
 
 .lb-mode-panel
 {
-    display: none;
+    display: flex;
     flex-direction: column;
     align-items: center;
     gap: 0.65rem;
     width: 100%;
 }
 
-.lb-mode-panel.is-visible
+.lb-mode-panel[hidden]
 {
-    display: flex;
+    display: none !important;
+}
+
+.lb-table[hidden]
+{
+    display: none !important;
 }
 
 .lb-filter-row
@@ -419,6 +424,54 @@
 .lb-user-rank-wrap
 {
     margin-top: 1rem;
+}
+
+.lb-user-rank-heading
+{
+    margin: 0 0 0.45rem;
+    font-family: var(--font);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.lb-user-rank-labels
+{
+    display: grid;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0 1rem 0.35rem;
+    font-family: var(--font);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+
+.lb-user-rank-labels[data-lb-mode="exercises"]
+{
+    grid-template-columns: 3.5rem 1fr auto auto auto;
+}
+
+.lb-user-rank-labels[data-lb-mode="streak"],
+.lb-user-rank-labels[data-lb-mode="times"]
+{
+    grid-template-columns: 3.5rem 1fr auto;
+}
+
+.lb-user-rank-labels span:last-child,
+.lb-user-rank-labels span:nth-child(n+3)
+{
+    text-align: right;
+}
+
+.lb-user-rank-labels span:nth-child(2)
+{
+    text-align: left;
 }
 
 .lb-user-rank
@@ -939,6 +992,17 @@
     .lb-table-scroll
     {
         max-height: calc(10 * 2.35rem + 2rem);
+    }
+
+    .lb-user-rank-labels[data-lb-mode="exercises"]
+    {
+        grid-template-columns: 2.5rem 1fr auto;
+    }
+
+    .lb-user-rank-labels[data-lb-mode="exercises"] span:nth-child(4),
+    .lb-user-rank-labels[data-lb-mode="exercises"] span:nth-child(5)
+    {
+        display: none;
     }
 
     .lb-table.lb-table--exercises thead th:nth-child(4),
