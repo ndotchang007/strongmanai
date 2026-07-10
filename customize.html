@@ -67,7 +67,13 @@
             <section class="buddy-form-wrap" aria-label="User settings">
                 <div id="user-account-mount"></div>
                 <div id="customize-sports-mount" class="sports-editor-mount"></div>
-                <div id="split" class="split-editor-mount sports-editor-mount" tabindex="-1"></div>
+                <div class="customize-split-redirect" id="customize-split-redirect">
+                    <div class="customize-split-redirect-copy">
+                        <h2 class="customize-split-redirect-title">Weekly workout split</h2>
+                        <p class="customize-split-redirect-text">Your split lives in Log — build each day’s exercises, save routines from Rocky, and switch between saved splits there.</p>
+                    </div>
+                    <a href="/create#split" class="customize-split-redirect-link">Edit workout split in Log →</a>
+                </div>
                 <div id="customize-form-mount"></div>
                 <div class="customize-actions">
                     <button type="button" class="customize-save-btn" id="customize-save-btn">Save changes</button>
@@ -171,9 +177,6 @@
     <script src="/shared/athlete-context.js"></script>
     <script src="/shared/rocky-setup-alert.js"></script>
     <script src="/shared/athlete-sports-editor.js"></script>
-    <script src="/shared/workout-split.js"></script>
-    <script src="/shared/workout-split-library.js"></script>
-    <script src="/shared/workout-split-editor.js"></script>
     <script src="/shared/training-sync.js"></script>
     <script src="/shared/units.js"></script>
     <script src="/shared/user-account-form.js"></script>

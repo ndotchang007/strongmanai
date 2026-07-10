@@ -442,9 +442,9 @@
       });
       card.appendChild(saveBtn);
       var logLink = document.createElement('a');
-      logLink.href = '/customize#split';
+      logLink.href = '/create#split';
       logLink.className = 'coach-routine-edit';
-      logLink.textContent = 'Customize in Log → Split';
+      logLink.textContent = 'Edit in Log → Workout split';
       card.appendChild(logLink);
       bubble.appendChild(card);
       return this.createChatRow('assistant', bubble);

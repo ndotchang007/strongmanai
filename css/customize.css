@@ -246,7 +246,7 @@ body.customize-page .sports-editor-mount
     box-sizing: border-box;
 }
 
-body.customize-page .split-editor-mount
+body.customize-page .customize-split-redirect
 {
     margin: 0;
     padding: var(--customize-card-pad);
@@ -254,6 +254,44 @@ body.customize-page .split-editor-mount
     border: 1px solid rgba(100, 100, 100, 0.42);
     background: rgba(255, 255, 255, 0.03);
     box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+.customize-split-redirect-title
+{
+    margin: 0;
+    font-family: var(--font, "DM Sans", system-ui, sans-serif);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary, #f4f4f5);
+}
+
+.customize-split-redirect-text
+{
+    margin: 0;
+    font-family: var(--font, "DM Sans", system-ui, sans-serif);
+    font-size: 0.88rem;
+    line-height: 1.55;
+    color: rgba(255, 255, 255, 0.68);
+}
+
+.customize-split-redirect-link
+{
+    align-self: flex-start;
+    font-family: var(--font, "DM Sans", system-ui, sans-serif);
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #ff9f40;
+    text-decoration: none;
+}
+
+.customize-split-redirect-link:hover
+{
+    color: #ffb347;
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
 }
 
 body.customize-page .sports-editor-header
