@@ -623,6 +623,19 @@
     if (user.experience && EXPERIENCE_LABELS[user.experience]) {
       lines.push('Experience: ' + EXPERIENCE_LABELS[user.experience]);
     }
+    if (user.experience === 'beginner') {
+      lines.push(
+        'BEGINNER MODE (required): Prefer machine and cable exercises (chest press, lat pulldown, seated row, leg press, shoulder press, cable curl, tricep pushdown). Avoid advanced free-weight lifts (barbell snatch, clean & jerk, heavy barbell back squat, deficit deadlift, etc.) unless the athlete explicitly asks. Include short form cues in exercise "why" notes (e.g. lat pulldown: thumb-over grip with thumb on top of the bar; chest press: controlled lockout, feet flat). Keep volume moderate (2–3 sets), weights conservative, and language encouraging for someone new to the gym.'
+      );
+    } else if (user.experience === 'intermediate') {
+      lines.push(
+        'Experience guidance: Mix machines and free weights as appropriate; include useful form cues; progressive overload is welcome but stay injury-aware.'
+      );
+    } else if (user.experience === 'advanced') {
+      lines.push(
+        'Experience guidance: Athlete can handle more advanced programming and free-weight variations; still include safety notes when intensity is high.'
+      );
+    }
     if (user.equipment && EQUIPMENT_LABELS[user.equipment]) {
       lines.push('Equipment: ' + EQUIPMENT_LABELS[user.equipment]);
     }

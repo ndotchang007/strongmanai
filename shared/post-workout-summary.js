@@ -263,7 +263,8 @@
     return html;
   }
 
-  function renderSummaryHtml(data, todaySession) {
+  function renderSummaryHtml(data, todaySession, opts) {
+    opts = opts || {};
     var summary = (data && data.summary) || {};
     var localCards = buildLocalSummaryCards(todaySession);
     var stats = summary.stats && summary.stats.length ? summary.stats : localCards;
@@ -285,10 +286,276 @@
       html += '</ul></div>';
     }
     html += '</div>';
+    if (opts.chartsHtml) html += opts.chartsHtml;
     if (data && data.recovery) {
       html += renderRecoveryHtml(data.recovery);
     }
     return html;
+  }
+
+  function sessionVolume(s) {
+    if (!s) return 0;
+    var total = 0;
+    if (s.trackerData && Array.isArray(s.trackerData.exercises)) {
+      s.trackerData.exercises.forEach(function (ex) {
+        (ex.sets || []).forEach(function (set) {
+          if (!set || !set.completed) return;
+          var w = parseFloat(set.weight);
+          var r = parseFloat(set.reps);
+          if (!isNaN(w) && !isNaN(r)) total += w * r;
+        });
+      });
+    } else if (Array.isArray(s.exercises)) {
+      s.exercises.forEach(function (ex) {
+        var sets = parseInt(ex.sets, 10);
+        var reps = parseInt(ex.reps, 10);
+        var w = parseFloat(ex.weight);
+        if (!isNaN(w) && !isNaN(reps) && !isNaN(sets)) total += w * reps * sets;
+      });
+    }
+    return Math.round(total);
+  }
+
+  function sessionSetCount(s) {
+    if (!s) return 0;
+    var n = 0;
+    if (s.trackerData && Array.isArray(s.trackerData.exercises)) {
+      s.trackerData.exercises.forEach(function (ex) {
+        (ex.sets || []).forEach(function (set) {
+          if (set && set.completed) n++;
+        });
+      });
+    } else if (Array.isArray(s.exercises)) {
+      s.exercises.forEach(function (ex) {
+        var sets = parseInt(ex.sets, 10);
+        if (!isNaN(sets) && sets > 0) n += sets;
+      });
+    }
+    return n;
+  }
+
+  function buildHistorySeries(savedSession) {
+    var WL = window.WorkoutLog;
+    var points = [];
+    var sessions = WL && typeof WL.getSessions === 'function' ? WL.getSessions() || [] : [];
+    var seen = {};
+    sessions.forEach(function (s) {
+      if (!s || s.sessionType === 'cardio') return;
+      var id = s.id != null ? String(s.id) : '';
+      if (id) seen[id] = true;
+      var ts = Date.parse(s.createdAt || s.date || '') || 0;
+      if (!ts) return;
+      points.push({
+        t: ts,
+        label: formatShortDate(s.createdAt || s.date),
+        volume: sessionVolume(s),
+        sets: sessionSetCount(s),
+        intensity: s.totalIntensity != null ? Number(s.totalIntensity) : null,
+      });
+    });
+    if (savedSession && savedSession.id != null && !seen[String(savedSession.id)]) {
+      var stats = computeSessionStats(savedSession);
+      var ts = Date.parse(savedSession.createdAt || '') || Date.now();
+      points.push({
+        t: ts,
+        label: formatShortDate(savedSession.createdAt) || 'Today',
+        volume: stats.totalVolume,
+        sets: stats.completedSetCount,
+        intensity: savedSession.totalIntensity != null ? Number(savedSession.totalIntensity) : null,
+      });
+    }
+    points.sort(function (a, b) {
+      return a.t - b.t;
+    });
+    return points.slice(-12);
+  }
+
+  function buildTodaySetSeries(savedSession) {
+    var points = [];
+    var cumulative = 0;
+    var idx = 0;
+    var exercises =
+      savedSession && savedSession.trackerData && Array.isArray(savedSession.trackerData.exercises)
+        ? savedSession.trackerData.exercises
+        : [];
+    exercises.forEach(function (ex) {
+      (ex.sets || []).forEach(function (set) {
+        if (!set || !set.completed) return;
+        idx += 1;
+        var w = parseFloat(set.weight);
+        var r = parseFloat(set.reps);
+        var vol = !isNaN(w) && !isNaN(r) ? w * r : 0;
+        cumulative += vol;
+        points.push({
+          label: String(idx),
+          volume: Math.round(cumulative),
+          setVolume: Math.round(vol),
+          name: ex.name || 'Set',
+        });
+      });
+    });
+    return points;
+  }
+
+  function renderChartsHtml(savedSession, todaySession) {
+    var history = buildHistorySeries(savedSession);
+    var todaySets = buildTodaySetSeries(savedSession);
+    if (history.length < 1 && todaySets.length < 1) return '';
+    return (
+      '<div class="wd-summary-charts" id="wd-summary-charts">' +
+      '<p class="wd-summary-sub">Your training</p>' +
+      (history.length
+        ? '<div class="wd-chart-card"><p class="wd-chart-title">Volume over time</p><canvas id="wd-chart-volume" height="160" aria-label="Volume over time"></canvas></div>'
+        : '') +
+      (todaySets.length
+        ? '<div class="wd-chart-card"><p class="wd-chart-title">Volume this session</p><canvas id="wd-chart-session" height="140" aria-label="Session volume by set"></canvas></div>'
+        : '') +
+      (history.some(function (p) {
+        return p.intensity != null;
+      })
+        ? '<div class="wd-chart-card"><p class="wd-chart-title">Intensity over time</p><canvas id="wd-chart-intensity" height="140" aria-label="Intensity over time"></canvas></div>'
+        : '') +
+      '</div>'
+    );
+  }
+
+  function chartDefaults() {
+    return {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: 'rgba(20,20,20,0.92)',
+          titleColor: '#ffb347',
+          bodyColor: '#f4f4f5',
+          borderColor: 'rgba(255,140,0,0.35)',
+          borderWidth: 1,
+        },
+      },
+      scales: {
+        x: {
+          ticks: { color: 'rgba(255,255,255,0.55)', maxRotation: 0, autoSkip: true, maxTicksLimit: 6 },
+          grid: { color: 'rgba(255,255,255,0.06)' },
+        },
+        y: {
+          beginAtZero: true,
+          ticks: { color: 'rgba(255,255,255,0.55)' },
+          grid: { color: 'rgba(255,255,255,0.06)' },
+        },
+      },
+    };
+  }
+
+  function mountCharts(container, savedSession) {
+    if (!container || typeof window.Chart !== 'function') return [];
+    var charts = [];
+    var history = buildHistorySeries(savedSession);
+    var todaySets = buildTodaySetSeries(savedSession);
+    var defaults = chartDefaults();
+
+    var volCanvas = container.querySelector('#wd-chart-volume');
+    if (volCanvas && history.length) {
+      charts.push(
+        new window.Chart(volCanvas.getContext('2d'), {
+          type: 'line',
+          data: {
+            labels: history.map(function (p) {
+              return p.label;
+            }),
+            datasets: [
+              {
+                label: 'Volume (lb)',
+                data: history.map(function (p) {
+                  return p.volume;
+                }),
+                borderColor: '#ff9f40',
+                backgroundColor: 'rgba(255, 159, 64, 0.18)',
+                fill: true,
+                tension: 0.35,
+                pointRadius: 3,
+                pointBackgroundColor: '#ffb347',
+              },
+            ],
+          },
+          options: defaults,
+        })
+      );
+    }
+
+    var sessionCanvas = container.querySelector('#wd-chart-session');
+    if (sessionCanvas && todaySets.length) {
+      charts.push(
+        new window.Chart(sessionCanvas.getContext('2d'), {
+          type: 'line',
+          data: {
+            labels: todaySets.map(function (p) {
+              return 'Set ' + p.label;
+            }),
+            datasets: [
+              {
+                label: 'Cumulative volume (lb)',
+                data: todaySets.map(function (p) {
+                  return p.volume;
+                }),
+                borderColor: '#ff6a00',
+                backgroundColor: 'rgba(255, 106, 0, 0.15)',
+                fill: true,
+                tension: 0.3,
+                pointRadius: 3,
+                pointBackgroundColor: '#ff8c00',
+              },
+            ],
+          },
+          options: Object.assign({}, defaults, {
+            plugins: Object.assign({}, defaults.plugins, {
+              tooltip: Object.assign({}, defaults.plugins.tooltip, {
+                callbacks: {
+                  afterLabel: function (ctx) {
+                    var p = todaySets[ctx.dataIndex];
+                    return p && p.name ? p.name : '';
+                  },
+                },
+              }),
+            }),
+          }),
+        })
+      );
+    }
+
+    var intCanvas = container.querySelector('#wd-chart-intensity');
+    var intensityPoints = history.filter(function (p) {
+      return p.intensity != null && !isNaN(p.intensity);
+    });
+    if (intCanvas && intensityPoints.length) {
+      charts.push(
+        new window.Chart(intCanvas.getContext('2d'), {
+          type: 'bar',
+          data: {
+            labels: intensityPoints.map(function (p) {
+              return p.label;
+            }),
+            datasets: [
+              {
+                label: 'Intensity',
+                data: intensityPoints.map(function (p) {
+                  return p.intensity;
+                }),
+                backgroundColor: 'rgba(255, 179, 71, 0.55)',
+                borderRadius: 6,
+              },
+            ],
+          },
+          options: Object.assign({}, defaults, {
+            scales: Object.assign({}, defaults.scales, {
+              y: Object.assign({}, defaults.scales.y, { max: 100 }),
+            }),
+          }),
+        })
+      );
+    }
+
+    return charts;
   }
 
   window.PostWorkoutSummary = {
@@ -300,5 +567,7 @@
     fetchRecoveryAdvice: fetchRecoveryAdvice,
     renderSummaryHtml: renderSummaryHtml,
     renderRecoveryHtml: renderRecoveryHtml,
+    renderChartsHtml: renderChartsHtml,
+    mountCharts: mountCharts,
   };
 })();

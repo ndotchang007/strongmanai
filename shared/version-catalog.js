@@ -1,8 +1,34 @@
 (function () {
   var VERSIONS = [
     {
-      slug: 'v1.1',
+      slug: 'v1.2',
       eyebrow: 'Current release',
+      title: 'Version 1.2',
+      date: 'July 10, 2026',
+      summary:
+        'Beginner-friendly coaching from day one — a learn-to-work-out guide, simpler workout mode, experience-aware Rocky plans, and a richer post-workout summary.',
+      majorFeatures: [
+        'Beginner guide at /learn with gym basics, starter machine exercises, and form cues',
+        'Rocky Home callout for beginners: “New to working out? Learn here”',
+        'Experience-aware Rocky workouts — beginners get machines/cables and form tips, not advanced free-weight lifts',
+        'Workout mode simplified: time since last set instead of a rest timer, plus Apply routine',
+        'In-workout Rocky mini chat for quick form cues and mid-session advice',
+        'Post-workout dashboard with volume-over-time charts and a Rocky generating animation',
+      ],
+      minorFixes: [
+        'Session duration is captured correctly when finishing workout mode',
+        'Legacy rest-timer overlay is replaced cleanly when opening the new workout mode UI',
+      ],
+      minorChanges: [
+        'Removed the Auto-save rest time setting (time since last set is saved automatically)',
+        'Beginner Coach chips for full-body machine sessions and form tips',
+        'Softer Rocky intensity callouts when experience is Beginner',
+        'Home quick link for the beginner guide',
+      ],
+    },
+    {
+      slug: 'v1.1',
+      eyebrow: 'Previous release',
       title: 'Version 1.1',
       date: 'June 29, 2026',
       summary:
@@ -71,6 +97,6 @@
   window.VERSION_CATALOG = {
     list: list,
     get: get,
-    current: 'v1.1',
+    current: 'v1.2',
   };
 })();

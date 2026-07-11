@@ -1012,7 +1012,7 @@
       source: data.source || (data.tryReason && data.tryReason[0]) || null,
       profileInitialized: true,
       lastSeenVersion:
-        (window.VERSION_CATALOG && window.VERSION_CATALOG.current) || 'v1.1',
+        (window.VERSION_CATALOG && window.VERSION_CATALOG.current) || 'v1.2',
       athleteContext: buildAthleteContextPayload(data),
     };
   }

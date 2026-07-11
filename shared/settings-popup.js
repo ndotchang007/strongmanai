@@ -10,7 +10,6 @@
   var FAVORITES_KEY = 'strongman-favorite-movements';
   var ANYTHING_ELSE_KEY = 'strongman-coach-anything-else';
   var EXPERIMENTAL_KEY = 'strongman-experimental-mode';
-  var WORKOUT_AUTO_REST_KEY = 'strongman-workout-auto-save-rest';
 
   function getStoredTheme() {
     var v = localStorage.getItem(THEME_KEY);
@@ -73,25 +72,6 @@
     if (!el) return;
     el.checked = isExperimentalEnabled();
     bindExperimentalToggle(el);
-  }
-
-  function isWorkoutAutoSaveRest() {
-    return localStorage.getItem(WORKOUT_AUTO_REST_KEY) === '1';
-  }
-
-  function bindWorkoutAutoRestToggle(el) {
-    if (!el || el.dataset.bound === '1') return;
-    el.dataset.bound = '1';
-    el.addEventListener('change', function () {
-      localStorage.setItem(WORKOUT_AUTO_REST_KEY, el.checked ? '1' : '0');
-    });
-  }
-
-  function loadWorkoutAutoRestToggle() {
-    var el = document.getElementById('settings-workout-auto-rest');
-    if (!el) return;
-    el.checked = isWorkoutAutoSaveRest();
-    bindWorkoutAutoRestToggle(el);
   }
 
   window.strongmanExperimentalMode = {
@@ -901,51 +881,23 @@
     }
 
     loadExperimentalToggle();
-    loadWorkoutAutoRestToggle();
 
-    if (!document.getElementById('settings-workout-auto-rest')) {
-      var workoutSection = document.createElement('section');
-      workoutSection.className = 'home-settings-section settings-buddy-card settings-hub-workout';
-      workoutSection.setAttribute('aria-labelledby', 'settings-workout-heading');
-      workoutSection.innerHTML =
-        '<h3 class="home-settings-section-title" id="settings-workout-heading">Workout mode</h3>' +
-        '<div class="settings-hub-toggle-row">' +
-        '<div class="settings-hub-toggle-copy">' +
-        '<span class="settings-hub-toggle-label">Auto-save rest time</span>' +
-        '<span class="settings-hub-toggle-hint">When you start the next set, save the rest timer to the set you just finished — no prompt.</span>' +
-        '</div>' +
-        '<label class="settings-hub-switch" aria-label="Auto-save rest time in workout mode">' +
-        '<input type="checkbox" id="settings-workout-auto-rest" class="home-settings-checkbox">' +
-        '<span class="settings-hub-switch-track" aria-hidden="true"></span>' +
-        '</label>' +
-        '</div>';
-
-      var labsHeading = document.getElementById('settings-labs-heading');
-      var labsSec = labsHeading && labsHeading.closest('.home-settings-section');
-      if (labsSec && labsSec.parentNode) {
-        labsSec.parentNode.insertBefore(workoutSection, labsSec);
-      } else {
-        var aboutHeading = document.getElementById('settings-about-heading');
-        var aboutSec = aboutHeading && aboutHeading.closest('.home-settings-section');
-        if (aboutSec && aboutSec.parentNode) {
-          aboutSec.parentNode.insertBefore(workoutSection, aboutSec);
-        } else {
-          body.appendChild(workoutSection);
-        }
-      }
-      loadWorkoutAutoRestToggle();
+    var legacyWorkoutRest = document.getElementById('settings-workout-auto-rest');
+    if (legacyWorkoutRest) {
+      var legacySec = legacyWorkoutRest.closest('.home-settings-section');
+      if (legacySec && legacySec.parentNode) legacySec.parentNode.removeChild(legacySec);
     }
 
     if (!body.querySelector('#settings-hub-versions-card')) {
       var versionsCard = document.createElement('a');
-      versionsCard.href = '/versions/v1.1';
+      versionsCard.href = '/versions/v1.2';
       versionsCard.className = 'settings-hub-training-card settings-hub-info-card';
       versionsCard.id = 'settings-hub-versions-card';
       versionsCard.innerHTML =
-        '<span class="settings-hub-training-kicker">v1.1 · Patch notes</span>' +
+        '<span class="settings-hub-training-kicker">v1.2 · Patch notes</span>' +
         '<span class="settings-hub-training-title">Version history</span>' +
-        '<span class="settings-hub-training-desc">What changed in the latest release — settings split, User settings, guide, and Labs.</span>' +
-        '<span class="settings-hub-training-arrow">Read v1.1 notes →</span>';
+        '<span class="settings-hub-training-desc">Beginner guide, simpler workout mode, experience-aware Rocky, and post-workout charts.</span>' +
+        '<span class="settings-hub-training-arrow">Read v1.2 notes →</span>';
       var aboutHeading = document.getElementById('settings-about-heading');
       var aboutSec = aboutHeading && aboutHeading.closest('.home-settings-section');
       if (aboutSec && aboutSec.parentNode) {

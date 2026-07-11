@@ -2408,6 +2408,9 @@
       bootstrapSession: function () {
         applyTodayRoutineIfEmpty(true, true);
       },
+      applyRoutine: function () {
+        return applyTodayRoutineIfEmpty(true, true);
+      },
       refreshCoach: refreshOverloadCoachUi,
       onFinish: function (meta) {
         return saveWorkoutForDashboard(meta);

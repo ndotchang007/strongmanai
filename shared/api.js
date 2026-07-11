@@ -214,7 +214,7 @@
   }
 
   function currentAppVersion() {
-    return (window.VERSION_CATALOG && window.VERSION_CATALOG.current) || 'v1.1';
+    return (window.VERSION_CATALOG && window.VERSION_CATALOG.current) || 'v1.2';
   }
 
   function needsCatchup(user) {

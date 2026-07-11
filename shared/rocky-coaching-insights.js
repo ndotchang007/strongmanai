@@ -126,6 +126,29 @@
     }
   }
 
+  function hasSeenLearnGuide() {
+    try {
+      return localStorage.getItem('strongman-learn-seen') === '1';
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function getUserExperience() {
+    try {
+      if (typeof window.getCurrentUser !== 'function') return '';
+      var u = window.getCurrentUser();
+      return u && u.experience ? String(u.experience).toLowerCase() : '';
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function isBeginnerUser() {
+    var exp = getUserExperience();
+    return !exp || exp === 'beginner';
+  }
+
   function hasConsistentUse(sessions) {
     var list = (sessions || [])
       .slice()
@@ -152,8 +175,27 @@
       .sort(function (a, b) {
         return sessionTimestamp(b) - sessionTimestamp(a);
       });
+    var beginner = isBeginnerUser();
+
+    if (beginner) {
+      callouts.push({
+        text: 'New to working out? Learn here',
+        tone: 'neutral',
+        linkHref: '/learn',
+        linkLabel: 'Beginner guide',
+      });
+    }
 
     if (!list.length) {
+      if (beginner) {
+        callouts.push({
+          text: 'No sessions yet — ask Rocky for a simple machine workout and hit Start workout on Home.',
+          tone: 'neutral',
+          linkHref: '/generate',
+          linkLabel: 'Ask Rocky',
+        });
+        return callouts.slice(0, opts.limit || 4);
+      }
       if (!hasSeenInfoGuide()) {
         callouts.push({
           text: 'Woah there — you look new here. Head to the info page and learn what to do on Strongman AI.',
@@ -171,11 +213,20 @@
     }
 
     if (!hasConsistentUse(list)) {
-      callouts.push({
-        text: 'You seem new here — better criticism will come after a week of consistent use.',
-        tone: 'neutral',
-      });
-      return callouts;
+      if (beginner) {
+        callouts.push({
+          text: 'Keep logging — after a week of consistent training, Rocky’s tips get sharper. Stick with machines and cables for now.',
+          tone: 'neutral',
+          linkHref: hasSeenLearnGuide() ? '/generate' : '/learn',
+          linkLabel: hasSeenLearnGuide() ? 'Ask Rocky' : 'Beginner guide',
+        });
+      } else {
+        callouts.push({
+          text: 'You seem new here — better criticism will come after a week of consistent use.',
+          tone: 'neutral',
+        });
+      }
+      return callouts.slice(0, opts.limit || 4);
     }
 
     var legDays = daysSinceLastMatch(list, LEG_PATTERNS);
@@ -201,12 +252,16 @@
     var avgIntensity = avgRecentIntensity(list, 4);
     if (avgIntensity != null && avgIntensity >= 78) {
       callouts.push({
-        text: "You're pushing too hard during your workouts! Slow down before you get injured!",
+        text: beginner
+          ? "You're pushing pretty hard — leave 1–2 reps in the tank and keep form clean."
+          : "You're pushing too hard during your workouts! Slow down before you get injured!",
         tone: 'warn',
       });
     } else if (avgIntensity != null && avgIntensity <= 35 && list.length >= 3) {
       callouts.push({
-        text: 'Your last few sessions were softer than a yoga mat. Time to turn up the heat.',
+        text: beginner
+          ? 'Sessions have been light lately — when form feels solid, nudge the weight up a little.'
+          : 'Your last few sessions were softer than a yoga mat. Time to turn up the heat.',
         tone: 'tease',
       });
     }
@@ -360,5 +415,6 @@
     buildCallouts: buildCoachingCallouts,
     renderInto: renderInto,
     hasConsistentUse: hasConsistentUse,
+    isBeginnerUser: isBeginnerUser,
   };
 })();

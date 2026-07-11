@@ -151,9 +151,41 @@
           : 'my sport';
     var sportFocused = AC && ctx && AC.isSportFocusedGoal ? AC.isSportFocusedGoal(ctx) : sports.length > 0;
     var comp = AC && ctx ? AC.competitionLabel(ctx) : 'Game';
+    var isBeginner = user && (!user.experience || user.experience === 'beginner');
 
     var prompts;
-    if (!sportFocused) {
+    if (isBeginner) {
+      prompts = [
+        { label: 'Feeling sick', text: "I'm sick today — what should I do about training?" },
+        { label: 'Really sore', text: "I'm really sore from yesterday. Should I train today and how hard?" },
+        {
+          label: 'Beginner full body',
+          text:
+            "I'm new to the gym — build a " +
+            maxMin +
+            '-minute full-body session with machines and cables only (chest press, lat pulldown, leg press, etc.) and include form cues',
+        },
+        {
+          label: 'Form tips',
+          text:
+            'Give me beginner form cues for lat pulldown and chest press — grip, posture, and common mistakes',
+        },
+        {
+          label: 'Build habit',
+          text:
+            'I need a simple consistent routine I can stick to — about ' +
+            maxMin +
+            ' minutes today, beginner-friendly machines',
+        },
+        {
+          label: 'Low impact',
+          text:
+            'Low-impact training day — joints feel tired, keep it around ' +
+            Math.min(40, maxMin) +
+            ' minutes with easy machines',
+        },
+      ];
+    } else if (!sportFocused) {
       prompts = [
         { label: 'Feeling sick', text: "I'm sick today — what should I do about training?" },
         { label: 'Really sore', text: "I'm really sore from yesterday. Should I train today and how hard?" },

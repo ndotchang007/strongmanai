@@ -18,6 +18,7 @@
     '/customize': 'customize.html',
     '/user-settings': 'customize.html',
     '/info': 'info.html',
+    '/learn': 'learn.html',
     '/versions': 'versions.html',
     '/generate': 'generate.html',
     '/explore': 'home.html',

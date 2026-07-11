@@ -3,7 +3,7 @@
   if (!gallery || !window.VERSION_CATALOG) return;
 
   var versions = window.VERSION_CATALOG.list();
-  var current = window.VERSION_CATALOG.current || 'v1.1';
+  var current = window.VERSION_CATALOG.current || 'v1.2';
   var fragment = document.createDocumentFragment();
 
   versions.forEach(function (release) {
