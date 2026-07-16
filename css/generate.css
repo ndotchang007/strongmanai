@@ -2,12 +2,12 @@
 
 body.generate-page
 {
-    background-color: #1b1b1b;
+    background-color: var(--bg-elevated, #1b1b1b);
 }
 
 body.coach-fullpage.generate-page
 {
-    background-color: #121212;
+    background-color: var(--bg-page, #121212);
     background-image: none;
 }
 
@@ -29,7 +29,7 @@ body.coach-fullpage .generate-main
     flex-direction: column;
     min-width: 0;
     padding: 2rem 1.5rem 3rem;
-    color: #fff;
+    color: var(--text-primary, #fff);
     font-family: var(--font, "DM Sans", system-ui, sans-serif);
 }
 
@@ -71,7 +71,7 @@ body.coach-fullpage .generate-main
 
 .generate-create-link
 {
-    color: #ff9f40;
+    color: var(--accent-bright);
     font-weight: 600;
 }
 
@@ -109,8 +109,8 @@ body.coach-fullpage .generate-main
 
 .generate-chip:hover
 {
-    border-color: rgba(255, 140, 0, 0.45);
-    background: rgba(255, 140, 0, 0.1);
+    border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
 }
 
 .generate-input-wrap
@@ -121,7 +121,7 @@ body.coach-fullpage .generate-main
     padding: 1rem 1.1rem;
     border: 1px solid #6a6a6a;
     border-radius: 12px;
-    background-color: #1b1b1b;
+    background-color: var(--bg-elevated, #1b1b1b);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
 }
 
@@ -143,9 +143,9 @@ body.coach-fullpage .generate-main
     padding: 0.75rem 1rem;
     font-size: 0.95rem;
     font-family: var(--font, "DM Sans", system-ui, sans-serif);
-    color: #fff;
-    background-color: #2a2a2a;
-    border: 1px solid #555;
+    color: var(--text-primary, #fff);
+    background-color: var(--bg-card, #2a2a2a);
+    border: 1px solid var(--border-mid, #555);
     border-radius: 8px;
     box-sizing: border-box;
     transition: border-color 0.2s, box-shadow 0.2s;
@@ -167,8 +167,8 @@ body.coach-fullpage .generate-main
 
 .generate-input:focus
 {
-    border-color: #ff8c00;
-    box-shadow: 0 0 0 1px rgba(255, 140, 0, 0.35);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent);
 }
 
 .generate-submit
@@ -180,8 +180,8 @@ body.coach-fullpage .generate-main
     font-weight: bold;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: #1b1b1b;
-    background-color: #ff8c00;
+    color: var(--on-accent-text, #1b1b1b);
+    background-color: var(--accent);
     border: none;
     border-radius: 8px;
     cursor: pointer;
@@ -200,7 +200,7 @@ body.coach-fullpage .generate-main
 
 .generate-submit:hover
 {
-    background-color: #ffa033;
+    background-color: var(--accent-hover);
 }
 
 .generate-submit:active
@@ -231,7 +231,7 @@ body.coach-fullpage .generate-main
     padding: 1.35rem 1.25rem;
     border: 1px solid rgba(255, 255, 255, 0.35);
     border-radius: 12px;
-    background-color: #222;
+    background-color: var(--bg-elevated, #222);
     color: rgba(255, 255, 255, 0.9);
     line-height: 1.55;
     font-size: 0.95rem;

@@ -1,0 +1,58 @@
+.timeline-main
+{
+    max-width: 720px;
+}
+
+.timeline-section
+{
+    margin-top: 0.25rem;
+}
+
+.timeline-page .dash-timeline-toolbar
+{
+    justify-content: flex-start;
+}
+
+.timeline-page .info-eyebrow
+{
+    color: var(--accent-bright, var(--accent));
+}
+
+/* Add/edit form: same language as list entries (no separate “card” treatment) */
+.timeline-page .dash-timeline-editor
+{
+    margin: 0 0 0.85rem 0.85rem;
+    padding: 0 0 0 1rem;
+    border: none;
+    border-left: 1px solid var(--border-subtle);
+    border-radius: 0;
+    background: transparent;
+    position: relative;
+}
+
+.timeline-page .dash-timeline-editor::before
+{
+    content: '';
+    position: absolute;
+    left: -0.9rem;
+    top: 0.35rem;
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 3px var(--bg-page, #141414);
+}
+
+.timeline-page .dash-timeline-editor-title
+{
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--accent-bright, var(--accent));
+}
+
+.timeline-page .dash-timeline-add
+{
+    border-radius: 999px;
+}

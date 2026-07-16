@@ -166,12 +166,92 @@
       tier: tier,
       kind: kind || 'lift',
       check: function (ctx) {
-        var best = maxLiftLb(ctx.prs, keywords);
+        var best = Math.max(maxLiftLb(ctx.prs, keywords), maxLoggedLiftLb(ctx.workouts, keywords));
         return {
           unlocked: best >= targetLb,
           progress: best,
           target: targetLb,
-          progressLabel: best > 0 ? Math.round(best) + ' lb best' : 'No PR logged yet'
+          progressLabel: best > 0 ? Math.round(best) + ' lb best' : 'No lift logged yet'
+        };
+      }
+    };
+  }
+
+  function exerciseNamesInWorkout(session) {
+    var names = [];
+    (session.exercises || []).forEach(function (ex) {
+      if (ex && ex.name) names.push(String(ex.name));
+    });
+    (session.blocks || []).forEach(function (blk) {
+      (blk.exercises || []).forEach(function (ex) {
+        if (ex && ex.name) names.push(String(ex.name));
+      });
+    });
+    return names;
+  }
+
+  function workoutMatchesKeywords(session, keywords) {
+    return exerciseNamesInWorkout(session).some(function (name) {
+      return liftLabelMatches(name, keywords);
+    });
+  }
+
+  function countSessionsWithLift(workouts, keywords) {
+    var n = 0;
+    (workouts || []).forEach(function (s) {
+      if (workoutMatchesKeywords(s, keywords)) n += 1;
+    });
+    return n;
+  }
+
+  function parseLooseWeight(v) {
+    if (v == null || v === '') return 0;
+    var n = parseFloat(String(v).replace(/[^\d.]/g, ''));
+    return Number.isFinite(n) && n > 0 ? n : 0;
+  }
+
+  function maxLoggedLiftLb(workouts, keywords) {
+    var max = 0;
+    (workouts || []).forEach(function (s) {
+      var list = [];
+      (s.exercises || []).forEach(function (ex) {
+        list.push(ex);
+      });
+      (s.blocks || []).forEach(function (blk) {
+        (blk.exercises || []).forEach(function (ex) {
+          list.push(ex);
+        });
+      });
+      list.forEach(function (ex) {
+        if (!ex || !liftLabelMatches(ex.name, keywords)) return;
+        var weights = Array.isArray(ex.setWeights) ? ex.setWeights : [];
+        if (weights.length) {
+          weights.forEach(function (w) {
+            max = Math.max(max, parseLooseWeight(w));
+          });
+        } else {
+          max = Math.max(max, parseLooseWeight(ex.weight));
+        }
+      });
+    });
+    return max;
+  }
+
+  function buildSessionLiftBadge(id, title, description, tier, keywords, targetSessions) {
+    return {
+      id: id,
+      title: title,
+      description: description,
+      category: 'lifts',
+      tier: tier,
+      kind: 'lift',
+      check: function (ctx) {
+        var n = countSessionsWithLift(ctx.workouts, keywords);
+        return {
+          unlocked: n >= targetSessions,
+          progress: n,
+          target: targetSessions,
+          progressLabel: n + ' / ' + targetSessions + ' sessions'
         };
       }
     };
@@ -417,19 +497,114 @@
         return { unlocked: n >= 5, progress: n, target: 5, progressLabel: n + ' / 5 PRs' };
       }
     },
+    buildSessionLiftBadge(
+      'logged-bench',
+      'First Bench',
+      'Log a bench press in any workout',
+      'bronze',
+      ['bench press', 'bench'],
+      1
+    ),
+    buildSessionLiftBadge(
+      'logged-squat',
+      'First Squat',
+      'Log a squat in any workout',
+      'bronze',
+      ['back squat', 'front squat', 'squat'],
+      1
+    ),
+    buildSessionLiftBadge(
+      'logged-deadlift',
+      'First Deadlift',
+      'Log a deadlift in any workout',
+      'bronze',
+      ['deadlift', 'dead lift'],
+      1
+    ),
+    buildSessionLiftBadge(
+      'logged-ohp',
+      'Overhead Initiation',
+      'Log an overhead / military press',
+      'bronze',
+      ['overhead press', 'ohp', 'military press', 'strict press'],
+      1
+    ),
+    buildSessionLiftBadge(
+      'logged-row',
+      'Row Rookie',
+      'Log a barbell, DB, or cable row',
+      'bronze',
+      ['barbell row', 'dumbbell row', 'cable row', 'seated row', 'pendlay row', 't-bar row', 'chest-supported row'],
+      1
+    ),
+    buildSessionLiftBadge(
+      'logged-pullup',
+      'Chin Up',
+      'Log pull-ups or chin-ups',
+      'bronze',
+      ['pull-up', 'pull up', 'pullup', 'chin-up', 'chin up', 'chinup'],
+      1
+    ),
+    buildSessionLiftBadge(
+      'logged-lunge',
+      'Split Stance',
+      'Log lunges or split squats',
+      'bronze',
+      ['lunge', 'split squat', 'bulgarian'],
+      1
+    ),
+    buildSessionLiftBadge(
+      'logged-hip-thrust',
+      'Hip Drive',
+      'Log a hip thrust or glute bridge',
+      'bronze',
+      ['hip thrust', 'glute bridge'],
+      1
+    ),
+    buildSessionLiftBadge(
+      'bench-sessions-10',
+      'Bench Regular',
+      'Bench press in 10 different sessions',
+      'silver',
+      ['bench press', 'bench'],
+      10
+    ),
+    buildSessionLiftBadge(
+      'squat-sessions-10',
+      'Squat Habit',
+      'Squat in 10 different sessions',
+      'silver',
+      ['back squat', 'front squat', 'squat'],
+      10
+    ),
+    buildSessionLiftBadge(
+      'deadlift-sessions-10',
+      'Pull Habit',
+      'Deadlift in 10 different sessions',
+      'silver',
+      ['deadlift', 'dead lift'],
+      10
+    ),
     buildLiftBadge('bench-135', 'Plate Club', 'Bench press 135 lb or more', 'bronze', ['bench'], 135),
     buildLiftBadge('bench-185', 'Two Plates', 'Bench press 185 lb or more', 'silver', ['bench'], 185),
     buildLiftBadge('bench-225', 'Three Plates', 'Bench press 225 lb or more', 'gold', ['bench'], 225),
+    buildLiftBadge('bench-275', 'Almost Elite', 'Bench press 275 lb or more', 'gold', ['bench'], 275),
     buildLiftBadge('bench-315', 'Elite Presser', 'Bench press 315 lb or more', 'platinum', ['bench'], 315),
     buildLiftBadge('squat-135', 'Squat Starter', 'Squat 135 lb or more', 'bronze', ['squat'], 135),
     buildLiftBadge('squat-225', 'Deep Waters', 'Squat 225 lb or more', 'silver', ['squat'], 225),
+    buildLiftBadge('squat-275', 'Under the Bar', 'Squat 275 lb or more', 'silver', ['squat'], 275),
     buildLiftBadge('squat-315', 'Quad King', 'Squat 315 lb or more', 'gold', ['squat'], 315),
     buildLiftBadge('squat-405', 'Squat Titan', 'Squat 405 lb or more', 'platinum', ['squat'], 405),
+    buildLiftBadge('deadlift-135', 'First Pull', 'Deadlift 135 lb or more', 'bronze', ['deadlift', 'dead lift'], 135),
     buildLiftBadge('deadlift-225', 'Pull Initiate', 'Deadlift 225 lb or more', 'bronze', ['deadlift', 'dead lift'], 225),
     buildLiftBadge('deadlift-315', 'Heavy Puller', 'Deadlift 315 lb or more', 'silver', ['deadlift', 'dead lift'], 315),
     buildLiftBadge('deadlift-405', 'Four Plates', 'Deadlift 405 lb or more', 'gold', ['deadlift', 'dead lift'], 405),
     buildLiftBadge('deadlift-500', 'Half Ton Club', 'Deadlift 500 lb or more', 'legendary', ['deadlift', 'dead lift'], 500),
+    buildLiftBadge('ohp-95', 'Press Primer', 'Overhead press 95 lb or more', 'bronze', ['overhead', 'ohp', 'military press', 'strict press'], 95),
     buildLiftBadge('ohp-135', 'Press Pass', 'Overhead press 135 lb or more', 'silver', ['overhead', 'ohp', 'military press', 'strict press'], 135),
+    buildLiftBadge('ohp-185', 'Strict Strength', 'Overhead press 185 lb or more', 'gold', ['overhead', 'ohp', 'military press', 'strict press'], 185),
+    buildLiftBadge('row-185', 'Row Strength', 'Row 185 lb or more', 'silver', ['row'], 185),
+    buildLiftBadge('row-225', 'Thick Back', 'Row 225 lb or more', 'gold', ['row'], 225),
     buildLiftBadge('log-185', 'Log Loader', 'Log press 185 lb or more', 'gold', ['log', 'log press'], 185),
     buildLiftBadge('stone-200', 'Stone Shoulder', 'Atlas stone 200 lb or more', 'gold', ['atlas', 'stone'], 200),
     {
@@ -440,9 +615,12 @@
       tier: 'gold',
       kind: 'lift',
       check: function (ctx) {
-        var sq = maxLiftLb(ctx.prs, ['squat']);
-        var bp = maxLiftLb(ctx.prs, ['bench']);
-        var dl = maxLiftLb(ctx.prs, ['deadlift', 'dead lift']);
+        var sq = Math.max(maxLiftLb(ctx.prs, ['squat']), maxLoggedLiftLb(ctx.workouts, ['squat']));
+        var bp = Math.max(maxLiftLb(ctx.prs, ['bench']), maxLoggedLiftLb(ctx.workouts, ['bench']));
+        var dl = Math.max(
+          maxLiftLb(ctx.prs, ['deadlift', 'dead lift']),
+          maxLoggedLiftLb(ctx.workouts, ['deadlift', 'dead lift'])
+        );
         var total = sq + bp + dl;
         return {
           unlocked: total >= 500,
@@ -460,9 +638,12 @@
       tier: 'legendary',
       kind: 'lift',
       check: function (ctx) {
-        var sq = maxLiftLb(ctx.prs, ['squat']);
-        var bp = maxLiftLb(ctx.prs, ['bench']);
-        var dl = maxLiftLb(ctx.prs, ['deadlift', 'dead lift']);
+        var sq = Math.max(maxLiftLb(ctx.prs, ['squat']), maxLoggedLiftLb(ctx.workouts, ['squat']));
+        var bp = Math.max(maxLiftLb(ctx.prs, ['bench']), maxLoggedLiftLb(ctx.workouts, ['bench']));
+        var dl = Math.max(
+          maxLiftLb(ctx.prs, ['deadlift', 'dead lift']),
+          maxLoggedLiftLb(ctx.workouts, ['deadlift', 'dead lift'])
+        );
         var total = sq + bp + dl;
         return {
           unlocked: total >= 1000,
@@ -534,12 +715,171 @@
     });
   }
 
+  var SEEN_KEY_BASE = 'strongman-achievements-seen';
+
+  function userSuffix() {
+    try {
+      if (typeof window.getCurrentUser !== 'function') return '_guest';
+      var u = window.getCurrentUser();
+      return u && u.id != null ? '_u' + u.id : '_guest';
+    } catch (e) {
+      return '_guest';
+    }
+  }
+
+  function seenStorageKey() {
+    return SEEN_KEY_BASE + userSuffix();
+  }
+
+  function loadSeenIds() {
+    try {
+      var raw = localStorage.getItem(seenStorageKey());
+      if (!raw) return {};
+      var data = JSON.parse(raw);
+      return data && typeof data === 'object' ? data : {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function saveSeenIds(map) {
+    try {
+      localStorage.setItem(seenStorageKey(), JSON.stringify(map || {}));
+    } catch (e) {}
+  }
+
+  function markSeen(ids) {
+    var map = loadSeenIds();
+    (ids || []).forEach(function (id) {
+      if (id) map[id] = true;
+    });
+    saveSeenIds(map);
+  }
+
+  function findNewUnlocks(user, opts) {
+    var state = evaluate(user, opts);
+    var seen = loadSeenIds();
+    var knownAny = Object.keys(seen).length > 0;
+    var fresh = state.unlocked.filter(function (ach) {
+      return !seen[ach.id];
+    });
+    // First ever evaluation: seed everything so rejoining doesn't spam unlock toasts.
+    if (!knownAny && state.unlockedCount) {
+      markSeen(
+        state.unlocked.map(function (a) {
+          return a.id;
+        })
+      );
+      return [];
+    }
+    return fresh;
+  }
+
+  function escapeHtml(str) {
+    return String(str || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function iconSvgForKind(kind) {
+    if (kind === 'cardio') {
+      return '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h3l2-5 3 10 2-5h6"/></svg>';
+    }
+    if (kind === 'lift') {
+      return '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8h12M6 16h12M4 10v4M20 10v4M9 6v12M15 6v12"/></svg>';
+    }
+    return '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l2.2 4.5 5 .7-3.6 3.5.9 5L12 14.8 7.5 16.7l.9-5L4.8 8.2l5-.7L12 3z"/></svg>';
+  }
+
+  var unlockQueue = [];
+  var unlockShowing = false;
+
+  function dismissUnlockUi() {
+    var el = document.getElementById('sm-badge-unlock');
+    if (el) el.remove();
+    unlockShowing = false;
+    if (unlockQueue.length) showNextUnlock();
+  }
+
+  function showNextUnlock() {
+    if (unlockShowing || !unlockQueue.length) return;
+    unlockShowing = true;
+    var ach = unlockQueue.shift();
+    markSeen([ach.id]);
+    var remaining = unlockQueue.length;
+    var overlay = document.createElement('div');
+    overlay.id = 'sm-badge-unlock';
+    overlay.className = 'sm-badge-unlock';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-labelledby', 'sm-badge-unlock-title');
+    overlay.innerHTML =
+      '<div class="sm-badge-unlock-card">' +
+      '<div class="sm-badge-unlock-burst" aria-hidden="true"></div>' +
+      '<p class="sm-badge-unlock-kicker">Badge unlocked</p>' +
+      '<div class="sm-badge-unlock-icon" aria-hidden="true">' +
+      iconSvgForKind(ach.kind) +
+      '</div>' +
+      '<h2 class="sm-badge-unlock-title" id="sm-badge-unlock-title">' +
+      escapeHtml(ach.title) +
+      '</h2>' +
+      '<p class="sm-badge-unlock-desc">' +
+      escapeHtml(ach.description) +
+      '</p>' +
+      '<span class="sm-badge-unlock-tier">' +
+      escapeHtml(ach.tier || 'bronze') +
+      '</span>' +
+      '<div><button type="button" class="sm-badge-unlock-btn" id="sm-badge-unlock-ok">Nice</button></div>' +
+      (remaining
+        ? '<p class="sm-badge-unlock-queue">+' + remaining + ' more unlock' + (remaining === 1 ? '' : 's') + '</p>'
+        : '') +
+      '</div>';
+    document.body.appendChild(overlay);
+    var ok = overlay.querySelector('#sm-badge-unlock-ok');
+    if (ok) ok.focus();
+    function close() {
+      dismissUnlockUi();
+    }
+    if (ok) ok.addEventListener('click', close);
+    overlay.addEventListener('click', function (e) {
+      if (e.target === overlay) close();
+    });
+  }
+
+  function celebrateNewUnlocks(user, opts) {
+    if (!user || !user.id) return [];
+    if (typeof window.matchMedia === 'function') {
+      try {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          var quiet = findNewUnlocks(user, opts);
+          markSeen(
+            quiet.map(function (a) {
+              return a.id;
+            })
+          );
+          return quiet;
+        }
+      } catch (e) {}
+    }
+    var fresh = findNewUnlocks(user, opts);
+    if (!fresh.length) return [];
+    // Prefer lift unlocks in celebration order (newest/highest tier first already).
+    unlockQueue = unlockQueue.concat(fresh);
+    showNextUnlock();
+    return fresh;
+  }
+
   window.Achievements = {
     CATALOG: CATALOG,
     CATEGORIES: CATEGORIES,
     TIER_ORDER: TIER_ORDER,
     evaluate: evaluate,
     buildContext: buildContext,
-    getById: getById
+    getById: getById,
+    findNewUnlocks: findNewUnlocks,
+    celebrateNewUnlocks: celebrateNewUnlocks,
+    markSeen: markSeen
   };
 })();

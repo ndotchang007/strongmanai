@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="strongman-api-base" content="https://strongmanai-api.onrender.com/api/v1">
+    <meta name="strongman-api-base" content="http://127.0.0.1:8080/api/v1">
     <title>Strongman AI – Log &amp; Progress</title>
     <link rel="icon" type="image/png" href="/assets/logo.png">
     <link rel="apple-touch-icon" href="/assets/logo.png">
+    <script src="/shared/theme.js"></script>
     <link rel="stylesheet" href="/css/home.css">
     <link rel="stylesheet" href="/css/app-nav.css">
     <link rel="stylesheet" href="/css/notification-bell.css">
@@ -46,88 +47,41 @@
     </aside>
     <div class="main-wrap">
         <main class="create-main">
-            <header class="create-mode-header" aria-label="Create options">
-                <nav class="create-mode-tabs" role="tablist" aria-label="Log and progress">
-                    <button type="button" class="create-mode-tab active" role="tab" aria-selected="true" aria-controls="create-panel-workout" id="create-tab-workout" data-mode="workout">Today's session</button>
-                    <button type="button" class="create-mode-tab" role="tab" aria-selected="false" aria-controls="create-panel-tracking" id="create-tab-tracking" data-mode="tracking">Progress</button>
+            <header class="create-mode-header tracking-mode-header" aria-label="Logbook sections">
+                <nav class="create-mode-tabs tracking-mode-tabs" role="tablist" aria-label="Progress and split">
+                    <button type="button" class="create-mode-tab tracking-mode-tab active" role="tab" id="tracking-tab-stats" aria-selected="true" aria-controls="tracking-panel-stats" data-tracking-panel="stats">Stats</button>
+                    <button type="button" class="create-mode-tab tracking-mode-tab" role="tab" id="tracking-tab-archive" aria-selected="false" aria-controls="tracking-panel-archive" data-tracking-panel="archive">Timeline</button>
+                    <button type="button" class="create-mode-tab tracking-mode-tab" role="tab" id="tracking-tab-pr" aria-selected="false" aria-controls="tracking-panel-pr" data-tracking-panel="prs">Personal bests</button>
                     <button type="button" class="create-mode-tab" role="tab" aria-selected="false" aria-controls="create-panel-split" id="create-tab-split" data-mode="split">Workout split<span class="split-tab-badge" id="create-split-tab-badge" hidden aria-label="New AI split saved"></span></button>
                 </nav>
                 <div class="create-mode-rule" aria-hidden="true"></div>
             </header>
 
-            <div class="create-intro session-intro">
-                <h1 class="create-title">Today's session</h1>
-                <p class="create-subtitle">Track sets in real time with cards, spreadsheet, timeline, or map views.</p>
-            </div>
-
-            <section id="create-panel-workout" class="create-panel create-panel--active" role="tabpanel" aria-labelledby="create-tab-workout">
-                <div class="session-page" id="create-workout-shell" data-log-style="coach">
-
-                <section class="session-zone session-zone--coach" aria-labelledby="coach-rocky-heading">
-                    <div class="coach-slim-panel">
-                        <div class="coach-slim-head">
-                            <div class="coach-hero-brand">
-                                <div class="coach-eddie-mark" aria-hidden="true">R</div>
-                                <div class="coach-hero-copy">
-                                    <p class="coach-card-eyebrow">Rocky · your corner</p>
-                                    <h2 class="coach-hero-title coach-slim-title" id="coach-rocky-heading">Need a workout or recovery advice?</h2>
-                                </div>
-                            </div>
-                            <p class="coach-slim-lede">Chat with Rocky on the Coach page — workouts, game-day tips, and straight talk tailored to your schedule.</p>
-                            <a href="/generate" class="coach-primary-btn coach-slim-link">Open Coach</a>
-                        </div>
-                    </div>
-
-                    <div class="coach-support-grid">
-                        <section class="coach-support-card coach-support-card--templates" id="create-archive-section" aria-labelledby="coach-templates-heading">
-                            <div class="coach-support-head">
-                                <h3 class="coach-support-title" id="coach-templates-heading">Saved plans</h3>
-                                <p class="coach-support-lede">Reuse a workout Rocky already built.</p>
-                            </div>
-                            <p class="create-error" id="create-archive-error" role="alert" hidden></p>
-                            <div class="coach-templates-grid create-archive-list" id="create-archive-list" role="list"></div>
-                        </section>
-
-                        <aside class="coach-support-card coach-support-card--insights create-overload-aside" id="create-overload-aside" aria-label="Progressive overload coach">
-                            <div class="create-overload-inner">
-                                <h2 class="create-overload-title">Load insights</h2>
-                                <p class="create-overload-lede">Get next-set suggestions once exercises are in your logbook.</p>
-                                <p class="create-overload-empty" id="create-overload-empty">Add exercises to unlock predictions.</p>
-                                <div class="create-overload-active" id="create-overload-active" hidden>
-                                    <p class="create-overload-quota" id="create-overload-quota" aria-live="polite"></p>
-                                    <button type="button" class="create-overload-predict" id="create-overload-predict">Predict next loads</button>
-                                    <p class="create-error" id="create-overload-error" role="alert" hidden></p>
-                                    <div class="create-overload-summary" id="create-overload-summary" role="region" aria-live="polite" hidden>
-                                        <p class="create-overload-summary-title">Session read</p>
-                                        <ul class="create-overload-summary-list" id="create-overload-summary-list"></ul>
-                                    </div>
-                                </div>
-                            </div>
-                        </aside>
-                    </div>
-                </section>
-
-                <div class="session-zone-divider" aria-hidden="true">
-                    <span>Your logbook</span>
+            <div id="create-progress-shell">
+            <section class="logbook-mode-hero" id="logbook-mode-hero" aria-labelledby="logbook-mode-hero-title">
+                <h2 class="logbook-mode-hero-title" id="logbook-mode-hero-title">Ready to train?</h2>
+                <p class="logbook-mode-hero-lede">Open workout mode for a guided session, or quickly log sets below.</p>
+                <div class="logbook-mode-actions">
+                    <button type="button" id="wd-start-workout-btn" class="wd-start-btn wd-start-btn--hero">Start workout</button>
+                    <button type="button" id="wd-quick-log-btn" class="wd-quick-log-btn">Quick log</button>
                 </div>
+            </section>
+
+            <section id="create-panel-workout" class="create-panel" role="region" aria-label="Quick log workout" hidden>
+                <div class="session-page" id="create-workout-shell" data-log-style="coach">
 
                 <section class="session-zone session-zone--logbook session-logbook-zone">
                     <div class="create-rocky-split-rec" id="create-rocky-split-rec" hidden role="status" aria-live="polite">
                         <p class="create-rocky-split-rec-title" id="create-rocky-split-rec-title"></p>
                         <pre class="create-rocky-split-rec-body" id="create-rocky-split-rec-body"></pre>
                     </div>
-                    <section class="logbook-mode-hero" id="logbook-mode-hero" aria-labelledby="logbook-mode-hero-title">
-                        <h2 class="logbook-mode-hero-title" id="logbook-mode-hero-title">Ready to train?</h2>
-                        <p class="logbook-mode-hero-lede">Full-screen workout mode with rest timer, Rocky coach, and every logging view — Focus, Cards, Sheet, Timeline, and Map.</p>
-                        <button type="button" id="wd-start-workout-btn" class="wd-start-btn wd-start-btn--hero">Start workout mode</button>
-                        <button type="button" id="wd-quick-log-btn" class="wd-quick-log-btn">Quick log on this page instead</button>
-                    </section>
 
                 <form class="logbook-form" id="create-workout-form">
-                    <div id="logbook-quick-section" class="logbook-quick-section">
+                    <div id="logbook-quick-section" class="logbook-quick-section logbook-quick-section--collapsed" hidden>
 
-                    <div class="logbook-card logbook-card--session" aria-labelledby="log-session-heading">
-                        <h3 class="logbook-card-title" id="log-session-heading">Session details</h3>
+                    <div class="logbook-card logbook-card--session logbook-card--session-compact" aria-labelledby="log-session-heading">
+                        <details class="logbook-session-details" open>
+                            <summary class="logbook-card-title" id="log-session-heading">Session details</summary>
                     <div class="create-field-row">
                         <div class="create-field create-field--grow">
                             <label for="create-datetime">Date &amp; time</label>
@@ -135,12 +89,12 @@
                         </div>
                         <div class="create-field create-field--grow">
                             <label for="create-split">Split / focus</label>
-                            <input type="text" id="create-split" class="create-input" name="split" placeholder="e.g. Lower · Events" aria-label="Split or focus name">
+                            <input type="text" id="create-split" class="create-input" name="split" placeholder="e.g. Push day" aria-label="Split or focus name">
                         </div>
                     </div>
                     <div class="create-field">
-                        <label for="create-session-title">Session title <span class="create-optional">(optional)</span></label>
-                        <input type="text" id="create-session-title" class="create-input" name="title" placeholder="e.g. Yoke + sandbag" aria-label="Session title">
+                        <label for="create-session-title">Title <span class="create-optional">(optional)</span></label>
+                        <input type="text" id="create-session-title" class="create-input" name="title" placeholder="Optional title" aria-label="Session title">
                     </div>
                     <fieldset class="log-session-type">
                         <legend class="visually-hidden">Session type</legend>
@@ -151,7 +105,7 @@
                             </label>
                             <label class="log-session-pill">
                                 <input type="radio" name="create-session-type" id="create-session-type-cardio" value="cardio">
-                                <span>Cardio only</span>
+                                <span>Cardio</span>
                             </label>
                             <label class="log-session-pill">
                                 <input type="radio" name="create-session-type" id="create-session-type-mixed" value="mixed">
@@ -159,6 +113,7 @@
                             </label>
                         </div>
                     </fieldset>
+                        </details>
                     </div>
 
                     <div id="create-cardio-section" class="create-cardio-section logbook-card logbook-card--cardio" hidden>
@@ -327,17 +282,8 @@
                 </div>
             </section>
 
-            <section id="create-panel-tracking" class="create-panel" role="tabpanel" aria-labelledby="create-tab-tracking" hidden>
+            <section id="create-panel-tracking" class="create-panel create-panel--active" role="region" aria-label="Progress">
 <div class="tracking-tab-layout" id="tracking-tab-layout" data-active-panel="stats" data-stats-range="month">
-                <header class="create-mode-header tracking-mode-header" aria-label="Tracking sections">
-                    <nav class="create-mode-tabs tracking-mode-tabs" role="tablist">
-                        <button type="button" class="create-mode-tab tracking-mode-tab active" role="tab" id="tracking-tab-stats" aria-selected="true" aria-controls="tracking-panel-stats" data-tracking-panel="stats">Stats</button>
-                        <button type="button" class="create-mode-tab tracking-mode-tab" role="tab" id="tracking-tab-archive" aria-selected="false" aria-controls="tracking-panel-archive" data-tracking-panel="archive">Workout archive</button>
-                        <button type="button" class="create-mode-tab tracking-mode-tab" role="tab" id="tracking-tab-pr" aria-selected="false" aria-controls="tracking-panel-pr" data-tracking-panel="prs">Personal bests</button>
-                    </nav>
-                    <div class="create-mode-rule" aria-hidden="true"></div>
-                </header>
-
                 <div class="tracking-panels-wrap">
                     <div class="tracking-panel tracking-panel--stats" id="tracking-panel-stats" role="tabpanel" aria-labelledby="tracking-tab-stats">
                         <div class="tracking-stats-hero">
@@ -350,46 +296,93 @@
                                     <button type="button" class="tracking-stats-range-btn" data-stats-range="all">All Time</button>
                                 </nav>
                             </div>
-                            <p class="tracking-stats-range-hint" id="tracking-stats-range-hint">Showing <strong>this month</strong> — tap a tile for details.</p>
+                            <p class="tracking-stats-range-hint" id="tracking-stats-range-hint">Showing <strong>this month</strong> — charts use logged sets, reps &amp; weight.</p>
                         </div>
                         <div class="tracking-panel-fill tracking-panel-fill--stats">
                             <div class="tracking-panel-scroll tracking-stats-scroll">
-                <section class="tracking-summary-strip" aria-label="Summary for selected time range">
-                    <article class="tracking-summary-card">
-                        <h3 class="tracking-summary-label">Workouts</h3>
-                        <p class="tracking-summary-value" id="tracking-summary-workouts">0</p>
-                        <p class="tracking-summary-hint">Sessions in range</p>
-                    </article>
-                    <article class="tracking-summary-card">
-                        <h3 class="tracking-summary-label">Sets logged</h3>
-                        <p class="tracking-summary-value" id="tracking-summary-sets">0</p>
-                        <p class="tracking-summary-hint">From strength blocks</p>
-                    </article>
-                    <article class="tracking-summary-card">
-                        <h3 class="tracking-summary-label">Avg intensity</h3>
-                        <p class="tracking-summary-value" id="tracking-summary-intensity">—</p>
-                        <p class="tracking-summary-hint" id="tracking-summary-intensity-label">Session average</p>
-                    </article>
-                    <article class="tracking-summary-card">
-                        <h3 class="tracking-summary-label">PRs</h3>
-                        <p class="tracking-summary-value" id="tracking-summary-prs">0</p>
-                        <p class="tracking-summary-hint">Personal bests in range</p>
-                    </article>
-                    <article class="tracking-summary-card">
-                        <h3 class="tracking-summary-label">Cardio time</h3>
-                        <p class="tracking-summary-value" id="tracking-summary-cardio">0</p>
-                        <p class="tracking-summary-hint">Minutes with cardio logged</p>
-                    </article>
-                </section>
-                <div class="grid-container" id="tracking-stats-grid" aria-label="Stats tiles">
+                <details class="tracking-strength-summary" id="tracking-strength-summary" open>
+                    <summary class="tracking-strength-summary-toggle">
+                        <span class="tracking-strength-summary-kicker">Strength overview</span>
+                        <span class="tracking-strength-summary-title" id="tracking-strength-verdict">Reading your logs…</span>
+                        <span class="tracking-strength-summary-hint">Tap to hide / show</span>
+                    </summary>
+                    <div class="tracking-strength-summary-body">
+                        <p class="tracking-strength-summary-lead" id="tracking-strength-lead">
+                            These charts show whether you’re getting stronger — rising load and estimated maxes mean progress; flat lines mean you’re maintaining.
+                        </p>
+                        <ul class="tracking-strength-metrics" id="tracking-strength-metrics" aria-label="Key numbers"></ul>
+                        <div class="tracking-strength-glossary" id="tracking-strength-glossary">
+                            <p><strong>Training volume</strong> — total weight × reps across a session. Upward trend usually means more work capacity / strength.</p>
+                            <p><strong>Peak load</strong> — heaviest working set for a lift. Climbing peaks are the clearest “gaining strength” signal.</p>
+                            <p><strong>Est. 1RM</strong> — estimated max from your best set (Epley). Useful when you don’t test true singles.</p>
+                            <p><strong>Session frequency</strong> — how often you train. Strength needs both load and enough sessions.</p>
+                            <p><strong>Intensity score</strong> — how hard sessions felt (your 0–100 rating), not the same as bar weight.</p>
+                        </div>
+                    </div>
+                </details>
+                <div class="grid-container tracking-stats-grid--charts" id="tracking-stats-grid" aria-label="Strength charts">
+                    <div class="card chart-card tracking-complication-card" data-grid-card-id="volume-chart" data-complication-detail="volume-chart" draggable="false">
+                        <div class="tracking-grid-drag-handle" role="button" tabindex="0" aria-label="Drag to reorder this tile" title="Drag to reorder"></div>
+                        <header class="tracking-chart-card-head">
+                            <h2 class="tracking-chart-card-title">Training volume</h2>
+                            <p class="tracking-chart-card-sub" id="tracking-volume-chart-sub">Load over time</p>
+                        </header>
+                        <div class="tracking-chart-canvas-wrap">
+                            <canvas id="trackingVolumeChart" aria-label="Total training volume over time"></canvas>
+                        </div>
+                        <p class="tracking-chart-caption" id="tracking-volume-chart-caption"></p>
+                    </div>
+
+                    <div class="card chart-card tracking-complication-card" data-grid-card-id="peak-chart" data-complication-detail="peak-chart" draggable="false">
+                        <div class="tracking-grid-drag-handle" role="button" tabindex="0" aria-label="Drag to reorder this tile" title="Drag to reorder"></div>
+                        <header class="tracking-chart-card-head tracking-chart-card-head--row">
+                            <div>
+                                <h2 class="tracking-chart-card-title">Peak load</h2>
+                                <p class="tracking-chart-card-sub" id="tracking-peak-chart-sub">Heaviest sets</p>
+                            </div>
+                            <label class="tracking-chart-select-label">
+                                <span class="visually-hidden">Exercise</span>
+                                <select id="tracking-peak-exercise" class="tracking-chart-select" aria-label="Exercise for peak load"></select>
+                            </label>
+                        </header>
+                        <div class="tracking-chart-canvas-wrap">
+                            <canvas id="trackingPeakChart" aria-label="Peak load for selected exercise"></canvas>
+                        </div>
+                        <p class="tracking-chart-caption" id="tracking-peak-chart-caption"></p>
+                    </div>
+
+                    <div class="card chart-card tracking-complication-card" data-grid-card-id="e1rm-chart" data-complication-detail="e1rm-chart" draggable="false">
+                        <div class="tracking-grid-drag-handle" role="button" tabindex="0" aria-label="Drag to reorder this tile" title="Drag to reorder"></div>
+                        <header class="tracking-chart-card-head">
+                            <h2 class="tracking-chart-card-title">Est. 1RM trend</h2>
+                            <p class="tracking-chart-card-sub" id="tracking-e1rm-chart-sub">Best estimated maxes</p>
+                        </header>
+                        <div class="tracking-chart-canvas-wrap">
+                            <canvas id="trackingE1rmChart" aria-label="Estimated one-rep max over time"></canvas>
+                        </div>
+                        <p class="tracking-chart-caption" id="tracking-e1rm-chart-caption"></p>
+                    </div>
+
+                    <div class="card chart-card tracking-complication-card" data-grid-card-id="compare-chart" data-complication-detail="compare-chart" draggable="false">
+                        <div class="tracking-grid-drag-handle" role="button" tabindex="0" aria-label="Drag to reorder this tile" title="Drag to reorder"></div>
+                        <header class="tracking-chart-card-head">
+                            <h2 class="tracking-chart-card-title">Lift progress</h2>
+                            <p class="tracking-chart-card-sub" id="tracking-compare-chart-sub">Early vs late in range</p>
+                        </header>
+                        <div class="tracking-chart-canvas-wrap">
+                            <canvas id="trackingCompareChart" aria-label="Peak load early versus late in range"></canvas>
+                        </div>
+                        <p class="tracking-chart-caption" id="tracking-compare-chart-caption"></p>
+                    </div>
+
                     <div class="card chart-card tracking-complication-card" data-grid-card-id="chart" data-complication-detail="chart" draggable="false">
                         <div class="tracking-grid-drag-handle" role="button" tabindex="0" aria-label="Drag to reorder this tile" title="Drag to reorder"></div>
                         <header class="tracking-chart-card-head">
-                            <h2 class="tracking-chart-card-title">Session trend</h2>
-                            <p class="tracking-chart-card-sub" id="tracking-chart-card-sub">By calendar year</p>
+                            <h2 class="tracking-chart-card-title">Session frequency</h2>
+                            <p class="tracking-chart-card-sub" id="tracking-chart-card-sub">How often you train</p>
                         </header>
                         <div class="tracking-chart-canvas-wrap">
-                            <canvas id="statsChart" aria-label="Progress over time"></canvas>
+                            <canvas id="statsChart" aria-label="Session frequency over time"></canvas>
                         </div>
                         <p class="tracking-chart-caption" id="tracking-chart-caption"></p>
                     </div>
@@ -397,36 +390,13 @@
                     <div class="card chart-card tracking-complication-card" data-grid-card-id="intensity-chart" data-complication-detail="intensity-chart" draggable="false">
                         <div class="tracking-grid-drag-handle" role="button" tabindex="0" aria-label="Drag to reorder this tile" title="Drag to reorder"></div>
                         <header class="tracking-chart-card-head">
-                            <h2 class="tracking-chart-card-title">Session intensity</h2>
-                            <p class="tracking-chart-card-sub" id="tracking-intensity-chart-sub">Your scores</p>
+                            <h2 class="tracking-chart-card-title">How hard it felt</h2>
+                            <p class="tracking-chart-card-sub" id="tracking-intensity-chart-sub">Session intensity scores</p>
                         </header>
                         <div class="tracking-chart-canvas-wrap">
                             <canvas id="trackingIntensityChart" aria-label="Average session intensity over time"></canvas>
                         </div>
                         <p class="tracking-chart-caption" id="tracking-intensity-chart-caption"></p>
-                    </div>
-
-                    <div class="card tracking-stats-calendar-card tracking-complication-card" data-grid-card-id="calendar" data-complication-detail="calendar" draggable="false">
-                        <div class="tracking-grid-drag-handle" role="button" tabindex="0" aria-label="Drag to reorder this tile" title="Drag to reorder"></div>
-                        <div class="calendar-header" aria-hidden="true"><span class="calendar-dow-accent">Su</span> Mo Tu We Th Fr Sa</div>
-                        <div class="stat-label"><span class="val" id="tracking-stat-days">0</span> days with a workout</div>
-                        <div class="tracking-stats-month-note">(This month)</div>
-                    </div>
-                    <div class="card complication-card tracking-complication-card" data-grid-card-id="sets" data-complication-detail="sets" draggable="false">
-                        <div class="tracking-grid-drag-handle" role="button" tabindex="0" aria-label="Drag to reorder this tile" title="Drag to reorder"></div>
-                        <div class="complication-heading"><span class="val" id="tracking-stat-sets">0</span> sets logged</div>
-                    </div>
-
-
-                    <div class="card pr-card tracking-complication-card" data-grid-card-id="pr" data-complication-detail="pr" draggable="false">
-                        <div class="tracking-grid-drag-handle" role="button" tabindex="0" aria-label="Drag to reorder this tile" title="Drag to reorder"></div>
-                        <h3 class="pr-card-title">Personal records</h3>
-                        <ul class="pr-list" id="tracking-pr-list-main"></ul>
-                        <p class="tracking-pr-card-empty" id="tracking-pr-card-empty">No PRs logged yet. Open the Personal bests tab to add one.</p>
-                        <div id="more-records">
-                            <ul class="pr-list" id="tracking-pr-list-more"></ul>
-                        </div>
-                        <button type="button" class="more-btn" id="expand-btn" aria-expanded="false" aria-controls="more-records">...</button>
                     </div>
                 </div>
                 <section class="tracking-physique-section" aria-labelledby="tracking-gallery-heading">
@@ -435,62 +405,41 @@
                         <p class="tracking-gallery-lede">Download transparent story stickers from any logged workout and add them in Instagram Stories over your own photo or video.</p>
                     </div>
                     <div class="tracking-physique-gallery" id="tracking-physique-gallery" aria-label="Workout progress photos"></div>
-                    <p class="tracking-physique-empty" id="tracking-physique-empty" hidden>No photos yet. Open Workout archive and use &ldquo;Story graphic&rdquo; on a session.</p>
+                    <p class="tracking-physique-empty" id="tracking-physique-empty" hidden>No photos yet. Add one after a workout, or open Timeline and share a story sticker.</p>
                 </section>
                             </div>
                         </div>
                     </div>
 
                     <div class="tracking-panel tracking-panel--archive" id="tracking-panel-archive" role="tabpanel" hidden aria-labelledby="tracking-tab-archive">
-                        <section class="dash-archive" aria-labelledby="tracking-archive-heading">
+                        <section class="dash-archive dash-archive--timeline" aria-labelledby="tracking-archive-heading">
                             <div class="dash-section-head">
                                 <div>
                                     <p class="dash-eyebrow">Your history</p>
-                                    <h2 class="dash-section-title" id="tracking-archive-heading">Workout archive</h2>
-                                    <p class="dash-section-lead">Every session you&apos;ve logged. Search or switch layout — same data, different view.</p>
+                                    <h2 class="dash-section-title" id="tracking-archive-heading">Timeline</h2>
+                                    <p class="dash-section-lead">Logged sessions in one feed. Tap a workout to view or edit it.</p>
                                 </div>
                                 <span class="dash-archive-count" id="tracking-archive-count" aria-live="polite">0 sessions</span>
                             </div>
 
-                            <div class="dash-stats dash-archive-stats" id="tracking-archive-stats" aria-label="Archive summary">
-                                <article class="dash-stat-card">
-                                    <p class="dash-stat-value" id="tracking-archive-stat-shown">0</p>
-                                    <p class="dash-stat-label">Showing</p>
-                                </article>
-                                <article class="dash-stat-card">
-                                    <p class="dash-stat-value" id="tracking-archive-stat-lifts">0</p>
-                                    <p class="dash-stat-label">Lifts</p>
-                                </article>
-                                <article class="dash-stat-card">
-                                    <p class="dash-stat-value" id="tracking-archive-stat-intensity">—</p>
-                                    <p class="dash-stat-label">Avg intensity</p>
-                                </article>
-                                <article class="dash-stat-card dash-stat-card--accent">
-                                    <p class="dash-stat-value" id="tracking-archive-stat-total">0</p>
-                                    <p class="dash-stat-label">All sessions</p>
-                                </article>
-                            </div>
-
-                            <div class="dash-archive-toolbar">
+                            <div class="dash-archive-toolbar dash-archive-toolbar--timeline">
                                 <form class="dash-archive-search-form" role="search" id="tracking-archive-search-form" action="#" onsubmit="return false;">
                                     <label class="visually-hidden" for="tracking-archive-search">Search workouts</label>
-                                    <input type="search" id="tracking-archive-search" class="dash-archive-search-input" placeholder="Search title, split, lifts, notes…" autocomplete="off" aria-label="Search logged workouts">
+                                    <input type="search" id="tracking-archive-search" class="dash-archive-search-input" placeholder="Search by title, date, or exercise…" autocomplete="off" aria-label="Search by title, date, or exercise">
                                 </form>
-                                <div class="dash-archive-view-picker" role="toolbar" aria-label="Archive layout">
-                                    <span class="dash-archive-view-label">Layout</span>
-                                    <div class="dash-archive-view-btns" role="group" aria-label="Archive layout format">
-                                        <button type="button" class="dash-archive-view-btn active" data-archive-view="list" aria-pressed="true">List</button>
-                                        <button type="button" class="dash-archive-view-btn" data-archive-view="blocks" aria-pressed="false">Blocks</button>
-                                        <button type="button" class="dash-archive-view-btn" data-archive-view="timeline" aria-pressed="false">Timeline</button>
-                                        <button type="button" class="dash-archive-view-btn" data-archive-view="table" aria-pressed="false">Table</button>
-                                    </div>
-                                </div>
                             </div>
 
-                            <div class="dash-archive-results" id="tracking-archive-scroll" data-archive-view="list">
+                            <div class="dash-archive-results" id="tracking-archive-scroll" data-archive-view="timeline">
                                 <div id="tracking-archive-view-root" class="tracking-archive-view-root" aria-live="polite"></div>
                                 <p class="dash-archive-empty" id="tracking-archive-inline-empty">No workouts logged yet.</p>
                                 <p class="dash-archive-empty" id="tracking-archive-search-empty" hidden>No sessions match your search.</p>
+                            </div>
+                            <!-- kept for summary wiring; visually unused -->
+                            <div id="tracking-archive-stats" hidden>
+                                <span id="tracking-archive-stat-shown"></span>
+                                <span id="tracking-archive-stat-lifts"></span>
+                                <span id="tracking-archive-stat-intensity"></span>
+                                <span id="tracking-archive-stat-total"></span>
                             </div>
                         </section>
                     </div>
@@ -606,15 +555,20 @@
             </div>
             </section>
 
-            <section id="create-panel-split" class="create-panel" role="tabpanel" aria-labelledby="create-tab-split" hidden>
+            </div><!-- /create-progress-shell -->
+
+            <section id="create-panel-split" class="create-panel create-panel--split" role="tabpanel" aria-labelledby="create-tab-split" hidden>
                 <form class="create-form create-form--split" id="create-split-form">
-                    <div class="create-split-lede">
+                    <header class="create-split-hero">
+                        <p class="create-split-eyebrow">Program builder</p>
                         <h2 class="create-split-heading">Weekly split</h2>
-                        <p class="create-split-hint">Tap each day to add exercises, save routines from Rocky, and switch between saved splits. Weights fill in when you start a workout.</p>
-                    </div>
+                        <p class="create-split-hint">Build your training week day by day. Save multiple splits, switch anytime, and let Rocky fill weights when you start a workout.</p>
+                    </header>
                     <div id="create-split-editor-mount" class="split-editor-mount sports-editor-mount"></div>
                     <p class="create-error" id="create-split-error" role="alert" hidden></p>
-                    <button type="submit" class="create-submit">Save split</button>
+                    <div class="create-split-footer">
+                        <button type="submit" class="create-submit create-submit--split">Save split</button>
+                    </div>
                 </form>
                 <p class="create-message" id="create-split-message" hidden></p>
             </section>
@@ -787,10 +741,10 @@
             <div class="home-settings-body">
                 <section class="home-settings-section" aria-labelledby="settings-appearance-heading">
                     <h3 class="home-settings-section-title" id="settings-appearance-heading">Appearance</h3>
-                    <p class="home-settings-hint">Theme and preferences apply across the app.</p>
+                    <p class="home-settings-hint">Choose a named palette. Your pick saves across the app.</p>
                     <div class="home-settings-theme-row" role="group" aria-label="Color theme">
-                        <label class="home-settings-radio-label"><input type="radio" name="home-theme" value="dark" class="home-settings-radio"> Dark</label>
-                        <label class="home-settings-radio-label"><input type="radio" name="home-theme" value="light" class="home-settings-radio"> Light</label>
+                        <label class="home-settings-radio-label"><input type="radio" name="home-theme" value="dark" class="home-settings-radio"> Ember</label>
+                        <label class="home-settings-radio-label"><input type="radio" name="home-theme" value="light" class="home-settings-radio"> Daylight</label>
                         <label class="home-settings-radio-label"><input type="radio" name="home-theme" value="system" class="home-settings-radio"> System</label>
                     </div>
                 </section>
@@ -978,20 +932,23 @@
     <script src="/shared/timed-event-fields.js"></script>
     <script src="/shared/pr-log.js"></script>
     <script src="/shared/training-sync.js"></script>
+    <script src="/shared/coach-memory.js"></script>
     <script src="/shared/instagram-connect.js"></script>
     <script src="/shared/story-sticker.js"></script>
     <script src="/shared/workout-session.js"></script>
+    <script src="/shared/exercise-database.js"></script>
     <script src="/shared/workout-tracker.js"></script>
     <script src="/shared/post-workout-summary.js"></script>
     <script src="/shared/rocky-coaching-insights.js"></script>
     <script src="/shared/workout-dashboard.js"></script>
-    <script src="/shared/exercise-database.js"></script>
     <script src="/shared/athlete-context.js"></script>
     <script src="/shared/name-policy.js"></script>
     <script src="/shared/known-notes.js"></script>
     <script src="/shared/units.js"></script>
+    <script src="/shared/push-client.js"></script>
     <script src="/shared/settings-popup.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/shared/strength-stats.js"></script>
     <script src="/js/tracking.js"></script>
     <script src="/js/create.js"></script>
 </body>

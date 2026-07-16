@@ -3,15 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="strongman-api-base" content="https://strongmanai-api.onrender.com/api/v1">
+    <meta name="strongman-api-base" content="http://127.0.0.1:8080/api/v1">
     <title>Strongman AI – Dashboard</title>
     <link rel="icon" type="image/png" href="/assets/logo.png">
     <link rel="apple-touch-icon" href="/assets/logo.png">
+    <script src="/shared/theme.js"></script>
     <link rel="stylesheet" href="/css/home.css">
     <link rel="stylesheet" href="/css/server-wake.css">
     <link rel="stylesheet" href="/css/app-nav.css">
     <link rel="stylesheet" href="/css/workout-dashboard.css">
     <link rel="stylesheet" href="/css/settings-app.css">
+    <link rel="stylesheet" href="/css/notification-bell.css">
 </head>
 <body data-current-page="home">
     <aside class="site-sidebar" id="site-sidebar" aria-label="Main navigation">
@@ -56,6 +58,8 @@
                 <p class="dash-sport-tip" id="dash-sport-tip" hidden role="note"></p>
             </div>
         </header>
+
+        <section class="dash-daily" id="dash-daily-root" aria-label="Today’s training plan" hidden></section>
 
         <section class="dash-hero" aria-label="Start training">
             <button type="button" class="dash-start-btn" id="dash-start-workout">
@@ -111,6 +115,13 @@
         <section class="dash-quick" aria-labelledby="dash-quick-heading">
             <h2 class="dash-section-title" id="dash-quick-heading">Quick access</h2>
             <div class="dash-quick-grid">
+                <a href="/timeline" class="dash-quick-card">
+                    <span class="dash-quick-icon" aria-hidden="true">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 3v18"/><path d="M8 7h8M8 12h8M8 17h5" stroke-linecap="round"/></svg>
+                    </span>
+                    <span class="dash-quick-label">Timeline</span>
+                    <span class="dash-quick-desc">Workouts, injuries &amp; notes</span>
+                </a>
                 <a href="/generate" class="dash-quick-card">
                     <span class="dash-quick-icon" aria-hidden="true">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3l1.2 3.6L17 8l-3.8 1.2L12 13l-1.2-3.8L7 8l3.8-1.4L12 3z"/><path d="M5 18l1 2.5 1-2.5 2.5-1L7 14.5 6 12l-1 2.5L2.5 16 5 17z"/></svg>
@@ -204,10 +215,10 @@
             <div class="home-settings-body">
                 <section class="home-settings-section" aria-labelledby="settings-appearance-heading">
                     <h3 class="home-settings-section-title" id="settings-appearance-heading">Appearance</h3>
-                    <p class="home-settings-hint">Theme and preferences apply across the app.</p>
+                    <p class="home-settings-hint">Choose a named palette. Your pick saves across the app.</p>
                     <div class="home-settings-theme-row" role="group" aria-label="Color theme">
-                        <label class="home-settings-radio-label"><input type="radio" name="home-theme" value="dark" class="home-settings-radio"> Dark</label>
-                        <label class="home-settings-radio-label"><input type="radio" name="home-theme" value="light" class="home-settings-radio"> Light</label>
+                        <label class="home-settings-radio-label"><input type="radio" name="home-theme" value="dark" class="home-settings-radio"> Ember</label>
+                        <label class="home-settings-radio-label"><input type="radio" name="home-theme" value="light" class="home-settings-radio"> Daylight</label>
                         <label class="home-settings-radio-label"><input type="radio" name="home-theme" value="system" class="home-settings-radio"> System</label>
                     </div>
                 </section>
@@ -244,13 +255,13 @@
                 </section>
                 <section class="home-settings-section" aria-labelledby="settings-notifications-heading">
                     <h3 class="home-settings-section-title" id="settings-notifications-heading">Notifications</h3>
-                    <p class="home-settings-hint home-settings-hint--below-title">Get Rocky-style coaching nudges by email when you haven’t logged a workout, plus product updates. Turn either option on or off anytime.</p>
+                    <p class="home-settings-hint home-settings-hint--below-title">Email nudges when you fall behind, competition invites, and browser alerts — including when the app is closed once you allow notifications.</p>
                     <label class="home-settings-toggle"><input type="checkbox" id="settings-notify-push" class="home-settings-checkbox"> Browser notifications</label>
                     <label class="home-settings-toggle"><input type="checkbox" id="settings-notify-email" class="home-settings-checkbox"> Enable email notifications</label>
                     <p class="home-settings-notify-status" id="settings-notify-browser-status" role="status" aria-live="polite" hidden></p>
                     <div class="home-settings-reminder-wrap" id="settings-reminder-schedule-block">
                         <p class="home-settings-field-label home-settings-field-label--reminder">Reminder schedule</p>
-                        <p class="home-settings-hint home-settings-hint--tight">Uses your local device time. Turn on browser notifications above. Reminders only fire while a Strongman AI tab is open.</p>
+                        <p class="home-settings-hint home-settings-hint--tight">Uses your local time zone. Enable browser notifications above so reminders can reach you even when Strongman AI is closed.</p>
                         <label class="home-settings-toggle home-settings-toggle--reminder"><input type="checkbox" id="settings-reminder-enabled" class="home-settings-checkbox"> Use scheduled reminders</label>
                         <div class="home-settings-reminder-fields" id="settings-reminder-fields" hidden>
                             <label class="home-settings-field-label" for="settings-reminder-time">Time</label>
@@ -294,6 +305,7 @@
 
     <script src="/shared/api.js"></script>
     <script src="/shared/notification-bell.js"></script>
+    <script src="/shared/push-client.js"></script>
     <script src="/shared/server-wake.js"></script>
     <script src="/shared/user-avatar.js"></script>
     <script src="/shared/app-nav.js"></script>
@@ -301,8 +313,13 @@
     <script src="/shared/auth-guard.js"></script>
     <script src="/shared/site-footer-email.js"></script>
     <script src="/shared/workout-log.js"></script>
+    <script src="/shared/workout-split.js"></script>
     <script src="/shared/training-sync.js"></script>
     <script src="/shared/rocky-coaching-insights.js"></script>
+    <script src="/shared/coach-memory.js"></script>
+    <script src="/shared/training-timeline.js"></script>
+    <script src="/shared/daily-plan.js"></script>
+    <script src="/shared/achievements.js"></script>
     <script src="/shared/sport-database.js"></script>
     <script src="/shared/athlete-context.js"></script>
     <script src="/shared/rocky-setup-alert.js"></script>

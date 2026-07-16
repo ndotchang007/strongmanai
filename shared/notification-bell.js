@@ -11,6 +11,7 @@
   var pollId = null;
   var open = false;
   var busyId = null;
+  var lastKnownInviteIds = null;
 
   function escapeHtml(s) {
     if (s == null) return '';
@@ -98,6 +99,47 @@
     } catch (e) {}
   }
 
+  function maybeNotifyNewInvites(nextInvites) {
+    var ids = (nextInvites || []).map(function (inv) {
+      return String(inv.competitionId || inv.id || '');
+    }).filter(Boolean);
+    if (lastKnownInviteIds == null) {
+      lastKnownInviteIds = ids;
+      return;
+    }
+    var prev = {};
+    lastKnownInviteIds.forEach(function (id) {
+      prev[id] = true;
+    });
+    var fresh = (nextInvites || []).filter(function (inv) {
+      var id = String(inv.competitionId || inv.id || '');
+      return id && !prev[id];
+    });
+    lastKnownInviteIds = ids;
+    if (!fresh.length) return;
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+    if (localStorage.getItem('strongman-home-notify-push') !== '1') return;
+    fresh.slice(0, 3).forEach(function (inv) {
+      try {
+        var n = new Notification('New competition invite', {
+          body:
+            (inv.fromUsername || 'Someone') +
+            ' challenged you' +
+            (inv.goalTitle ? ': ' + inv.goalTitle : ''),
+          tag: 'competition-invite-' + String(inv.competitionId || inv.id || ''),
+          data: { url: '/leaderboard' },
+        });
+        n.onclick = function () {
+          try {
+            window.focus();
+            window.location.href = '/leaderboard';
+          } catch (e) {}
+          n.close();
+        };
+      } catch (e) {}
+    });
+  }
+
   function fetchInvites() {
     if (!canUse()) {
       invites = [];
@@ -115,6 +157,7 @@
       .then(function (data) {
         invites = Array.isArray(data && data.invites) ? data.invites : [];
         setBadgeCount(data && data.count != null ? data.count : invites.length);
+        maybeNotifyNewInvites(invites);
         if (open) renderPanel();
         return invites;
       })

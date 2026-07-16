@@ -34,24 +34,24 @@
     text-transform: uppercase;
     padding: 0.45rem 0.85rem;
     border-radius: 999px;
-    border: 1px solid #555;
-    background-color: #222;
-    color: #aaa;
+    border: 1px solid var(--border-mid, #555);
+    background-color: var(--bg-elevated, #222);
+    color: var(--text-muted, #aaa);
     cursor: pointer;
     transition: color 0.15s, background 0.15s, border-color 0.15s;
 }
 
 .wt-view-tab:hover
 {
-    color: #e8e8e8;
-    border-color: #777;
+    color: var(--text-secondary, #e8e8e8);
+    border-color: var(--border-strong, #777);
 }
 
 .wt-view-tab--active
 {
     color: #1b1b1b;
-    background-color: #ff8c00;
-    border-color: #ff8c00;
+    background-color: var(--accent);
+    border-color: var(--accent);
 }
 
 .wt-toolbar-meta
@@ -96,8 +96,8 @@
     gap: 0.65rem;
     padding: 0.65rem 0.75rem;
     border-radius: var(--radius-md, 14px);
-    border: 1px solid rgba(255, 140, 0, 0.22);
-    background: rgba(255, 140, 0, 0.04);
+    border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
+    background: color-mix(in srgb, var(--accent) 4%, transparent);
 }
 
 .wt-superset-badge
@@ -106,18 +106,18 @@
     font-weight: bold;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: #ff8c00;
+    color: var(--accent);
     padding: 0.25rem 0.65rem;
     border-radius: 999px;
-    background: rgba(255, 140, 0, 0.12);
-    border: 1px solid rgba(255, 140, 0, 0.35);
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
 }
 
 .wt-exercise-group-tag
 {
     font-size: 0.75rem;
     font-weight: 700;
-    color: #ff8c00;
+    color: var(--accent);
     margin-right: 0.35rem;
 }
 
@@ -141,8 +141,8 @@
 
 .wt-exercise-card--superset
 {
-    border-color: rgba(255, 140, 0, 0.28);
-    box-shadow: inset 3px 0 0 rgba(255, 140, 0, 0.65);
+    border-color: color-mix(in srgb, var(--accent) 28%, transparent);
+    box-shadow: inset 3px 0 0 color-mix(in srgb, var(--accent) 65%, transparent);
 }
 
 .wt-exercise-head
@@ -188,8 +188,8 @@
 
 .wt-icon-btn:hover
 {
-    border-color: #ff8c00;
-    color: #ff8c00;
+    border-color: var(--accent);
+    color: var(--accent);
 }
 
 .wt-icon-btn--danger:hover
@@ -230,8 +230,8 @@
 
 .wt-set-row--done
 {
-    border-color: rgba(255, 140, 0, 0.35);
-    background: rgba(255, 140, 0, 0.08);
+    border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
 }
 
 .wt-set-label
@@ -293,15 +293,15 @@
 
 .wt-set-check:hover
 {
-    border-color: #ff8c00;
-    color: #ff8c00;
+    border-color: var(--accent);
+    color: var(--accent);
 }
 
 .wt-set-check--done
 {
-    border-color: #ff8c00;
-    background: rgba(255, 140, 0, 0.2);
-    color: #ff8c00;
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 20%, transparent);
+    color: var(--accent);
 }
 
 .wt-set-delete
@@ -325,7 +325,7 @@
 {
     width: 100%;
     font-size: 0.72rem;
-    color: rgba(255, 140, 0, 0.85);
+    color: color-mix(in srgb, var(--accent) 85%, transparent);
     padding-left: 3.75rem;
 }
 
@@ -391,12 +391,12 @@
 
 .wt-sheet-row--done
 {
-    background: rgba(255, 140, 0, 0.06);
+    background: color-mix(in srgb, var(--accent) 6%, transparent);
 }
 
 .wt-sheet-row--superset
 {
-    box-shadow: inset 3px 0 0 rgba(255, 140, 0, 0.55);
+    box-shadow: inset 3px 0 0 color-mix(in srgb, var(--accent) 55%, transparent);
 }
 
 .wt-sheet-cell--name
@@ -442,7 +442,7 @@
     flex-direction: column;
     gap: 0;
     padding-left: 0.5rem;
-    border-left: 2px solid rgba(255, 140, 0, 0.35);
+    border-left: 2px solid color-mix(in srgb, var(--accent) 35%, transparent);
 }
 
 .wt-timeline-item
@@ -462,8 +462,8 @@
     width: 0.55rem;
     height: 0.55rem;
     border-radius: 50%;
-    background: #ff8c00;
-    box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.25);
+    background: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
 }
 
 .wt-timeline-time
@@ -472,7 +472,7 @@
     font-size: 0.78rem;
     font-weight: 700;
     letter-spacing: 0.04em;
-    color: rgba(255, 140, 0, 0.95);
+    color: color-mix(in srgb, var(--accent) 95%, transparent);
     min-width: 4.5rem;
 }
 
@@ -554,7 +554,7 @@
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background: rgba(255, 140, 0, 0.6);
+    background: color-mix(in srgb, var(--accent) 60%, transparent);
 }
 
 .wt-map-node
@@ -570,7 +570,7 @@
 
 .wt-map-node:hover
 {
-    border-color: rgba(255, 140, 0, 0.45);
+    border-color: color-mix(in srgb, var(--accent) 45%, transparent);
 }
 
 .wt-map-node--root
@@ -581,9 +581,9 @@
     font-size: 0.95rem;
     font-weight: 700;
     letter-spacing: 0.04em;
-    background: rgba(255, 140, 0, 0.12);
-    border-color: rgba(255, 140, 0, 0.35);
-    color: #ff8c00;
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+    color: var(--accent);
     cursor: default;
 }
 
@@ -613,8 +613,8 @@
 
 .wt-map-set--done .wt-map-node--set
 {
-    border-color: rgba(255, 140, 0, 0.3);
-    color: rgba(255, 140, 0, 0.95);
+    border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+    color: color-mix(in srgb, var(--accent) 95%, transparent);
 }
 
 .wt-map-sets
@@ -646,7 +646,7 @@
 
 .wt-map-check
 {
-    color: #ff8c00;
+    color: var(--accent);
 }
 
 @media (max-width: 640px)
@@ -681,7 +681,7 @@
     font-weight: 700;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: rgba(255, 140, 0, 0.9);
+    color: color-mix(in srgb, var(--accent) 90%, transparent);
 }
 
 .wt-focus-head
@@ -768,7 +768,7 @@
 {
     margin: 0;
     font-size: 0.82rem;
-    color: rgba(255, 140, 0, 0.85);
+    color: color-mix(in srgb, var(--accent) 85%, transparent);
     text-align: center;
 }
 
@@ -817,5 +817,250 @@
     .wt-set-fields
     {
         flex: 1 1 100%;
+    }
+}
+
+/* Exercise → variant picker (focus / workout mode) */
+.wt-view--picker
+{
+    gap: 0.85rem;
+}
+
+.wt-picker-head
+{
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.wt-picker-title
+{
+    margin: 0;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.95);
+    line-height: 1.2;
+}
+
+.wt-picker-sub
+{
+    margin: 0;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.55);
+}
+
+.wt-picker-search
+{
+    width: 100%;
+    min-height: 3rem;
+    text-align: left;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.wt-picker-list
+{
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    max-height: min(52vh, 28rem);
+    overflow: auto;
+    padding-right: 0.15rem;
+}
+
+.wt-picker-list--variants
+{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.55rem;
+    max-height: none;
+}
+
+.wt-picker-option
+{
+    appearance: none;
+    border: 1px solid rgba(100, 100, 100, 0.45);
+    background: rgba(30, 30, 30, 0.92);
+    color: rgba(255, 255, 255, 0.92);
+    border-radius: 12px;
+    padding: 0.85rem 1rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.wt-picker-option:hover,
+.wt-picker-option:focus-visible
+{
+    border-color: color-mix(in srgb, var(--accent) 75%, transparent);
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+    outline: none;
+}
+
+.wt-picker-option--variant
+{
+    text-align: center;
+    min-height: 3.25rem;
+    font-size: 1rem;
+}
+
+.wt-focus-variant-chip
+{
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #0a0a0a;
+    background: linear-gradient(180deg, var(--accent-bright) 0%, var(--accent) 100%);
+}
+
+.wt-focus-next-exercise
+{
+    margin-top: 0.25rem;
+}
+
+/* 3-card carousel (workout mode) */
+.wt-view--carousel
+{
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    min-height: 0;
+    flex: 1;
+}
+
+.wt-carousel-stage
+{
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    padding: 0.35rem 0 0.5rem;
+}
+
+.wt-carousel-track
+{
+    display: grid;
+    grid-template-columns: minmax(0, 0.72fr) minmax(0, 1.35fr) minmax(0, 0.72fr);
+    gap: 0.55rem;
+    align-items: stretch;
+    height: 100%;
+    touch-action: pan-y;
+}
+
+.wt-carousel-card
+{
+    border-radius: 16px;
+    border: 1px solid rgba(100, 100, 100, 0.4);
+    background: rgba(24, 24, 24, 0.95);
+    padding: 0.85rem 0.75rem;
+    min-height: 12rem;
+    transition: opacity 0.2s ease, transform 0.2s ease, filter 0.2s ease;
+}
+
+.wt-carousel-card--spacer
+{
+    visibility: hidden;
+    pointer-events: none;
+    border: none;
+    background: transparent;
+}
+
+.wt-carousel-card--prev,
+.wt-carousel-card--next
+{
+    opacity: 0.38;
+    filter: saturate(0.7);
+    transform: scale(0.92);
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.wt-carousel-card--prev:hover,
+.wt-carousel-card--next:hover
+{
+    opacity: 0.55;
+}
+
+.wt-carousel-card--current
+{
+    opacity: 1;
+    transform: scale(1);
+    border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
+    z-index: 1;
+    overflow: auto;
+    max-height: min(62vh, 34rem);
+}
+
+.wt-carousel-card-head
+{
+    margin-bottom: 0.65rem;
+}
+
+.wt-carousel-card-title
+{
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #f4f4f5;
+    line-height: 1.25;
+}
+
+.wt-carousel-card--current .wt-carousel-card-title
+{
+    font-size: 1.25rem;
+}
+
+.wt-carousel-rx
+{
+    margin: 0.4rem 0 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--accent-bright);
+}
+
+.wt-carousel-card-meta
+{
+    margin: 0.5rem 0 0;
+    font-size: 0.78rem;
+    color: rgba(255, 255, 255, 0.55);
+}
+
+.wt-carousel-nav
+{
+    display: flex;
+    gap: 0.65rem;
+    justify-content: space-between;
+}
+
+.wt-carousel-card-tools
+{
+    margin-top: 0.55rem;
+}
+
+@media (max-width: 640px)
+{
+    .wt-carousel-track
+    {
+        grid-template-columns: minmax(0, 0.42fr) minmax(0, 1.7fr) minmax(0, 0.42fr);
+        gap: 0.35rem;
+    }
+
+    .wt-carousel-card--prev,
+    .wt-carousel-card--next
+    {
+        padding: 0.55rem 0.4rem;
+    }
+
+    .wt-carousel-card--prev .wt-carousel-card-title,
+    .wt-carousel-card--next .wt-carousel-card-title
+    {
+        font-size: 0.78rem;
     }
 }

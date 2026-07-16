@@ -48,6 +48,8 @@
     var ex = {
       id: uid('ex'),
       name: name || '',
+      movement: null,
+      variantId: null,
       order: 0,
       supersetGroupId: null,
       collapsed: false,
@@ -74,6 +76,8 @@
       viewMode: 'card',
       workoutDate: null,
       focusPointer: { exerciseId: null, setId: null },
+      pickerState: null,
+      carouselIndex: 0,
       exercises: []
     };
     if (overrides) {
@@ -291,16 +295,39 @@
     var defaultWeight = parseNum(ex.weight);
     var sets = [];
 
+    // Autofill from last logged performance when the template has no weights/reps
+    var prev = null;
+    if ((defaultWeight == null || defaultReps == null) && ex.name) {
+      prev = getPreviousPerformance(ex.name);
+    }
+    if (prev && prev.length) {
+      setsCount = Math.max(setsCount, prev.length);
+    }
+
     for (var i = 0; i < setsCount; i++) {
       var w = defaultWeight;
+      var r = defaultReps;
       if (ex.setWeights && ex.setWeights[i] !== undefined && ex.setWeights[i] !== '') {
         w = parseNum(ex.setWeights[i]);
+      }
+      if ((w == null || r == null) && prev && prev[i]) {
+        var parts = String(prev[i]).split('×').map(function (p) {
+          return p.trim();
+        });
+        if (w == null) w = parseNum(parts[0]);
+        if (r == null) r = parseNum(parts[1]);
+      } else if ((w == null || r == null) && prev && prev.length) {
+        var last = String(prev[Math.min(i, prev.length - 1)]).split('×').map(function (p) {
+          return p.trim();
+        });
+        if (w == null) w = parseNum(last[0]);
+        if (r == null) r = parseNum(last[1]);
       }
       sets.push(
         createSet({
           setNumber: i + 1,
           weight: w,
-          reps: defaultReps,
+          reps: r,
           completed: false
         })
       );

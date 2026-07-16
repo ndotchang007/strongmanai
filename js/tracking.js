@@ -108,7 +108,11 @@
     tab.addEventListener('click', function () {
       var key = tab.getAttribute('data-tracking-panel');
       if (!key) return;
-      setActivePanel(key);
+      if (window.CreateUI && typeof window.CreateUI.setMode === 'function') {
+        window.CreateUI.setMode('tracking', { trackingPanel: key });
+      } else {
+        setActivePanel(key);
+      }
       var hashMap = { stats: '#stats', archive: '#archive', prs: '#prs' };
       if (hashMap[key] && history.replaceState) {
         history.replaceState(null, '', location.pathname + location.search + hashMap[key]);
@@ -120,6 +124,11 @@
   var PR = window.PRLog;
   var statsChartInstance = null;
   var intensityChartInstance = null;
+  var volumeChartInstance = null;
+  var peakChartInstance = null;
+  var e1rmChartInstance = null;
+  var compareChartInstance = null;
+  var selectedPeakExerciseKey = '';
 
   function getStatsRange() {
     var el = document.getElementById('tracking-tab-layout');
@@ -219,29 +228,254 @@
     el.innerHTML = 'Showing <strong>' + label + '</strong> — tap a tile for details.';
   }
 
-  function updateSummaryStrip(sessions, records, range) {
-    var wEl = document.getElementById('tracking-summary-workouts');
-    if (wEl) wEl.textContent = String((sessions || []).length);
-    var setsEl = document.getElementById('tracking-summary-sets');
-    if (setsEl) setsEl.textContent = String(countSetsInSessions(sessions));
-    var intEl = document.getElementById('tracking-summary-intensity');
-    var intLab = document.getElementById('tracking-summary-intensity-label');
-    var ai = avgIntensityForSessions(sessions);
-    if (intEl) {
-      intEl.textContent = ai == null ? '—' : String(ai);
+  function updateSummaryStrip() {
+    /* legacy summary strip removed — strength overview handles this */
+  }
+
+  function chartTheme() {
+    return window.StrengthStats && window.StrengthStats.themeAccent
+      ? window.StrengthStats.themeAccent()
+      : {
+          accent: '#ff8c00',
+          bright: '#ffa033',
+          muted: '#aaa',
+          page: '#141414',
+          grid: 'rgba(255,255,255,0.08)',
+          fade: 'rgba(255, 140, 0, 0.22)',
+        };
+  }
+
+  function chartFillGradient(ctx, theme) {
+    var grad = ctx.createLinearGradient(0, 0, 0, 220);
+    grad.addColorStop(0, (theme && theme.fade) || 'rgba(127, 127, 127, 0.18)');
+    grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    return grad;
+  }
+
+  function makeLineChart(canvas, datasetLabel) {
+    if (!canvas || typeof Chart === 'undefined') return null;
+    var theme = chartTheme();
+    var ctx = canvas.getContext('2d');
+    var grad = chartFillGradient(ctx, theme);
+    return new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [
+          {
+            label: datasetLabel || '',
+            data: [],
+            borderColor: theme.accent,
+            borderWidth: 2,
+            pointBackgroundColor: theme.accent,
+            pointBorderColor: theme.page || '#141414',
+            pointBorderWidth: 2,
+            pointRadius: 3,
+            tension: 0.35,
+            spanGaps: true,
+            fill: true,
+            backgroundColor: grad,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: {
+            grid: { display: false, drawBorder: false },
+            ticks: {
+              color: theme.muted,
+              maxTicksLimit: 12,
+              font: { family: '"DM Sans", system-ui, sans-serif', size: 10 },
+            },
+          },
+          y: {
+            beginAtZero: true,
+            grid: { color: theme.grid, drawBorder: false },
+            ticks: {
+              color: theme.muted,
+              font: { family: '"DM Sans", system-ui, sans-serif', size: 10 },
+            },
+          },
+        },
+      },
+    });
+  }
+
+  function applySeriesToChart(chart, labels, data, range) {
+    if (!chart) return;
+    var theme = chartTheme();
+    chart.data.labels = labels;
+    chart.data.datasets[0].data = data;
+    chart.data.datasets[0].borderColor = theme.accent;
+    chart.data.datasets[0].pointBackgroundColor = theme.accent;
+    chart.data.datasets[0].pointBorderColor = theme.page || '#141414';
+    try {
+      var ctx = chart.ctx || (chart.canvas && chart.canvas.getContext('2d'));
+      if (ctx) chart.data.datasets[0].backgroundColor = chartFillGradient(ctx, theme);
+    } catch (eGrad) {}
+    var maxY = 0;
+    (data || []).forEach(function (v) {
+      if (v != null && v > maxY) maxY = v;
+    });
+    var suggested = Math.max(5, Math.ceil(maxY * 1.15));
+    if (chart.options.scales && chart.options.scales.y) {
+      chart.options.scales.y.max = suggested;
     }
-    if (intLab) {
-      intLab.textContent =
-        ai != null && WL && typeof WL.intensityLabel === 'function'
-          ? 'Your session scores (self-reported)'
-          : 'Session average';
+    if (chart.options.scales && chart.options.scales.x && chart.options.scales.x.ticks) {
+      chart.options.scales.x.ticks.maxTicksLimit = range === 'month' ? 12 : range === 'year' ? 12 : 16;
+      chart.options.scales.x.ticks.color = theme.muted;
     }
-    var prEl = document.getElementById('tracking-summary-prs');
-    if (prEl) prEl.textContent = String(countPrsInRange(records || [], range));
-    var cardEl = document.getElementById('tracking-summary-cardio');
-    if (cardEl) {
-      var cm = sumCardioMinutesInSessions(sessions);
-      cardEl.textContent = cm >= 120 ? Math.round(cm / 60) + ' h' : String(cm) + ' min';
+    if (chart.options.scales && chart.options.scales.y && chart.options.scales.y.ticks) {
+      chart.options.scales.y.ticks.color = theme.muted;
+    }
+    chart.update();
+  }
+
+  function syncPeakExerciseSelect(sessions) {
+    var sel = document.getElementById('tracking-peak-exercise');
+    if (!sel || !window.StrengthStats) return null;
+    var opts = window.StrengthStats.listExerciseOptions(sessions);
+    var prev = selectedPeakExerciseKey || sel.value;
+    sel.innerHTML = '';
+    if (!opts.length) {
+      var empty = document.createElement('option');
+      empty.value = '';
+      empty.textContent = 'No lifts logged';
+      sel.appendChild(empty);
+      selectedPeakExerciseKey = '';
+      return null;
+    }
+    opts.forEach(function (opt) {
+      var o = document.createElement('option');
+      o.value = opt.key;
+      o.textContent = opt.name + ' (' + opt.count + ')';
+      sel.appendChild(o);
+    });
+    var found = opts.some(function (o) {
+      return o.key === prev;
+    });
+    selectedPeakExerciseKey = found ? prev : opts[0].key;
+    sel.value = selectedPeakExerciseKey;
+    return opts.find(function (o) {
+      return o.key === selectedPeakExerciseKey;
+    });
+  }
+
+  function updateStrengthOverview(sessions, labels, range) {
+    if (!window.StrengthStats) return;
+    var SS = window.StrengthStats;
+    var vols = SS.buildVolumeSeries(sessions, labels, range);
+    var peakOpt = syncPeakExerciseSelect(sessions);
+    var peakKey = peakOpt ? peakOpt.key : '';
+    var peaks = peakKey ? SS.buildPeakSeries(sessions, labels, range, peakKey) : [];
+    var insight = SS.buildInsight(sessions, vols, peaks, peakOpt ? peakOpt.name : '');
+    var verdictEl = document.getElementById('tracking-strength-verdict');
+    if (verdictEl) verdictEl.textContent = insight.verdict;
+    var metricsEl = document.getElementById('tracking-strength-metrics');
+    if (metricsEl) {
+      metricsEl.innerHTML = (insight.metrics || [])
+        .map(function (m) {
+          return (
+            '<li class="tracking-strength-metric"><span class="tracking-strength-metric-label">' +
+            String(m.label)
+              .replace(/&/g, '&amp;')
+              .replace(/</g, '&lt;') +
+            '</span><strong>' +
+            String(m.value)
+              .replace(/&/g, '&amp;')
+              .replace(/</g, '&lt;') +
+            '</strong></li>'
+          );
+        })
+        .join('');
+    }
+    var summary = document.getElementById('tracking-strength-summary');
+    if (summary) {
+      summary.setAttribute('data-tone', insight.tone || 'neutral');
+    }
+  }
+
+  function updateVolumeChartFromSessions(sessions, range) {
+    if (!volumeChartInstance || !window.StrengthStats) return;
+    var r = range || getStatsRange();
+    var hist = buildChartData(sessions, r);
+    var vols = window.StrengthStats.buildVolumeSeries(sessions, hist.labels, r);
+    applySeriesToChart(volumeChartInstance, hist.labels, vols, r);
+    var sub = document.getElementById('tracking-volume-chart-sub');
+    if (sub) sub.textContent = getChartSubline(r);
+    var cap = document.getElementById('tracking-volume-chart-caption');
+    if (cap) {
+      var any = vols.some(function (v) {
+        return v > 0;
+      });
+      cap.textContent = any
+        ? 'Total weight × reps per ' +
+          (r === 'month' ? 'day' : r === 'year' ? 'month' : 'year') +
+          '. Rising bars/points usually mean more strength capacity.'
+        : 'Log sets with weight & reps to see volume. Bodyweight-only work won’t add load here.';
+    }
+  }
+
+  function updatePeakChartFromSessions(sessions, range) {
+    if (!peakChartInstance || !window.StrengthStats) return;
+    var r = range || getStatsRange();
+    var hist = buildChartData(sessions, r);
+    var opt = syncPeakExerciseSelect(sessions);
+    var peaks = opt
+      ? window.StrengthStats.buildPeakSeries(sessions, hist.labels, r, opt.key)
+      : new Array(hist.labels.length).fill(null);
+    applySeriesToChart(peakChartInstance, hist.labels, peaks, r);
+    var sub = document.getElementById('tracking-peak-chart-sub');
+    if (sub) sub.textContent = opt ? opt.name : 'Pick a lift';
+    var cap = document.getElementById('tracking-peak-chart-caption');
+    if (cap) {
+      cap.textContent = opt
+        ? 'Heaviest logged set each ' +
+          (r === 'month' ? 'day' : r === 'year' ? 'month' : 'year') +
+          '. Climbing points = getting stronger on this lift.'
+        : 'No weighted lifts in this range yet.';
+    }
+  }
+
+  function updateE1rmChartFromSessions(sessions, range) {
+    if (!e1rmChartInstance || !window.StrengthStats) return;
+    var r = range || getStatsRange();
+    var hist = buildChartData(sessions, r);
+    var opt = syncPeakExerciseSelect(sessions);
+    var series = opt
+      ? window.StrengthStats.buildE1rmSeries(sessions, hist.labels, r, opt.key)
+      : new Array(hist.labels.length).fill(null);
+    applySeriesToChart(e1rmChartInstance, hist.labels, series, r);
+    var sub = document.getElementById('tracking-e1rm-chart-sub');
+    if (sub) sub.textContent = opt ? opt.name + ' · Epley estimate' : 'Est. 1RM';
+    var cap = document.getElementById('tracking-e1rm-chart-caption');
+    if (cap) {
+      cap.textContent = opt
+        ? 'Estimated max from your best set (weight × (1 + reps/30)). Great for tracking strength without singles.'
+        : 'Needs weighted sets with reps to estimate a max.';
+    }
+  }
+
+  function updateCompareChartFromSessions(sessions, range) {
+    if (!compareChartInstance || !window.StrengthStats) return;
+    var pack = window.StrengthStats.compareLiftPeaks(sessions);
+    var theme = chartTheme();
+    compareChartInstance.data.labels = pack.labels;
+    compareChartInstance.data.datasets[0].data = pack.early;
+    compareChartInstance.data.datasets[1].data = pack.late;
+    compareChartInstance.data.datasets[0].backgroundColor = 'rgba(160,160,160,0.45)';
+    compareChartInstance.data.datasets[1].backgroundColor = theme.accent;
+    compareChartInstance.update();
+    var sub = document.getElementById('tracking-compare-chart-sub');
+    if (sub) sub.textContent = 'First half vs second half of ' + (range || getStatsRange());
+    var cap = document.getElementById('tracking-compare-chart-caption');
+    if (cap) {
+      cap.textContent = pack.labels.length
+        ? 'Gray = earlier peaks in this range; accent = later peaks. Taller accent bars mean that lift got stronger.'
+        : 'Need at least two sessions with the same lifts to compare early vs late peaks.';
     }
   }
 
@@ -475,9 +709,8 @@
   var canvas = document.getElementById('statsChart');
   if (canvas && typeof Chart !== 'undefined') {
     var ctx = canvas.getContext('2d');
-    var fillGradient = ctx.createLinearGradient(0, 0, 0, 220);
-    fillGradient.addColorStop(0, 'rgba(255, 140, 0, 0.22)');
-    fillGradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    var freqTheme = chartTheme();
+    var fillGradient = chartFillGradient(ctx, freqTheme);
 
     var hist0 = buildChartData(filterSessionsByRange(WL ? WL.getSessions() : [], 'month'), 'month');
     var max0 = 0;
@@ -493,10 +726,10 @@
         datasets: [
           {
             data: hist0.counts,
-            borderColor: '#ff8c00',
+            borderColor: freqTheme.accent,
             borderWidth: 2,
-            pointBackgroundColor: '#ff8c00',
-            pointBorderColor: '#141414',
+            pointBackgroundColor: freqTheme.accent,
+            pointBorderColor: freqTheme.page || '#141414',
             pointBorderWidth: 2,
             pointRadius: 4,
             tension: 0.35,
@@ -513,7 +746,7 @@
           x: {
             grid: { display: false, drawBorder: false },
             ticks: {
-              color: '#aaa',
+              color: freqTheme.muted,
               maxTicksLimit: 12,
               font: { family: '"DM Sans", system-ui, sans-serif', size: 10 }
             }
@@ -521,10 +754,10 @@
           y: {
             min: 0,
             max: yMax,
-            grid: { color: 'rgba(255,255,255,0.08)', drawBorder: false },
+            grid: { color: freqTheme.grid, drawBorder: false },
             ticks: {
               stepSize: yMax <= 10 ? 1 : Math.ceil(yMax / 5),
-              color: '#aaa',
+              color: freqTheme.muted,
               font: { family: '"DM Sans", system-ui, sans-serif', size: 10 }
             }
           }
@@ -538,9 +771,8 @@
   if (intensityCanvas && typeof Chart !== 'undefined') {
     var iPack = buildIntensityChartData(filterSessionsByRange(WL ? WL.getSessions() : [], 'month'), 'month');
     var iCtx = intensityCanvas.getContext('2d');
-    var iGrad = iCtx.createLinearGradient(0, 0, 0, 220);
-    iGrad.addColorStop(0, 'rgba(200, 200, 200, 0.15)');
-    iGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    var iTheme = chartTheme();
+    var iGrad = chartFillGradient(iCtx, iTheme);
     var iMax = 5;
     iPack.data.forEach(function (v) {
       if (v != null && v > iMax) iMax = v;
@@ -557,10 +789,10 @@
         datasets: [
           {
             data: iPack.data,
-            borderColor: 'rgba(255, 255, 255, 0.85)',
+            borderColor: iTheme.bright || iTheme.accent,
             borderWidth: 2,
-            pointBackgroundColor: '#ff8c00',
-            pointBorderColor: '#141414',
+            pointBackgroundColor: iTheme.accent,
+            pointBorderColor: iTheme.page || '#141414',
             pointBorderWidth: 2,
             pointRadius: 3,
             tension: 0.35,
@@ -578,7 +810,7 @@
           x: {
             grid: { display: false, drawBorder: false },
             ticks: {
-              color: '#aaa',
+              color: iTheme.muted,
               maxTicksLimit: 12,
               font: { family: '"DM Sans", system-ui, sans-serif', size: 10 }
             }
@@ -586,10 +818,10 @@
           y: {
             min: 0,
             max: iMax,
-            grid: { color: 'rgba(255,255,255,0.08)', drawBorder: false },
+            grid: { color: iTheme.grid, drawBorder: false },
             ticks: {
               stepSize: iMax <= 10 ? 1 : Math.ceil(iMax / 5),
-              color: '#aaa',
+              color: iTheme.muted,
               font: { family: '"DM Sans", system-ui, sans-serif', size: 10 }
             }
           }
@@ -601,8 +833,77 @@
     updateIntensityChartCaption(iPack, 'month');
   }
   var GRID_ORDER_KEY = 'tracking_grid_card_order_v1';
-  var DEFAULT_CARD_ORDER = ['chart', 'intensity-chart', 'calendar', 'sets', 'pr'];
-  var DEPRECATED_GRID_CARD_IDS = ['calories', 'hours', 'wins'];
+  var DEFAULT_CARD_ORDER = [
+    'volume-chart',
+    'peak-chart',
+    'e1rm-chart',
+    'compare-chart',
+    'chart',
+    'intensity-chart',
+  ];
+  var DEPRECATED_GRID_CARD_IDS = ['calories', 'hours', 'wins', 'calendar', 'sets', 'pr'];
+
+  volumeChartInstance = makeLineChart(document.getElementById('trackingVolumeChart'), 'Volume');
+  peakChartInstance = makeLineChart(document.getElementById('trackingPeakChart'), 'Peak');
+  e1rmChartInstance = makeLineChart(document.getElementById('trackingE1rmChart'), 'Est 1RM');
+
+  var compareCanvas = document.getElementById('trackingCompareChart');
+  if (compareCanvas && typeof Chart !== 'undefined') {
+    var cTheme = chartTheme();
+    compareChartInstance = new Chart(compareCanvas.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: [],
+        datasets: [
+          { label: 'Earlier', data: [], backgroundColor: 'rgba(160,160,160,0.45)' },
+          { label: 'Later', data: [], backgroundColor: cTheme.accent },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: true,
+            labels: { color: cTheme.muted, boxWidth: 12, font: { size: 11 } },
+          },
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: { color: cTheme.muted, font: { size: 10 } },
+          },
+          y: {
+            beginAtZero: true,
+            grid: { color: cTheme.grid },
+            ticks: { color: cTheme.muted, font: { size: 10 } },
+          },
+        },
+      },
+    });
+  }
+
+  var peakSelect = document.getElementById('tracking-peak-exercise');
+  if (peakSelect) {
+    peakSelect.addEventListener('change', function () {
+      selectedPeakExerciseKey = peakSelect.value || '';
+      refreshTrackingUi();
+    });
+  }
+
+  var strengthSummary = document.getElementById('tracking-strength-summary');
+  if (strengthSummary) {
+    try {
+      var pref = localStorage.getItem('tracking-strength-summary-open');
+      if (pref === '0') strengthSummary.open = false;
+      else if (pref === '1') strengthSummary.open = true;
+    } catch (eSum) {}
+    strengthSummary.addEventListener('toggle', function () {
+      try {
+        localStorage.setItem('tracking-strength-summary-open', strengthSummary.open ? '1' : '0');
+      } catch (eT) {}
+    });
+  }
 
   var archiveViewRoot = document.getElementById('tracking-archive-view-root');
   var archiveScroll = document.getElementById('tracking-archive-scroll');
@@ -1055,7 +1356,7 @@
     items.forEach(function (item) {
       if (item.kind === 'brand') {
         ctx.font = 'bold 32px "DM Sans", system-ui, sans-serif';
-        ctx.fillStyle = '#ff8c00';
+        ctx.fillStyle = chartTheme().accent;
         ctx.shadowColor = 'rgba(0,0,0,0.55)';
         ctx.shadowBlur = 10;
         ctx.fillText(item.text, margin, y);
@@ -1079,7 +1380,7 @@
         y += gap;
       } else if (item.kind === 'bigval') {
         ctx.font = 'bold 56px "DM Sans", system-ui, sans-serif';
-        ctx.fillStyle = '#ff8c00';
+        ctx.fillStyle = chartTheme().accent;
         ctx.shadowColor = 'rgba(0,0,0,0.45)';
         ctx.shadowBlur = 8;
         wrapLines(ctx, item.text, maxW).forEach(function (ln) {
@@ -1488,6 +1789,20 @@
     return t;
   }
 
+  function sessionExerciseNames(s) {
+    var names = [];
+    (s.exercises || []).forEach(function (ex) {
+      if (ex && ex.name) names.push(String(ex.name));
+      if (ex && ex.blockName) names.push(String(ex.blockName));
+    });
+    if (s.trackerData && Array.isArray(s.trackerData.exercises)) {
+      s.trackerData.exercises.forEach(function (ex) {
+        if (ex && ex.name) names.push(String(ex.name));
+      });
+    }
+    return names;
+  }
+
   function sessionMatchesSearch(s, q) {
     if (!q) return true;
     var needle = q.toLowerCase().trim();
@@ -1497,13 +1812,37 @@
       sessionMetaLine(s),
       s.splitName || '',
       s.notes || '',
-      s.title || ''
+      s.title || '',
+      s.date || '',
     ];
-    (s.exercises || []).forEach(function (ex) {
-      bits.push(ex.name || '');
-      bits.push(ex.blockName || '');
+    if (s.date) {
+      bits.push(String(s.date).replace(/-/g, '/'));
+      bits.push(String(s.date).replace(/-/g, ' '));
+      try {
+        var p = String(s.date).split('-');
+        if (p.length === 3) {
+          var d = new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10));
+          bits.push(
+            d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+          );
+          bits.push(d.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' }));
+          bits.push(d.toLocaleDateString());
+        }
+      } catch (e) {}
+    }
+    sessionExerciseNames(s).forEach(function (n) {
+      bits.push(n);
     });
-    return bits.join(' ').toLowerCase().indexOf(needle) !== -1;
+    var hay = bits.join(' ').toLowerCase();
+    if (hay.indexOf(needle) !== -1) return true;
+    /* multi-token: every word must appear somewhere */
+    var tokens = needle.split(/\s+/).filter(Boolean);
+    if (tokens.length > 1) {
+      return tokens.every(function (t) {
+        return hay.indexOf(t) !== -1;
+      });
+    }
+    return false;
   }
 
   function getArchiveSessions() {
@@ -1551,26 +1890,18 @@
   }
 
   function getArchiveView() {
-    var v = localStorage.getItem(ARCHIVE_VIEW_KEY);
-    if (v === 'map') v = 'list';
-    return ['list', 'blocks', 'timeline', 'table'].indexOf(v) !== -1 ? v : 'list';
+    return 'timeline';
   }
 
   function setArchiveView(view) {
-    if (['list', 'blocks', 'timeline', 'table'].indexOf(view) === -1) return;
-    localStorage.setItem(ARCHIVE_VIEW_KEY, view);
-    if (archiveScroll) archiveScroll.setAttribute('data-archive-view', view);
-    archiveViewBtns.forEach(function (btn) {
-      var on = btn.getAttribute('data-archive-view') === view;
-      btn.classList.toggle('active', on);
-      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
-    });
+    localStorage.setItem(ARCHIVE_VIEW_KEY, 'timeline');
+    if (archiveScroll) archiveScroll.setAttribute('data-archive-view', 'timeline');
     renderArchiveInline();
   }
 
   archiveViewBtns.forEach(function (btn) {
     btn.addEventListener('click', function () {
-      setArchiveView(btn.getAttribute('data-archive-view'));
+      setArchiveView('timeline');
     });
   });
 
@@ -1880,48 +2211,94 @@
     return li;
   }
 
+  function formatArchiveDay(dateStr) {
+    if (!dateStr) return '';
+    try {
+      var p = String(dateStr).split('-');
+      if (p.length !== 3) return dateStr;
+      var d = new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10));
+      return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+    } catch (e) {
+      return dateStr;
+    }
+  }
+
   function buildArchiveTimeline(sessions) {
     var wrap = document.createElement('ol');
-    wrap.className = 'dash-archive-timeline';
-    var byMonth = {};
+    wrap.className = 'dash-timeline-list archive-workout-timeline';
+    wrap.setAttribute('role', 'list');
     sessions.forEach(function (s) {
-      if (!s.date) return;
-      var p = String(s.date).split('-');
-      if (p.length < 2) return;
-      var key = p[0] + '-' + p[1];
-      if (!byMonth[key]) byMonth[key] = [];
-      byMonth[key].push(s);
-    });
-    Object.keys(byMonth)
-      .sort(function (a, b) {
-        return b.localeCompare(a);
-      })
-      .forEach(function (key) {
-        var parts = key.split('-');
-        var y = parseInt(parts[0], 10);
-        var m = parseInt(parts[1], 10) - 1;
-        var monthLi = document.createElement('li');
-        monthLi.className = 'dash-archive-timeline-month';
-        var label = document.createElement('h3');
-        label.className = 'dash-archive-timeline-month-label';
-        label.textContent = monthYearLabel(y, m);
-        monthLi.appendChild(label);
-        byMonth[key].forEach(function (s) {
-          var row = document.createElement('button');
-          row.type = 'button';
-          row.className = 'dash-archive-timeline-row';
-          row.setAttribute('data-session-open', s.id || '');
-          var day = document.createElement('span');
-          day.className = 'dash-archive-timeline-day';
-          day.textContent = s.date ? String(s.date).split('-')[2] || '—' : '—';
-          var body = document.createElement('span');
-          body.textContent = sessionDisplayTitle(s) + (s.time ? ' · ' + formatTimeDisplay(s.time) : '');
-          row.appendChild(day);
-          row.appendChild(body);
-          monthLi.appendChild(row);
-        });
-        wrap.appendChild(monthLi);
+      var n = countSessionExercises(s);
+      if (!n && s.trackerData && Array.isArray(s.trackerData.exercises)) {
+        n = s.trackerData.exercises.filter(function (ex) {
+          return ex && ex.name;
+        }).length;
+      }
+      var names = sessionExerciseNames(s).slice(0, 3);
+      var detail =
+        (n ? n + ' exercise' + (n === 1 ? '' : 's') : 'Session logged') +
+        (s.totalIntensity != null ? ' · intensity ' + s.totalIntensity : '');
+      if (names.length) detail += ' · ' + names.join(', ');
+
+      var li = document.createElement('li');
+      li.className = 'dash-timeline-item dash-timeline-item--workout';
+      li.setAttribute('data-session-open', s.id || '');
+
+      var icon = document.createElement('span');
+      icon.className = 'dash-timeline-icon';
+      icon.setAttribute('aria-hidden', 'true');
+      icon.innerHTML =
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 9.5v5M17.5 9.5v5M4 11v2M20 11v2M8 8h8v8H8z"/></svg>';
+
+      var body = document.createElement('div');
+      body.className = 'dash-timeline-body';
+
+      var meta = document.createElement('div');
+      meta.className = 'dash-timeline-meta';
+      var time = document.createElement('time');
+      time.dateTime = s.date || '';
+      time.textContent = formatArchiveDay(s.date) + (s.time ? ' · ' + formatTimeDisplay(s.time) : '');
+      var type = document.createElement('span');
+      type.className = 'dash-timeline-type';
+      type.textContent = 'Workout';
+      meta.appendChild(time);
+      meta.appendChild(type);
+
+      var title = document.createElement('p');
+      title.className = 'dash-timeline-title';
+      title.textContent = sessionDisplayTitle(s);
+
+      var detailP = document.createElement('p');
+      detailP.className = 'dash-timeline-detail';
+      detailP.textContent = detail;
+
+      var actions = document.createElement('div');
+      actions.className = 'dash-timeline-actions';
+      var openBtn = document.createElement('button');
+      openBtn.type = 'button';
+      openBtn.className = 'dash-timeline-action';
+      openBtn.textContent = 'Open';
+      openBtn.setAttribute('data-session-open', s.id || '');
+      var editBtn = document.createElement('button');
+      editBtn.type = 'button';
+      editBtn.className = 'dash-timeline-action tracking-session-edit-btn';
+      editBtn.textContent = 'Edit';
+      editBtn.setAttribute('data-session-edit-for', s.id || '');
+      actions.appendChild(openBtn);
+      actions.appendChild(editBtn);
+
+      body.appendChild(meta);
+      body.appendChild(title);
+      body.appendChild(detailP);
+      body.appendChild(actions);
+      li.appendChild(icon);
+      li.appendChild(body);
+      li.addEventListener('click', function (e) {
+        if (e.target.closest && e.target.closest('button')) return;
+        openSessionDetail(s);
       });
+      wrap.appendChild(li);
+    });
     return wrap;
   }
 
@@ -1978,11 +2355,11 @@
 
   function renderArchiveInline() {
     if (!archiveViewRoot || !WL) return;
-    var view = getArchiveView();
     var allSessions = WL.getSessions();
     var sessions = getArchiveSessions();
     archiveViewRoot.innerHTML = '';
     updateArchiveSummary(allSessions, sessions);
+    if (archiveScroll) archiveScroll.setAttribute('data-archive-view', 'timeline');
     var hasAny = allSessions.length > 0;
     var hasMatches = sessions.length > 0;
     if (archiveInlineEmpty) {
@@ -1992,27 +2369,7 @@
       archiveSearchEmpty.hidden = !hasAny || hasMatches || !archiveSearchQuery;
     }
     if (!hasMatches) return;
-    if (view === 'list') {
-      var ul = document.createElement('ul');
-      ul.className = 'dash-archive-list';
-      ul.setAttribute('aria-label', 'All logged workouts');
-      sessions.forEach(function (s) {
-        ul.appendChild(buildSessionLi(s));
-      });
-      archiveViewRoot.appendChild(ul);
-    } else if (view === 'blocks') {
-      var grid = document.createElement('ul');
-      grid.className = 'dash-archive-blocks-grid';
-      grid.setAttribute('aria-label', 'Workouts as blocks');
-      sessions.forEach(function (s) {
-        grid.appendChild(buildSessionBlockCard(s));
-      });
-      archiveViewRoot.appendChild(grid);
-    } else if (view === 'timeline') {
-      archiveViewRoot.appendChild(buildArchiveTimeline(sessions));
-    } else if (view === 'table') {
-      archiveViewRoot.appendChild(buildArchiveTable(sessions));
-    }
+    archiveViewRoot.appendChild(buildArchiveTimeline(sessions));
   }
 
   function buildPrArchiveLi(rec) {
@@ -2072,8 +2429,24 @@
     if (!detailBodyEl || !detailTitleEl) return;
     detailBodyEl.innerHTML = '';
     var title = 'Details';
-    if (key === 'chart') {
-      title = 'Training volume trend';
+    if (key === 'volume-chart') {
+      title = 'Training volume';
+      detailBodyEl.innerHTML =
+        '<p class="tracking-detail-p">Sum of <strong>weight × reps</strong> for every logged set in each time bucket. When this climbs while form stays solid, you’re building work capacity and usually strength.</p>';
+    } else if (key === 'peak-chart') {
+      title = 'Peak load';
+      detailBodyEl.innerHTML =
+        '<p class="tracking-detail-p">The heaviest set for the selected lift in each bucket. This is the most direct “am I getting stronger?” chart — pick different lifts in the dropdown.</p>';
+    } else if (key === 'e1rm-chart') {
+      title = 'Estimated 1RM';
+      detailBodyEl.innerHTML =
+        '<p class="tracking-detail-p">Uses the Epley formula from your best set: weight × (1 + reps/30). It estimates what you could single if you don’t test maxes often.</p>';
+    } else if (key === 'compare-chart') {
+      title = 'Lift progress';
+      detailBodyEl.innerHTML =
+        '<p class="tracking-detail-p">Compares peak weights from the <strong>first half</strong> of this range to the <strong>second half</strong> for your most-logged lifts. Accent bars higher than gray = that lift got stronger.</p>';
+    } else if (key === 'chart') {
+      title = 'Session frequency';
       var r = getStatsRange();
       var rNote =
         r === 'year'
@@ -2084,66 +2457,11 @@
       detailBodyEl.innerHTML =
         '<p class="tracking-detail-p">' +
         rNote +
-        ' Same source as Create → Log workout when you’re signed in. Change the range above the grid to switch views.</p>';
+        ' Frequency alone isn’t strength — pair it with rising volume/peak load above.</p>';
     } else if (key === 'intensity-chart') {
-      title = 'Session intensity trend';
-      var r2 = getStatsRange();
-      var bucket =
-        r2 === 'year' ? 'month of this year' : r2 === 'all' ? 'calendar year' : 'day of this month';
+      title = 'How hard it felt';
       detailBodyEl.innerHTML =
-        '<p class="tracking-detail-p">Each point is the <strong>average of your self-reported session intensity</strong> (0–100 from Create) for that ' +
-        bucket +
-        '. Nothing here is inferred from sets, reps, or weight.</p>';
-    } else if (key === 'calendar') {
-      title = 'Consistency calendar';
-      var d = document.getElementById('tracking-stat-days');
-      var n = d ? d.textContent.trim() : '—';
-      var r = getStatsRange();
-      var scope = r === 'all' ? 'all time' : r === 'year' ? 'this calendar year' : 'this calendar month';
-      detailBodyEl.innerHTML =
-        '<p class="tracking-detail-p">Distinct days with at least one logged workout in <strong>' +
-        scope +
-        '</strong>.</p><p class="tracking-detail-p"><strong>' +
-        n +
-        '</strong> days</p>';
-    } else if (key === 'sets') {
-      title = 'Sets logged';
-      var setsEl = document.getElementById('tracking-stat-sets');
-      var sv = setsEl ? setsEl.textContent.trim() : '—';
-      var r = getStatsRange();
-      var scope = r === 'all' ? 'all time' : r === 'year' ? 'this calendar year' : 'this calendar month';
-      detailBodyEl.innerHTML =
-        '<p class="tracking-detail-p">Total strength sets from exercises you logged on Create in <strong>' +
-        scope +
-        '</strong>. Each exercise line counts its set count; if missing, one set is assumed.</p><p class="tracking-detail-p">Current display: <strong>' +
-        sv +
-        '</strong> sets</p>';
-    } else if (key === 'pr') {
-      title = 'Personal records summary';
-      var records = PR ? PR.getRecords() : [];
-      if (!records.length) {
-        detailBodyEl.innerHTML =
-          '<p class="tracking-detail-p">No PRs saved yet. Use the <strong>Personal bests</strong> tab to log running, swimming, or strength bests.</p>';
-      } else {
-        var ul = document.createElement('ul');
-        ul.className = 'tracking-detail-pr-list';
-        records.slice(0, 12).forEach(function (rec) {
-          var li = document.createElement('li');
-          var bits = [];
-          if (PR) bits.push(PR.disciplineLabel(rec.discipline));
-          if (rec.eventLabel) bits.push(rec.eventLabel);
-          if (rec.valueDisplay) bits.push(rec.valueDisplay);
-          li.textContent = bits.join(' · ');
-          ul.appendChild(li);
-        });
-        detailBodyEl.appendChild(ul);
-        if (records.length > 12) {
-          var more = document.createElement('p');
-          more.className = 'tracking-detail-p';
-          more.textContent = 'Showing 12 of ' + records.length + ' — expand the tile on Stats for more.';
-          detailBodyEl.appendChild(more);
-        }
-      }
+        '<p class="tracking-detail-p">Average of your self-reported session intensity (0–100). High effort with flat peak loads can mean overreaching — or just hard technique work.</p>';
     } else {
       detailBodyEl.innerHTML = '<p class="tracking-detail-p">No extra information for this tile.</p>';
     }
@@ -2467,14 +2785,30 @@
     var records = PR ? PR.getRecords() : [];
     updateStatTilesFromSessions(filtered, records, range);
     var chartSessions = range === 'all' ? sessions : filtered;
+    var hist = buildChartData(chartSessions, range);
+    updateStrengthOverview(chartSessions, hist.labels, range);
+    updateVolumeChartFromSessions(chartSessions, range);
+    updatePeakChartFromSessions(chartSessions, range);
+    updateE1rmChartFromSessions(chartSessions, range);
+    updateCompareChartFromSessions(chartSessions, range);
     updateTrainingChartFromSessions(chartSessions, range);
     updateIntensityChartFromSessions(chartSessions, range);
-    updateStatDaysFromSessions(filtered);
-    updateSummaryStrip(filtered, records, range);
     updateRangeHint(range);
+    var hint = document.getElementById('tracking-stats-range-hint');
+    if (hint) {
+      var label = range === 'year' ? 'this calendar year' : range === 'all' ? 'all time' : 'this month';
+      hint.innerHTML =
+        'Showing <strong>' +
+        label +
+        '</strong> — charts use logged sets, reps &amp; weight.';
+    }
     renderArchiveInline();
     renderPhysiqueGallery();
-    renderPrCard();
+    if (typeof renderPrCard === 'function') {
+      try {
+        renderPrCard();
+      } catch (ePr) {}
+    }
     renderPrArchiveList();
   }
 

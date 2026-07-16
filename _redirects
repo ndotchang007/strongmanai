@@ -13,6 +13,7 @@
 /user-settings  /customize.html   200
 /info       /info.html        200
 /learn      /learn.html       200
+/timeline   /timeline.html    200
 /versions   /versions.html    200
 /versions/* /version.html     200
 /generate   /generate.html    200

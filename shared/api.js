@@ -17,14 +17,9 @@
   }
 
   function resolveApiBase() {
+    // Localhost / file:// always hits the local API — never Render.
+    // Optional override: localStorage.strongman_api_base
     if (isLocalDev()) {
-      try {
-        var meta = document.querySelector('meta[name="strongman-api-base"]');
-        if (meta) {
-          var c = (meta.getAttribute('content') || '').trim();
-          if (c) return trimSlash(c);
-        }
-      } catch (e) {}
       try {
         var ls = localStorage.getItem('strongman_api_base');
         if (ls && ls.trim()) return trimSlash(ls.trim());
@@ -60,6 +55,8 @@
           email: user.email,
           token: user.token,
           emailVerified: user.emailVerified,
+          notifyEmail: user.notifyEmail,
+          notifyPush: user.notifyPush,
           firstName: user.firstName,
           lastName: user.lastName,
           profileInitialized: user.profileInitialized,

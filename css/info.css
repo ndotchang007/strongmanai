@@ -1,14 +1,14 @@
 body.info-page
 {
-    background: #141414;
-    color: #f4f4f5;
+    background: var(--bg-page, #141414);
+    color: var(--text-primary, #f4f4f5);
     font-family: var(--font);
 }
 
 html[data-theme="light"] body.info-page
 {
-    background: #f0f0f0;
-    color: #1a1a1a;
+    background: var(--bg-page, #f0f0f0);
+    color: var(--text-primary, #1a1a1a);
 }
 
 .info-main,
@@ -43,7 +43,7 @@ html[data-theme="light"] body.info-page
     font-weight: 700;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: #ff9f40;
+    color: var(--accent-bright);
 }
 
 .info-title
@@ -88,7 +88,7 @@ html[data-theme="light"] .info-section
     margin: 0 0 0.45rem;
     font-size: 1rem;
     font-weight: 700;
-    color: #ffb347;
+    color: var(--accent-bright);
 }
 
 .info-section p,
@@ -143,8 +143,8 @@ html[data-theme="light"] .info-section li
     border-radius: 50%;
     font-size: 0.78rem;
     font-weight: 800;
-    color: #111;
-    background: linear-gradient(135deg, #ffb347, #ff7a00);
+    color: var(--on-accent-text, #111);
+    background: linear-gradient(135deg, var(--accent), var(--accent-deep));
 }
 
 .info-step-body strong
@@ -185,12 +185,12 @@ html[data-theme="light"] .info-step-body span
     font-weight: 700;
     text-decoration: none;
     color: #111;
-    background: linear-gradient(135deg, #ff9f40, #ff6a00);
+    background: linear-gradient(135deg, var(--accent-bright), var(--accent-deep));
 }
 
 .info-versions-mount a.survey-card
 {
-    border-color: rgba(255, 140, 0, 0.28);
+    border-color: color-mix(in srgb, var(--accent) 28%, transparent);
 }
 
 html[data-theme="light"] .info-versions-mount a.survey-card
@@ -200,7 +200,7 @@ html[data-theme="light"] .info-versions-mount a.survey-card
 
 .info-link-btn--ghost
 {
-    color: #ffb347;
+    color: var(--accent-bright);
     background: transparent;
-    border: 1px solid rgba(255, 140, 0, 0.4);
+    border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
 }

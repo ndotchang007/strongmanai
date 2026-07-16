@@ -19,6 +19,7 @@
     '/user-settings': 'customize.html',
     '/info': 'info.html',
     '/learn': 'learn.html',
+    '/timeline': 'timeline.html',
     '/versions': 'versions.html',
     '/generate': 'generate.html',
     '/explore': 'home.html',

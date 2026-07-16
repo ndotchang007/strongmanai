@@ -1,6 +1,9 @@
 (function () {
   var STORAGE_BASE = 'strongman-coach-memory';
 
+  var BODY_PART_RE =
+    /\b(chest|pecs?|knee|knees|shoulder|shoulders|lower back|upper back|back|elbow|elbows|wrist|wrists|hip|hips|ankle|ankles|neck|hamstring|hamstrings|quad|quads|glute|glutes|bicep|biceps|tricep|triceps|abs|core|calf|calves|forearm|forearms|trap|traps|groin|achilles)\b/i;
+
   var SIGNAL_DEFS = [
     {
       id: 'sick',
@@ -11,8 +14,10 @@
     },
     {
       id: 'sore',
-      label: 'Muscle soreness',
-      patterns: [/\b(sore|achy|tight muscles|really tight|tender|doms)\b/i],
+      label: 'Muscle soreness / tightness',
+      patterns: [
+        /\b(sore|achy|tightness|tight|really tight|super tight|tender|doms|stiff|cramping|cramped)\b/i,
+      ],
     },
     {
       id: 'fatigue',
@@ -39,7 +44,7 @@
       id: 'injury',
       label: 'Pain / injury concern',
       patterns: [
-        /\b(hurt my|injured|injury|pain in|sprain|strained|pulled a|pulled my|twisted my|can'?t move my)\b/i,
+        /\b(hurt my|injured|injury|pain in|pain|hurts?|sprain|strained|pulled a|pulled my|twisted my|can'?t move my|aggravated|flare[- ]?up)\b/i,
       ],
     },
     {
@@ -128,7 +133,7 @@
 
   function stripSyncMeta(store) {
     return {
-      items: Array.isArray(store.items) ? store.items.slice(-12) : [],
+      items: Array.isArray(store.items) ? store.items.slice(-24) : [],
       updatedAt: store.updatedAt || null,
     };
   }
@@ -144,7 +149,7 @@
   function applyFromServer(store) {
     if (!store || typeof store !== 'object') return;
     var next = {
-      items: Array.isArray(store.items) ? store.items.slice(-12) : [],
+      items: Array.isArray(store.items) ? store.items.slice(-24) : [],
       updatedAt: store.updatedAt || store.serverUpdatedAt || new Date().toISOString(),
       serverUpdatedAt: store.serverUpdatedAt || store.updatedAt || null,
       _syncPending: false,
@@ -160,7 +165,7 @@
 
   function save(items) {
     var store = loadStore();
-    store.items = (items || []).slice(-12);
+    store.items = (items || []).slice(-24);
     saveStore(store);
     return store.items.slice();
   }
@@ -261,20 +266,36 @@
   function snippetFromMessage(text, maxLen) {
     var s = String(text || '').trim().replace(/\s+/g, ' ');
     if (!s) return '';
-    if (s.length <= (maxLen || 72)) return s;
-    return s.slice(0, maxLen || 72) + '…';
+    if (s.length <= (maxLen || 140)) return s;
+    return s.slice(0, maxLen || 140) + '…';
+  }
+
+  function extractBodyPart(text) {
+    var m = BODY_PART_RE.exec(String(text || ''));
+    return m ? m[1].toLowerCase() : '';
+  }
+
+  function itemKey(hit) {
+    var part = hit.bodyPart || '';
+    return hit.id + '::' + part;
   }
 
   function scanMessage(text) {
     var msg = String(text || '');
     if (!msg.trim()) return [];
+    var bodyPart = extractBodyPart(msg);
     var found = [];
     SIGNAL_DEFS.forEach(function (def) {
       for (var i = 0; i < def.patterns.length; i++) {
         if (def.patterns[i].test(msg)) {
+          var label = def.label;
+          if (bodyPart && (def.id === 'injury' || def.id === 'sore')) {
+            label = label + ' (' + bodyPart + ')';
+          }
           found.push({
             id: def.id,
-            label: def.label,
+            bodyPart: bodyPart || null,
+            label: label,
             snippet: snippetFromMessage(msg),
             at: Date.now(),
           });
@@ -290,9 +311,10 @@
     if (!hits.length) return load();
     var items = load();
     hits.forEach(function (hit) {
+      var key = itemKey(hit);
       var idx = -1;
       for (var i = 0; i < items.length; i++) {
-        if (items[i].id === hit.id) {
+        if (itemKey(items[i]) === key) {
           idx = i;
           break;
         }
@@ -312,13 +334,17 @@
 
   function buildPromptBlock(items) {
     if (!items || !items.length) return '';
-    var lines = ['[Session signals — athlete mentioned these; adjust volume, intensity, and advice]'];
+    var lines = [
+      '[Athlete memory — facts they told Rocky in chat; remember these across sessions]',
+      'Treat these as durable notes unless they say the issue resolved.',
+    ];
     items.forEach(function (item) {
       var line = '- ' + item.label;
+      if (item.bodyPart) line += ' [body: ' + item.bodyPart + ']';
       if (item.snippet) line += ' (they said: "' + item.snippet + '")';
       lines.push(line);
     });
-    lines.push('[End session signals]');
+    lines.push('[End athlete memory]');
     return lines.join('\n');
   }
 

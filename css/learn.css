@@ -10,8 +10,8 @@
     margin: 0 0 0.85rem;
     padding: 0.75rem 0.85rem;
     border-radius: 12px;
-    border: 1px solid rgba(255, 140, 0, 0.18);
-    background: rgba(255, 140, 0, 0.05);
+    border: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
+    background: color-mix(in srgb, var(--accent) 5%, transparent);
 }
 
 .learn-cue-list li:last-child
@@ -24,7 +24,7 @@
     display: block;
     margin-bottom: 0.25rem;
     font-size: 0.9rem;
-    color: #ffb347;
+    color: var(--accent-bright);
 }
 
 .learn-cue-list span
@@ -32,16 +32,16 @@
     display: block;
     font-size: 0.84rem;
     line-height: 1.5;
-    color: rgba(255, 255, 255, 0.72);
+    color: var(--text-secondary, rgba(255, 255, 255, 0.72));
 }
 
 html[data-theme="light"] .learn-cue-list li
 {
-    border-color: rgba(255, 140, 0, 0.28);
-    background: rgba(255, 140, 0, 0.08);
+    border-color: rgba(179, 83, 0, 0.28);
+    background: rgba(179, 83, 0, 0.06);
 }
 
 html[data-theme="light"] .learn-cue-list span
 {
-    color: rgba(0, 0, 0, 0.68);
+    color: var(--text-secondary);
 }

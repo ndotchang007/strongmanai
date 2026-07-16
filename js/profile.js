@@ -11,14 +11,60 @@
   var profileSaveInFlight = false;
   var currentAchievementState = null;
   var activeAchFilter = 'all';
-  var AVATAR_FALLBACK_SVG =
-    'data:image/svg+xml,' +
-    encodeURIComponent(
-      '<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">' +
-        '<rect fill="#ff8c00" width="256" height="256" rx="44"/>' +
-        '<text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" fill="#141414" font-family="DM Sans,sans-serif" font-size="88" font-weight="700">?</text>' +
-        '</svg>'
+  function themeAccentHex() {
+    try {
+      var v = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+      return v || '#ff8c00';
+    } catch (e) {
+      return '#ff8c00';
+    }
+  }
+
+  function themeOnAccentHex() {
+    try {
+      var v = getComputedStyle(document.documentElement).getPropertyValue('--on-accent-text').trim();
+      return v || '#141414';
+    } catch (e) {
+      return '#141414';
+    }
+  }
+
+  function avatarFallbackSvg(initials, size) {
+    var s = size || 256;
+    var font = Math.round(s * 0.34);
+    var rx = Math.round(s * 0.17);
+    return (
+      'data:image/svg+xml,' +
+      encodeURIComponent(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="' +
+          s +
+          '" height="' +
+          s +
+          '" viewBox="0 0 ' +
+          s +
+          ' ' +
+          s +
+          '">' +
+          '<rect fill="' +
+          themeAccentHex() +
+          '" width="' +
+          s +
+          '" height="' +
+          s +
+          '" rx="' +
+          rx +
+          '"/>' +
+          '<text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" fill="' +
+          themeOnAccentHex() +
+          '" font-family="DM Sans,sans-serif" font-size="' +
+          font +
+          '" font-weight="700">' +
+          (initials || '?') +
+          '</text></svg>'
+      )
     );
+  }
+
 
   function tierLabel(tier) {
     if (!tier) return 'Badge';
@@ -320,7 +366,7 @@
       img.onerror = function () {
         img.onerror = null;
         if (img.src.indexOf('data:') === 0) return;
-        img.src = AVATAR_FALLBACK_SVG;
+        img.src = avatarFallbackSvg('?', 256);
       };
       img.src = url;
       return;
@@ -333,13 +379,7 @@
       initials = parts.length >= 2 ? (parts[0].charAt(0) + parts[1].charAt(0)).toUpperCase() : displayName.slice(0, 2).toUpperCase();
     }
     img.onerror = null;
-    img.src =
-      'data:image/svg+xml,' +
-      encodeURIComponent(
-        '<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128"><rect fill="#ff8c00" width="128" height="128" rx="22"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" fill="#141414" font-family="DM Sans,sans-serif" font-size="44" font-weight="700">' +
-          initials +
-          '</text></svg>'
-      );
+    img.src = avatarFallbackSvg(initials, 128);
   }
 
   function parseViewedUserId() {
@@ -911,6 +951,13 @@
       if (viewBadgesBtn) {
         viewBadgesBtn.hidden = false;
         viewBadgesBtn.textContent = viewingOther ? 'View badges' : 'View all badges';
+      }
+      if (
+        !viewingOther &&
+        window.Achievements &&
+        typeof window.Achievements.celebrateNewUnlocks === 'function'
+      ) {
+        window.Achievements.celebrateNewUnlocks(user);
       }
     }
 

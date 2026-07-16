@@ -5,7 +5,7 @@
     return window.WorkoutSession;
   };
 
-  var VIEW_MODES = ['focus', 'card', 'spreadsheet', 'timeline', 'map'];
+  var VIEW_MODES = ['focus', 'card', 'carousel', 'spreadsheet', 'timeline', 'map'];
 
   function isMobileViewport() {
     return typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
@@ -182,15 +182,22 @@
     var idx = refs.findIndex(function (r) {
       return r.exercise.id === fp.exerciseId && r.set.id === fp.setId;
     });
+    var currentExId = fp.exerciseId;
     for (var i = idx + 1; i < refs.length; i++) {
-      if (!refs[i].set.completed) {
+      if (refs[i].exercise.id === currentExId && !refs[i].set.completed) {
         this.session.focusPointer = { exerciseId: refs[i].exercise.id, setId: refs[i].set.id };
         return;
       }
     }
-    for (var j = 0; j < refs.length; j++) {
+    for (var j = idx + 1; j < refs.length; j++) {
       if (!refs[j].set.completed) {
         this.session.focusPointer = { exerciseId: refs[j].exercise.id, setId: refs[j].set.id };
+        return;
+      }
+    }
+    for (var k = 0; k < refs.length; k++) {
+      if (!refs[k].set.completed) {
+        this.session.focusPointer = { exerciseId: refs[k].exercise.id, setId: refs[k].set.id };
         return;
       }
     }
@@ -199,11 +206,61 @@
     }
   };
 
+  Tracker.prototype._advanceToNextExercise = function () {
+    var exercises = this._sortedExercises();
+    var fp = this.session.focusPointer || {};
+    var idx = exercises.findIndex(function (ex) {
+      return ex.id === fp.exerciseId;
+    });
+    for (var i = idx + 1; i < exercises.length; i++) {
+      var incomplete = (exercises[i].sets || []).find(function (s) {
+        return !s.completed;
+      });
+      var targetSet = incomplete || (exercises[i].sets && exercises[i].sets[0]);
+      if (targetSet) {
+        this.session.focusPointer = { exerciseId: exercises[i].id, setId: targetSet.id };
+        this._persist();
+        this.render();
+        return;
+      }
+    }
+    this.openExercisePicker();
+  };
+
+  Tracker.prototype._currentExerciseSetRefs = function (exerciseId) {
+    var refs = [];
+    var ex = this._findExercise(exerciseId);
+    if (!ex) return refs;
+    (ex.sets || []).forEach(function (set) {
+      refs.push({ exercise: ex, set: set });
+    });
+    return refs;
+  };
+
+  Tracker.prototype.setCarouselIndex = function (idx) {
+    var exercises = this._sortedExercises();
+    if (!exercises.length) {
+      this.session.carouselIndex = 0;
+      return;
+    }
+    this.session.carouselIndex = Math.max(0, Math.min(exercises.length - 1, idx | 0));
+    this._persist();
+    this.render();
+  };
+
+  Tracker.prototype.getCarouselIndex = function () {
+    var exercises = this._sortedExercises();
+    var idx = this.session.carouselIndex | 0;
+    if (!exercises.length) return 0;
+    return Math.max(0, Math.min(exercises.length - 1, idx));
+  };
+
   Tracker.prototype.setViewMode = function (mode) {
     if (VIEW_MODES.indexOf(mode) === -1) return;
     this._flushDomToSession();
     this.session.viewMode = mode;
     if (mode === 'focus') this._ensureFocusPointer();
+    if (mode === 'carousel') this.session.carouselIndex = this.getCarouselIndex();
     this._persist();
     this.render();
   };
@@ -213,10 +270,11 @@
     this._persist();
   };
 
-  Tracker.prototype.addExercise = function (name) {
+  Tracker.prototype.addExercise = function (name, overrides) {
     var S = WS();
     var order = this.session.exercises.length;
-    var prev = S.getPreviousPerformance(name || '');
+    var displayName = name || '';
+    var prev = S.getPreviousPerformance(displayName);
     var sets = [S.createSet({ setNumber: 1 })];
     if (prev && prev.length) {
       sets = prev.map(function (line, i) {
@@ -230,12 +288,61 @@
         });
       });
     }
-    var exercise = S.createExercise(name || '', { order: order, sets: sets });
+    var opts = { order: order, sets: sets };
+    if (overrides) {
+      for (var k in overrides) {
+        if (Object.prototype.hasOwnProperty.call(overrides, k)) opts[k] = overrides[k];
+      }
+    }
+    var exercise = S.createExercise(displayName, opts);
     this.session.exercises.push(exercise);
-    this._ensureFocusPointer();
+    this.session.pickerState = null;
+    this.session.focusPointer = {
+      exerciseId: exercise.id,
+      setId: exercise.sets[0] ? exercise.sets[0].id : null
+    };
+    this.session.carouselIndex = this.session.exercises.length - 1;
     this._persist();
     this.render();
     return exercise;
+  };
+
+  Tracker.prototype.openExercisePicker = function () {
+    this._flushDomToSession();
+    this.session.pickerState = { step: 'movement', movement: null, query: '' };
+    this._persist();
+    this.render();
+  };
+
+  Tracker.prototype.cancelExercisePicker = function () {
+    this.session.pickerState = null;
+    this._persist();
+    this.render();
+  };
+
+  Tracker.prototype.selectPickerMovement = function (movementName) {
+    if (!movementName) return;
+    this.session.pickerState = {
+      step: 'variant',
+      movement: movementName,
+      query: (this.session.pickerState && this.session.pickerState.query) || ''
+    };
+    this._persist();
+    this.render();
+  };
+
+  Tracker.prototype.selectPickerVariant = function (variantId) {
+    var state = this.session.pickerState;
+    if (!state || !state.movement) return;
+    var ED = window.ExerciseDatabase;
+    var name =
+      ED && typeof ED.formatExerciseName === 'function'
+        ? ED.formatExerciseName(state.movement, variantId)
+        : state.movement;
+    this.addExercise(name, {
+      movement: state.movement,
+      variantId: variantId || null
+    });
   };
 
   Tracker.prototype.removeExercise = function (exerciseId) {
@@ -405,6 +512,16 @@
   Tracker.prototype._handleClick = function (e) {
     var t = e.target;
     if (!t || !t.closest) return;
+
+    var sideCard = t.closest('.wt-carousel-card--prev, .wt-carousel-card--next');
+    if (sideCard && !t.closest('[data-wt-action]')) {
+      var role = sideCard.getAttribute('data-carousel-role');
+      var idx = this.getCarouselIndex();
+      if (role === 'prev') this.setCarouselIndex(idx - 1);
+      else if (role === 'next') this.setCarouselIndex(idx + 1);
+      return;
+    }
+
     var btn = t.closest('[data-wt-action]');
     if (!btn) return;
     var action = btn.getAttribute('data-wt-action');
@@ -417,7 +534,53 @@
       return;
     }
     if (action === 'add-exercise') {
-      this.addExercise('');
+      if (
+        this.session.viewMode === 'focus' ||
+        this.session.viewMode === 'carousel' ||
+        isWorkoutDashboardOpen()
+      ) {
+        this.openExercisePicker();
+      } else {
+        this.addExercise('');
+      }
+      return;
+    }
+    if (action === 'picker-cancel') {
+      this.cancelExercisePicker();
+      return;
+    }
+    if (action === 'picker-back') {
+      if (this.session.pickerState) {
+        this.session.pickerState.step = 'movement';
+        this.session.pickerState.movement = null;
+        this._persist();
+        this.render();
+      }
+      return;
+    }
+    if (action === 'picker-pick-movement') {
+      var moveName = btn.getAttribute('data-movement');
+      this.selectPickerMovement(moveName);
+      return;
+    }
+    if (action === 'picker-pick-variant') {
+      var variantId = btn.getAttribute('data-variant');
+      this.selectPickerVariant(variantId);
+      return;
+    }
+    if (action === 'focus-next-exercise') {
+      this._flushDomToSession();
+      this._advanceToNextExercise();
+      return;
+    }
+    if (action === 'carousel-prev') {
+      this._flushDomToSession();
+      this.setCarouselIndex(this.getCarouselIndex() - 1);
+      return;
+    }
+    if (action === 'carousel-next') {
+      this._flushDomToSession();
+      this.setCarouselIndex(this.getCarouselIndex() + 1);
       return;
     }
     if (action === 'remove-exercise' && exId) {
@@ -446,10 +609,10 @@
     }
     if (action === 'focus-prev') {
       this._flushDomToSession();
-      var refs = this._allSetRefs();
       var fp = this.session.focusPointer || {};
+      var refs = this._currentExerciseSetRefs(fp.exerciseId);
       var cur = refs.findIndex(function (r) {
-        return r.exercise.id === fp.exerciseId && r.set.id === fp.setId;
+        return r.set.id === fp.setId;
       });
       if (cur > 0) {
         this.session.focusPointer = { exerciseId: refs[cur - 1].exercise.id, setId: refs[cur - 1].set.id };
@@ -460,15 +623,17 @@
     }
     if (action === 'focus-next') {
       this._flushDomToSession();
-      var refs2 = this._allSetRefs();
       var fp2 = this.session.focusPointer || {};
+      var refs2 = this._currentExerciseSetRefs(fp2.exerciseId);
       var cur2 = refs2.findIndex(function (r) {
-        return r.exercise.id === fp2.exerciseId && r.set.id === fp2.setId;
+        return r.set.id === fp2.setId;
       });
       if (cur2 >= 0 && cur2 < refs2.length - 1) {
         this.session.focusPointer = { exerciseId: refs2[cur2 + 1].exercise.id, setId: refs2[cur2 + 1].set.id };
         this._persist();
         this.render();
+      } else {
+        this._advanceToNextExercise();
       }
       return;
     }
@@ -504,6 +669,20 @@
       var ex = this._findExercise(exId);
       if (ex) ex.name = t.value;
       this._persist();
+      return;
+    }
+    if (field === 'picker-query') {
+      if (!this.session.pickerState) this.session.pickerState = { step: 'movement', movement: null, query: '' };
+      this.session.pickerState.query = t.value || '';
+      this._persist();
+      this.render();
+      var q = this.root.querySelector('[data-wt-field="picker-query"]');
+      if (q) {
+        q.focus();
+        try {
+          q.setSelectionRange(q.value.length, q.value.length);
+        } catch (err) {}
+      }
       return;
     }
     if (field === 'set-weight' || field === 'set-reps' || field === 'set-notes') {
@@ -543,10 +722,20 @@
   Tracker.prototype._renderToolbar = function () {
     var self = this;
     var wrap = el('div', 'wt-toolbar');
+    var meta = el('div', 'wt-toolbar-meta');
+    var count = this.getExerciseCount();
+    meta.appendChild(el('span', 'wt-exercise-count', { text: count + (count === 1 ? ' lift' : ' lifts') }));
+
+    // Workout mode: one-exercise focus only — hide view switcher clutter
+    if (isWorkoutDashboardOpen()) {
+      wrap.appendChild(meta);
+      return wrap;
+    }
+
     var views = el('nav', 'wt-view-tabs', { role: 'tablist', 'aria-label': 'Workout view' });
     var labels = { focus: 'Focus', card: 'Cards', spreadsheet: 'Sheet', timeline: 'Timeline', map: 'Map' };
     var modes = VIEW_MODES.slice();
-    if (!isMobileViewport() && !isWorkoutDashboardOpen()) {
+    if (!isMobileViewport()) {
       modes = modes.filter(function (m) {
         return m !== 'focus';
       });
@@ -563,10 +752,6 @@
       views.appendChild(btn);
     });
     wrap.appendChild(views);
-
-    var meta = el('div', 'wt-toolbar-meta');
-    var count = this.getExerciseCount();
-    meta.appendChild(el('span', 'wt-exercise-count', { text: count + (count === 1 ? ' lift' : ' lifts') }));
     wrap.appendChild(meta);
     return wrap;
   };
@@ -742,6 +927,195 @@
     ).textContent = '+ Add exercise';
 
     return container;
+  };
+
+  Tracker.prototype._prescriptionForExercise = function (ex) {
+    if (!ex || !ex.sets || !ex.sets.length) return '';
+    var weights = [];
+    var reps = [];
+    ex.sets.forEach(function (s) {
+      if (s.weight != null) weights.push(s.weight);
+      if (s.reps != null) reps.push(s.reps);
+    });
+    var setCount = ex.sets.length;
+    var repVal = reps.length ? (reps.every(function (r) { return r === reps[0]; }) ? reps[0] : reps[0]) : null;
+    var weightVal = weights.length
+      ? weights.every(function (w) { return w === weights[0]; })
+        ? weights[0]
+        : weights[0]
+      : null;
+    var unit = weightPlaceholder();
+    if (repVal != null && weightVal != null) {
+      return 'Do ' + setCount + '×' + repVal + ' @ ' + weightVal + ' ' + unit;
+    }
+    if (repVal != null) return 'Do ' + setCount + '×' + repVal;
+    if (weightVal != null) return 'Suggested load: ' + weightVal + ' ' + unit;
+    return 'Log weight & reps, then complete each set';
+  };
+
+  Tracker.prototype._renderCarouselCard = function (ex, role) {
+    var self = this;
+    var card = el(
+      'article',
+      'wt-carousel-card wt-carousel-card--' + role + (role === 'current' ? ' wt-exercise-card' : '')
+    );
+    card.setAttribute('data-exercise-id', ex.id);
+    card.setAttribute('data-carousel-role', role);
+
+    var head = el('header', 'wt-carousel-card-head');
+    head.appendChild(el('h3', 'wt-carousel-card-title', { text: ex.name || 'Untitled' }));
+    if (role === 'current') {
+      var rx = self._prescriptionForExercise(ex);
+      if (rx) head.appendChild(el('p', 'wt-carousel-rx', { text: rx }));
+    }
+    card.appendChild(head);
+
+    if (role === 'current') {
+      var prevLine = self._renderPreviousLine(ex.name);
+      if (prevLine) card.appendChild(prevLine);
+
+      var setsWrap = el('div', 'wt-sets-list');
+      ex.sets.forEach(function (set) {
+        setsWrap.appendChild(self._renderSetRow(ex, set, false));
+      });
+      card.appendChild(setsWrap);
+
+      var tools = el('div', 'wt-carousel-card-tools');
+      tools.appendChild(
+        el('button', 'logbook-text-btn wt-add-set-btn', {
+          type: 'button',
+          'data-wt-action': 'add-set',
+          'data-exercise-id': ex.id
+        })
+      ).textContent = '+ Add set';
+      card.appendChild(tools);
+    } else {
+      var done = (ex.sets || []).filter(function (s) { return s.completed; }).length;
+      var total = (ex.sets || []).length;
+      card.appendChild(
+        el('p', 'wt-carousel-card-meta', {
+          text: done + ' / ' + total + ' sets'
+        })
+      );
+    }
+
+    return card;
+  };
+
+  Tracker.prototype._bindCarouselGestures = function (track) {
+    var self = this;
+    var startX = 0;
+    var startY = 0;
+    var tracking = false;
+
+    track.addEventListener(
+      'touchstart',
+      function (e) {
+        if (!e.touches || !e.touches.length) return;
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+        tracking = true;
+      },
+      { passive: true }
+    );
+
+    track.addEventListener(
+      'touchend',
+      function (e) {
+        if (!tracking) return;
+        tracking = false;
+        var t = e.changedTouches && e.changedTouches[0];
+        if (!t) return;
+        var dx = t.clientX - startX;
+        var dy = Math.abs(t.clientY - startY);
+        if (Math.abs(dx) < 50 || dy > Math.abs(dx)) return;
+        var idx = self.getCarouselIndex();
+        if (dx < 0) self.setCarouselIndex(idx + 1);
+        else self.setCarouselIndex(idx - 1);
+      },
+      { passive: true }
+    );
+  };
+
+  Tracker.prototype._renderCarouselView = function () {
+    var self = this;
+    var wrap = el('div', 'wt-view wt-view--carousel');
+    var exercises = this._sortedExercises();
+
+    if (!exercises.length) {
+      if (this.session.pickerState && this.session.pickerState.step) {
+        return this._renderFocusPicker();
+      }
+      wrap.appendChild(el('p', 'wt-empty', { text: 'Add an exercise to start.' }));
+      wrap.appendChild(
+        el('button', 'logbook-text-btn wt-add-exercise-btn', {
+          type: 'button',
+          'data-wt-action': 'add-exercise'
+        })
+      ).textContent = '+ Add exercise';
+      return wrap;
+    }
+
+    var idx = this.getCarouselIndex();
+    wrap.appendChild(
+      el('p', 'wt-focus-progress', {
+        text: 'Exercise ' + (idx + 1) + ' of ' + exercises.length
+      })
+    );
+
+    var stage = el('div', 'wt-carousel-stage');
+    var track = el('div', 'wt-carousel-track');
+
+    if (idx > 0) {
+      track.appendChild(this._renderCarouselCard(exercises[idx - 1], 'prev'));
+    } else {
+      track.appendChild(el('div', 'wt-carousel-card wt-carousel-card--spacer'));
+    }
+    track.appendChild(this._renderCarouselCard(exercises[idx], 'current'));
+    if (idx < exercises.length - 1) {
+      track.appendChild(this._renderCarouselCard(exercises[idx + 1], 'next'));
+    } else {
+      track.appendChild(el('div', 'wt-carousel-card wt-carousel-card--spacer'));
+    }
+
+    stage.appendChild(track);
+    wrap.appendChild(stage);
+
+    var nav = el('div', 'wt-carousel-nav');
+    nav.appendChild(
+      el('button', 'wt-focus-nav-btn', {
+        type: 'button',
+        'data-wt-action': 'carousel-prev',
+        disabled: idx <= 0 ? 'disabled' : null
+      })
+    ).textContent = '← Prev';
+    nav.appendChild(
+      el('button', 'wt-focus-nav-btn', {
+        type: 'button',
+        'data-wt-action': 'carousel-next',
+        disabled: idx >= exercises.length - 1 ? 'disabled' : null
+      })
+    ).textContent = 'Next →';
+    wrap.appendChild(nav);
+
+    var tools = el('div', 'wt-focus-tools');
+    tools.appendChild(
+      el('button', 'logbook-text-btn wt-focus-tool-btn', {
+        type: 'button',
+        'data-wt-action': 'add-exercise'
+      })
+    ).textContent = '+ Add exercise';
+    wrap.appendChild(tools);
+
+    // Bind swipe after next paint so the node is live
+    window.setTimeout(function () {
+      if (!track.isConnected) return;
+      if (track.dataset.gesturesBound === '1') return;
+      track.dataset.gesturesBound = '1';
+      self._bindCarouselGestures(track);
+    }, 0);
+
+    return wrap;
   };
 
   Tracker.prototype._renderSpreadsheetView = function () {
@@ -946,56 +1320,177 @@
     return wrap;
   };
 
+  Tracker.prototype._renderFocusPicker = function () {
+    var ED = window.ExerciseDatabase;
+    var state = this.session.pickerState || { step: 'movement', movement: null, query: '' };
+    if (!this.session.pickerState) {
+      // Persist so subsequent interactions stay on the picker
+      this.session.pickerState = state;
+    }
+    var wrap = el('div', 'wt-view wt-view--focus wt-view--picker');
+    var hasExercises = this._sortedExercises().length > 0;
+
+    var head = el('header', 'wt-picker-head');
+    head.appendChild(
+      el('p', 'wt-focus-progress', {
+        text: state.step === 'variant' ? 'Choose equipment' : 'Choose exercise'
+      })
+    );
+    if (state.step === 'variant' && state.movement) {
+      head.appendChild(el('h2', 'wt-picker-title', { text: state.movement }));
+      head.appendChild(el('p', 'wt-picker-sub', { text: 'Barbell, dumbbell, single arm, and more' }));
+    } else {
+      head.appendChild(el('h2', 'wt-picker-title', { text: 'What are you training?' }));
+      head.appendChild(el('p', 'wt-picker-sub', { text: 'Pick a movement, then choose how you load it' }));
+    }
+    wrap.appendChild(head);
+
+    if (state.step === 'movement') {
+      var search = el('input', 'wt-focus-input create-input wt-picker-search', {
+        type: 'search',
+        placeholder: 'Search exercises…',
+        value: state.query || '',
+        'data-wt-field': 'picker-query',
+        'aria-label': 'Search exercises'
+      });
+      wrap.appendChild(search);
+
+      var list = el('div', 'wt-picker-list', { role: 'listbox', 'aria-label': 'Exercises' });
+      var movements =
+        ED && typeof ED.listMovements === 'function'
+          ? ED.listMovements({ q: state.query, limit: 24 })
+          : [];
+      if (!movements.length && ED && ED.quickPicks) {
+        movements = (ED.quickPicks || []).map(function (name) {
+          return { name: name };
+        });
+      }
+      if (!movements.length) {
+        list.appendChild(el('p', 'wt-empty', { text: 'No matches — try another search.' }));
+      } else {
+        movements.forEach(function (m) {
+          var btn = el('button', 'wt-picker-option', {
+            type: 'button',
+            role: 'option',
+            'data-wt-action': 'picker-pick-movement',
+            'data-movement': m.name
+          });
+          btn.textContent = m.name;
+          list.appendChild(btn);
+        });
+      }
+      wrap.appendChild(list);
+    } else {
+      var variants =
+        ED && typeof ED.variantsForMovement === 'function'
+          ? ED.variantsForMovement(state.movement)
+          : [];
+      var vList = el('div', 'wt-picker-list wt-picker-list--variants', { role: 'listbox', 'aria-label': 'Equipment variants' });
+      variants.forEach(function (v) {
+        var btn = el('button', 'wt-picker-option wt-picker-option--variant', {
+          type: 'button',
+          role: 'option',
+          'data-wt-action': 'picker-pick-variant',
+          'data-variant': v.id
+        });
+        btn.textContent = v.label;
+        vList.appendChild(btn);
+      });
+      wrap.appendChild(vList);
+    }
+
+    var tools = el('div', 'wt-focus-tools');
+    if (state.step === 'variant') {
+      tools.appendChild(
+        el('button', 'logbook-text-btn wt-focus-tool-btn', {
+          type: 'button',
+          'data-wt-action': 'picker-back'
+        })
+      ).textContent = '← Back';
+    }
+    if (hasExercises) {
+      tools.appendChild(
+        el('button', 'logbook-text-btn wt-focus-tool-btn', {
+          type: 'button',
+          'data-wt-action': 'picker-cancel'
+        })
+      ).textContent = 'Cancel';
+    }
+    wrap.appendChild(tools);
+    return wrap;
+  };
+
   Tracker.prototype._renderFocusView = function () {
     var self = this;
     var S = WS();
-    var wrap = el('div', 'wt-view wt-view--focus');
-    var refs = this._allSetRefs();
 
-    if (!refs.length) {
-      wrap.appendChild(el('p', 'wt-empty', { text: 'Add exercises or load today\'s routine to start.' }));
-      wrap.appendChild(
-        el('button', 'logbook-text-btn wt-add-exercise-btn', {
-          type: 'button',
-          'data-wt-action': 'add-exercise'
-        })
-      ).textContent = '+ Add exercise';
-      return wrap;
+    if (this.session.pickerState && this.session.pickerState.step) {
+      return this._renderFocusPicker();
+    }
+
+    var wrap = el('div', 'wt-view wt-view--focus');
+    var exercises = this._sortedExercises();
+
+    if (!exercises.length) {
+      return this._renderFocusPicker();
     }
 
     this._ensureFocusPointer();
     var fp = this.session.focusPointer;
-    var current = refs.find(function (r) {
-      return r.exercise.id === fp.exerciseId && r.set.id === fp.setId;
-    });
-    if (!current) current = refs[0];
+    var ex = this._findExercise(fp.exerciseId) || exercises[0];
+    var exSets = this._currentExerciseSetRefs(ex.id);
+    if (!exSets.length) {
+      return this._renderFocusPicker();
+    }
+    var currentRef =
+      exSets.find(function (r) {
+        return r.set.id === fp.setId;
+      }) ||
+      exSets.find(function (r) {
+        return !r.set.completed;
+      }) ||
+      exSets[0];
+    var set = currentRef.set;
 
-    var ex = current.exercise;
-    var set = current.set;
-    var totalSets = refs.length;
-    var currentIndex = refs.findIndex(function (r) {
-      return r.exercise.id === ex.id && r.set.id === set.id;
+    var exIndex = exercises.findIndex(function (e) {
+      return e.id === ex.id;
+    });
+    var setIndex = exSets.findIndex(function (r) {
+      return r.set.id === set.id;
+    });
+    var allSetsDone = exSets.every(function (r) {
+      return r.set.completed;
     });
 
-    var progress = el('p', 'wt-focus-progress', {
-      text: 'Set ' + (currentIndex + 1) + ' of ' + totalSets
-    });
-    wrap.appendChild(progress);
+    wrap.appendChild(
+      el('p', 'wt-focus-progress', {
+        text:
+          'Exercise ' +
+          (exIndex + 1) +
+          ' of ' +
+          exercises.length +
+          ' · Set ' +
+          (setIndex + 1) +
+          ' of ' +
+          exSets.length
+      })
+    );
 
     var head = el('header', 'wt-focus-head');
     if (ex.supersetGroupId) {
       head.appendChild(el('span', 'wt-exercise-group-tag', { text: '[' + ex.supersetGroupId + ']' }));
     }
-    var nameInp = el('input', 'wt-focus-exercise-name create-input', {
-      type: 'text',
-      list: self._datalistId,
-      placeholder: 'Exercise name',
-      value: ex.name || '',
-      'data-wt-field': 'exercise-name',
-      'data-exercise-id': ex.id,
-      'aria-label': 'Exercise name'
-    });
-    head.appendChild(nameInp);
+    head.appendChild(
+      el('h2', 'wt-focus-exercise', {
+        text: ex.name || 'Untitled exercise'
+      })
+    );
+    if (ex.variantId && window.ExerciseDatabase && window.ExerciseDatabase.variantById) {
+      var vMeta = window.ExerciseDatabase.variantById(ex.variantId);
+      if (vMeta) {
+        head.appendChild(el('span', 'wt-focus-variant-chip', { text: vMeta.label }));
+      }
+    }
     wrap.appendChild(head);
 
     var prevLine = self._renderPreviousLine(ex.name);
@@ -1040,21 +1535,30 @@
     completeBtn.textContent = set.completed ? 'Set complete ✓' : 'Complete set';
     wrap.appendChild(completeBtn);
 
+    if (allSetsDone) {
+      wrap.appendChild(
+        el('button', 'wt-focus-save logbook-save-btn wt-focus-next-exercise', {
+          type: 'button',
+          'data-wt-action': 'focus-next-exercise'
+        })
+      ).textContent = exIndex < exercises.length - 1 ? 'Next exercise →' : '+ Add next exercise';
+    }
+
     var nav = el('div', 'wt-focus-nav');
     nav.appendChild(
       el('button', 'wt-focus-nav-btn', {
         type: 'button',
         'data-wt-action': 'focus-prev',
-        disabled: currentIndex <= 0 ? 'disabled' : null
+        disabled: setIndex <= 0 ? 'disabled' : null
       })
-    ).textContent = '← Prev';
+    ).textContent = '← Prev set';
     nav.appendChild(
       el('button', 'wt-focus-nav-btn', {
         type: 'button',
         'data-wt-action': 'focus-next',
-        disabled: currentIndex >= refs.length - 1 ? 'disabled' : null
+        disabled: setIndex >= exSets.length - 1 && allSetsDone ? null : setIndex >= exSets.length - 1 ? 'disabled' : null
       })
-    ).textContent = 'Next →';
+    ).textContent = setIndex >= exSets.length - 1 ? 'Next exercise →' : 'Next set →';
     wrap.appendChild(nav);
 
     var tools = el('div', 'wt-focus-tools');
@@ -1083,6 +1587,7 @@
   Tracker.prototype._renderBody = function () {
     var body = el('div', 'wt-body');
     if (this.session.viewMode === 'focus') body.appendChild(this._renderFocusView());
+    else if (this.session.viewMode === 'carousel') body.appendChild(this._renderCarouselView());
     else if (this.session.viewMode === 'spreadsheet') body.appendChild(this._renderSpreadsheetView());
     else if (this.session.viewMode === 'timeline') body.appendChild(this._renderTimelineView());
     else if (this.session.viewMode === 'map') body.appendChild(this._renderMapView());

@@ -14,13 +14,13 @@
     });
   }
 
-  var tabWorkout = document.getElementById('create-tab-workout');
-  var tabTracking = document.getElementById('create-tab-tracking');
   var tabSplit = document.getElementById('create-tab-split');
   var panelWorkout = document.getElementById('create-panel-workout');
   var panelTracking = document.getElementById('create-panel-tracking');
   var panelSplit = document.getElementById('create-panel-split');
+  var progressShell = document.getElementById('create-progress-shell');
   var gotoProgressLink = document.getElementById('create-goto-progress-link');
+  var primaryTrackingTabs = document.querySelectorAll('.tracking-mode-tabs .tracking-mode-tab');
 
   function applySplitAutofillFromPicker() {
     var WS = window.WorkoutSplit;
@@ -116,6 +116,45 @@
     }
   }
 
+  function enrichExercisesWithHistory(exercises) {
+    var S = window.WorkoutSession;
+    if (!S || !exercises || !exercises.length) return exercises || [];
+    return exercises.map(function (ex) {
+      var next = Object.assign({}, ex);
+      var hasWeight = next.weight != null && String(next.weight).trim() !== '';
+      var hasReps = next.reps != null && String(next.reps).trim() !== '';
+      if (hasWeight && hasReps) return next;
+      var prev = S.getPreviousPerformance(next.name);
+      if (!prev || !prev.length) return next;
+      var weights = [];
+      var repsList = [];
+      prev.forEach(function (line) {
+        var parts = String(line).split('×').map(function (p) {
+          return p.trim();
+        });
+        weights.push(parts[0] || '');
+        if (parts[1]) repsList.push(parts[1]);
+      });
+      if (!hasWeight) {
+        var allSame = weights.every(function (w) {
+          return w === weights[0];
+        });
+        if (allSame && weights[0]) next.weight = weights[0];
+        else if (weights.some(Boolean)) next.setWeights = weights;
+      }
+      if (!hasReps && repsList.length) {
+        var repsSame = repsList.every(function (r) {
+          return r === repsList[0];
+        });
+        next.reps = repsSame ? repsList[0] : repsList[repsList.length - 1];
+      }
+      if (!next.sets || String(next.sets).trim() === '') {
+        next.sets = String(Math.max(1, prev.length));
+      }
+      return next;
+    });
+  }
+
   function applyTodayRoutineIfEmpty(force, withRecommendations) {
     var WS = window.WorkoutSplit;
     if (!WS || !workoutTracker) return Promise.resolve();
@@ -138,6 +177,8 @@
       return Promise.resolve();
     }
 
+    exercises = enrichExercisesWithHistory(exercises);
+
     var shouldRecommend = withRecommendations !== false && (force || withRecommendations === true);
     if (!shouldRecommend || !window.SplitRecommendations) {
       workoutTracker.loadFromLegacyExercises(exercises);
@@ -150,6 +191,7 @@
     return window.SplitRecommendations.fetchForExercises(exercises)
       .then(function (result) {
         var merged = window.SplitRecommendations.applyToExercises(exercises, result.recommendations);
+        merged = enrichExercisesWithHistory(merged);
         workoutTracker.loadFromLegacyExercises(merged);
         var msg = window.SplitRecommendations.formatBannerMessage(result, exercises);
         showRockySplitRec(msg.title, msg.body);
@@ -159,12 +201,37 @@
       .catch(function () {
         workoutTracker.loadFromLegacyExercises(exercises);
         showRockySplitRec(
-          'Split loaded',
-          'Could not reach Rocky for load suggestions right now. Enter weights yourself in the logbook.'
+          'Split loaded — weights filled from your last session where available.',
+          'Tap complete set as you go. Adjust any weight that doesn\'t look right.'
         );
         updateLiftsCount();
         refreshOverloadCoachUi();
       });
+  }
+
+  function startWorkoutFromChoice(choice) {
+    choice = choice || { mode: 'freestyle' };
+    if (!workoutTracker) return Promise.resolve();
+    var WS = window.WorkoutSplit;
+
+    if (choice.mode === 'freestyle') {
+      workoutTracker.reset();
+      if (typeof workoutTracker.openExercisePicker === 'function') {
+        workoutTracker.openExercisePicker();
+      }
+      updateLiftsCount();
+      return Promise.resolve({ freestyle: true });
+    }
+
+    if (choice.splitId && WS && typeof WS.setActiveSplit === 'function') {
+      WS.setActiveSplit(choice.splitId);
+    }
+    return applyTodayRoutineIfEmpty(true, true).then(function () {
+      if (!workoutTracker.hasExercises() && typeof workoutTracker.openExercisePicker === 'function') {
+        workoutTracker.openExercisePicker();
+      }
+      return { freestyle: false };
+    });
   }
 
   function trackingSubPanelFromHash() {
@@ -181,43 +248,51 @@
     }
   }
 
-  function setMode(mode, opts) {
-    opts = opts || {};
-    var isWorkout = mode === 'workout';
-    var isTracking = mode === 'tracking';
+  function syncPrimaryTabState(mode, trackingPanel) {
     var isSplit = mode === 'split';
-    if (tabWorkout) {
-      tabWorkout.classList.toggle('active', isWorkout);
-      tabWorkout.setAttribute('aria-selected', isWorkout ? 'true' : 'false');
-    }
-    if (tabTracking) {
-      tabTracking.classList.toggle('active', isTracking);
-      tabTracking.setAttribute('aria-selected', isTracking ? 'true' : 'false');
-    }
+    primaryTrackingTabs.forEach(function (tab) {
+      var key = tab.getAttribute('data-tracking-panel');
+      var on = !isSplit && key === trackingPanel;
+      tab.classList.toggle('active', on);
+      tab.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
     if (tabSplit) {
       tabSplit.classList.toggle('active', isSplit);
       tabSplit.setAttribute('aria-selected', isSplit ? 'true' : 'false');
     }
+  }
+
+  function setMode(mode, opts) {
+    opts = opts || {};
+    var isWorkout = mode === 'workout';
+    var isTracking = mode === 'tracking' || isWorkout;
+    var isSplit = mode === 'split';
+    var trackingPanel = opts.trackingPanel || trackingSubPanelFromHash() || 'stats';
+
+    if (progressShell) progressShell.hidden = isSplit;
+
     if (panelWorkout) {
       panelWorkout.classList.toggle('create-panel--active', isWorkout);
       panelWorkout.hidden = !isWorkout;
     }
     if (panelTracking) {
-      panelTracking.classList.toggle('create-panel--active', isTracking);
-      panelTracking.hidden = !isTracking;
+      panelTracking.classList.toggle('create-panel--active', isTracking && !isWorkout);
+      /* keep tracking panels mounted while quick-logging; hide when on split */
+      panelTracking.hidden = isSplit;
+      if (isWorkout) panelTracking.hidden = false;
     }
     if (panelSplit) {
       panelSplit.classList.toggle('create-panel--active', isSplit);
       panelSplit.hidden = !isSplit;
     }
-    var intro = document.querySelector('.create-intro');
-    if (intro) intro.hidden = isTracking;
+
+    syncPrimaryTabState(isSplit ? 'split' : 'tracking', trackingPanel);
+
     if (isWorkout) {
       applySplitAutofillFromPicker();
-      initCreateArchiveUi();
     }
     if (isTracking) {
-      activateTrackingSubPanel(opts.trackingPanel || trackingSubPanelFromHash());
+      activateTrackingSubPanel(trackingPanel);
     }
     if (isSplit) {
       if (window.WorkoutSplit && window.WorkoutSplit.markAllSplitsSeen) {
@@ -235,6 +310,10 @@
       setMode('split');
       return;
     }
+    if (h === '#workout' || h === '#session' || h === '#today') {
+      setMode('workout');
+      return;
+    }
     if (
       h === '#stats' ||
       h === '#archive' ||
@@ -245,25 +324,11 @@
       h === '#tracking'
     ) {
       setMode('tracking', { trackingPanel: trackingSubPanelFromHash() });
+      return;
     }
+    setMode('tracking', { trackingPanel: 'stats' });
   }
 
-  if (tabWorkout) {
-    tabWorkout.addEventListener('click', function () {
-      setMode('workout');
-      if (history.replaceState) {
-        history.replaceState(null, '', location.pathname + location.search);
-      }
-    });
-  }
-  if (tabTracking) {
-    tabTracking.addEventListener('click', function () {
-      setMode('tracking', { trackingPanel: 'stats' });
-      if (history.replaceState) {
-        history.replaceState(null, '', location.pathname + location.search + '#stats');
-      }
-    });
-  }
   if (gotoProgressLink) {
     gotoProgressLink.addEventListener('click', function (e) {
       e.preventDefault();
@@ -281,6 +346,16 @@
       }
     });
   }
+
+  window.CreateUI = {
+    setMode: setMode,
+    showQuickLog: function () {
+      setMode('workout');
+      if (history.replaceState) {
+        history.replaceState(null, '', location.pathname + location.search + '#workout');
+      }
+    },
+  };
 
   window.addEventListener('hashchange', applyHashToMode);
   applyHashToMode();
@@ -2329,74 +2404,89 @@
     return m || a || d || cal || t;
   }
 
-  function saveWorkoutForDashboard(meta) {
+  function buildWorkoutPayloadForDashboard(meta) {
     meta = meta || {};
-    return new Promise(function (resolve, reject) {
-      if (!WL) {
-        reject(new Error('Workout log unavailable.'));
-        return;
+    if (meta.session && typeof meta.session === 'object') {
+      var fromMeta = Object.assign({}, meta.session);
+      if (meta.photos) fromMeta.photos = meta.photos;
+      return fromMeta;
+    }
+    if (!WL) throw new Error('Workout log unavailable.');
+    var dt = datetimeInput && datetimeInput.value;
+    if (!dt) throw new Error('Pick a date and time for this session.');
+    var splitName = document.getElementById('create-split').value.trim();
+    var title = document.getElementById('create-session-title').value.trim();
+    var notes = document.getElementById('create-notes').value.trim();
+    if (meta.notes != null) notes = String(meta.notes);
+    if (meta.title) title = String(meta.title);
+    var sessionType = getSessionType();
+    var cardio = collectCardio();
+    var exercises = exercisesPassFilter(collectExercises());
+    var intensityRaw = intensityInput && intensityInput.value.trim();
+    var intensityNum = null;
+    if (meta.totalIntensity != null && meta.totalIntensity !== '') {
+      intensityNum = parseInt(meta.totalIntensity, 10);
+    } else if (intensityRaw !== '') {
+      intensityNum = parseInt(intensityRaw, 10);
+    }
+    if (intensityNum != null && (isNaN(intensityNum) || intensityNum < 0 || intensityNum > 100)) {
+      throw new Error('Session intensity must be between 0 and 100.');
+    }
+    if (sessionType === 'cardio') {
+      if (!cardioHasContent(cardio) && !title && !notes) {
+        throw new Error('Add cardio details or a title.');
       }
-      var dt = datetimeInput && datetimeInput.value;
-      if (!dt) {
-        reject(new Error('Pick a date and time for this session.'));
-        return;
-      }
-      var splitName = document.getElementById('create-split').value.trim();
-      var title = document.getElementById('create-session-title').value.trim();
-      var notes = document.getElementById('create-notes').value.trim();
-      var sessionType = getSessionType();
-      var cardio = collectCardio();
-      var exercises = exercisesPassFilter(collectExercises());
-      var intensityRaw = intensityInput && intensityInput.value.trim();
-      var intensityNum = null;
-      if (intensityRaw !== '') {
-        intensityNum = parseInt(intensityRaw, 10);
-        if (isNaN(intensityNum) || intensityNum < 0 || intensityNum > 100) {
-          reject(new Error('Session intensity must be between 0 and 100.'));
-          return;
-        }
-      }
-      if (sessionType === 'cardio') {
-        if (!cardioHasContent(cardio) && !title && !notes) {
-          reject(new Error('Add cardio details or a title.'));
-          return;
-        }
-      } else if (!exercises.length) {
-        reject(new Error('Add at least one lift.'));
-        return;
-      }
-      var parts = dt.split('T');
-      var datePart = parts[0] || '';
-      var timePart = parts[1] || '';
-      var payload = {
+    } else if (!exercises.length && !(workoutTracker && workoutTracker.hasExercises())) {
+      throw new Error('Add at least one lift.');
+    }
+    var parts = dt.split('T');
+    var datePart = parts[0] || '';
+    var timePart = parts[1] || '';
+    var payload = {
+      date: datePart,
+      time: timePart,
+      splitName: splitName,
+      title: title,
+      notes: notes,
+      exercises: exercises,
+      totalIntensity: intensityNum,
+      sessionType: sessionType,
+      cardio: cardioHasContent(cardio) ? cardio : null,
+      source: 'create',
+    };
+    if (workoutTracker && workoutTracker.hasExercises()) {
+      payload = window.WorkoutSession.toLegacyPayload(workoutTracker.getSession(), {
         date: datePart,
         time: timePart,
         splitName: splitName,
         title: title,
         notes: notes,
-        exercises: exercises,
-        totalIntensity: intensityNum,
         sessionType: sessionType,
+        totalIntensity: intensityNum,
         cardio: cardioHasContent(cardio) ? cardio : null,
-        source: 'create'
-      };
-      if (workoutTracker && workoutTracker.hasExercises()) {
-        payload = window.WorkoutSession.toLegacyPayload(workoutTracker.getSession(), {
-          date: datePart,
-          time: timePart,
-          splitName: splitName,
-          title: title,
-          notes: notes,
-          sessionType: sessionType,
-          totalIntensity: intensityNum,
-          cardio: cardioHasContent(cardio) ? cardio : null
-        });
+      });
+    }
+    if (blocksEnabled && blocksEnabled.checked) payload.useBlocks = true;
+    if (meta.photos) payload.photos = meta.photos;
+    return payload;
+  }
+
+  function saveWorkoutForDashboard(meta) {
+    meta = meta || {};
+    return new Promise(function (resolve, reject) {
+      try {
+        var payload = buildWorkoutPayloadForDashboard(meta);
+        if (meta.preview) {
+          resolve(payload);
+          return;
+        }
+        var saved = WL.addSession(payload);
+        if (workoutTracker) workoutTracker.reset();
+        updateLiftsCount();
+        resolve(saved || payload);
+      } catch (err) {
+        reject(err);
       }
-      if (blocksEnabled && blocksEnabled.checked) payload.useBlocks = true;
-      var saved = WL.addSession(payload);
-      if (workoutTracker) workoutTracker.reset();
-      updateLiftsCount();
-      resolve(saved || payload);
     });
   }
 
@@ -2406,7 +2496,15 @@
         return workoutTracker;
       },
       bootstrapSession: function () {
-        applyTodayRoutineIfEmpty(true, true);
+        /* Routine choice is handled by the start picker */
+      },
+      startFromChoice: function (choice) {
+        return startWorkoutFromChoice(choice);
+      },
+      listSplitOptions: function () {
+        var WS = window.WorkoutSplit;
+        if (!WS || typeof WS.listSplits !== 'function') return [];
+        return WS.listSplits();
       },
       applyRoutine: function () {
         return applyTodayRoutineIfEmpty(true, true);
@@ -2414,6 +2512,10 @@
       refreshCoach: refreshOverloadCoachUi,
       onFinish: function (meta) {
         return saveWorkoutForDashboard(meta);
+      },
+      onCancel: function () {
+        if (workoutTracker) workoutTracker.reset();
+        updateLiftsCount();
       },
     });
   }

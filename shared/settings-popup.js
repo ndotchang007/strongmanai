@@ -12,12 +12,22 @@
   var EXPERIMENTAL_KEY = 'strongman-experimental-mode';
 
   function getStoredTheme() {
+    if (window.StrongmanTheme && typeof window.StrongmanTheme.getStoredTheme === 'function') {
+      return window.StrongmanTheme.getStoredTheme();
+    }
     var v = localStorage.getItem(THEME_KEY);
+    if (v === 'auto') return 'system';
     if (v === 'dark' || v === 'light' || v === 'system') return v;
+    if (v === 'voltage' || v === 'forge' || v === 'aurora') return v;
+    if (v === 'tidepool' || v === 'noir-lilac' || v === 'citrus') return 'aurora';
+    if (v === 'marble') return 'light';
     return 'dark';
   }
 
   function getEffectiveTheme() {
+    if (window.StrongmanTheme && typeof window.StrongmanTheme.getEffectiveTheme === 'function') {
+      return window.StrongmanTheme.getEffectiveTheme();
+    }
     var stored = getStoredTheme();
     if (stored === 'system') {
       return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
@@ -26,20 +36,26 @@
   }
 
   function applyDocumentTheme() {
+    if (window.StrongmanTheme && typeof window.StrongmanTheme.applyDocumentTheme === 'function') {
+      window.StrongmanTheme.applyDocumentTheme();
+      return;
+    }
     document.documentElement.setAttribute('data-theme', getEffectiveTheme());
   }
 
-  applyDocumentTheme();
+  if (!window.StrongmanTheme) {
+    applyDocumentTheme();
 
-  var mqDark = window.matchMedia('(prefers-color-scheme: dark)');
-  if (mqDark.addEventListener) {
-    mqDark.addEventListener('change', function () {
-      if (getStoredTheme() === 'system') applyDocumentTheme();
-    });
-  } else if (mqDark.addListener) {
-    mqDark.addListener(function () {
-      if (getStoredTheme() === 'system') applyDocumentTheme();
-    });
+    var mqDark = window.matchMedia('(prefers-color-scheme: dark)');
+    if (mqDark.addEventListener) {
+      mqDark.addEventListener('change', function () {
+        if (getStoredTheme() === 'system') applyDocumentTheme();
+      });
+    } else if (mqDark.addListener) {
+      mqDark.addListener(function () {
+        if (getStoredTheme() === 'system') applyDocumentTheme();
+      });
+    }
   }
 
   function isExperimentalEnabled() {
@@ -189,6 +205,84 @@
   var settingsDialog = document.getElementById('home-settings-dialog');
   var settingsClose = document.getElementById('home-settings-close');
   var themeRadios = document.querySelectorAll('input[name="home-theme"]');
+
+  function bindThemeRadios() {
+    themeRadios = document.querySelectorAll('input[name="home-theme"]');
+    themeRadios.forEach(function (radio) {
+      if (radio.dataset.themeBound === '1') return;
+      radio.dataset.themeBound = '1';
+      radio.addEventListener('change', function () {
+        if (!this.checked) return;
+        if (window.StrongmanTheme && typeof window.StrongmanTheme.setThemePreference === 'function') {
+          window.StrongmanTheme.setThemePreference(this.value);
+        } else {
+          try {
+            localStorage.setItem(THEME_KEY, this.value);
+          } catch (e) {}
+          applyDocumentTheme();
+        }
+      });
+    });
+  }
+
+  function mountThemePicker() {
+    var catalog =
+      window.StrongmanTheme && window.StrongmanTheme.THEME_CATALOG
+        ? window.StrongmanTheme.THEME_CATALOG
+        : null;
+    var rows = document.querySelectorAll('.home-settings-theme-row');
+    if (!catalog || !rows.length) {
+      bindThemeRadios();
+      return;
+    }
+    var selected = getStoredTheme();
+    rows.forEach(function (row) {
+      row.classList.add('settings-theme-grid');
+      row.setAttribute('role', 'radiogroup');
+      row.setAttribute('aria-label', 'Color theme');
+      row.innerHTML = '';
+      catalog.forEach(function (theme) {
+        var label = document.createElement('label');
+        label.className = 'settings-theme-card';
+        label.title = theme.blurb || theme.nickname;
+
+        var input = document.createElement('input');
+        input.type = 'radio';
+        input.name = 'home-theme';
+        input.value = theme.id;
+        input.className = 'home-settings-radio';
+        input.checked = theme.id === selected;
+
+        var swatches = document.createElement('div');
+        swatches.className = 'settings-theme-card-swatches';
+        swatches.setAttribute('aria-hidden', 'true');
+        (theme.swatches || []).forEach(function (color) {
+          var chip = document.createElement('span');
+          chip.className = 'settings-theme-card-swatch';
+          chip.style.background = color;
+          swatches.appendChild(chip);
+        });
+
+        var name = document.createElement('span');
+        name.className = 'settings-theme-card-name';
+        name.textContent = theme.nickname;
+
+        var blurb = document.createElement('span');
+        blurb.className = 'settings-theme-card-blurb';
+        blurb.textContent = theme.blurb || '';
+
+        label.appendChild(input);
+        label.appendChild(swatches);
+        label.appendChild(name);
+        label.appendChild(blurb);
+        row.appendChild(label);
+      });
+    });
+    bindThemeRadios();
+  }
+
+  mountThemePicker();
+
   var unitsSelect = document.getElementById('settings-units-select');
   var notifyEmail = document.getElementById('settings-notify-email');
   var notifyPush = document.getElementById('settings-notify-push');
@@ -271,6 +365,9 @@
       customDays: custom.length ? custom : [1, 2, 3, 4, 5],
     };
     saveReminderSchedule(sched);
+    if (window.StrongmanPush && typeof window.StrongmanPush.syncReminderSchedule === 'function') {
+      window.StrongmanPush.syncReminderSchedule(sched);
+    }
   }
 
   function updateReminderScheduleVisibility() {
@@ -501,14 +598,6 @@
     }
   });
 
-  themeRadios.forEach(function (radio) {
-    radio.addEventListener('change', function () {
-      if (!this.checked) return;
-      localStorage.setItem(THEME_KEY, this.value);
-      applyDocumentTheme();
-    });
-  });
-
   if (unitsSelect) {
     unitsSelect.addEventListener('change', function () {
       var toUnits = unitsSelect.value === 'metric' ? 'metric' : 'imperial';
@@ -606,17 +695,46 @@
     notifyPush.addEventListener('change', function () {
       if (!notifyPush.checked) {
         localStorage.setItem(NOTIFY_PUSH_KEY, '0');
+        if (window.StrongmanPush && typeof window.StrongmanPush.unsubscribe === 'function') {
+          window.StrongmanPush.unsubscribe();
+        }
+        persistNotifyPushToServer(false);
         reconcileBrowserNotificationsUI();
         return;
       }
       if (!('Notification' in window)) {
         notifyPush.checked = false;
         localStorage.setItem(NOTIFY_PUSH_KEY, '0');
+        setNotifyBrowserStatus('This browser does not support notifications.');
         return;
       }
-      if (Notification.permission === 'granted') {
+      function afterGranted() {
         localStorage.setItem(NOTIFY_PUSH_KEY, '1');
         setNotifyBrowserStatus('');
+        persistNotifyPushToServer(true);
+        if (window.StrongmanPush && typeof window.StrongmanPush.subscribe === 'function') {
+          window.StrongmanPush.subscribe().then(function (result) {
+            if (result && result.ok) {
+              setNotifyBrowserStatus('Browser notifications enabled — including when the app is closed.');
+              return;
+            }
+            if (result && result.reason === 'not_configured') {
+              setNotifyBrowserStatus(
+                'Permission granted. Local reminders work with this tab open; server push is not configured yet.'
+              );
+              return;
+            }
+            setNotifyBrowserStatus(
+              'Permission granted. Local reminders are on; push subscription may need a refresh.'
+            );
+          });
+        }
+        if (window.StrongmanPush && typeof window.StrongmanPush.syncReminderSchedule === 'function') {
+          window.StrongmanPush.syncReminderSchedule(loadReminderSchedule());
+        }
+      }
+      if (Notification.permission === 'granted') {
+        afterGranted();
         return;
       }
       if (Notification.permission === 'denied') {
@@ -627,8 +745,7 @@
       }
       Notification.requestPermission().then(function (perm) {
         if (perm === 'granted') {
-          localStorage.setItem(NOTIFY_PUSH_KEY, '1');
-          setNotifyBrowserStatus('');
+          afterGranted();
         } else {
           notifyPush.checked = false;
           localStorage.setItem(NOTIFY_PUSH_KEY, '0');
@@ -642,6 +759,24 @@
         }
       });
     });
+  }
+
+  function persistNotifyPushToServer(enabled) {
+    var u = typeof window.getCurrentUser === 'function' ? window.getCurrentUser() : null;
+    if (!u || !u.id || typeof window.apiPut !== 'function') return Promise.resolve();
+    return window
+      .apiPut('/users/' + u.id, { notifyPush: !!enabled })
+      .then(function (res) {
+        if (!res.ok) return;
+        return res.json().then(function (body) {
+          if (typeof window.setCurrentUser === 'function') {
+            var merged = Object.assign({}, u, body);
+            if (u.token) merged.token = u.token;
+            window.setCurrentUser(merged);
+          }
+        });
+      })
+      .catch(function () {});
   }
 
   bindCheckbox(profilePublic, PRIVACY_PUBLIC_KEY);

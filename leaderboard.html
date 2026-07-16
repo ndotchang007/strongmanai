@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="strongman-api-base" content="https://strongmanai-api.onrender.com/api/v1">
+    <meta name="strongman-api-base" content="http://127.0.0.1:8080/api/v1">
     <title>Strongman AI – Leaderboards</title>
     <link rel="icon" type="image/png" href="/assets/logo.png">
     <link rel="apple-touch-icon" href="/assets/logo.png">
+    <script src="/shared/theme.js"></script>
     <link rel="stylesheet" href="/css/home.css">
     <link rel="stylesheet" href="/css/app-nav.css">
     <link rel="stylesheet" href="/css/notification-bell.css">
@@ -310,10 +311,10 @@
             <div class="home-settings-body">
                 <section class="home-settings-section" aria-labelledby="settings-appearance-heading">
                     <h3 class="home-settings-section-title" id="settings-appearance-heading">Appearance</h3>
-                    <p class="home-settings-hint">Theme and preferences apply across the app.</p>
+                    <p class="home-settings-hint">Choose a named palette. Your pick saves across the app.</p>
                     <div class="home-settings-theme-row" role="group" aria-label="Color theme">
-                        <label class="home-settings-radio-label"><input type="radio" name="home-theme" value="dark" class="home-settings-radio"> Dark</label>
-                        <label class="home-settings-radio-label"><input type="radio" name="home-theme" value="light" class="home-settings-radio"> Light</label>
+                        <label class="home-settings-radio-label"><input type="radio" name="home-theme" value="dark" class="home-settings-radio"> Ember</label>
+                        <label class="home-settings-radio-label"><input type="radio" name="home-theme" value="light" class="home-settings-radio"> Daylight</label>
                         <label class="home-settings-radio-label"><input type="radio" name="home-theme" value="system" class="home-settings-radio"> System</label>
                     </div>
                 </section>
@@ -412,6 +413,7 @@
     <script src="/shared/athlete-context.js"></script>
     <script src="/shared/name-policy.js"></script>
     <script src="/shared/known-notes.js"></script>
+    <script src="/shared/push-client.js"></script>
     <script src="/shared/settings-popup.js"></script>
     <script src="/js/leaderboard.js"></script>
     <script src="/shared/workout-dashboard.js"></script>

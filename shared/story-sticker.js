@@ -1,12 +1,12 @@
 /**
- * Transparent PNG story stickers for Instagram Stories (Strava-style mobile flow).
+ * Strava-style Instagram Story stickers — bold stats, transparent PNG, share to IG.
  */
 (function () {
   'use strict';
 
-  var STICKER_WIDTH = 920;
-  var STICKER_PAD = 40;
-  var CARD_RADIUS = 28;
+  var STICKER_WIDTH = 1080;
+  var STICKER_PAD = 56;
+  var CARD_RADIUS = 48;
   var DESKTOP_BLOCKER_ID = 'ig-desktop-blocker';
 
   function wrapLines(ctx, text, maxWidth) {
@@ -51,31 +51,73 @@
     return h12 + ':' + m + ' ' + ampm;
   }
 
-  function formatExerciseBullet(ex) {
-    if (!ex) return '';
-    var label = ex.name || 'Exercise';
-    if (ex.blockName) label = ex.blockName + ' · ' + label;
-    var w = '—';
-    if (ex.setWeights && ex.setWeights.length) {
-      w = ex.setWeights.join(' / ') + ' lb';
-    } else if (ex.weight != null && ex.weight !== '') {
-      w = ex.weight + ' lb';
+  function themeAccent() {
+    try {
+      var v = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+      return v || '#fc4c02';
+    } catch (e) {
+      return '#fc4c02';
     }
-    return label + ' · ' + (ex.sets || '0') + '×' + (ex.reps || '0') + ' @ ' + w;
   }
 
-  function formatCardioBullet(cardio) {
-    if (!cardio) return '';
-    var bits = [];
-    var cm = parseFloat(cardio.minutes);
-    if (!isNaN(cm) && cm > 0) bits.push(Math.round(cm) + ' min');
-    if (cardio.activity) bits.push(String(cardio.activity).trim());
-    if (cardio.type) bits.push(String(cardio.type).replace(/-/g, ' '));
-    return bits.length ? 'Cardio · ' + bits.join(' · ') : '';
+  function hexToRgba(hex, a) {
+    var c = String(hex || '').replace('#', '');
+    if (c.length === 3) c = c[0] + c[0] + c[1] + c[1] + c[2] + c[2];
+    if (c.length < 6) return 'rgba(252, 76, 2, ' + a + ')';
+    var r = parseInt(c.slice(0, 2), 16);
+    var g = parseInt(c.slice(2, 4), 16);
+    var b = parseInt(c.slice(4, 6), 16);
+    if (isNaN(r) || isNaN(g) || isNaN(b)) return 'rgba(252, 76, 2, ' + a + ')';
+    return 'rgba(' + r + ', ' + g + ', ' + b + ', ' + a + ')';
+  }
+
+  function computeFlexStats(session) {
+    var volume = 0;
+    var sets = 0;
+    var exercises = [];
+    if (session.trackerData && Array.isArray(session.trackerData.exercises)) {
+      session.trackerData.exercises.forEach(function (ex) {
+        if (!ex || !ex.name) return;
+        var completed = 0;
+        (ex.sets || []).forEach(function (set) {
+          if (!set || !(set.completed || set.done)) return;
+          completed += 1;
+          sets += 1;
+          var w = parseFloat(set.weight);
+          var r = parseFloat(set.reps);
+          if (!isNaN(w) && !isNaN(r)) volume += w * r;
+        });
+        if (completed || (ex.sets || []).length) {
+          exercises.push({ name: ex.name, sets: completed || (ex.sets || []).length });
+        }
+      });
+    } else if (Array.isArray(session.exercises)) {
+      session.exercises.forEach(function (ex) {
+        if (!ex || !ex.name) return;
+        var nSets = parseInt(ex.sets, 10) || 0;
+        var nReps = parseInt(ex.reps, 10) || 0;
+        var w = parseFloat(ex.weight);
+        sets += nSets;
+        if (!isNaN(w) && nSets && nReps) volume += w * nReps * nSets;
+        exercises.push({ name: ex.name, sets: nSets || 0 });
+      });
+    }
+    var durationMin = null;
+    if (session.durationMin != null) durationMin = session.durationMin;
+    else if (session.durationMs != null) durationMin = Math.max(1, Math.round(session.durationMs / 60000));
+    return {
+      volume: Math.round(volume),
+      sets: sets,
+      exerciseCount: exercises.length,
+      exercises: exercises.slice(0, 8),
+      durationMin: durationMin,
+      intensity: session.totalIntensity != null ? session.totalIntensity : null,
+    };
   }
 
   function buildWorkoutItems(session, opts, WL) {
     opts = opts || {};
+    var stats = computeFlexStats(session);
     var items = [];
     items.push({ kind: 'brand', text: 'STRONGMAN AI' });
     if (opts.incTitle !== false) {
@@ -90,28 +132,45 @@
       var tm = formatDisplayTime(session.time);
       if (dt || tm) items.push({ kind: 'meta', text: [dt, tm].filter(Boolean).join(' · ') });
     }
-    if (opts.incExercises !== false && session.exercises && session.exercises.length) {
-      session.exercises.slice(0, 14).forEach(function (ex) {
-        items.push({ kind: 'bullet', text: formatExerciseBullet(ex) });
+    items.push({
+      kind: 'stats',
+      stats: [
+        {
+          value: stats.durationMin != null ? String(stats.durationMin) : '—',
+          unit: 'min',
+          label: 'Time',
+        },
+        {
+          value: stats.volume > 0 ? stats.volume.toLocaleString() : '—',
+          unit: stats.volume > 0 ? 'lb' : '',
+          label: 'Volume',
+        },
+        {
+          value: stats.sets > 0 ? String(stats.sets) : String(stats.exerciseCount || '—'),
+          unit: '',
+          label: stats.sets > 0 ? 'Sets' : 'Lifts',
+        },
+      ],
+    });
+    if (opts.incExercises !== false && stats.exercises.length) {
+      stats.exercises.forEach(function (ex) {
+        items.push({
+          kind: 'bullet',
+          text: ex.name + (ex.sets ? ' · ' + ex.sets + ' set' + (ex.sets === 1 ? '' : 's') : ''),
+        });
       });
     }
-    if (opts.incCardio !== false) {
-      var cb = formatCardioBullet(session.cardio);
-      if (cb) items.push({ kind: 'bullet', text: cb });
-    }
-    if (opts.incIntensity !== false && session.totalIntensity != null && WL) {
+    if (opts.incIntensity !== false && stats.intensity != null && WL) {
       items.push({
-        kind: 'meta',
+        kind: 'chip',
         text:
-          'Intensity · ' +
-          session.totalIntensity +
-          ' (' +
-          WL.intensityLabel(session.totalIntensity) +
-          ')',
+          'Intensity ' +
+          stats.intensity +
+          (typeof WL.intensityLabel === 'function' ? ' · ' + WL.intensityLabel(stats.intensity) : ''),
       });
     }
     if (opts.incNotes && session.notes && String(session.notes).trim()) {
-      items.push({ kind: 'notes', text: String(session.notes).trim() });
+      items.push({ kind: 'notes', text: String(session.notes).trim().slice(0, 120) });
     }
     var ig =
       window.InstagramConnect && typeof window.InstagramConnect.getConnectedHandle === 'function'
@@ -119,47 +178,6 @@
         : '';
     if (ig) items.push({ kind: 'handle', text: '@' + ig });
     return items;
-  }
-
-  function layoutSticker(items, maxTextW) {
-    var canvas = document.createElement('canvas');
-    canvas.width = 10;
-    canvas.height = 10;
-    var ctx = canvas.getContext('2d');
-    var y = STICKER_PAD;
-    var x = STICKER_PAD;
-    var gap = 10;
-    var lines = [];
-
-    function addBlock(kind, text, font, color, lineHeight) {
-      ctx.font = font;
-      ctx.fillStyle = color;
-      var wrapped = wrapLines(ctx, text, maxTextW);
-      wrapped.forEach(function (ln) {
-        lines.push({ kind: kind, text: ln, font: font, color: color, x: x, y: y, h: lineHeight });
-        y += lineHeight;
-      });
-      y += gap;
-    }
-
-    items.forEach(function (item) {
-      if (item.kind === 'brand') {
-        addBlock('brand', item.text, 'bold 34px "DM Sans", system-ui, sans-serif', '#ff8c00', 38);
-      } else if (item.kind === 'title') {
-        addBlock('title', item.text, 'bold 46px "DM Sans", system-ui, sans-serif', '#ffffff', 50);
-      } else if (item.kind === 'meta') {
-        addBlock('meta', item.text, '500 24px "DM Sans", system-ui, sans-serif', 'rgba(255,255,255,0.82)', 28);
-      } else if (item.kind === 'bullet') {
-        addBlock('bullet', item.text, '500 26px "DM Sans", system-ui, sans-serif', 'rgba(255,255,255,0.94)', 30);
-      } else if (item.kind === 'notes') {
-        addBlock('notes', item.text, '500 22px "DM Sans", system-ui, sans-serif', 'rgba(255,255,255,0.78)', 26);
-      } else if (item.kind === 'handle') {
-        addBlock('handle', item.text, '600 22px "DM Sans", system-ui, sans-serif', 'rgba(255,255,255,0.72)', 26);
-      }
-    });
-
-    var cardH = y + STICKER_PAD - gap;
-    return { lines: lines, cardW: STICKER_WIDTH, cardH: Math.max(180, cardH) };
   }
 
   function drawRoundedRect(ctx, x, y, w, h, r) {
@@ -176,53 +194,171 @@
     ctx.closePath();
   }
 
+  function layoutAndPaint(session, opts, WL) {
+    var accent = themeAccent();
+    var items = buildWorkoutItems(session, opts, WL);
+    var pad = STICKER_PAD;
+    var maxTextW = STICKER_WIDTH - pad * 2;
+    var canvas = document.createElement('canvas');
+    canvas.width = 10;
+    canvas.height = 10;
+    var measure = canvas.getContext('2d');
+
+    var blocks = [];
+    var y = pad + 8;
+
+    items.forEach(function (item) {
+      if (item.kind === 'brand') {
+        blocks.push({ kind: 'brand', text: item.text, y: y });
+        y += 42;
+      } else if (item.kind === 'title') {
+        measure.font = '800 64px "Space Grotesk", "DM Sans", system-ui, sans-serif';
+        var titleLines = wrapLines(measure, item.text, maxTextW);
+        blocks.push({ kind: 'title', lines: titleLines, y: y });
+        y += titleLines.length * 68 + 8;
+      } else if (item.kind === 'meta') {
+        blocks.push({ kind: 'meta', text: item.text, y: y });
+        y += 36;
+      } else if (item.kind === 'stats') {
+        y += 12;
+        blocks.push({ kind: 'stats', stats: item.stats, y: y });
+        y += 130;
+      } else if (item.kind === 'bullet') {
+        blocks.push({ kind: 'bullet', text: item.text, y: y });
+        y += 38;
+      } else if (item.kind === 'chip') {
+        blocks.push({ kind: 'chip', text: item.text, y: y });
+        y += 48;
+      } else if (item.kind === 'notes') {
+        measure.font = '500 26px "DM Sans", system-ui, sans-serif';
+        var noteLines = wrapLines(measure, item.text, maxTextW);
+        blocks.push({ kind: 'notes', lines: noteLines, y: y });
+        y += noteLines.length * 32 + 8;
+      } else if (item.kind === 'handle') {
+        blocks.push({ kind: 'handle', text: item.text, y: y });
+        y += 36;
+      }
+    });
+
+    var cardH = Math.max(520, y + pad);
+    canvas.width = STICKER_WIDTH;
+    canvas.height = cardH;
+    var ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    /* Transparent sticker: dark glass card + accent rail (Strava-like flex card) */
+    drawRoundedRect(ctx, 0, 0, canvas.width, cardH, CARD_RADIUS);
+    ctx.fillStyle = 'rgba(18, 18, 20, 0.92)';
+    ctx.fill();
+
+    ctx.fillStyle = accent;
+    ctx.fillRect(0, 0, 14, cardH);
+
+    ctx.strokeStyle = hexToRgba(accent, 0.35);
+    ctx.lineWidth = 3;
+    drawRoundedRect(ctx, 1.5, 1.5, canvas.width - 3, cardH - 3, CARD_RADIUS - 1);
+    ctx.stroke();
+
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+
+    blocks.forEach(function (b) {
+      var x = pad + 10;
+      if (b.kind === 'brand') {
+        ctx.font = '800 28px "DM Sans", system-ui, sans-serif';
+        ctx.fillStyle = accent;
+        ctx.letterSpacing = '0.08em';
+        ctx.fillText(b.text, x, b.y);
+      } else if (b.kind === 'title') {
+        ctx.font = '800 64px "Space Grotesk", "DM Sans", system-ui, sans-serif';
+        ctx.fillStyle = '#ffffff';
+        b.lines.forEach(function (ln, i) {
+          ctx.fillText(ln, x, b.y + i * 68);
+        });
+      } else if (b.kind === 'meta') {
+        ctx.font = '600 28px "DM Sans", system-ui, sans-serif';
+        ctx.fillStyle = 'rgba(255,255,255,0.72)';
+        ctx.fillText(b.text, x, b.y);
+      } else if (b.kind === 'stats') {
+        var colW = (maxTextW - 24) / 3;
+        b.stats.forEach(function (st, i) {
+          var cx = x + i * (colW + 12);
+          ctx.font = '800 56px "Space Grotesk", "DM Sans", system-ui, sans-serif';
+          ctx.fillStyle = '#ffffff';
+          ctx.fillText(st.value, cx, b.y);
+          var vw = ctx.measureText(st.value).width;
+          if (st.unit) {
+            ctx.font = '700 22px "DM Sans", system-ui, sans-serif';
+            ctx.fillStyle = hexToRgba(accent, 0.95);
+            ctx.fillText(st.unit, cx + vw + 8, b.y + 28);
+          }
+          ctx.font = '700 22px "DM Sans", system-ui, sans-serif';
+          ctx.fillStyle = 'rgba(255,255,255,0.55)';
+          ctx.fillText(String(st.label).toUpperCase(), cx, b.y + 72);
+        });
+      } else if (b.kind === 'bullet') {
+        ctx.fillStyle = accent;
+        ctx.beginPath();
+        ctx.arc(x + 6, b.y + 14, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.font = '600 30px "DM Sans", system-ui, sans-serif';
+        ctx.fillStyle = 'rgba(255,255,255,0.94)';
+        ctx.fillText(b.text, x + 24, b.y);
+      } else if (b.kind === 'chip') {
+        ctx.font = '700 24px "DM Sans", system-ui, sans-serif';
+        var tw = ctx.measureText(b.text).width + 36;
+        drawRoundedRect(ctx, x, b.y, tw, 40, 20);
+        ctx.fillStyle = hexToRgba(accent, 0.18);
+        ctx.fill();
+        ctx.strokeStyle = hexToRgba(accent, 0.55);
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.fillStyle = accent;
+        ctx.fillText(b.text, x + 18, b.y + 8);
+      } else if (b.kind === 'notes') {
+        ctx.font = '500 26px "DM Sans", system-ui, sans-serif';
+        ctx.fillStyle = 'rgba(255,255,255,0.7)';
+        b.lines.forEach(function (ln, i) {
+          ctx.fillText(ln, x, b.y + i * 32);
+        });
+      } else if (b.kind === 'handle') {
+        ctx.font = '700 26px "DM Sans", system-ui, sans-serif';
+        ctx.fillStyle = 'rgba(255,255,255,0.65)';
+        ctx.fillText(b.text, x, b.y);
+      }
+    });
+
+    return canvas;
+  }
+
   function renderWorkoutSticker(session, opts, WL, callback) {
     if (!session) {
       callback(new Error('No session'));
       return;
     }
-    var items = buildWorkoutItems(session, opts, WL);
-    var maxTextW = STICKER_WIDTH - STICKER_PAD * 2;
-    var layout = layoutSticker(items, maxTextW);
-    var canvas = document.createElement('canvas');
-    canvas.width = layout.cardW;
-    canvas.height = layout.cardH;
-    var ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    drawRoundedRect(ctx, 0, 0, layout.cardW, layout.cardH, CARD_RADIUS);
-    ctx.fillStyle = 'rgba(12, 12, 14, 0.88)';
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(255, 140, 0, 0.35)';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'top';
-    layout.lines.forEach(function (ln) {
-      ctx.font = ln.font;
-      ctx.fillStyle = ln.color;
-      if (ln.kind === 'brand' || ln.kind === 'title') {
-        ctx.shadowColor = 'rgba(0,0,0,0.45)';
-        ctx.shadowBlur = 8;
-      } else {
-        ctx.shadowBlur = 0;
-      }
-      ctx.fillText(ln.text, ln.x, ln.y);
-      ctx.shadowBlur = 0;
-    });
-
-    canvas.toBlob(
-      function (blob) {
-        if (blob) callback(null, blob, canvas);
-        else callback(new Error('Blob failed'));
-      },
-      'image/png'
-    );
+    try {
+      var canvas = layoutAndPaint(session, opts || {}, WL);
+      canvas.toBlob(
+        function (blob) {
+          if (blob) callback(null, blob, canvas);
+          else callback(new Error('Blob failed'));
+        },
+        'image/png'
+      );
+    } catch (err) {
+      callback(err);
+    }
   }
 
   function stickerFilename() {
-    return 'strongman-story-sticker-' + Date.now() + '.png';
+    var d = new Date();
+    return (
+      'strongman-story-' +
+      d.getFullYear() +
+      String(d.getMonth() + 1).padStart(2, '0') +
+      String(d.getDate()).padStart(2, '0') +
+      '.png'
+    );
   }
 
   function downloadBlob(blob, filename) {
@@ -233,130 +369,74 @@
     document.body.appendChild(a);
     a.click();
     a.remove();
-    setTimeout(function () {
+    window.setTimeout(function () {
       URL.revokeObjectURL(url);
     }, 2500);
   }
 
-  /** Phone / tablet with Instagram app — not desktop browsers. */
   function isMobileInstagramDevice() {
-    try {
-      var ua = navigator.userAgent || '';
-      if (/Android|webOS|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua)) return true;
-      if (/iPad/i.test(ua)) return true;
-      if (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) return true;
-      return false;
-    } catch (e) {
-      return false;
-    }
+    var ua = navigator.userAgent || '';
+    return /iPhone|iPad|iPod|Android/i.test(ua);
   }
 
   function openInstagramStoryCamera() {
-    var ua = navigator.userAgent || '';
-    var isAndroid = /Android/i.test(ua);
     try {
-      if (isAndroid) {
-        window.location.href =
-          'intent://instagram.com/#Intent;package=com.instagram.android;scheme=https;end';
-        return;
-      }
       window.location.href = 'instagram://story-camera';
-    } catch (e) {
-      try {
-        window.location.href = 'instagram://story-camera';
-      } catch (e2) {}
-    }
+    } catch (e) {}
   }
 
-  function ensureDesktopBlockerModal() {
-    if (document.getElementById(DESKTOP_BLOCKER_ID)) return;
-    var backdrop = document.createElement('div');
-    backdrop.className = 'ig-desktop-blocker-backdrop';
-    backdrop.id = DESKTOP_BLOCKER_ID + '-backdrop';
-    backdrop.setAttribute('aria-hidden', 'true');
-
-    var dialog = document.createElement('div');
-    dialog.className = 'ig-desktop-blocker';
-    dialog.id = DESKTOP_BLOCKER_ID;
-    dialog.setAttribute('role', 'alertdialog');
-    dialog.setAttribute('aria-modal', 'true');
-    dialog.setAttribute('aria-labelledby', DESKTOP_BLOCKER_ID + '-title');
-    dialog.setAttribute('aria-hidden', 'true');
-
-    dialog.innerHTML =
-      '<div class="ig-desktop-blocker-panel">' +
-      '<h2 class="ig-desktop-blocker-title" id="' +
-      DESKTOP_BLOCKER_ID +
-      '-title">Use your phone for Instagram Stories</h2>' +
-      '<p class="ig-desktop-blocker-text">Instagram on a computer (<strong>instagram.com</strong>) does not let you post Stories. Open Strongman AI on your phone, then tap <strong>Share to Instagram</strong> — your sticker saves automatically and Instagram opens.</p>' +
-      '<button type="button" class="ig-desktop-blocker-btn" data-ig-desktop-dismiss>Got it</button>' +
+  function ensureDesktopBlocker() {
+    var el = document.getElementById(DESKTOP_BLOCKER_ID);
+    if (el) return el;
+    el = document.createElement('div');
+    el.id = DESKTOP_BLOCKER_ID;
+    el.className = 'ig-desktop-blocker';
+    el.hidden = true;
+    el.innerHTML =
+      '<div class="ig-desktop-blocker-panel" role="dialog" aria-modal="true">' +
+      '<p class="ig-desktop-blocker-title">Open this on your phone</p>' +
+      '<p class="ig-desktop-blocker-text">Story stickers save to Photos on mobile, then Instagram opens so you can place them on your Story — just like Strava.</p>' +
+      '<button type="button" class="ig-desktop-blocker-close">Got it</button>' +
       '</div>';
-
-    backdrop.addEventListener('click', hideDesktopInstagramBlocker);
-    dialog.querySelector('[data-ig-desktop-dismiss]').addEventListener('click', hideDesktopInstagramBlocker);
-
-    document.body.appendChild(backdrop);
-    document.body.appendChild(dialog);
+    document.body.appendChild(el);
+    el.addEventListener('click', function (e) {
+      if (e.target === el || (e.target && e.target.classList.contains('ig-desktop-blocker-close'))) {
+        hideDesktopInstagramBlocker();
+      }
+    });
+    return el;
   }
 
   function showDesktopInstagramBlocker() {
-    ensureDesktopBlockerModal();
-    var backdrop = document.getElementById(DESKTOP_BLOCKER_ID + '-backdrop');
-    var dialog = document.getElementById(DESKTOP_BLOCKER_ID);
-    if (!backdrop || !dialog) return;
-    backdrop.classList.add('is-open');
-    backdrop.setAttribute('aria-hidden', 'false');
-    dialog.classList.add('is-open');
-    dialog.setAttribute('aria-hidden', 'false');
-    document.body.style.overflow = 'hidden';
-    var btn = dialog.querySelector('[data-ig-desktop-dismiss]');
-    if (btn && typeof btn.focus === 'function') btn.focus();
+    var el = ensureDesktopBlocker();
+    el.hidden = false;
   }
 
   function hideDesktopInstagramBlocker() {
-    var backdrop = document.getElementById(DESKTOP_BLOCKER_ID + '-backdrop');
-    var dialog = document.getElementById(DESKTOP_BLOCKER_ID);
-    if (backdrop) {
-      backdrop.classList.remove('is-open');
-      backdrop.setAttribute('aria-hidden', 'true');
-    }
-    if (dialog) {
-      dialog.classList.remove('is-open');
-      dialog.setAttribute('aria-hidden', 'true');
-    }
-    document.body.style.overflow = '';
+    var el = document.getElementById(DESKTOP_BLOCKER_ID);
+    if (el) el.hidden = true;
   }
 
-  /**
-   * Strava-style: mobile saves PNG then opens Instagram; desktop shows blocker modal.
-   */
   function shareWorkoutToInstagram(session, opts, WL, callback) {
     callback = typeof callback === 'function' ? callback : function () {};
-
     if (!session) {
       callback({ ok: false, error: 'no_session' });
       return;
     }
-
     if (!isMobileInstagramDevice()) {
       showDesktopInstagramBlocker();
       callback({ ok: false, blocked: true, reason: 'desktop' });
       return;
     }
-
     renderWorkoutSticker(session, opts, WL, function (err, blob) {
       if (err || !blob) {
         callback({ ok: false, error: 'render_failed' });
         return;
       }
-
-      var filename = stickerFilename();
-      downloadBlob(blob, filename);
-
+      downloadBlob(blob, stickerFilename());
       window.setTimeout(function () {
         openInstagramStoryCamera();
       }, 400);
-
       callback({ ok: true, saved: true, opened: true });
     });
   }
@@ -380,7 +460,7 @@
           return;
         }
         if (onStatus) {
-          onStatus('Sticker saved. In Instagram, add it from your photos and place on your Story.');
+          onStatus('Sticker saved. In Instagram, add it from Photos onto your Story.');
         }
       });
     });
@@ -397,7 +477,5 @@
     shareWorkoutToInstagram: shareWorkoutToInstagram,
     wireInstagramShareButton: wireInstagramShareButton,
     openInstagramStoryCamera: openInstagramStoryCamera,
-    formatDisplayDate: formatDisplayDate,
-    formatDisplayTime: formatDisplayTime,
   };
 })();

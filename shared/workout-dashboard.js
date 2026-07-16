@@ -20,6 +20,7 @@
   var miniChatPending = false;
   var miniChatMessages = [];
   var summaryCharts = [];
+  var finishState = null;
 
   var LIVE_WORKOUT_KEY_BASE = 'strongman_live_workout_v1';
 
@@ -193,17 +194,28 @@
 
   function injectDom() {
     var existing = document.getElementById('workout-dashboard-overlay');
-    if (existing && !document.getElementById('wd-since-last-clock')) {
+    var needsRebuild =
+      existing &&
+      (!document.getElementById('wd-cancel-btn') ||
+        !document.getElementById('workout-routine-picker') ||
+        !document.getElementById('workout-confirm-dialog') ||
+        document.getElementById('wd-coach-mount'));
+    if (needsRebuild) {
       existing.parentNode && existing.parentNode.removeChild(existing);
       var oldFab = document.getElementById('workout-dashboard-fab');
       if (oldFab && oldFab.parentNode) oldFab.parentNode.removeChild(oldFab);
       var oldFinish = document.getElementById('workout-dashboard-finish');
       if (oldFinish && oldFinish.parentNode) oldFinish.parentNode.removeChild(oldFinish);
+      var oldPicker = document.getElementById('workout-routine-picker');
+      if (oldPicker && oldPicker.parentNode) oldPicker.parentNode.removeChild(oldPicker);
+      var oldConfirm = document.getElementById('workout-confirm-dialog');
+      if (oldConfirm && oldConfirm.parentNode) oldConfirm.parentNode.removeChild(oldConfirm);
       existing = null;
     }
     if (existing) {
       overlay = existing;
       fab = document.getElementById('workout-dashboard-fab');
+      if (fab && !fab.classList.contains('wd-fab--orange')) fab.classList.add('wd-fab--orange');
       if (fab && !fab.querySelector('.wd-fab-label')) {
         fab.innerHTML =
           '<span class="wd-fab-icon" aria-hidden="true">▶</span>' +
@@ -216,6 +228,7 @@
       coachMount = document.getElementById('wd-coach-mount');
       trackerMount = document.getElementById('wd-tracker-mount');
       bindOverlayActions();
+      bindSwipeToMinimize();
       return;
     }
 
@@ -228,13 +241,14 @@
     overlay.setAttribute('aria-label', 'Workout mode');
     overlay.innerHTML =
       '<div class="wd-shell">' +
+      '<div class="wd-swipe-hint" aria-hidden="true"><span class="wd-swipe-pill"></span></div>' +
       '<header class="wd-topbar">' +
       '<div class="wd-topbar-left">' +
       '<span class="wd-session-label">Workout</span>' +
       '<span class="wd-session-clock" id="wd-session-clock">0:00</span>' +
       '</div>' +
       '<div class="wd-topbar-actions">' +
-      '<button type="button" class="wd-btn wd-btn--ghost" id="wd-apply-routine-btn">Apply routine</button>' +
+      '<button type="button" class="wd-btn wd-btn--ghost wd-btn--danger" id="wd-cancel-btn">Cancel</button>' +
       '<button type="button" class="wd-btn wd-btn--ghost" id="wd-minimize-btn" aria-label="Minimize workout">Minimize</button>' +
       '<button type="button" class="wd-btn wd-btn--finish" id="wd-finish-btn">Finish</button>' +
       '</div>' +
@@ -243,20 +257,6 @@
       '<span class="wd-since-label">Time since last set</span>' +
       '<span class="wd-since-clock" id="wd-since-last-clock">0:00</span>' +
       '</section>' +
-      '<section class="wd-coach wd-coach--chat" id="wd-coach-mount" aria-label="Rocky coach">' +
-      '<div class="wd-mini-chat">' +
-      '<div class="wd-mini-chat-head">' +
-      '<span class="wd-mini-chat-title">Rocky</span>' +
-      '<a href="/generate" class="wd-coach-open">Full chat →</a>' +
-      '</div>' +
-      '<div class="wd-mini-chat-thread" id="wd-mini-chat-thread" role="log" aria-live="polite"></div>' +
-      '<form class="wd-mini-chat-form" id="wd-mini-chat-form">' +
-      '<input type="text" class="wd-mini-chat-input" id="wd-mini-chat-input" placeholder="Ask Rocky for a tip…" autocomplete="off" maxlength="500">' +
-      '<button type="submit" class="wd-btn wd-btn--small wd-btn--accent" id="wd-mini-chat-send">Send</button>' +
-      '</form>' +
-      '<p class="wd-mini-chat-error" id="wd-mini-chat-error" hidden></p>' +
-      '</div>' +
-      '</section>' +
       '<section class="wd-log" id="wd-tracker-mount" aria-label="Log sets"></section>' +
       '</div>';
     document.body.appendChild(overlay);
@@ -264,7 +264,7 @@
     fab = document.createElement('button');
     fab.type = 'button';
     fab.id = 'workout-dashboard-fab';
-    fab.className = 'wd-fab';
+    fab.className = 'wd-fab wd-fab--orange';
     fab.hidden = true;
     fab.setAttribute('aria-label', 'Return to workout');
     fab.innerHTML =
@@ -273,18 +273,51 @@
       '<span class="wd-fab-time" id="wd-fab-time" aria-hidden="true"></span>';
     document.body.appendChild(fab);
 
+    var picker = document.createElement('div');
+    picker.id = 'workout-routine-picker';
+    picker.className = 'wd-routine-picker';
+    picker.hidden = true;
+    picker.setAttribute('role', 'dialog');
+    picker.setAttribute('aria-modal', 'true');
+    picker.setAttribute('aria-labelledby', 'wd-routine-picker-title');
+    picker.innerHTML =
+      '<div class="wd-routine-picker-panel">' +
+      '<h2 class="wd-routine-picker-title" id="wd-routine-picker-title">Start workout</h2>' +
+      '<p class="wd-routine-picker-lede">Pick a saved split or freestyle with your own exercises.</p>' +
+      '<div class="wd-routine-picker-list" id="wd-routine-picker-list"></div>' +
+      '<button type="button" class="wd-btn wd-btn--ghost wd-routine-picker-cancel" id="wd-routine-picker-cancel">Cancel</button>' +
+      '</div>';
+    document.body.appendChild(picker);
+
+    var confirmEl = document.createElement('div');
+    confirmEl.id = 'workout-confirm-dialog';
+    confirmEl.className = 'wd-confirm';
+    confirmEl.hidden = true;
+    confirmEl.setAttribute('role', 'dialog');
+    confirmEl.setAttribute('aria-modal', 'true');
+    confirmEl.innerHTML =
+      '<div class="wd-confirm-panel">' +
+      '<h2 class="wd-confirm-title" id="wd-confirm-title">Are you sure?</h2>' +
+      '<p class="wd-confirm-text" id="wd-confirm-text"></p>' +
+      '<div class="wd-confirm-actions">' +
+      '<button type="button" class="wd-btn wd-btn--ghost" id="wd-confirm-no">Keep going</button>' +
+      '<button type="button" class="wd-btn wd-btn--finish" id="wd-confirm-yes">Confirm</button>' +
+      '</div>' +
+      '</div>';
+    document.body.appendChild(confirmEl);
+
     finishScreen = document.createElement('div');
     finishScreen.id = 'workout-dashboard-finish';
     finishScreen.className = 'wd-finish';
     finishScreen.hidden = true;
     finishScreen.innerHTML =
-      '<div class="wd-finish-card wd-finish-card--summary">' +
-      '<div class="wd-finish-mark" aria-hidden="true">✓</div>' +
-      '<h2 class="wd-finish-title" id="wd-finish-title">Workout saved</h2>' +
-      '<p class="wd-finish-text" id="wd-finish-text">Building your summary…</p>' +
+      '<div class="wd-finish-card wd-finish-card--summary" id="wd-finish-card">' +
+      '<div class="wd-finish-mark" id="wd-finish-mark" aria-hidden="true" hidden></div>' +
+      '<h2 class="wd-finish-title" id="wd-finish-title" hidden>Session wrap-up</h2>' +
+      '<p class="wd-finish-text" id="wd-finish-text" hidden></p>' +
       '<div class="wd-finish-body" id="wd-finish-body" hidden></div>' +
-      '<div class="wd-finish-actions">' +
-      '<button type="button" class="wd-btn wd-btn--finish wd-finish-done-btn" id="wd-finish-done-btn" hidden>Back to dashboard</button>' +
+      '<div class="wd-finish-actions" hidden>' +
+      '<button type="button" class="wd-btn wd-btn--finish wd-finish-done-btn" id="wd-finish-done-btn" hidden>Done</button>' +
       '</div>' +
       '</div>';
     document.body.appendChild(finishScreen);
@@ -295,14 +328,17 @@
     trackerMount = document.getElementById('wd-tracker-mount');
 
     bindOverlayActions();
+    bindSwipeToMinimize();
   }
 
   function bindOverlayActions() {
     var minimizeBtn = document.getElementById('wd-minimize-btn');
     var finishBtn = document.getElementById('wd-finish-btn');
-    var applyBtn = document.getElementById('wd-apply-routine-btn');
-    var chatForm = document.getElementById('wd-mini-chat-form');
+    var cancelBtn = document.getElementById('wd-cancel-btn');
     var doneBtn = document.getElementById('wd-finish-done-btn');
+    var pickerCancel = document.getElementById('wd-routine-picker-cancel');
+    var confirmNo = document.getElementById('wd-confirm-no');
+    var confirmYes = document.getElementById('wd-confirm-yes');
 
     if (minimizeBtn && minimizeBtn.dataset.wdBound !== '1') {
       minimizeBtn.dataset.wdBound = '1';
@@ -310,54 +346,197 @@
     }
     if (finishBtn && finishBtn.dataset.wdBound !== '1') {
       finishBtn.dataset.wdBound = '1';
-      finishBtn.addEventListener('click', finishWorkout);
+      finishBtn.addEventListener('click', function () {
+        showConfirm({
+          title: 'Finish workout?',
+          text: 'Wrap up and review your stats? You can keep going if this was accidental.',
+          confirmLabel: 'Finish',
+          onConfirm: finishWorkout,
+        });
+      });
     }
-    if (applyBtn && applyBtn.dataset.wdBound !== '1') {
-      applyBtn.dataset.wdBound = '1';
-      applyBtn.addEventListener('click', handleApplyRoutine);
-    }
-    if (chatForm && chatForm.dataset.wdBound !== '1') {
-      chatForm.dataset.wdBound = '1';
-      chatForm.addEventListener('submit', function (e) {
-        e.preventDefault();
-        sendMiniChat();
+    if (cancelBtn && cancelBtn.dataset.wdBound !== '1') {
+      cancelBtn.dataset.wdBound = '1';
+      cancelBtn.addEventListener('click', function () {
+        showConfirm({
+          title: 'Cancel workout?',
+          text: 'This discards the current session and returns you to the logbook.',
+          confirmLabel: 'Cancel workout',
+          danger: true,
+          onConfirm: cancelWorkout,
+        });
       });
     }
     if (doneBtn && doneBtn.dataset.wdBound !== '1') {
       doneBtn.dataset.wdBound = '1';
       doneBtn.addEventListener('click', function () {
-        destroySummaryCharts();
-        deactivate();
-        window.location.href = '/home';
+        startRestingSequence();
+      });
+    }
+    if (pickerCancel && pickerCancel.dataset.wdBound !== '1') {
+      pickerCancel.dataset.wdBound = '1';
+      pickerCancel.addEventListener('click', hideRoutinePicker);
+    }
+    if (confirmNo && confirmNo.dataset.wdBound !== '1') {
+      confirmNo.dataset.wdBound = '1';
+      confirmNo.addEventListener('click', hideConfirm);
+    }
+    if (confirmYes && confirmYes.dataset.wdBound !== '1') {
+      confirmYes.dataset.wdBound = '1';
+      confirmYes.addEventListener('click', function () {
+        var fn = confirmCallback;
+        hideConfirm();
+        if (typeof fn === 'function') fn();
       });
     }
   }
 
-  function handleApplyRoutine() {
-    var btn = document.getElementById('wd-apply-routine-btn');
-    if (btn) {
-      btn.disabled = true;
-      btn.textContent = 'Applying…';
+  var confirmCallback = null;
+  var swipeState = { startY: 0, startX: 0, tracking: false };
+
+  function showConfirm(options) {
+    options = options || {};
+    var dialog = document.getElementById('workout-confirm-dialog');
+    var title = document.getElementById('wd-confirm-title');
+    var text = document.getElementById('wd-confirm-text');
+    var yes = document.getElementById('wd-confirm-yes');
+    if (!dialog) return;
+    if (title) title.textContent = options.title || 'Are you sure?';
+    if (text) text.textContent = options.text || '';
+    if (yes) {
+      yes.textContent = options.confirmLabel || 'Confirm';
+      yes.classList.toggle('wd-btn--danger', !!options.danger);
     }
-    var done =
-      typeof opts.applyRoutine === 'function'
-        ? opts.applyRoutine()
-        : Promise.resolve();
-    Promise.resolve(done)
-      .then(function () {
-        var t = getTracker();
-        if (t) t.render();
-        if (btn) {
-          btn.disabled = false;
-          btn.textContent = 'Apply routine';
-        }
-      })
-      .catch(function () {
-        if (btn) {
-          btn.disabled = false;
-          btn.textContent = 'Apply routine';
-        }
+    confirmCallback = options.onConfirm || null;
+    dialog.hidden = false;
+  }
+
+  function hideConfirm() {
+    var dialog = document.getElementById('workout-confirm-dialog');
+    if (dialog) dialog.hidden = true;
+    confirmCallback = null;
+  }
+
+  function cancelWorkout() {
+    stopSinceLastTimer(true);
+    stopSessionClock();
+    if (typeof opts.onCancel === 'function') opts.onCancel();
+    deactivate();
+  }
+
+  function hideRoutinePicker() {
+    var picker = document.getElementById('workout-routine-picker');
+    if (picker) picker.hidden = true;
+  }
+
+  function showRoutinePicker() {
+    injectDom();
+    var picker = document.getElementById('workout-routine-picker');
+    var list = document.getElementById('wd-routine-picker-list');
+    if (!picker || !list) return;
+    list.innerHTML = '';
+
+    var freestyle = document.createElement('button');
+    freestyle.type = 'button';
+    freestyle.className = 'wd-routine-option wd-routine-option--freestyle';
+    freestyle.innerHTML =
+      '<span class="wd-routine-option-title">Freestyle</span>' +
+      '<span class="wd-routine-option-sub">Pick exercises as you go</span>';
+    freestyle.addEventListener('click', function () {
+      hideRoutinePicker();
+      beginWorkout({ mode: 'freestyle' });
+    });
+    list.appendChild(freestyle);
+
+    var splits =
+      typeof opts.listSplitOptions === 'function' ? opts.listSplitOptions() || [] : [];
+    splits.forEach(function (split) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'wd-routine-option';
+      btn.innerHTML =
+        '<span class="wd-routine-option-title"></span>' +
+        '<span class="wd-routine-option-sub">Use today\'s planned lifts · weights autofilled</span>';
+      btn.querySelector('.wd-routine-option-title').textContent =
+        split.programName || 'Saved split';
+      btn.addEventListener('click', function () {
+        hideRoutinePicker();
+        beginWorkout({ mode: 'split', splitId: split.id });
       });
+      list.appendChild(btn);
+    });
+
+    if (!splits.length) {
+      var empty = document.createElement('p');
+      empty.className = 'wd-routine-empty';
+      empty.textContent = 'No saved splits yet — freestyle or set one up in Workout split.';
+      list.appendChild(empty);
+    }
+
+    picker.hidden = false;
+  }
+
+  function bindSwipeToMinimize() {
+    if (!overlay || overlay.dataset.wdSwipeBound === '1') return;
+    overlay.dataset.wdSwipeBound = '1';
+    var shell = overlay.querySelector('.wd-shell');
+    if (!shell) return;
+
+    shell.addEventListener(
+      'touchstart',
+      function (e) {
+        if (!e.touches || !e.touches.length) return;
+        var t = e.touches[0];
+        // Only start from the top region / swipe hint so scrolling cards still works
+        var topZone = t.clientY < 120;
+        if (!topZone) {
+          swipeState.tracking = false;
+          return;
+        }
+        swipeState.startY = t.clientY;
+        swipeState.startX = t.clientX;
+        swipeState.tracking = true;
+      },
+      { passive: true }
+    );
+
+    shell.addEventListener(
+      'touchmove',
+      function (e) {
+        if (!swipeState.tracking || !e.touches || !e.touches.length) return;
+        var t = e.touches[0];
+        var dy = t.clientY - swipeState.startY;
+        var dx = Math.abs(t.clientX - swipeState.startX);
+        if (dy > 30 && dy > dx * 1.2) {
+          shell.style.transform = 'translateY(' + Math.min(dy, 160) + 'px)';
+          shell.style.opacity = String(Math.max(0.45, 1 - dy / 280));
+        }
+      },
+      { passive: true }
+    );
+
+    shell.addEventListener(
+      'touchend',
+      function (e) {
+        if (!swipeState.tracking) return;
+        swipeState.tracking = false;
+        var changed = e.changedTouches && e.changedTouches[0];
+        var dy = changed ? changed.clientY - swipeState.startY : 0;
+        shell.style.transform = '';
+        shell.style.opacity = '';
+        if (dy > 90) minimize();
+      },
+      { passive: true }
+    );
+  }
+
+  function handleApplyRoutine() {
+    var done =
+      typeof opts.applyRoutine === 'function' ? opts.applyRoutine() : Promise.resolve();
+    return Promise.resolve(done).then(function () {
+      var t = getTracker();
+      if (t) t.render();
+    });
   }
 
   function escapeHtml(str) {
@@ -430,6 +609,29 @@
     if (window.AthleteContext && user && typeof window.AthleteContext.buildCoachPromptBlock === 'function') {
       parts.push(window.AthleteContext.buildCoachPromptBlock(user, extras));
     }
+    if (window.CoachMemory && typeof window.CoachMemory.buildPromptBlock === 'function') {
+      var memBlock = window.CoachMemory.buildPromptBlock(window.CoachMemory.load());
+      if (memBlock) parts.push(memBlock);
+    }
+    var t = getTracker && getTracker();
+    var session = t && t.getSession ? t.getSession() : null;
+    if (session && session.exercises && session.exercises.length) {
+      var lifts = session.exercises
+        .filter(function (ex) {
+          return ex && ex.name;
+        })
+        .map(function (ex) {
+          return ex.name;
+        })
+        .slice(0, 12);
+      if (lifts.length) {
+        parts.push(
+          '[Current workout lifts] ' +
+            lifts.join(', ') +
+            '\nOnly give cues/advice relevant to these lifts and nearby muscle groups. Do not invent unrelated injuries (e.g. do not mention knee pain during a chest session unless the athlete said so).'
+        );
+      }
+    }
     parts.push(
       '[Workout mode] Athlete is mid-session. Keep replies short (1-3 sentences). Prefer form cues and simple next-step advice. Do not dump a full long workout unless they ask.'
     );
@@ -457,6 +659,9 @@
 
     miniChatMessages.push({ role: 'user', content: text });
     renderMiniChatThread();
+    if (window.CoachMemory && typeof window.CoachMemory.ingestUserMessage === 'function') {
+      window.CoachMemory.ingestUserMessage(text);
+    }
 
     var thread = document.getElementById('wd-mini-chat-thread');
     if (thread) {
@@ -518,15 +723,15 @@
   }
 
   function mountCoachPanel() {
-    renderMiniChatThread();
+    /* Coach mini-chat removed from workout mode for a cleaner UI. */
   }
 
   function restoreCoachPanel() {
-    /* Mini chat lives in overlay — nothing to restore. */
+    /* no-op */
   }
 
   function syncCoachPanel() {
-    mountCoachPanel();
+    /* no-op */
   }
 
   function startSessionClock() {
@@ -610,9 +815,6 @@
     if (typeof opts.bootstrapSession === 'function') {
       opts.bootstrapSession(t);
     }
-    if (!t.session.exercises || !t.session.exercises.length) {
-      t.addExercise('');
-    }
     return t;
   }
 
@@ -621,21 +823,66 @@
     if (dashboardActive && !minimized) {
       minimize();
     }
-    var section =
-      document.getElementById('logbook-quick-section') ||
-      document.getElementById('create-workout-form') ||
-      document.querySelector('.session-logbook-zone');
+    if (window.CreateUI && typeof window.CreateUI.showQuickLog === 'function') {
+      window.CreateUI.showQuickLog();
+    } else {
+      var panel = document.getElementById('create-panel-workout');
+      if (panel) panel.hidden = false;
+    }
+    var section = document.getElementById('logbook-quick-section');
     if (section) {
-      section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      section.hidden = false;
+      section.classList.remove('logbook-quick-section--collapsed');
+      window.setTimeout(function () {
+        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 40);
       section.classList.add('logbook-quick-highlight');
       window.setTimeout(function () {
         section.classList.remove('logbook-quick-highlight');
       }, 2200);
     }
+    var hero = document.getElementById('logbook-mode-hero');
+    if (hero) hero.classList.add('logbook-mode-hero--compact');
     var t = ensureSessionReady();
-    if (t && t.setViewMode && !isMobileViewport()) {
+    if (t && t.setViewMode) {
       t.setViewMode('card');
     }
+  }
+
+  function beginWorkout(choice) {
+    injectDom();
+    if (!getTracker() && (hasStoredSession() || isLiveWorkoutActive())) {
+      window.location.href = '/create?workout=1';
+      return;
+    }
+    var start =
+      typeof opts.startFromChoice === 'function'
+        ? opts.startFromChoice(choice)
+        : Promise.resolve();
+    Promise.resolve(start)
+      .then(function () {
+        var t = getTracker();
+        if (!t) return;
+        minimized = false;
+        dashboardActive = true;
+        overlay.hidden = false;
+        document.body.classList.add('workout-dashboard-open');
+        if (!sessionStart) {
+          sessionStart = restoreSessionStartFromStorage() || Date.now();
+        }
+        persistLiveWorkout();
+        startSessionClock();
+        if (t.setViewMode) t.setViewMode('carousel');
+        if (typeof t.setCarouselIndex === 'function') t.setCarouselIndex(0);
+        lastCompletedCount = countCompletedSets(t.getSession());
+        mountTracker();
+        syncFab();
+      })
+      .catch(function () {
+        var t = getTracker();
+        if (!t) return;
+        open({ resume: true, skipPicker: true });
+      });
   }
 
   function open(options) {
@@ -645,23 +892,28 @@
       window.location.href = '/create?workout=1';
       return;
     }
-    var t = ensureSessionReady();
-    if (!t) return;
-    minimized = false;
-    dashboardActive = true;
-    overlay.hidden = false;
-    document.body.classList.add('workout-dashboard-open');
-    if (!sessionStart) {
-      sessionStart = restoreSessionStartFromStorage() || Date.now();
+
+    // Resume live / mid-session without re-picking routine
+    if (options.resume || options.skipPicker || isLiveWorkoutActive()) {
+      var t = ensureSessionReady();
+      if (!t) return;
+      minimized = false;
+      dashboardActive = true;
+      overlay.hidden = false;
+      document.body.classList.add('workout-dashboard-open');
+      if (!sessionStart) {
+        sessionStart = restoreSessionStartFromStorage() || Date.now();
+      }
+      persistLiveWorkout();
+      startSessionClock();
+      if (t.setViewMode) t.setViewMode('carousel');
+      lastCompletedCount = countCompletedSets(t.getSession());
+      mountTracker();
+      syncFab();
+      return;
     }
-    persistLiveWorkout();
-    startSessionClock();
-    if (t.setViewMode) t.setViewMode('focus');
-    lastCompletedCount = countCompletedSets(t.getSession());
-    mountTracker();
-    syncCoachPanel();
-    if (typeof opts.refreshCoach === 'function') opts.refreshCoach();
-    syncFab();
+
+    showRoutinePicker();
   }
 
   function minimize() {
@@ -685,8 +937,12 @@
     clearLiveWorkoutRecord();
     notifyLiveWorkoutChanged();
     if (overlay) overlay.hidden = true;
-    if (finishScreen) finishScreen.hidden = true;
+    if (finishScreen) {
+      finishScreen.hidden = true;
+      finishScreen.classList.remove('wd-finish--page');
+    }
     document.body.classList.remove('workout-dashboard-open');
+    document.body.classList.remove('wd-finish-open');
     restoreTracker();
     restoreCoachPanel();
     syncFab();
@@ -697,7 +953,7 @@
     var elapsed = live ? getElapsedLabel() : '';
     var startBtn = document.getElementById('wd-start-workout-btn');
     if (startBtn) {
-      startBtn.textContent = live ? 'Continue workout mode' : 'Start workout mode';
+      startBtn.textContent = live ? 'Continue workout' : 'Start workout';
       startBtn.classList.toggle('wd-start-btn--resume', live);
       if (live && elapsed) {
         startBtn.setAttribute('aria-description', elapsed + ' elapsed');
@@ -722,19 +978,26 @@
     options = options || {};
     if (finishScreen) {
       finishScreen.hidden = false;
+      finishScreen.classList.add('wd-finish--page');
+      document.body.classList.add('wd-finish-open');
       var text = document.getElementById('wd-finish-text');
+      var title = document.getElementById('wd-finish-title');
       var body = document.getElementById('wd-finish-body');
+      var card = document.getElementById('wd-finish-card');
       var doneBtn = document.getElementById('wd-finish-done-btn');
+      if (card) card.classList.toggle('wd-finish-card--resting', !!(html && html.indexOf('wd-resting') !== -1));
       if (text) text.textContent = message || '';
       if (body) {
         if (html) {
           body.innerHTML = html;
           body.hidden = false;
           if (text) text.hidden = true;
+          if (title) title.hidden = true;
         } else {
           body.hidden = true;
           body.innerHTML = '';
           if (text) text.hidden = false;
+          if (title) title.hidden = true;
         }
       }
       if (doneBtn) {
@@ -744,14 +1007,15 @@
       }
     }
     if (overlay) overlay.hidden = true;
+    if (fab) fab.hidden = true;
   }
 
   function rockyGeneratingHtml() {
     return (
       '<div class="wd-rocky-generating" id="wd-rocky-generating" aria-live="polite">' +
       '<div class="wd-rocky-generating-orb" aria-hidden="true"></div>' +
-      '<p class="wd-rocky-generating-title">Rocky is putting together your summary…</p>' +
-      '<p class="wd-rocky-generating-sub">Hang tight — recovery tips and charts are on the way.</p>' +
+      '<p class="wd-rocky-generating-title">Rocky is cooking up the tea…</p>' +
+      '<p class="wd-rocky-generating-sub">Stats first. Roast + recovery next.</p>' +
       '<div class="wd-rocky-generating-bars" aria-hidden="true">' +
       '<span></span><span></span><span></span><span></span>' +
       '</div>' +
@@ -759,81 +1023,555 @@
     );
   }
 
-  function showPostWorkoutSummary(savedSession, durationMs) {
+  function reviewExerciseRows(session) {
+    var rows = [];
+    if (session && session.trackerData && Array.isArray(session.trackerData.exercises)) {
+      session.trackerData.exercises.forEach(function (ex, idx) {
+        if (!ex) return;
+        var sets = Array.isArray(ex.sets) ? ex.sets : [];
+        var done = sets.filter(function (s) {
+          return s && (s.completed || s.done);
+        }).length;
+        rows.push({
+          name: ex.name || 'Exercise',
+          meta: done ? done + ' set' + (done === 1 ? '' : 's') : sets.length ? sets.length + ' sets' : '',
+          source: 'tracker',
+          index: idx,
+        });
+      });
+      return rows;
+    }
+    if (session && Array.isArray(session.exercises)) {
+      session.exercises.forEach(function (ex, idx) {
+        if (!ex || !ex.name) return;
+        rows.push({
+          name: ex.name,
+          meta: [ex.sets, ex.reps].filter(Boolean).join(' × ') || '',
+          source: 'legacy',
+          index: idx,
+        });
+      });
+    }
+    return rows;
+  }
+
+  function resizeImageFile(file, maxDim, quality, cb) {
+    var fr = new FileReader();
+    fr.onload = function () {
+      var img = new Image();
+      img.onload = function () {
+        var w = img.width;
+        var h = img.height;
+        var scale = Math.min(1, maxDim / Math.max(w, h));
+        var c = document.createElement('canvas');
+        c.width = Math.max(1, Math.round(w * scale));
+        c.height = Math.max(1, Math.round(h * scale));
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        try {
+          cb(null, c.toDataURL('image/jpeg', quality));
+        } catch (err) {
+          cb(err);
+        }
+      };
+      img.onerror = function () {
+        cb(new Error('image'));
+      };
+      img.src = fr.result;
+    };
+    fr.onerror = function () {
+      cb(new Error('read'));
+    };
+    fr.readAsDataURL(file);
+  }
+
+  function ensureFinishState(draft, durationMs) {
+    finishState = {
+      durationMs: durationMs,
+      draft: draft || {},
+      photos: Array.isArray(draft && draft.photos) ? draft.photos.slice() : [],
+      rockyData: null,
+      rockyError: null,
+    };
+    return finishState;
+  }
+
+  function getDraft() {
+    return (finishState && finishState.draft) || {};
+  }
+
+  function syncDraftToFormFields() {
+    var d = getDraft();
+    var formTitle = document.getElementById('create-session-title');
+    var formNotes = document.getElementById('create-notes');
+    var formIntensity = document.getElementById('create-session-intensity-user');
+    if (formTitle && d.title != null) formTitle.value = d.title;
+    if (formNotes && d.notes != null) formNotes.value = d.notes;
+    if (formIntensity && d.totalIntensity != null) formIntensity.value = String(d.totalIntensity);
+  }
+
+  function closeEditSheet() {
+    var sheet = document.getElementById('wd-edit-sheet');
+    if (sheet) sheet.remove();
+  }
+
+  function openFieldEditor(kind, index) {
+    var d = getDraft();
+    var detail = document.getElementById('wd-edit-detail');
+    if (!detail) return;
+    var label = 'Edit';
+    var value = '';
+    var inputType = 'text';
+    if (kind === 'title') {
+      label = 'Session title';
+      value = d.title || d.splitName || '';
+    } else if (kind === 'intensity') {
+      label = 'Intensity (0–100)';
+      value = d.totalIntensity != null ? String(d.totalIntensity) : '';
+      inputType = 'number';
+    } else if (kind === 'notes') {
+      label = 'Notes for Rocky';
+      value = d.notes || '';
+      inputType = 'textarea';
+    } else if (kind === 'exercise') {
+      label = 'Exercise name';
+      var rows = reviewExerciseRows(d);
+      value = rows[index] ? rows[index].name : '';
+    }
+    detail.hidden = false;
+    detail.innerHTML =
+      '<p class="wd-edit-detail-label">' +
+      escapeHtml(label) +
+      '</p>' +
+      (inputType === 'textarea'
+        ? '<textarea id="wd-edit-value" rows="3" maxlength="800">' + escapeHtml(value) + '</textarea>'
+        : '<input id="wd-edit-value" type="' +
+          inputType +
+          '" maxlength="80" value="' +
+          escapeHtml(value) +
+          '"' +
+          (inputType === 'number' ? ' min="0" max="100" inputmode="numeric"' : '') +
+          '>') +
+      '<div class="wd-edit-detail-actions">' +
+      '<button type="button" class="wd-btn wd-btn--ghost" id="wd-edit-cancel">Back</button>' +
+      '<button type="button" class="wd-btn wd-btn--finish" id="wd-edit-save">Save</button>' +
+      '</div>';
+    var list = document.getElementById('wd-edit-timeline');
+    if (list) list.hidden = true;
+    var cancel = document.getElementById('wd-edit-cancel');
+    var save = document.getElementById('wd-edit-save');
+    if (cancel) {
+      cancel.addEventListener('click', function () {
+        openEditSheet();
+      });
+    }
+    if (save) {
+      save.addEventListener('click', function () {
+        var el = document.getElementById('wd-edit-value');
+        var next = el ? el.value.trim() : '';
+        if (kind === 'title') {
+          finishState.draft.title = next || finishState.draft.title;
+        } else if (kind === 'intensity') {
+          if (next === '') {
+            finishState.draft.totalIntensity = null;
+          } else {
+            var n = parseInt(next, 10);
+            if (isNaN(n) || n < 0 || n > 100) {
+              if (el) el.classList.add('wd-review-invalid');
+              return;
+            }
+            finishState.draft.totalIntensity = n;
+          }
+        } else if (kind === 'notes') {
+          finishState.draft.notes = next;
+        } else if (kind === 'exercise') {
+          if (next) {
+            if (
+              finishState.draft.trackerData &&
+              Array.isArray(finishState.draft.trackerData.exercises) &&
+              finishState.draft.trackerData.exercises[index]
+            ) {
+              finishState.draft.trackerData.exercises[index].name = next;
+            }
+            if (Array.isArray(finishState.draft.exercises) && finishState.draft.exercises[index]) {
+              finishState.draft.exercises[index].name = next;
+            }
+          }
+        }
+        syncDraftToFormFields();
+        openEditSheet();
+        renderFinishDashboard();
+      });
+    }
+    var focusEl = document.getElementById('wd-edit-value');
+    if (focusEl) focusEl.focus();
+  }
+
+  function openEditSheet() {
+    closeEditSheet();
+    var d = getDraft();
+    var lifts = reviewExerciseRows(d);
+    var items =
+      '<li class="wd-edit-item" data-edit="title">' +
+      '<span class="wd-edit-item-type">Title</span>' +
+      '<span class="wd-edit-item-value">' +
+      escapeHtml(d.title || d.splitName || 'Workout') +
+      '</span></li>' +
+      '<li class="wd-edit-item" data-edit="intensity">' +
+      '<span class="wd-edit-item-type">Intensity</span>' +
+      '<span class="wd-edit-item-value">' +
+      escapeHtml(d.totalIntensity != null ? String(d.totalIntensity) : 'Not set') +
+      '</span></li>' +
+      '<li class="wd-edit-item" data-edit="notes">' +
+      '<span class="wd-edit-item-type">Notes for Rocky</span>' +
+      '<span class="wd-edit-item-value">' +
+      escapeHtml(d.notes ? d.notes : 'Tap to add injuries, soreness, etc.') +
+      '</span></li>';
+    lifts.forEach(function (row, idx) {
+      items +=
+        '<li class="wd-edit-item" data-edit="exercise" data-ex-index="' +
+        idx +
+        '">' +
+        '<span class="wd-edit-item-type">Exercise</span>' +
+        '<span class="wd-edit-item-value">' +
+        escapeHtml(row.name) +
+        (row.meta ? ' · ' + escapeHtml(row.meta) : '') +
+        '</span></li>';
+    });
+
+    var sheet = document.createElement('div');
+    sheet.id = 'wd-edit-sheet';
+    sheet.className = 'wd-edit-sheet';
+    sheet.innerHTML =
+      '<div class="wd-edit-sheet-panel" role="dialog" aria-modal="true" aria-labelledby="wd-edit-sheet-title">' +
+      '<header class="wd-edit-sheet-head">' +
+      '<h3 id="wd-edit-sheet-title">Edit session</h3>' +
+      '<button type="button" class="wd-edit-sheet-close" id="wd-edit-sheet-close" aria-label="Close">×</button>' +
+      '</header>' +
+      '<p class="wd-edit-sheet-lede">Tap a row to change it — same idea as your timeline.</p>' +
+      '<ol class="wd-edit-timeline" id="wd-edit-timeline">' +
+      items +
+      '</ol>' +
+      '<div class="wd-edit-detail" id="wd-edit-detail" hidden></div>' +
+      '</div>';
+    document.body.appendChild(sheet);
+    document.getElementById('wd-edit-sheet-close').addEventListener('click', closeEditSheet);
+    sheet.addEventListener('click', function (e) {
+      if (e.target === sheet) closeEditSheet();
+    });
+    sheet.querySelectorAll('.wd-edit-item').forEach(function (row) {
+      row.addEventListener('click', function () {
+        var kind = row.getAttribute('data-edit');
+        var idx = parseInt(row.getAttribute('data-ex-index') || '0', 10);
+        openFieldEditor(kind, idx);
+      });
+    });
+  }
+
+  function continueWorkoutFromFinish() {
+    closeEditSheet();
+    destroySummaryCharts();
+    if (finishScreen) {
+      finishScreen.hidden = true;
+      finishScreen.classList.remove('wd-finish--page');
+    }
+    document.body.classList.remove('wd-finish-open');
+    finishState = null;
+    if (overlay) {
+      overlay.hidden = false;
+      document.body.classList.add('workout-dashboard-open');
+    }
+    minimized = false;
+    dashboardActive = true;
+    startSessionClock();
+    syncFab();
+  }
+
+  function bindFinishDashboardActions() {
+    var cont = document.getElementById('wd-finish-continue');
+    if (cont) {
+      cont.addEventListener('click', continueWorkoutFromFinish);
+    }
+    var editBtn = document.getElementById('wd-finish-edit');
+    if (editBtn) {
+      editBtn.addEventListener('click', openEditSheet);
+    }
+    var restBtn = document.getElementById('wd-finish-rest');
+    if (restBtn) {
+      restBtn.addEventListener('click', startRestingSequence);
+    }
+    var shareBtn = document.getElementById('wd-finish-share');
+    if (shareBtn && window.StorySticker) {
+      shareBtn.addEventListener('click', function () {
+        var status = document.getElementById('wd-finish-share-status');
+        var session = Object.assign({}, getDraft(), {
+          photos: (finishState && finishState.photos) || [],
+        });
+        if (status) status.textContent = 'Saving sticker…';
+        window.StorySticker.shareWorkoutToInstagram(
+          session,
+          {
+            incTitle: true,
+            incDateTime: true,
+            incExercises: true,
+            incIntensity: true,
+            incNotes: true,
+          },
+          window.WorkoutLog,
+          function (result) {
+            if (!status) return;
+            if (result && result.blocked) {
+              status.textContent = '';
+              return;
+            }
+            if (!result || !result.ok) {
+              status.textContent = 'Could not create sticker. Try again.';
+              return;
+            }
+            status.textContent =
+              'Sticker saved. In Instagram, add it from Photos and stick it on your Story.';
+          }
+        );
+      });
+    }
+    var photoBtn = document.getElementById('wd-finish-photo');
+    var photoInput = document.getElementById('wd-physique-input');
+    if (photoBtn && photoInput) {
+      photoBtn.addEventListener('click', function () {
+        photoInput.click();
+      });
+      photoInput.addEventListener('change', function () {
+        var file = photoInput.files && photoInput.files[0];
+        if (!file) return;
+        resizeImageFile(file, 1400, 0.82, function (err, dataUrl) {
+          photoInput.value = '';
+          if (err || !dataUrl || !finishState) return;
+          finishState.photos.push({
+            id: 'phys_' + Date.now().toString(36),
+            dataUrl: dataUrl,
+            createdAt: new Date().toISOString(),
+            kind: 'physique',
+          });
+          finishState.draft.photos = finishState.photos.slice();
+          renderFinishDashboard();
+        });
+      });
+    }
+    document.querySelectorAll('[data-remove-photo]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var id = btn.getAttribute('data-remove-photo');
+        if (!finishState || !id) return;
+        finishState.photos = finishState.photos.filter(function (p) {
+          return p && p.id !== id;
+        });
+        finishState.draft.photos = finishState.photos.slice();
+        renderFinishDashboard();
+      });
+    });
+  }
+
+  function renderFinishDashboard() {
+    if (!finishState) return;
     var PWS = window.PostWorkoutSummary;
-    durationMs = durationMs != null ? durationMs : getElapsedMs() || null;
+    var draft = getDraft();
+    var durationMs = finishState.durationMs;
     var todaySession =
       PWS && PWS.buildTodaySessionPayload
-        ? PWS.buildTodaySessionPayload(savedSession, durationMs)
+        ? PWS.buildTodaySessionPayload(draft, durationMs)
         : null;
+    var trend =
+      PWS && PWS.buildTrendMessage
+        ? PWS.buildTrendMessage(draft, todaySession)
+        : { tone: 'steady', text: 'Solid work — rest like it matters.' };
+    var cards =
+      PWS && todaySession && PWS.buildLocalSummaryCards
+        ? PWS.buildLocalSummaryCards(todaySession)
+        : [];
 
-    var titleEl = document.getElementById('wd-finish-title');
-    if (titleEl) titleEl.textContent = 'Workout saved';
-
-    if (PWS && todaySession) {
-      var chartsHtml =
-        typeof PWS.renderChartsHtml === 'function' ? PWS.renderChartsHtml(savedSession, todaySession) : '';
-      var localHtml =
-        '<div class="wd-summary-block">' +
-        '<h2 class="wd-summary-headline">Nice session</h2>' +
-        '<ul class="wd-summary-stats">' +
-        PWS.buildLocalSummaryCards(todaySession)
-          .map(function (c) {
-            return '<li>' + escapeHtml(c) + '</li>';
-          })
-          .join('') +
-        '</ul></div>' +
-        chartsHtml +
-        rockyGeneratingHtml();
-      showFinishScreen('', localHtml, { hideDone: true });
-      if (typeof PWS.mountCharts === 'function') {
-        window.setTimeout(function () {
-          summaryCharts = PWS.mountCharts(document.getElementById('wd-finish-body'), savedSession) || [];
-        }, 40);
-      }
+    var photosHtml = '<div class="wd-physique">';
+    photosHtml +=
+      '<div class="wd-physique-head"><p class="wd-physique-title">Physique check-in</p>' +
+      '<button type="button" class="wd-physique-add" id="wd-finish-photo">Add photo</button></div>';
+    photosHtml +=
+      '<input type="file" id="wd-physique-input" accept="image/*" capture="environment" hidden>';
+    if (finishState.photos.length) {
+      photosHtml += '<div class="wd-physique-grid">';
+      finishState.photos.forEach(function (p) {
+        photosHtml +=
+          '<figure class="wd-physique-fig">' +
+          '<img src="' +
+          escapeHtml(p.dataUrl) +
+          '" alt="Physique photo">' +
+          '<button type="button" class="wd-physique-remove" data-remove-photo="' +
+          escapeHtml(p.id) +
+          '">Remove</button></figure>';
+      });
+      photosHtml += '</div>';
     } else {
-      showFinishScreen('Workout saved. Nice session!', null);
-      var doneBtn = document.getElementById('wd-finish-done-btn');
-      if (doneBtn) doneBtn.hidden = false;
-      return;
+      photosHtml +=
+        '<p class="wd-physique-empty">Optional: snap a physique photo for your log (stays on this device).</p>';
+    }
+    photosHtml += '</div>';
+
+    var rockyHtml = '';
+    if (finishState.rockyData && PWS && PWS.renderRecoveryHtml) {
+      rockyHtml =
+        '<div class="wd-finish-rocky">' +
+        (finishState.rockyData.summary && finishState.rockyData.summary.headline
+          ? '<p class="wd-finish-rocky-kicker">' +
+            escapeHtml(finishState.rockyData.summary.headline) +
+            '</p>'
+          : '') +
+        PWS.renderRecoveryHtml(finishState.rockyData.recovery) +
+        '</div>';
+    } else if (finishState.rockyError) {
+      rockyHtml =
+        '<p class="wd-recovery-error">' + escapeHtml(finishState.rockyError) + '</p>';
+    } else {
+      rockyHtml = rockyGeneratingHtml();
     }
 
-    if (!PWS || !PWS.fetchRecoveryAdvice) {
-      var doneBtnFallback = document.getElementById('wd-finish-done-btn');
-      if (doneBtnFallback) doneBtnFallback.hidden = false;
+    var html =
+      '<div class="wd-finish-page" id="wd-finish-dash">' +
+      '<header class="wd-finish-page-head">' +
+      '<p class="wd-finish-kicker">Session complete</p>' +
+      '<h1 class="wd-finish-dash-title">You put in the work</h1>' +
+      '<p class="wd-finish-trend wd-finish-trend--' +
+      escapeHtml(trend.tone || 'steady') +
+      '">' +
+      escapeHtml(trend.text) +
+      '</p>' +
+      '</header>' +
+      '<ul class="wd-finish-stat-grid" aria-label="Session stats">';
+    cards.slice(0, 6).forEach(function (c) {
+      html += '<li class="wd-finish-stat">' + escapeHtml(c) + '</li>';
+    });
+    html +=
+      '</ul>' +
+      '<section class="wd-finish-section wd-finish-section--rocky" aria-label="Rocky advice">' +
+      rockyHtml +
+      '</section>' +
+      '<section class="wd-finish-section">' +
+      photosHtml +
+      '</section>' +
+      '<div class="wd-finish-tools">' +
+      '<button type="button" class="wd-tool-btn" id="wd-finish-share">Share to Story</button>' +
+      '<button type="button" class="wd-tool-btn" id="wd-finish-edit">Edit</button>' +
+      '<button type="button" class="wd-tool-btn wd-tool-btn--ghost" id="wd-finish-continue">Keep lifting</button>' +
+      '</div>' +
+      '<p class="wd-finish-share-status" id="wd-finish-share-status" role="status"></p>' +
+      '<div class="wd-finish-footer">' +
+      '<button type="button" class="wd-rest-btn" id="wd-finish-rest">Start resting</button>' +
+      '</div>' +
+      '</div>';
+
+    showFinishScreen('', html, { hideDone: true });
+    destroySummaryCharts();
+    bindFinishDashboardActions();
+  }
+
+  function loadRockyForFinish() {
+    var PWS = window.PostWorkoutSummary;
+    if (!finishState || !PWS || !PWS.fetchRecoveryAdvice) {
+      if (finishState) {
+        finishState.rockyError = 'Rocky tips unavailable offline.';
+        renderFinishDashboard();
+      }
       return;
     }
-
-    PWS.fetchRecoveryAdvice(savedSession, durationMs)
+    PWS.fetchRecoveryAdvice(finishState.draft, finishState.durationMs)
       .then(function (data) {
-        var chartsHtml =
-          typeof PWS.renderChartsHtml === 'function' ? PWS.renderChartsHtml(savedSession, todaySession) : '';
-        var html = PWS.renderSummaryHtml(data, todaySession, { chartsHtml: chartsHtml });
-        showFinishScreen('', html, { showDone: true });
-        if (typeof PWS.mountCharts === 'function') {
-          window.setTimeout(function () {
-            summaryCharts = PWS.mountCharts(document.getElementById('wd-finish-body'), savedSession) || [];
-          }, 40);
-        }
+        if (!finishState) return;
+        finishState.rockyData = data;
+        finishState.rockyError = null;
+        renderFinishDashboard();
       })
       .catch(function (err) {
-        var chartsHtml =
-          typeof PWS.renderChartsHtml === 'function' ? PWS.renderChartsHtml(savedSession, todaySession) : '';
-        var errHtml =
-          (PWS.renderSummaryHtml
-            ? PWS.renderSummaryHtml(null, todaySession, { chartsHtml: chartsHtml })
-            : '') +
-          '<p class="wd-recovery-error">' +
-          escapeHtml(
-            err && err.message ? err.message : 'Recovery advice unavailable.'
-          ) +
-          '</p>';
-        showFinishScreen('', errHtml, { showDone: true });
-        if (typeof PWS.mountCharts === 'function') {
-          window.setTimeout(function () {
-            summaryCharts = PWS.mountCharts(document.getElementById('wd-finish-body'), savedSession) || [];
-          }, 40);
+        if (!finishState) return;
+        finishState.rockyError =
+          (err && err.message) || 'Rocky got distracted. Your stats still count.';
+        renderFinishDashboard();
+      });
+  }
+
+  function showFinishDashboard(draft, durationMs) {
+    ensureFinishState(draft, durationMs);
+    syncDraftToFormFields();
+    var mark = document.getElementById('wd-finish-mark');
+    if (mark) mark.hidden = true;
+    renderFinishDashboard();
+    loadRockyForFinish();
+  }
+
+  function restingMarkHtml() {
+    return (
+      '<div class="wd-resting" id="wd-resting" aria-live="polite">' +
+      '<div class="wd-resting-mark" aria-hidden="true">' +
+      '<svg class="wd-resting-svg" viewBox="0 0 52 52" width="88" height="88">' +
+      '<circle class="wd-resting-track" cx="26" cy="26" r="22" fill="none" />' +
+      '<circle class="wd-resting-arc" cx="26" cy="26" r="22" fill="none" />' +
+      '<path class="wd-resting-checkpath" fill="none" d="M15.5 27.2l7.2 7.2 14-14" />' +
+      '</svg>' +
+      '</div>' +
+      '<p class="wd-resting-text" id="wd-resting-text">Saving your session…</p>' +
+      '</div>'
+    );
+  }
+
+  function startRestingSequence() {
+    closeEditSheet();
+    if (!finishState) {
+      deactivate();
+      window.location.href = '/home';
+      return;
+    }
+    var draft = Object.assign({}, getDraft(), {
+      photos: finishState.photos.slice(),
+    });
+    var durationMs = finishState.durationMs;
+    var notes = draft.notes || '';
+    var animStarted = Date.now();
+
+    showFinishScreen('', restingMarkHtml(), { hideDone: true });
+
+    var done =
+      typeof opts.onFinish === 'function'
+        ? opts.onFinish({
+            durationMs: durationMs,
+            session: draft,
+            photos: draft.photos,
+            notes: notes,
+            title: draft.title,
+            totalIntensity: draft.totalIntensity,
+          })
+        : Promise.resolve(draft);
+
+    Promise.resolve(done)
+      .then(function () {
+        if (notes && window.CoachMemory && typeof window.CoachMemory.ingestUserMessage === 'function') {
+          window.CoachMemory.ingestUserMessage(notes);
         }
+        var minSpin = Math.max(0, 1000 - (Date.now() - animStarted));
+        window.setTimeout(function () {
+          var root = document.getElementById('wd-resting');
+          var textEl = document.getElementById('wd-resting-text');
+          if (root) root.classList.add('wd-resting--done');
+          if (textEl) textEl.textContent = 'Well done.';
+          window.setTimeout(function () {
+            destroySummaryCharts();
+            finishState = null;
+            deactivate();
+            window.location.href = '/home';
+          }, 950);
+        }, minSpin);
+      })
+      .catch(function (err) {
+        showFinishScreen(
+          (err && err.message) || 'Could not save workout. Try again.',
+          null
+        );
+        window.setTimeout(function () {
+          if (finishState) renderFinishDashboard();
+        }, 1600);
       });
   }
 
@@ -841,19 +1579,34 @@
     stopSinceLastTimer(true);
     stopSessionClock();
     var durationMs = getElapsedMs() || null;
-    showFinishScreen('Saving your session…', null);
-    var done =
-      typeof opts.onFinish === 'function' ? opts.onFinish({ durationMs: durationMs }) : Promise.resolve();
-    Promise.resolve(done)
-      .then(function (savedSession) {
-        deactivate();
-        showPostWorkoutSummary(savedSession || {}, durationMs);
+    showFinishScreen('Packing up your stats…', null);
+    var preview =
+      typeof opts.onFinish === 'function'
+        ? opts.onFinish({ durationMs: durationMs, preview: true })
+        : Promise.resolve({});
+    Promise.resolve(preview)
+      .then(function (draft) {
+        /* Keep live session so "Keep lifting" can resume */
+        minimized = true;
+        if (overlay) overlay.hidden = true;
+        document.body.classList.remove('workout-dashboard-open');
+        showFinishDashboard(draft || {}, durationMs);
       })
       .catch(function (err) {
-        showFinishScreen((err && err.message) || 'Could not save — try again from Log.', null);
-        setTimeout(function () {
+        showFinishScreen(
+          (err && err.message) || 'Could not wrap up workout. Try again.',
+          null
+        );
+        window.setTimeout(function () {
           if (finishScreen) finishScreen.hidden = true;
-          open();
+          if (overlay) {
+            overlay.hidden = false;
+            document.body.classList.add('workout-dashboard-open');
+            minimized = false;
+            dashboardActive = true;
+            startSessionClock();
+            syncFab();
+          }
         }, 2200);
       });
   }
@@ -884,7 +1637,7 @@
 
   function resumeWorkout() {
     if (getTracker()) {
-      open();
+      open({ resume: true });
       return;
     }
     window.location.href = '/create?workout=1';

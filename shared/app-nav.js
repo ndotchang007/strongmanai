@@ -86,7 +86,9 @@
       explore: 'home',
       init: 'profile',
       customize: 'profile',
-      info: 'home'
+      info: 'home',
+      learn: 'home',
+      timeline: 'home'
     };
     var active = map[currentPage] || currentPage || '';
     document.querySelectorAll('[data-page]').forEach(function (el) {

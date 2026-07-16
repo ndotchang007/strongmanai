@@ -4,7 +4,10 @@ body.customize-page
     --customize-card-pad: 1.25rem;
     --customize-stack: 0.85rem;
     --customize-stack-tight: 0.45rem;
-    background: linear-gradient(165deg, #121212 0%, #18130f 45%, #121212 100%);
+    background:
+        radial-gradient(ellipse 80% 50% at 20% -10%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 55%),
+        var(--bg-page, #121212);
+    color: var(--text-primary, #f4f4f5);
 }
 
 body.customize-page .main-wrap
@@ -23,7 +26,7 @@ body.customize-page .main-wrap
         max(1.25rem, env(safe-area-inset-right, 0px))
         calc(var(--customize-gap) * 2.8)
         max(1.25rem, env(safe-area-inset-left, 0px));
-    color: #f4f4f5;
+    color: var(--text-primary, #f4f4f5);
     font-family: var(--font, "DM Sans", system-ui, sans-serif);
     box-sizing: border-box;
     display: flex;
@@ -45,8 +48,8 @@ body.customize-page .main-wrap
 {
     padding: 1rem 1.1rem;
     border-radius: 14px;
-    border: 1px solid rgba(245, 158, 11, 0.35);
-    background: rgba(245, 158, 11, 0.08);
+    border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
 }
 
 .customize-setup-banner-title
@@ -54,7 +57,7 @@ body.customize-page .main-wrap
     margin: 0 0 0.35rem;
     font-size: 0.95rem;
     font-weight: 600;
-    color: #fbbf24;
+    color: var(--accent-bright, var(--accent));
 }
 
 .customize-setup-banner-text
@@ -101,9 +104,9 @@ body.customize-page .main-wrap
     justify-content: center;
     font-size: 1.35rem;
     font-weight: 800;
-    color: #ffb347;
-    background: linear-gradient(145deg, rgba(255, 140, 0, 0.28), rgba(180, 60, 0, 0.35));
-    border: 2px solid rgba(255, 140, 0, 0.45);
+    color: var(--accent-bright, #ffb347);
+    background: linear-gradient(145deg, color-mix(in srgb, var(--accent) 28%, transparent), rgba(180, 60, 0, 0.35));
+    border: 2px solid color-mix(in srgb, var(--accent) 45%, transparent);
 }
 
 .buddy-hero-avatar
@@ -111,9 +114,9 @@ body.customize-page .main-wrap
     width: 56px;
     height: 56px;
     border-radius: 50%;
-    border: 2px solid rgba(255, 140, 0, 0.45);
+    border: 2px solid color-mix(in srgb, var(--accent) 45%, transparent);
     flex-shrink: 0;
-    background: #111;
+    background: var(--bg-deep, #111);
 }
 
 .buddy-hero-bubble
@@ -121,8 +124,8 @@ body.customize-page .main-wrap
     flex: 1;
     padding: 0.85rem 1rem;
     border-radius: 16px 16px 16px 6px;
-    border: 1px solid rgba(255, 140, 0, 0.22);
-    background: rgba(255, 140, 0, 0.08);
+    border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
 }
 
 .buddy-hero-greeting
@@ -130,7 +133,7 @@ body.customize-page .main-wrap
     margin: 0 0 0.35rem;
     font-size: 1.05rem;
     font-weight: 700;
-    color: #ffb347;
+    color: var(--accent-bright, #ffb347);
 }
 
 .buddy-hero-line
@@ -153,7 +156,7 @@ body.customize-page .main-wrap
     font-weight: 700;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: #ff9f40;
+    color: var(--accent-bright, var(--accent));
 }
 
 .user-settings-title
@@ -178,7 +181,7 @@ body.customize-page .main-wrap
     display: inline-flex;
     font-size: 0.84rem;
     font-weight: 700;
-    color: #ffb347;
+    color: var(--accent-bright, #ffb347);
     text-decoration: none;
 }
 
@@ -209,7 +212,7 @@ body.customize-page .main-wrap
 
 .customize-completion.is-complete
 {
-    color: #ffb347;
+    color: var(--accent-bright, #ffb347);
 }
 
 .buddy-form-wrap
@@ -283,13 +286,13 @@ body.customize-page .customize-split-redirect
     font-family: var(--font, "DM Sans", system-ui, sans-serif);
     font-size: 0.88rem;
     font-weight: 700;
-    color: #ff9f40;
+    color: var(--accent-bright, var(--accent));
     text-decoration: none;
 }
 
 .customize-split-redirect-link:hover
 {
-    color: #ffb347;
+    color: var(--accent-bright, #ffb347);
     text-decoration: underline;
     text-underline-offset: 0.15em;
 }
@@ -347,8 +350,8 @@ body.customize-page .sports-editor-header
 .buddy-block--notes
 {
     margin: 0;
-    border-color: rgba(255, 140, 0, 0.18);
-    background: rgba(255, 140, 0, 0.04);
+    border-color: color-mix(in srgb, var(--accent) 18%, transparent);
+    background: color-mix(in srgb, var(--accent) 4%, transparent);
 }
 
 .buddy-prompt
@@ -387,7 +390,7 @@ body.customize-page .sports-editor-header
     border-radius: 12px;
     border: 1px solid rgba(100, 100, 100, 0.55);
     background: rgba(0, 0, 0, 0.28);
-    color: #fff;
+    color: var(--text-primary, #fff);
     font-family: var(--font, "DM Sans", system-ui, sans-serif);
     font-size: 0.95rem;
 }
@@ -395,8 +398,8 @@ body.customize-page .sports-editor-header
 .buddy-field:focus
 {
     outline: none;
-    border-color: rgba(255, 140, 0, 0.5);
-    box-shadow: 0 0 0 2px rgba(255, 140, 0, 0.15);
+    border-color: color-mix(in srgb, var(--accent) 50%, transparent);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 15%, transparent);
 }
 
 .buddy-select-hidden
@@ -431,14 +434,14 @@ body.customize-page .sports-editor-header
 
 .buddy-pill:hover
 {
-    border-color: rgba(255, 140, 0, 0.35);
+    border-color: color-mix(in srgb, var(--accent) 35%, transparent);
 }
 
 .buddy-pill.is-active
 {
-    border-color: rgba(255, 140, 0, 0.55);
-    background: rgba(255, 140, 0, 0.18);
-    color: #ffd4a8;
+    border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+    background: color-mix(in srgb, var(--accent) 18%, transparent);
+    color: var(--on-accent-text, #141414);
 }
 
 .buddy-days
@@ -479,9 +482,9 @@ body.customize-page .sports-editor-header
 
 .buddy-day input:checked + span
 {
-    border-color: rgba(255, 140, 0, 0.55);
-    background: rgba(255, 140, 0, 0.2);
-    color: #ffd4a8;
+    border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+    background: color-mix(in srgb, var(--accent) 20%, transparent);
+    color: var(--on-accent-text, #141414);
 }
 
 .buddy-sport-tip,
@@ -492,8 +495,8 @@ body.customize-page .sports-editor-header
     border-radius: 10px;
     font-size: 0.82rem;
     line-height: 1.5;
-    border: 1px solid rgba(255, 140, 0, 0.2);
-    background: rgba(255, 140, 0, 0.06);
+    border: 1px solid color-mix(in srgb, var(--accent) 20%, transparent);
+    background: color-mix(in srgb, var(--accent) 6%, transparent);
     color: rgba(255, 255, 255, 0.88);
 }
 
@@ -503,8 +506,8 @@ body.customize-page .sports-editor-header
     margin: 0;
     padding: 0.75rem 0.9rem;
     border-radius: 12px;
-    border: 1px solid rgba(255, 159, 64, 0.28);
-    background: rgba(255, 140, 0, 0.08);
+    border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
     font-size: 0.88rem;
     line-height: 1.5;
 }
@@ -538,9 +541,9 @@ body.customize-page .sports-editor-header
     align-items: center;
     padding: 0.35rem 0.75rem;
     border-radius: 999px;
-    border: 1px solid rgba(255, 140, 0, 0.45);
-    background: rgba(255, 140, 0, 0.12);
-    color: #ffb347;
+    border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    color: var(--accent-bright, #ffb347);
     font-family: var(--font, "DM Sans", system-ui, sans-serif);
     font-size: 0.72rem;
     font-weight: 700;
@@ -551,8 +554,8 @@ body.customize-page .sports-editor-header
 
 .buddy-known-customize-btn:hover
 {
-    border-color: rgba(255, 140, 0, 0.65);
-    background: rgba(255, 140, 0, 0.2);
+    border-color: color-mix(in srgb, var(--accent) 65%, transparent);
+    background: color-mix(in srgb, var(--accent) 20%, transparent);
 }
 
 .buddy-known-notes
@@ -586,7 +589,7 @@ body.customize-page .sports-editor-header
     border-radius: 12px;
     border: 1px solid rgba(100, 100, 100, 0.5);
     background: rgba(0, 0, 0, 0.22);
-    color: #fff;
+    color: var(--text-primary, #fff);
     font-family: var(--font, "DM Sans", system-ui, sans-serif);
     font-size: 0.92rem;
     line-height: 1.45;
@@ -625,8 +628,8 @@ body.customize-page .sports-editor-header
     border-radius: 999px;
     border: none;
     cursor: pointer;
-    background: linear-gradient(135deg, #ff8c00, #ff6a00);
-    color: #111;
+    background: linear-gradient(135deg, var(--accent), var(--accent-deep));
+    color: var(--on-accent-text, #141414);
 }
 
 .customize-save-btn:disabled
@@ -646,7 +649,7 @@ body.customize-page .sports-editor-header
 
 .customize-secondary-link:hover
 {
-    color: #ff9f40;
+    color: var(--accent-bright, var(--accent));
 }
 
 .visually-hidden

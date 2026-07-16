@@ -15,6 +15,13 @@
     this.inputEl = opts.inputEl;
     this.sendBtn = opts.sendBtn;
     this.routineToggle = opts.routineToggle || null;
+    this.physiqueToggle = opts.physiqueToggle || null;
+    this.attachBtn = opts.attachBtn || null;
+    this.imageInput = opts.imageInput || null;
+    this.attachPreviewEl = opts.attachPreviewEl || null;
+    this.micBtn = opts.micBtn || null;
+    this.modelBtn = opts.modelBtn || null;
+    this.modelMenu = opts.modelMenu || null;
     this.coachMode = 'chat';
     this.clearBtns = opts.clearBtns || (opts.clearBtn ? [opts.clearBtn] : []);
     this.quotaEl = opts.quotaEl;
@@ -25,6 +32,10 @@
     this.messages = [];
     this.pending = false;
     this.loadingEl = null;
+    this.pendingAttachments = [];
+    this.recognition = null;
+    this.isListening = false;
+    this.typewriterTimer = null;
     this.loadFromStorage();
     this.syncMemoryFromThread();
     this.bindEvents();
@@ -34,9 +45,7 @@
     this.fetchQuota();
     this.resumePendingReply();
     if (window.CoachPending) window.CoachPending.clearReplyReady();
-    if (this.routineToggle) {
-      this.setCoachMode(this.routineToggle.checked ? 'routine' : 'chat');
-    }
+    this.syncModeFromToggles();
   }
 
   CoachThread.prototype.getScrollContainer = function () {
@@ -80,10 +89,18 @@
 
   CoachThread.prototype.saveToStorage = function () {
     try {
+      var thin = (this.messages || []).slice(-40).map(function (m) {
+        if (!m || !m.images || !m.images.length) return m;
+        var copy = Object.assign({}, m);
+        copy.images = m.images.map(function () {
+          return { placeholder: true };
+        });
+        return copy;
+      });
       if (window.CoachPending && typeof window.CoachPending.saveThread === 'function') {
-        window.CoachPending.saveThread(this.messages);
+        window.CoachPending.saveThread(thin);
       } else {
-        localStorage.setItem(getStorageKey(), JSON.stringify(this.messages.slice(-40)));
+        localStorage.setItem(getStorageKey(), JSON.stringify(thin));
       }
     } catch (e) {}
   };
@@ -96,7 +113,7 @@
 
   CoachThread.prototype.syncMemoryFromThread = function () {
     if (!window.CoachMemory) return;
-    window.CoachMemory.clear();
+    // Merge from thread — never wipe durable memory that may have synced from server
     var self = this;
     this.messages.forEach(function (m) {
       if (m.role === 'user' && m.content) {
@@ -275,6 +292,200 @@
     });
   };
 
+  CoachThread.prototype.autosizeInput = function () {
+    if (!this.inputEl) return;
+    this.inputEl.style.height = 'auto';
+    var next = Math.min(Math.max(this.inputEl.scrollHeight, 24), 160);
+    this.inputEl.style.height = next + 'px';
+    if (this.composerEl) {
+      this.composerEl.classList.toggle('coach-composer--multiline', next > 40);
+    }
+  };
+
+  CoachThread.prototype.syncModeFromToggles = function () {
+    if (this.physiqueToggle && this.physiqueToggle.checked) {
+      this.setCoachMode('physique');
+    } else if (this.routineToggle && this.routineToggle.checked) {
+      this.setCoachMode('routine');
+    } else {
+      this.setCoachMode('chat');
+    }
+  };
+
+  CoachThread.prototype.renderAttachPreview = function () {
+    var el = this.attachPreviewEl;
+    if (!el) return;
+    el.innerHTML = '';
+    if (!this.pendingAttachments.length) {
+      el.hidden = true;
+      return;
+    }
+    el.hidden = false;
+    var self = this;
+    this.pendingAttachments.forEach(function (att, idx) {
+      var chip = document.createElement('div');
+      chip.className = 'coach-attach-chip';
+      var img = document.createElement('img');
+      img.src = att.previewUrl || ('data:' + att.mediaType + ';base64,' + att.data);
+      img.alt = 'Attachment ' + (idx + 1);
+      chip.appendChild(img);
+      var remove = document.createElement('button');
+      remove.type = 'button';
+      remove.className = 'coach-attach-remove';
+      remove.setAttribute('aria-label', 'Remove image');
+      remove.textContent = '×';
+      remove.addEventListener('click', function () {
+        if (self.pendingAttachments[idx] && self.pendingAttachments[idx].previewUrl) {
+          try {
+            URL.revokeObjectURL(self.pendingAttachments[idx].previewUrl);
+          } catch (eRev) {}
+        }
+        self.pendingAttachments.splice(idx, 1);
+        self.renderAttachPreview();
+      });
+      chip.appendChild(remove);
+      el.appendChild(chip);
+    });
+  };
+
+  CoachThread.prototype.compressImageFile = function (file) {
+    var self = this;
+    return new Promise(function (resolve, reject) {
+      if (!file || !/^image\//.test(file.type)) {
+        reject(new Error('Not an image'));
+        return;
+      }
+      var reader = new FileReader();
+      reader.onerror = function () {
+        reject(new Error('Could not read image'));
+      };
+      reader.onload = function () {
+        var img = new Image();
+        img.onload = function () {
+          var maxSide = 1280;
+          var w = img.width;
+          var h = img.height;
+          var scale = Math.min(1, maxSide / Math.max(w, h));
+          var cw = Math.max(1, Math.round(w * scale));
+          var ch = Math.max(1, Math.round(h * scale));
+          var canvas = document.createElement('canvas');
+          canvas.width = cw;
+          canvas.height = ch;
+          var ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, cw, ch);
+          var mediaType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+          var dataUrl = canvas.toDataURL(mediaType, 0.78);
+          var m = /^data:([^;]+);base64,(.+)$/.exec(dataUrl);
+          if (!m) {
+            reject(new Error('Could not encode image'));
+            return;
+          }
+          resolve({
+            mediaType: m[1],
+            data: m[2],
+            previewUrl: URL.createObjectURL(file),
+          });
+        };
+        img.onerror = function () {
+          reject(new Error('Could not load image'));
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  CoachThread.prototype.addImageFiles = function (fileList) {
+    var self = this;
+    var files = Array.prototype.slice.call(fileList || [], 0).slice(0, 3);
+    if (!files.length) return;
+    var room = Math.max(0, 3 - this.pendingAttachments.length);
+    files = files.slice(0, room);
+    Promise.all(
+      files.map(function (f) {
+        return self.compressImageFile(f).catch(function () {
+          return null;
+        });
+      })
+    ).then(function (atts) {
+      atts.forEach(function (a) {
+        if (a) self.pendingAttachments.push(a);
+      });
+      self.renderAttachPreview();
+      if (self.coachMode === 'physique' && self.inputEl && !self.inputEl.value.trim()) {
+        self.inputEl.placeholder = 'Optional notes — what should Rocky focus on?';
+      }
+    });
+  };
+
+  CoachThread.prototype.clearAttachments = function () {
+    this.pendingAttachments.forEach(function (a) {
+      if (a && a.previewUrl) {
+        try {
+          URL.revokeObjectURL(a.previewUrl);
+        } catch (e) {}
+      }
+    });
+    this.pendingAttachments = [];
+    this.renderAttachPreview();
+  };
+
+  CoachThread.prototype.toggleModelMenu = function (force) {
+    if (!this.modelMenu || !this.modelBtn) return;
+    var open = typeof force === 'boolean' ? force : this.modelMenu.hidden;
+    this.modelMenu.hidden = !open;
+    this.modelBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  };
+
+  CoachThread.prototype.toggleDictation = function () {
+    var self = this;
+    var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) {
+      this.setError('Voice input is not supported in this browser.');
+      return;
+    }
+    if (this.isListening && this.recognition) {
+      try {
+        this.recognition.stop();
+      } catch (eStop) {}
+      this.isListening = false;
+      if (this.micBtn) this.micBtn.classList.remove('is-listening');
+      return;
+    }
+    var rec = new SR();
+    this.recognition = rec;
+    rec.lang = 'en-US';
+    rec.interimResults = true;
+    rec.continuous = false;
+    rec.onstart = function () {
+      self.isListening = true;
+      if (self.micBtn) self.micBtn.classList.add('is-listening');
+    };
+    rec.onresult = function (ev) {
+      var text = '';
+      for (var i = 0; i < ev.results.length; i++) {
+        text += ev.results[i][0].transcript;
+      }
+      if (self.inputEl) {
+        self.inputEl.value = text.trim();
+        self.autosizeInput();
+      }
+    };
+    rec.onerror = function () {
+      self.isListening = false;
+      if (self.micBtn) self.micBtn.classList.remove('is-listening');
+    };
+    rec.onend = function () {
+      self.isListening = false;
+      if (self.micBtn) self.micBtn.classList.remove('is-listening');
+    };
+    try {
+      rec.start();
+    } catch (eStart) {
+      this.setError('Could not start microphone.');
+    }
+  };
+
   CoachThread.prototype.bindEvents = function () {
     var self = this;
     if (this.sendBtn) {
@@ -284,7 +495,46 @@
     }
     if (this.routineToggle) {
       this.routineToggle.addEventListener('change', function () {
+        if (self.routineToggle.checked && self.physiqueToggle) {
+          self.physiqueToggle.checked = false;
+        }
         self.setCoachMode(self.routineToggle.checked ? 'routine' : 'chat');
+      });
+    }
+    if (this.physiqueToggle) {
+      this.physiqueToggle.addEventListener('change', function () {
+        if (self.physiqueToggle.checked && self.routineToggle) {
+          self.routineToggle.checked = false;
+        }
+        self.setCoachMode(self.physiqueToggle.checked ? 'physique' : 'chat');
+      });
+    }
+    if (this.attachBtn && this.imageInput) {
+      this.attachBtn.addEventListener('click', function () {
+        self.imageInput.click();
+      });
+      this.imageInput.addEventListener('change', function () {
+        self.addImageFiles(self.imageInput.files);
+        self.imageInput.value = '';
+      });
+    }
+    if (this.micBtn) {
+      this.micBtn.addEventListener('click', function () {
+        self.toggleDictation();
+      });
+    }
+    if (this.modelBtn) {
+      this.modelBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        self.toggleModelMenu();
+      });
+    }
+    document.addEventListener('click', function () {
+      self.toggleModelMenu(false);
+    });
+    if (this.modelMenu) {
+      this.modelMenu.addEventListener('click', function (e) {
+        e.stopPropagation();
       });
     }
     this.clearBtns.forEach(function (btn) {
@@ -292,8 +542,9 @@
       btn.addEventListener('click', function () {
         if (self.pending) return;
         self.messages = [];
-        if (window.CoachMemory) window.CoachMemory.clear();
+        // Keep CoachMemory — athlete facts (pain, tightness, etc.) should survive clearing chat UI
         if (window.CoachPending) window.CoachPending.clearPending();
+        self.clearAttachments();
         self.saveToStorage();
         self.render();
         self.refreshBriefing();
@@ -308,9 +559,9 @@
         }
       });
       this.inputEl.addEventListener('input', function () {
-        self.inputEl.style.height = 'auto';
-        self.inputEl.style.height = Math.min(self.inputEl.scrollHeight, 104) + 'px';
+        self.autosizeInput();
       });
+      this.autosizeInput();
     }
 
     window.addEventListener('storage', function (e) {
@@ -436,7 +687,34 @@
       'coach-msg coach-msg--' + (msg.role === 'user' ? 'user' : 'assistant');
 
     if (msg.role === 'user') {
-      bubble.textContent = msg.content;
+      if (msg.images && msg.images.length) {
+        var thumbs = document.createElement('div');
+        thumbs.className = 'coach-msg-thumbs';
+        msg.images.forEach(function (img) {
+          var src =
+            (img && img.previewUrl) ||
+            (img && img.data
+              ? 'data:' + (img.mediaType || 'image/jpeg') + ';base64,' + img.data
+              : '');
+          if (src) {
+            var el = document.createElement('img');
+            el.className = 'coach-msg-thumb';
+            el.alt = '';
+            el.src = src;
+            thumbs.appendChild(el);
+          } else {
+            var ph = document.createElement('span');
+            ph.className = 'coach-msg-thumb coach-msg-thumb--placeholder';
+            ph.textContent = 'Photo';
+            thumbs.appendChild(ph);
+          }
+        });
+        if (thumbs.childNodes.length) bubble.appendChild(thumbs);
+      }
+      var textNode = document.createElement('div');
+      textNode.className = 'coach-msg-text';
+      textNode.textContent = msg.content || '';
+      bubble.appendChild(textNode);
       return this.createChatRow('user', bubble);
     }
 
@@ -533,11 +811,16 @@
     bubble.className = 'coach-msg coach-msg--assistant coach-msg--loading';
     bubble.setAttribute('aria-busy', 'true');
     bubble.innerHTML =
-      '<span class="coach-typing" aria-label="Rocky is typing">' +
-      '<span class="coach-typing-dot"></span>' +
-      '<span class="coach-typing-dot"></span>' +
-      '<span class="coach-typing-dot"></span>' +
-      '</span>';
+      '<div class="coach-gen" aria-label="Rocky is generating">' +
+      '<div class="coach-gen-core" aria-hidden="true">' +
+      '<span class="coach-gen-ring coach-gen-ring--a"></span>' +
+      '<span class="coach-gen-ring coach-gen-ring--b"></span>' +
+      '<span class="coach-gen-ring coach-gen-ring--c"></span>' +
+      '<span class="coach-gen-scan"></span>' +
+      '<span class="coach-gen-node"></span>' +
+      '</div>' +
+      '<p class="coach-gen-label">Syncing corner intel<span class="coach-gen-ellipsis"></span></p>' +
+      '</div>';
     this.loadingEl = this.createChatRow('assistant', bubble);
     if (this.threadEl) {
       this.threadEl.appendChild(this.loadingEl);
@@ -552,16 +835,82 @@
     this.loadingEl = null;
   };
 
-  CoachThread.prototype.finishAssistantReply = function (assistantMsg, quota) {
+  CoachThread.prototype.stopTypewriter = function () {
+    if (this.typewriterTimer) {
+      window.clearTimeout(this.typewriterTimer);
+      this.typewriterTimer = null;
+    }
+  };
+
+  CoachThread.prototype.typewriterUnveil = function (assistantMsg, onDone) {
+    var self = this;
+    this.stopTypewriter();
     this.hideLoading();
-    this.messages = window.CoachPending
-      ? window.CoachPending.loadThread()
-      : this.messages.concat([assistantMsg]);
+    if (!this.threadEl) {
+      if (onDone) onDone();
+      return;
+    }
+
+    var prefersReduce =
+      window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var unveilText =
+      (assistantMsg && (assistantMsg.content || assistantMsg.text)) ||
+      (assistantMsg && assistantMsg.advice && assistantMsg.advice.summary) ||
+      '';
+
+    if (prefersReduce || !unveilText || unveilText.length > 2200) {
+      if (onDone) onDone();
+      return;
+    }
+
+    var bubble = document.createElement('div');
+    bubble.className = 'coach-msg coach-msg--assistant coach-msg--typewriter';
+    var span = document.createElement('span');
+    span.className = 'coach-typewriter-text';
+    bubble.appendChild(span);
+    var caret = document.createElement('span');
+    caret.className = 'coach-typewriter-caret';
+    caret.setAttribute('aria-hidden', 'true');
+    bubble.appendChild(caret);
+    var row = this.createChatRow('assistant', bubble);
+    this.threadEl.appendChild(row);
+    this.scrollThread(true);
+
+    var i = 0;
+    var chunk = Math.max(2, Math.ceil(unveilText.length / 90));
+    function tick() {
+      i = Math.min(unveilText.length, i + chunk);
+      span.textContent = unveilText.slice(0, i);
+      self.scrollThread(true);
+      if (i < unveilText.length) {
+        self.typewriterTimer = window.setTimeout(tick, 12);
+      } else {
+        self.typewriterTimer = window.setTimeout(function () {
+          if (row.parentNode) row.parentNode.removeChild(row);
+          self.typewriterTimer = null;
+          if (onDone) onDone();
+        }, 90);
+      }
+    }
+    tick();
+  };
+
+  CoachThread.prototype.finishAssistantReply = function (assistantMsg, quota) {
+    var self = this;
+    var last = this.messages.length ? this.messages[this.messages.length - 1] : null;
+    if (!last || last.role !== 'assistant') {
+      this.messages.push(assistantMsg);
+    } else {
+      this.messages[this.messages.length - 1] = assistantMsg;
+    }
     if (quota) this.setQuota(quota);
-    this.render();
-    this.refreshBriefing();
     this.saveToStorage();
     if (window.CoachPending) window.CoachPending.clearReplyReady();
+
+    this.typewriterUnveil(assistantMsg, function () {
+      self.render();
+      self.refreshBriefing();
+    });
   };
 
   CoachThread.prototype.resumePendingReply = function () {
@@ -594,22 +943,32 @@
   };
 
   CoachThread.prototype.setCoachMode = function (mode) {
-    this.coachMode = mode === 'routine' ? 'routine' : 'chat';
-    if (this.routineToggle) {
-      this.routineToggle.checked = this.coachMode === 'routine';
+    if (mode === 'routine') this.coachMode = 'routine';
+    else if (mode === 'physique') this.coachMode = 'physique';
+    else this.coachMode = 'chat';
+
+    if (this.routineToggle) this.routineToggle.checked = this.coachMode === 'routine';
+    if (this.physiqueToggle) this.physiqueToggle.checked = this.coachMode === 'physique';
+    if (this.chipsEl) {
+      this.chipsEl.hidden = this.coachMode === 'routine' || this.coachMode === 'physique';
     }
-    if (this.chipsEl) this.chipsEl.hidden = this.coachMode === 'routine';
     if (this.inputEl) {
-      this.inputEl.placeholder =
-        this.coachMode === 'routine'
-          ? 'Optional notes for your weekly split (equipment, goals)…'
-          : 'Talk to Rocky…';
+      if (this.coachMode === 'routine') {
+        this.inputEl.placeholder = 'Optional notes for your weekly split (equipment, goals)…';
+      } else if (this.coachMode === 'physique') {
+        this.inputEl.placeholder = 'Attach a photo, then add notes if you want…';
+      } else {
+        this.inputEl.placeholder = 'Talk to Rocky…';
+      }
     }
     if (this.sendBtn) {
-      this.sendBtn.setAttribute(
-        'aria-label',
-        this.coachMode === 'routine' ? 'Generate full weekly routine' : 'Send message'
-      );
+      var label = 'Send message';
+      if (this.coachMode === 'routine') label = 'Generate full weekly routine';
+      if (this.coachMode === 'physique') label = 'Rate physique';
+      this.sendBtn.setAttribute('aria-label', label);
+    }
+    if (this.composerEl) {
+      this.composerEl.dataset.coachMode = this.coachMode;
     }
     this.setError('');
   };
@@ -622,9 +981,7 @@
       return;
     }
 
-    this.pending = true;
-    if (this.sendBtn) this.sendBtn.disabled = true;
-    if (this.routineToggle) this.routineToggle.disabled = true;
+    this.setPendingUi(true);
 
     var userNotes = this.inputEl && this.inputEl.value ? this.inputEl.value.trim() : '';
     var text =
@@ -675,24 +1032,55 @@
           if (msg) self.setError(msg);
         },
         onEnd: function () {
-          self.pending = false;
-          if (self.sendBtn) self.sendBtn.disabled = false;
-          if (self.routineToggle) self.routineToggle.disabled = false;
+          self.setPendingUi(false);
         },
       }
     );
   };
 
+  CoachThread.prototype.attachmentsForApi = function () {
+    return this.pendingAttachments.map(function (a) {
+      return { mediaType: a.mediaType, data: a.data };
+    });
+  };
+
+  CoachThread.prototype.attachmentsForThread = function () {
+    return this.pendingAttachments.map(function (a) {
+      return {
+        mediaType: a.mediaType,
+        data: a.data,
+        previewUrl: a.previewUrl || null,
+      };
+    });
+  };
+
+  CoachThread.prototype.setPendingUi = function (on) {
+    this.pending = !!on;
+    if (this.sendBtn) this.sendBtn.disabled = !!on;
+    if (this.routineToggle) this.routineToggle.disabled = !!on;
+    if (this.physiqueToggle) this.physiqueToggle.disabled = !!on;
+    if (this.attachBtn) this.attachBtn.disabled = !!on;
+    if (this.micBtn) this.micBtn.disabled = !!on;
+  };
+
   CoachThread.prototype.send = function () {
     var self = this;
     if (this.pending) return;
-    if (this.routineToggle && this.routineToggle.checked) {
+    if (this.coachMode === 'routine' || (this.routineToggle && this.routineToggle.checked)) {
       this.generateFullRoutine();
       return;
     }
+
     var text = this.inputEl && this.inputEl.value ? this.inputEl.value.trim() : '';
-    if (!text) {
-      this.setError('Say something to Rocky.');
+    var images = this.attachmentsForApi();
+    var isPhysique = this.coachMode === 'physique';
+
+    if (isPhysique && !images.length) {
+      this.setError('Attach at least one physique photo for Rocky to review.');
+      return;
+    }
+    if (!text && !images.length) {
+      this.setError('Say something to Rocky, or attach an image.');
       return;
     }
     if (!window.CoachPending) {
@@ -700,10 +1088,21 @@
       return;
     }
 
+    var displayText = text;
+    var apiMessage = text;
+    if (isPhysique) {
+      displayText = text || 'Rate my physique';
+      apiMessage =
+        'Rate my physique from the attached photo(s). Be honest, constructive, and specific about muscle development, proportions, posture, and training priorities. Keep it encouraging with Rocky energy.' +
+        (text ? '\n\nAthlete notes: ' + text : '');
+    } else if (!apiMessage && images.length) {
+      displayText = 'Check this out';
+      apiMessage =
+        'Review the attached image(s) in a coaching context. Give practical feedback.';
+    }
+
     this.setError('');
-    this.pending = true;
-    if (this.sendBtn) this.sendBtn.disabled = true;
-    if (this.routineToggle) this.routineToggle.disabled = true;
+    this.setPendingUi(true);
 
     var threadForApi = this.messages
       .filter(function (m) {
@@ -713,12 +1112,19 @@
         return { role: m.role, content: m.content || m.text || '' };
       });
 
-    this.messages.push({ role: 'user', content: text });
-    if (window.CoachMemory) window.CoachMemory.ingestUserMessage(text);
+    var userMsg = {
+      role: 'user',
+      content: displayText,
+      images: this.attachmentsForThread(),
+    };
+    this.messages.push(userMsg);
+    if (window.CoachMemory) window.CoachMemory.ingestUserMessage(displayText);
     if (this.inputEl) {
       this.inputEl.value = '';
-      this.inputEl.style.height = 'auto';
+      this.autosizeInput();
     }
+    var imagesPayload = images.slice();
+    this.clearAttachments();
     this.render();
     this.refreshBriefing();
     this.saveToStorage();
@@ -726,9 +1132,12 @@
 
     window.CoachPending.startRequest(
       {
-        message: text,
+        message: apiMessage,
+        userContent: displayText,
         contextBlock: this.getContextBlock(),
         thread: threadForApi,
+        images: imagesPayload,
+        forceIntent: isPhysique || imagesPayload.length ? 'advice' : undefined,
       },
       {
         onSuccess: function (assistantMsg, quota) {
@@ -736,16 +1145,16 @@
         },
         onError: function (msg, retriable) {
           self.hideLoading();
+          self.stopTypewriter();
           if (msg) self.setError(msg);
           if (!retriable && window.CoachPending) window.CoachPending.clearPending();
         },
         onAbort: function () {
           self.hideLoading();
+          self.stopTypewriter();
         },
         onEnd: function () {
-          self.pending = false;
-          if (self.sendBtn) self.sendBtn.disabled = false;
-          if (self.routineToggle) self.routineToggle.disabled = false;
+          self.setPendingUi(false);
         },
       }
     );

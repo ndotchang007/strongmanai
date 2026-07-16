@@ -197,7 +197,7 @@ html[data-theme="light"] .home-settings-hint
 }
 html[data-theme="light"] .home-settings-notify-status
 {
-    color: #8a4a12;
+    color: var(--accent);
 }
 .home-settings-field-label--reminder
 {
@@ -286,7 +286,7 @@ html[data-theme="light"] .home-settings-day-chip
 }
 .home-settings-day-chip input
 {
-    accent-color: #ff8c00;
+    accent-color: var(--accent);
     width: 0.95rem;
     height: 0.95rem;
     margin: 0;
@@ -297,6 +297,13 @@ html[data-theme="light"] .home-settings-day-chip
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem 1rem;
+}
+.home-settings-theme-row.settings-theme-grid
+{
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+    gap: 0.65rem;
+    width: 100%;
 }
 .home-settings-radio-label
 {
@@ -314,7 +321,7 @@ html[data-theme="light"] .home-settings-radio-label
 }
 .home-settings-radio
 {
-    accent-color: #ff8c00;
+    accent-color: var(--accent);
     width: 1rem;
     height: 1rem;
 }
@@ -324,7 +331,7 @@ html[data-theme="light"] .home-settings-radio-label
     margin-top: 0.45rem;
     font-family: var(--font, "DM Sans", system-ui, sans-serif);
     font-size: 0.9rem;
-    color: #ff8c00;
+    color: var(--accent);
     text-decoration: none;
 }
 .home-settings-link:first-of-type
@@ -387,7 +394,7 @@ html[data-theme="light"] .home-settings-toggle
 }
 .home-settings-checkbox
 {
-    accent-color: #ff8c00;
+    accent-color: var(--accent);
     width: 1.05rem;
     height: 1.05rem;
     flex-shrink: 0;
@@ -411,7 +418,7 @@ html[data-theme="light"] .home-settings-meta
 }
 .home-settings-inline-link
 {
-    color: #ff8c00;
+    color: var(--accent);
     text-decoration: none;
 }
 .home-settings-inline-link:hover
@@ -616,7 +623,7 @@ html[data-theme="light"] .create-input[type="date"]
 html[data-theme="light"] .create-message:not([hidden])
 {
     color: #333;
-    background-color: rgba(255, 140, 0, 0.12);
+    background-color: color-mix(in srgb, var(--accent) 12%, transparent);
     border-color: rgba(200, 100, 0, 0.35);
 }
 html[data-theme="light"] .create-submit
@@ -743,7 +750,7 @@ html[data-theme="light"] .lb-filter-btn:hover
 html[data-theme="light"] .lb-filter-btn.active
 {
     color: #b35a00;
-    border-color: rgba(255, 140, 0, 0.45);
+    border-color: color-mix(in srgb, var(--accent) 45%, transparent);
 }
 
 html[data-theme="light"] .lb-picker-label
@@ -762,7 +769,7 @@ html[data-theme="light"] .lb-picker-input:hover,
 html[data-theme="light"] .lb-picker-input:focus
 {
     background: rgba(0, 0, 0, 0.06);
-    border-color: rgba(255, 140, 0, 0.45);
+    border-color: color-mix(in srgb, var(--accent) 45%, transparent);
 }
 
 html[data-theme="light"] .lb-table th,
@@ -813,7 +820,7 @@ html[data-theme="light"] .lb-comp-toggle-btn:hover
 html[data-theme="light"] .lb-comp-toggle-btn.active
 {
     color: #b35a00;
-    border-color: rgba(255, 140, 0, 0.45);
+    border-color: color-mix(in srgb, var(--accent) 45%, transparent);
 }
 html[data-theme="light"] .lb-competition-card
 {
@@ -1057,9 +1064,9 @@ html[data-theme="light"] .tracking-stats-range-btn.active
     align-items: center;
     padding: 0.32rem 0.7rem;
     border-radius: 999px;
-    border: 1px solid rgba(255, 140, 0, 0.45);
-    background: rgba(255, 140, 0, 0.12);
-    color: #ffb347;
+    border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    color: var(--accent-bright);
     font-family: var(--font, "DM Sans", system-ui, sans-serif);
     font-size: 0.72rem;
     font-weight: 700;
@@ -1070,8 +1077,8 @@ html[data-theme="light"] .tracking-stats-range-btn.active
 
 .home-settings-known-customize-btn:hover
 {
-    border-color: rgba(255, 140, 0, 0.65);
-    background: rgba(255, 140, 0, 0.2);
+    border-color: color-mix(in srgb, var(--accent) 65%, transparent);
+    background: color-mix(in srgb, var(--accent) 20%, transparent);
 }
 
 .home-settings-known-notes
@@ -1318,8 +1325,8 @@ html[data-theme="light"] .settings-account-unit
 
 .settings-account-chip.is-selected
 {
-    background: rgba(255, 140, 0, 0.18);
-    border-color: rgba(255, 140, 0, 0.5);
+    background: color-mix(in srgb, var(--accent) 18%, transparent);
+    border-color: color-mix(in srgb, var(--accent) 50%, transparent);
     color: #fff;
 }
 
@@ -1332,7 +1339,7 @@ html[data-theme="light"] .settings-account-chip
 
 html[data-theme="light"] .settings-account-chip.is-selected
 {
-    background: rgba(255, 140, 0, 0.14);
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
     border-color: rgba(200, 100, 0, 0.45);
     color: #1a1a1a;
 }

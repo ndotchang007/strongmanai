@@ -99,7 +99,9 @@
     if (!pending || !pending.message) return false;
     if (!messages.length) return false;
     var last = messages[messages.length - 1];
-    return last.role === 'user' && last.content === pending.message;
+    if (last.role !== 'user') return false;
+    if (pending.userContent != null) return last.content === pending.userContent;
+    return last.content === pending.message;
   }
 
   function buildAssistantMsg(body) {
@@ -184,6 +186,8 @@
         message: pending.message,
         contextBlock: pending.contextBlock || '',
         thread: pending.thread || [],
+        images: pending.images || [],
+        forceIntent: pending.forceIntent || undefined,
       },
       controller ? controller.signal : undefined
     )
@@ -245,8 +249,11 @@
   function startRequest(payload, handlers) {
     setPending({
       message: payload.message,
+      userContent: payload.userContent != null ? payload.userContent : payload.message,
       thread: payload.thread || [],
       contextBlock: payload.contextBlock || '',
+      images: Array.isArray(payload.images) ? payload.images.slice(0, 3) : [],
+      forceIntent: payload.forceIntent || null,
       startedAt: Date.now(),
     });
     return runPendingRequest(handlers);

@@ -147,6 +147,62 @@
     return cards;
   }
 
+  function priorSessionVolume(excludeId) {
+    var WL = window.WorkoutLog;
+    if (!WL || typeof WL.getSessions !== 'function') return null;
+    var sessions = WL.getSessions() || [];
+    for (var i = 0; i < sessions.length; i++) {
+      var s = sessions[i];
+      if (!s || s.sessionType === 'cardio') continue;
+      if (excludeId && (s.id === excludeId || s.clientId === excludeId)) continue;
+      var stats = computeSessionStats(s);
+      if (stats.totalVolume > 0 || stats.completedSetCount > 0) return stats;
+    }
+    return null;
+  }
+
+  /** Short punchy line comparing today vs last logged session. */
+  function buildTrendMessage(savedSession, todaySession) {
+    var todayVol = (todaySession && todaySession.totalVolume) || 0;
+    var prior = priorSessionVolume(savedSession && (savedSession.id || savedSession.clientId));
+    if (!prior || !prior.totalVolume) {
+      if (todayVol > 0) {
+        return {
+          tone: 'up',
+          text: 'First real log on the board — strength starts with showing up.',
+        };
+      }
+      return {
+        tone: 'steady',
+        text: 'Session banked. Rocky’s already judging your rest… in a supportive way.',
+      };
+    }
+    var delta = todayVol - prior.totalVolume;
+    var pct = prior.totalVolume ? Math.round((delta / prior.totalVolume) * 100) : 0;
+    if (delta > Math.max(50, prior.totalVolume * 0.05)) {
+      return {
+        tone: 'up',
+        text:
+          'Volume is up' +
+          (pct > 0 ? ' ~' + pct + '%' : '') +
+          ' from last time — strength is climbing. Keep going!',
+      };
+    }
+    if (delta < -Math.max(50, prior.totalVolume * 0.05)) {
+      return {
+        tone: 'down',
+        text:
+          'A bit lighter than last time' +
+          (pct < 0 ? ' (~' + Math.abs(pct) + '% less volume)' : '') +
+          '. Smart pacing beats ego sets.',
+      };
+    }
+    return {
+      tone: 'steady',
+      text: 'About even with last session — consistency is the real flex.',
+    };
+  }
+
   /** Past 3 workouts only — compact text, excludes the session just saved. */
   function buildRecentWorkoutsText(excludeSessionId) {
     var WL = window.WorkoutLog;
@@ -192,7 +248,12 @@
     try {
       extras.notes = localStorage.getItem('strongman-coach-anything-else') || '';
     } catch (e) {}
-    return AC.buildCoachPromptBlock(user, extras);
+    var parts = [AC.buildCoachPromptBlock(user, extras)];
+    if (window.CoachMemory && typeof window.CoachMemory.buildPromptBlock === 'function') {
+      var mem = window.CoachMemory.buildPromptBlock(window.CoachMemory.load());
+      if (mem) parts.push(mem);
+    }
+    return parts.filter(Boolean).join('\n\n');
   }
 
   function fetchRecoveryAdvice(savedSession, durationMs) {
@@ -562,6 +623,7 @@
     RECENT_WORKOUT_LIMIT: RECENT_WORKOUT_LIMIT,
     buildTodaySessionPayload: buildTodaySessionPayload,
     buildLocalSummaryCards: buildLocalSummaryCards,
+    buildTrendMessage: buildTrendMessage,
     buildRecentWorkoutsText: buildRecentWorkoutsText,
     buildAthleteContext: buildAthleteContext,
     fetchRecoveryAdvice: fetchRecoveryAdvice,

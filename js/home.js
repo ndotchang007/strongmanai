@@ -6,8 +6,8 @@
   var startBtn = document.getElementById('dash-start-workout');
   var startHintEl = document.getElementById('dash-start-hint');
   var roastsListEl = document.getElementById('dash-roasts-list');
+  var dailyRootEl = document.getElementById('dash-daily-root');
   var rockyBannerEl = document.getElementById('dash-rocky-banner');
-
   function renderRoasts(sessions) {
     if (!roastsListEl) return;
     roastsListEl.innerHTML = '';
@@ -171,7 +171,9 @@
         countdownsEl.hidden = true;
       }
     }
-    if (startHintEl && AC && user) {
+    if (startHintEl && window.DailyPlan && typeof window.DailyPlan.updateStartHint === 'function') {
+      window.DailyPlan.updateStartHint(startHintEl);
+    } else if (startHintEl && AC && user) {
       var ctx = AC.loadAthleteContext(user);
       var sports = AC.getSports(ctx);
       if (
@@ -180,6 +182,44 @@
         (ctx.gameDays && ctx.gameDays.length)
       ) {
         startHintEl.textContent = AC.getTodayTrainingHint(user).hint;
+      }
+    }
+  }
+
+  function renderDailyPlan(opts) {
+    opts = opts || {};
+    if (!dailyRootEl || !window.DailyPlan) return;
+    if (window.DailyPlan.hasSeenToday()) {
+      dailyRootEl.hidden = true;
+      dailyRootEl.innerHTML = '';
+      delete dailyRootEl.dataset.live;
+      return;
+    }
+    // Keep the card stable after first paint unless sync asks for a refresh.
+    if (!opts.force && dailyRootEl.dataset.live === '1') return;
+
+    var plan = window.DailyPlan.mount(dailyRootEl, {
+      onStart: function () {
+        delete dailyRootEl.dataset.live;
+        var WD = window.WorkoutDashboard;
+        if (WD && typeof WD.isLiveWorkoutActive === 'function' && WD.isLiveWorkoutActive()) {
+          if (typeof WD.resumeWorkout === 'function') WD.resumeWorkout();
+          else window.location.href = '/create?workout=1';
+          return;
+        }
+        try {
+          sessionStorage.setItem('strongman-apply-today-routine', '1');
+        } catch (e) {}
+        window.location.href = '/create?workout=1';
+      },
+      onDismiss: function () {
+        delete dailyRootEl.dataset.live;
+      },
+    });
+    if (plan) {
+      dailyRootEl.dataset.live = '1';
+      if (startHintEl && window.DailyPlan.updateStartHint) {
+        window.DailyPlan.updateStartHint(startHintEl, plan);
       }
     }
   }
@@ -258,28 +298,48 @@
     }
   }
 
-  function refreshDashboard() {
+  function refreshDashboard(opts) {
+    opts = opts || {};
     var WL = window.WorkoutLog;
     var sessions = WL && typeof WL.getSessions === 'function' ? WL.getSessions() : [];
     renderStats(sessions);
     renderRoasts(sessions);
     renderAthleteContext();
+    renderDailyPlan({ force: !!opts.forceDaily });
     refreshWorkoutCta();
     if (window.RockySetupAlert && typeof window.RockySetupAlert.renderAll === 'function') {
       window.RockySetupAlert.renderAll();
+    }
+    if (window.Achievements && typeof window.Achievements.celebrateNewUnlocks === 'function') {
+      var u = typeof window.getCurrentUser === 'function' ? window.getCurrentUser() : null;
+      if (u && u.id) window.Achievements.celebrateNewUnlocks(u);
     }
   }
 
   function loadDashboard() {
     var TS = window.TrainingSync;
+    var afterSync = function () {
+      if (window.CoachMemory && typeof window.CoachMemory.syncFromServerAsync === 'function') {
+        window.CoachMemory.syncFromServerAsync().then(
+          function () {
+            refreshDashboard({ forceDaily: true });
+          },
+          function () {
+            refreshDashboard({ forceDaily: true });
+          }
+        );
+        return;
+      }
+      refreshDashboard({ forceDaily: true });
+    };
     if (TS && typeof TS.syncAll === 'function') {
       var cu = typeof window.getCurrentUser === 'function' ? window.getCurrentUser() : null;
       if (cu && cu.token) {
-        TS.syncAll({ callback: function () { refreshDashboard(); } });
+        TS.syncAll({ callback: afterSync });
         return;
       }
     }
-    refreshDashboard();
+    afterSync();
   }
 
   window.addEventListener('strongman:training-synced', function () {
@@ -305,7 +365,7 @@
       try {
         sessionStorage.setItem('strongman-apply-today-routine', '1');
       } catch (e) {}
-      window.location.href = '/create';
+      window.location.href = '/create?workout=1';
     });
   }
 

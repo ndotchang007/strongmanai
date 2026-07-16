@@ -65,12 +65,12 @@
     var isActive = split.id === activeId;
     var isNew = unseenIds.indexOf(split.id) >= 0;
     var summary = summarizeSplit(split);
-    var sourceLabel = split.source === 'ai' ? 'AI' : 'Manual';
+    var sourceLabel = split.source === 'ai' ? 'Rocky' : 'Yours';
     var meta =
       summary.trainingDays +
       ' training day' +
       (summary.trainingDays === 1 ? '' : 's') +
-      (summary.exerciseCount ? ' · ' + summary.exerciseCount + ' exercises' : '');
+      (summary.exerciseCount ? ' · ' + summary.exerciseCount + ' lifts' : '');
 
     return (
       '<button type="button" class="' +
@@ -80,9 +80,12 @@
       '" aria-pressed="' +
       (isActive ? 'true' : 'false') +
       '">' +
-      cardTagHtml(isActive, isNew) +
+      '<span class="split-library-card-accent" aria-hidden="true"></span>' +
+      '<span class="split-library-card-top">' +
       '<span class="sport-card-badge">' +
       escapeHtml(sourceLabel) +
+      '</span>' +
+      cardTagHtml(isActive, isNew) +
       '</span>' +
       '<span class="sport-card-name">' +
       escapeHtml(split.programName || 'Untitled split') +
@@ -94,7 +97,7 @@
       escapeHtml(summary.preview) +
       '</span>' +
       '<span class="sport-card-edit">' +
-      (isActive ? 'Customize week below →' : 'Select split →') +
+      (isActive ? 'Editing below' : 'Select') +
       '</span></button>'
     );
   }
@@ -119,16 +122,16 @@
     if (showAdd) {
       html +=
         '<div class="sports-editor-header split-library-header">' +
-        '<div><h2 class="sports-editor-title">Your splits</h2>' +
-        '<p class="sports-editor-lede">Tap a split to select it and customize the week below — like your sports schedule.</p></div>' +
+        '<div><h2 class="sports-editor-title">Saved splits</h2>' +
+        '<p class="sports-editor-lede">Pick one to edit the week. Duplicate or add a fresh program anytime.</p></div>' +
         '<div class="split-library-actions">' +
         (options.showDuplicate !== false
-          ? '<button type="button" class="split-library-action-btn" id="split-library-dup-btn" type="button">Duplicate</button>'
+          ? '<button type="button" class="split-library-action-btn" id="split-library-dup-btn">Duplicate</button>'
           : '') +
         (options.showDelete !== false
-          ? '<button type="button" class="split-library-action-btn split-library-action-btn--danger" id="split-library-del-btn" type="button">Delete</button>'
+          ? '<button type="button" class="split-library-action-btn split-library-action-btn--danger" id="split-library-del-btn">Delete</button>'
           : '') +
-        '<button type="button" class="sports-editor-add" id="split-library-new-btn" type="button">+ Add split</button>' +
+        '<button type="button" class="sports-editor-add" id="split-library-new-btn">+ New split</button>' +
         '</div></div>';
     }
 

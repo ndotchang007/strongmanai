@@ -7,6 +7,67 @@
   var ARM_PATTERNS = /\b(curl|tricep|bicep|arm|skull)\b/i;
   var CHEST_PATTERNS = /\b(bench|chest|fly|flies|pec|push.?up|pushup|incline|decline|db press|dumbbell press)\b/i;
 
+  /** Named muscle groups Rocky watches for over/under-training. */
+  var MUSCLE_GROUPS = [
+    {
+      id: 'chest',
+      label: 'chest',
+      pattern:
+        /\b(bench|chest|fly|flies|pec|push.?up|pushup|incline|decline|cable crossover|pec deck)\b/i,
+      underDays: 10,
+      overHits7d: 4,
+    },
+    {
+      id: 'back',
+      label: 'back',
+      pattern: /\b(pull.?up|chin.?up|lat|row|pulldown|deadlift|back|meadows|seal row)\b/i,
+      underDays: 10,
+      overHits7d: 4,
+    },
+    {
+      id: 'quads',
+      label: 'quads / legs',
+      pattern: /\b(squat|leg press|lunge|leg extension|quad|hack squat|split squat|step.?up)\b/i,
+      underDays: 10,
+      overHits7d: 4,
+    },
+    {
+      id: 'hamstrings',
+      label: 'hamstrings',
+      pattern: /\b(rdl|romanian|hamstring|leg curl|good morning|nordic)\b/i,
+      underDays: 12,
+      overHits7d: 4,
+    },
+    {
+      id: 'shoulders',
+      label: 'shoulders',
+      pattern: /\b(shoulder|ohp|overhead press|lateral raise|rear delt|face pull|military press|arnold)\b/i,
+      underDays: 10,
+      overHits7d: 5,
+    },
+    {
+      id: 'arms',
+      label: 'arms',
+      pattern: /\b(curl|tricep|bicep|skull|pushdown|hammer curl|preacher)\b/i,
+      underDays: 12,
+      overHits7d: 5,
+    },
+    {
+      id: 'glutes',
+      label: 'glutes',
+      pattern: /\b(hip thrust|glute|kickback|abduct|cable pull.?through)\b/i,
+      underDays: 12,
+      overHits7d: 4,
+    },
+    {
+      id: 'core',
+      label: 'core',
+      pattern: /\b(core|ab\b|crunch|plank|hanging leg|cable crunch|pallof)\b/i,
+      underDays: 14,
+      overHits7d: 6,
+    },
+  ];
+
   function sessionDateKey(s) {
     if (s && s.date) return String(s.date).slice(0, 10);
     if (s && s.createdAt) {
@@ -167,6 +228,150 @@
     return Object.keys(dayKeys).length >= 4;
   }
 
+  function normalizeExerciseKey(name) {
+    return String(name || '')
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  function parseWeight(v) {
+    if (v == null || v === '') return null;
+    var n = parseFloat(String(v).replace(/[^\d.]/g, ''));
+    return isNaN(n) || n <= 0 ? null : n;
+  }
+
+  function parseReps(v) {
+    if (v == null || v === '') return null;
+    var n = parseInt(String(v).replace(/[^\d]/g, ''), 10);
+    return isNaN(n) || n <= 0 ? null : n;
+  }
+
+  /** Best working-set load proxy for an exercise entry. */
+  function exercisePeakLoad(ex) {
+    if (!ex) return null;
+    var peaks = [];
+    var weights = Array.isArray(ex.setWeights) ? ex.setWeights : [];
+    var reps = Array.isArray(ex.setReps) ? ex.setReps : [];
+    var i;
+    for (i = 0; i < Math.max(weights.length, reps.length); i++) {
+      var w = parseWeight(weights[i] != null ? weights[i] : ex.weight);
+      var r = parseReps(reps[i] != null ? reps[i] : ex.reps);
+      if (w != null) peaks.push(w * (r != null ? Math.min(r, 12) : 1));
+    }
+    if (!peaks.length) {
+      var w0 = parseWeight(ex.weight);
+      if (w0 == null) return null;
+      var r0 = parseReps(ex.reps) || 1;
+      return w0 * Math.min(r0, 12);
+    }
+    return Math.max.apply(null, peaks);
+  }
+
+  function collectExerciseHistory(sessions) {
+    var map = {};
+    (sessions || []).forEach(function (s) {
+      var ts = sessionTimestamp(s);
+      var day = sessionDateKey(s);
+      var list = [];
+      (s.exercises || []).forEach(function (ex) {
+        list.push(ex);
+      });
+      (s.blocks || []).forEach(function (blk) {
+        (blk.exercises || []).forEach(function (ex) {
+          list.push(ex);
+        });
+      });
+      list.forEach(function (ex) {
+        if (!ex || !ex.name) return;
+        var key = normalizeExerciseKey(ex.name);
+        if (!key || key.length < 3) return;
+        var load = exercisePeakLoad(ex);
+        if (load == null) return;
+        if (!map[key]) map[key] = { name: String(ex.name), samples: [] };
+        map[key].samples.push({ ts: ts, day: day, load: load });
+      });
+    });
+    Object.keys(map).forEach(function (key) {
+      map[key].samples.sort(function (a, b) {
+        return a.ts - b.ts;
+      });
+    });
+    return map;
+  }
+
+  /**
+   * Flag lifts that stayed flat/down across the last 3+ logged performances
+   * over at least ~10 days (enough runway to expect overload).
+   */
+  function detectStalledProgressiveOverload(sessions) {
+    var history = collectExerciseHistory(sessions);
+    var stalled = [];
+    Object.keys(history).forEach(function (key) {
+      var samples = history[key].samples;
+      if (samples.length < 3) return;
+      var recent = samples.slice(-4);
+      if (recent.length < 3) return;
+      var spanDays = daysBetween(recent[0].ts, recent[recent.length - 1].ts);
+      if (spanDays < 10) return;
+      var first = recent[0].load;
+      var last = recent[recent.length - 1].load;
+      if (!(first > 0)) return;
+      var change = (last - first) / first;
+      var mid = recent[Math.floor(recent.length / 2)].load;
+      var flatish = change <= 0.02 && mid <= first * 1.03;
+      if (flatish || change < -0.03) {
+        stalled.push({
+          name: history[key].name,
+          changePct: Math.round(change * 100),
+          sessions: recent.length,
+          days: spanDays,
+        });
+      }
+    });
+    stalled.sort(function (a, b) {
+      return a.changePct - b.changePct;
+    });
+    return stalled;
+  }
+
+  function analyzeMuscleBalance(sessions) {
+    var now = Date.now();
+    var weekAgo = now - 7 * 86400000;
+    var over = [];
+    var under = [];
+    MUSCLE_GROUPS.forEach(function (g) {
+      var hits7 = 0;
+      var lastTs = 0;
+      (sessions || []).forEach(function (s) {
+        if (!sessionMatchesPattern(s, g.pattern)) return;
+        var ts = sessionTimestamp(s);
+        if (ts >= weekAgo) hits7 += 1;
+        if (ts > lastTs) lastTs = ts;
+      });
+      if (hits7 >= g.overHits7d) {
+        over.push({ label: g.label, hits: hits7, id: g.id });
+      }
+      if (lastTs > 0) {
+        var gap = daysBetween(lastTs, now);
+        if (gap >= g.underDays) {
+          under.push({ label: g.label, days: gap, id: g.id });
+        }
+      } else if ((sessions || []).length >= 4) {
+        // Trained enough overall that a complete miss still counts as under.
+        under.push({ label: g.label, days: 999, id: g.id });
+      }
+    });
+    over.sort(function (a, b) {
+      return b.hits - a.hits;
+    });
+    under.sort(function (a, b) {
+      return b.days - a.days;
+    });
+    return { over: over, under: under };
+  }
+
   function buildCoachingCallouts(sessions, opts) {
     opts = opts || {};
     var callouts = [];
@@ -176,6 +381,7 @@
         return sessionTimestamp(b) - sessionTimestamp(a);
       });
     var beginner = isBeginnerUser();
+    var limit = opts.limit || 6;
 
     if (beginner) {
       callouts.push({
@@ -194,7 +400,7 @@
           linkHref: '/generate',
           linkLabel: 'Ask Rocky',
         });
-        return callouts.slice(0, opts.limit || 4);
+        return callouts.slice(0, limit);
       }
       if (!hasSeenInfoGuide()) {
         callouts.push({
@@ -209,7 +415,7 @@
           tone: 'tease',
         });
       }
-      return callouts;
+      return callouts.slice(0, limit);
     }
 
     if (!hasConsistentUse(list)) {
@@ -226,11 +432,80 @@
           tone: 'neutral',
         });
       }
-      return callouts.slice(0, opts.limit || 4);
+      return callouts.slice(0, limit);
+    }
+
+    var balance = analyzeMuscleBalance(list);
+    if (balance.over.length) {
+      var o = balance.over[0];
+      callouts.push({
+        text:
+          'You hit ' +
+          o.label +
+          ' ' +
+          o.hits +
+          ' times in the last 7 days — that’s overworking the area. Give it more recovery before you bury it again.',
+        tone: 'warn',
+      });
+    }
+    if (balance.under.length) {
+      var u = balance.under[0];
+      var gapLabel = u.days >= 900 ? 'basically ever' : u.days + ' days';
+      callouts.push({
+        text:
+          u.days >= 900
+            ? 'Your logs barely touch ' + u.label + '. Under-training that area will catch up with you.'
+            : "You haven't trained " + u.label + ' in ' + gapLabel + '. That’s under-training — slot it back in.',
+        tone: 'tease',
+      });
+      if (balance.under.length > 1 && callouts.length < limit) {
+        var u2 = balance.under[1];
+        if (u2.days < 900 && u2.days >= 10) {
+          callouts.push({
+            text: u2.label + ' is also quiet (' + u2.days + ' days). Balance the split.',
+            tone: 'tease',
+          });
+        }
+      }
+    }
+
+    var stalled = detectStalledProgressiveOverload(list);
+    if (stalled.length) {
+      var top = stalled[0];
+      var verb =
+        top.changePct < 0
+          ? 'slipped about ' + Math.abs(top.changePct) + '%'
+          : 'hasn’t moved';
+      callouts.push({
+        text:
+          top.name +
+          ' ' +
+          verb +
+          ' across your last ' +
+          top.sessions +
+          ' logs (~' +
+          top.days +
+          ' days). No progressive overload — add a little weight, a rep, or tighten rest.',
+        tone: 'warn',
+      });
+      if (stalled.length > 1 && callouts.length < limit) {
+        callouts.push({
+          text:
+            stalled
+              .slice(1, 3)
+              .map(function (s) {
+                return s.name;
+              })
+              .join(' and ') + ' look stuck too. Chase small week-to-week wins.',
+          tone: 'tease',
+        });
+      }
     }
 
     var legDays = daysSinceLastMatch(list, LEG_PATTERNS);
-    if (legDays != null && legDays >= 10) {
+    if (legDays != null && legDays >= 10 && !balance.under.some(function (x) {
+      return x.id === 'quads' || x.id === 'hamstrings';
+    })) {
       callouts.push({
         text: "You haven't trained legs in " + legDays + ' days. Talk about a bro split.',
         tone: 'tease',
@@ -242,7 +517,7 @@
       var pushLabel = lastPush.split && /\bpush\b/i.test(String(lastPush.split)) ? 'push day' : 'push session';
       callouts.push({
         text:
-          "Your last " +
+          'Your last ' +
           pushLabel +
           " didn't include any chest work — bench, flies, or push-ups would balance things out.",
         tone: 'tease',
@@ -328,7 +603,7 @@
       });
     }
 
-    return callouts.slice(0, opts.limit || 4);
+    return callouts.slice(0, limit);
   }
 
   function escapeHtml(str) {
@@ -416,5 +691,7 @@
     renderInto: renderInto,
     hasConsistentUse: hasConsistentUse,
     isBeginnerUser: isBeginnerUser,
+    analyzeMuscleBalance: analyzeMuscleBalance,
+    detectStalledProgressiveOverload: detectStalledProgressiveOverload,
   };
 })();

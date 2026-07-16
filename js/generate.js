@@ -14,6 +14,13 @@
       inputEl: document.getElementById('coach-input'),
       sendBtn: document.getElementById('coach-send'),
       routineToggle: document.getElementById('coach-routine-mode'),
+      physiqueToggle: document.getElementById('coach-physique-mode'),
+      attachBtn: document.getElementById('coach-attach-btn'),
+      imageInput: document.getElementById('coach-image-input'),
+      attachPreviewEl: document.getElementById('coach-attach-preview'),
+      micBtn: document.getElementById('coach-mic-btn'),
+      modelBtn: document.getElementById('coach-model-btn'),
+      modelMenu: document.getElementById('coach-model-menu'),
       clearBtns: [
         document.getElementById('coach-clear'),
         document.getElementById('coach-clear-desktop'),

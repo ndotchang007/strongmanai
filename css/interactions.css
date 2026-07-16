@@ -1,6 +1,223 @@
 /* Fast tap / select micro-interactions */
 
 @media (prefers-reduced-motion: no-preference) {
+    /* Page open — soft rise for app shells that use .main-wrap */
+    body[data-current-page] .main-wrap
+    {
+        animation: sm-page-enter 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    body[data-current-page] .main-wrap > *:nth-child(1),
+    body[data-current-page] .main-wrap > main > *:nth-child(1),
+    body[data-current-page] .main-wrap > .create-main > *:nth-child(1),
+    body[data-current-page] .main-wrap > .generate-page > *:nth-child(1),
+    body[data-current-page] .main-wrap > .profile-shell > *:nth-child(1)
+    {
+        animation: sm-page-rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    body[data-current-page] .main-wrap > *:nth-child(2),
+    body[data-current-page] .main-wrap > main > *:nth-child(2),
+    body[data-current-page] .main-wrap > .create-main > *:nth-child(2),
+    body[data-current-page] .main-wrap > .profile-shell > *:nth-child(2)
+    {
+        animation: sm-page-rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.06s both;
+    }
+
+    body[data-current-page] .main-wrap > *:nth-child(n+3),
+    body[data-current-page] .main-wrap > main > *:nth-child(n+3),
+    body[data-current-page] .main-wrap > .create-main > *:nth-child(n+3),
+    body[data-current-page] .main-wrap > .profile-shell > *:nth-child(n+3)
+    {
+        animation: sm-page-rise 0.65s cubic-bezier(0.22, 1, 0.36, 1) 0.12s both;
+    }
+
+    body.auth-page .auth-shell
+    {
+        animation: sm-page-enter 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    body.auth-page .auth-hero
+    {
+        animation: sm-page-rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    body.auth-page .auth-content
+    {
+        animation: sm-page-rise 0.65s cubic-bezier(0.22, 1, 0.36, 1) 0.08s both;
+    }
+
+    @keyframes sm-page-enter
+    {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes sm-page-rise
+    {
+        from { opacity: 0; transform: translateY(16px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Badge unlock toast */
+    .sm-badge-unlock
+    {
+        position: fixed;
+        inset: 0;
+        z-index: 12000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1.25rem;
+        background: rgba(0, 0, 0, 0.55);
+        animation: sm-badge-veil 0.35s ease both;
+    }
+
+    .sm-badge-unlock[hidden]
+    {
+        display: none !important;
+    }
+
+    .sm-badge-unlock-card
+    {
+        position: relative;
+        width: min(100%, 22rem);
+        padding: 1.6rem 1.4rem 1.35rem;
+        border-radius: 18px;
+        border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+        background:
+            radial-gradient(ellipse 90% 70% at 50% 0%, color-mix(in srgb, var(--accent) 28%, transparent), transparent 60%),
+            var(--bg-card, #1a1a1a);
+        color: var(--text-primary, #f4f4f5);
+        text-align: center;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+        animation: sm-badge-pop 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+        overflow: hidden;
+    }
+
+    .sm-badge-unlock-burst
+    {
+        position: absolute;
+        inset: -20%;
+        pointer-events: none;
+        background:
+            radial-gradient(circle at 20% 30%, color-mix(in srgb, var(--accent) 35%, transparent), transparent 28%),
+            radial-gradient(circle at 80% 25%, color-mix(in srgb, var(--accent-bright, var(--accent)) 30%, transparent), transparent 26%),
+            radial-gradient(circle at 50% 85%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 35%);
+        animation: sm-badge-burst 0.9s ease-out both;
+    }
+
+    .sm-badge-unlock-kicker
+    {
+        position: relative;
+        margin: 0 0 0.45rem;
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--accent-bright, var(--accent));
+    }
+
+    .sm-badge-unlock-icon
+    {
+        position: relative;
+        width: 4.25rem;
+        height: 4.25rem;
+        margin: 0.35rem auto 0.75rem;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(145deg, var(--accent), var(--accent-deep, var(--accent)));
+        color: var(--on-accent-text, #141414);
+        box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 50%, transparent);
+        animation: sm-badge-pulse 1.1s ease-out 0.15s both;
+    }
+
+    .sm-badge-unlock-title
+    {
+        position: relative;
+        margin: 0 0 0.35rem;
+        font-size: 1.25rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+    }
+
+    .sm-badge-unlock-desc
+    {
+        position: relative;
+        margin: 0 0 1rem;
+        font-size: 0.9rem;
+        line-height: 1.4;
+        color: var(--text-secondary, #d4d4d8);
+    }
+
+    .sm-badge-unlock-tier
+    {
+        position: relative;
+        display: inline-block;
+        margin-bottom: 1rem;
+        font-size: 0.7rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 0.28rem 0.6rem;
+        border-radius: 999px;
+        border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+        color: var(--accent-bright, var(--accent));
+    }
+
+    .sm-badge-unlock-btn
+    {
+        position: relative;
+        font-family: inherit;
+        font-size: 0.9rem;
+        font-weight: 700;
+        padding: 0.65rem 1.25rem;
+        border: none;
+        border-radius: 999px;
+        cursor: pointer;
+        background: linear-gradient(145deg, var(--accent), var(--accent-deep, var(--accent)));
+        color: var(--on-accent-text, #141414);
+    }
+
+    .sm-badge-unlock-queue
+    {
+        position: relative;
+        margin: 0.65rem 0 0;
+        font-size: 0.75rem;
+        color: var(--text-muted, #a1a1aa);
+    }
+
+    @keyframes sm-badge-veil
+    {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes sm-badge-pop
+    {
+        0% { opacity: 0; transform: scale(0.72) translateY(18px); }
+        70% { transform: scale(1.04) translateY(0); }
+        100% { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes sm-badge-burst
+    {
+        0% { opacity: 0; transform: scale(0.6); }
+        40% { opacity: 1; }
+        100% { opacity: 0.55; transform: scale(1.15); }
+    }
+
+    @keyframes sm-badge-pulse
+    {
+        0% { transform: scale(0.7); box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 55%, transparent); }
+        60% { transform: scale(1.08); box-shadow: 0 0 0 18px color-mix(in srgb, var(--accent) 0%, transparent); }
+        100% { transform: scale(1); box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 0%, transparent); }
+    }
+}
+
+@media (prefers-reduced-motion: no-preference) {
     .buddy-pill,
     .buddy-day span,
     .lb-filter-btn,

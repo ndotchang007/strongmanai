@@ -105,45 +105,69 @@
   function renderWeek() {
     if (!weekMountEl) return;
 
+    var trainingDays = 0;
+    var totalExercises = 0;
+    for (var d = 0; d < 7; d++) {
+      var lbl = (days[d] || '').trim();
+      if (lbl && !/^rest$/i.test(lbl)) trainingDays += 1;
+      totalExercises += exerciseCount(d);
+    }
+
     var html =
+      '<section class="split-week-panel">' +
       '<div class="create-field split-editor-program">' +
-      '<label for="split-editor-program-name">Program name <span class="create-optional">(optional)</span></label>' +
-      '<input type="text" id="split-editor-program-name" class="create-input" placeholder="e.g. Upper / Lower / Events" autocomplete="off" value="' +
+      '<label for="split-editor-program-name">Program name</label>' +
+      '<input type="text" id="split-editor-program-name" class="create-input split-editor-program-input" placeholder="e.g. Upper / Lower · In-season" autocomplete="off" value="' +
       escapeHtml(programName) +
       '">' +
       '</div>' +
-      '<div class="sports-editor-header split-week-header">' +
-      '<div><h2 class="sports-editor-title">Your week</h2>' +
-      '<p class="sports-editor-lede">Tap a day to name it and add exercises. Weights are filled when you start a workout — Rocky suggests loads from your history.</p></div>' +
+      '<div class="split-week-header">' +
+      '<div>' +
+      '<h2 class="split-week-title">Your week</h2>' +
+      '<p class="split-week-lede">Tap a day to set the focus and exercises. Weights stay empty until you start a workout.</p>' +
       '</div>' +
-      '<div class="sports-editor-grid split-editor-grid" role="list">';
+      '<div class="split-week-stats" aria-label="Week summary">' +
+      '<span><strong>' +
+      trainingDays +
+      '</strong> training</span>' +
+      '<span><strong>' +
+      totalExercises +
+      '</strong> lifts</span>' +
+      '</div>' +
+      '</div>' +
+      '<div class="split-week-grid" role="list">';
 
     for (var i = 0; i < 7; i++) {
       var label = (days[i] || '').trim() || '—';
       var isRest = /^rest$/i.test(label);
       var count = exerciseCount(i);
       html +=
-        '<button type="button" class="sport-card split-day-card' +
+        '<button type="button" class="split-day-card' +
         (isRest ? ' split-day-card--rest' : '') +
+        (count ? ' split-day-card--loaded' : '') +
         '" role="listitem" data-split-day="' +
         i +
         '">' +
-        '<span class="sport-card-badge">' +
+        '<span class="split-day-card-day">' +
         escapeHtml(DAY_SHORT[i]) +
         '</span>' +
-        '<span class="sport-card-name">' +
+        '<span class="split-day-card-name">' +
         escapeHtml(label) +
         '</span>' +
-        '<span class="sport-card-meta">' +
-        (count ? count + ' exercise' + (count === 1 ? '' : 's') : isRest ? 'Rest' : 'No exercises yet') +
+        '<span class="split-day-card-meta">' +
+        (count
+          ? count + ' exercise' + (count === 1 ? '' : 's')
+          : isRest
+            ? 'Rest day'
+            : 'Empty') +
         '</span>' +
-        '<span class="sport-card-schedule">' +
+        '<span class="split-day-card-preview">' +
         escapeHtml(formatDayPreview(i)) +
         '</span>' +
-        '<span class="sport-card-edit">Edit day →</span></button>';
+        '<span class="split-day-card-cta">Edit</span></button>';
     }
 
-    html += '</div>';
+    html += '</div></section>';
     weekMountEl.innerHTML = html;
 
     var nameInput = weekMountEl.querySelector('#split-editor-program-name');

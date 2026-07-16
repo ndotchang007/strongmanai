@@ -28,16 +28,16 @@
   flex-shrink: 0;
   padding: 0.5rem 0.85rem;
   border-radius: 999px;
-  border: 1px solid rgba(255, 140, 0, 0.45);
-  background: rgba(255, 140, 0, 0.1);
-  color: #ffb04d;
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--accent-bright, var(--accent));
   font-size: 0.8125rem;
   font-weight: 600;
   cursor: pointer;
 }
 
 .sports-editor-add:hover {
-  background: rgba(255, 140, 0, 0.18);
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
 }
 
 .sports-editor-grid {
@@ -62,14 +62,14 @@
 }
 
 .sport-card:hover {
-  border-color: rgba(255, 140, 0, 0.45);
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
   transform: translateY(-1px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
 }
 
 .sport-card--primary {
-  border-color: rgba(255, 140, 0, 0.35);
-  box-shadow: inset 0 0 0 1px rgba(255, 140, 0, 0.12);
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 12%, transparent);
 }
 
 .sport-card--empty {
@@ -82,7 +82,7 @@
 
 .sport-card-plus {
   font-size: 1.75rem;
-  color: #ff8c00;
+  color: var(--accent);
   line-height: 1;
 }
 
@@ -91,7 +91,7 @@
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #ff8c00;
+  color: var(--accent-bright, var(--accent));
 }
 
 .sport-card-name {
@@ -118,7 +118,7 @@
   margin-top: 0.35rem;
   font-size: 0.75rem;
   font-weight: 600;
-  color: #ff8c00;
+  color: var(--accent);
 }
 
 .sport-modal-backdrop {
@@ -195,7 +195,7 @@
   cursor: pointer;
   font-size: 0.8125rem;
   font-weight: 700;
-  color: #ff9f40;
+  color: var(--accent-bright, var(--accent));
   list-style: none;
   margin-bottom: 0.65rem;
 }
@@ -216,7 +216,7 @@
   padding: 0.55rem 0.7rem;
   border-radius: 10px;
   border: 1px dashed rgba(255, 180, 80, 0.45);
-  background: rgba(255, 140, 0, 0.1);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
   font-size: 0.78rem;
   line-height: 1.45;
   color: rgba(255, 220, 180, 0.95);
@@ -333,8 +333,8 @@
 
 .buddy-field:focus {
   outline: none;
-  border-color: rgba(255, 140, 0, 0.5);
-  box-shadow: 0 0 0 2px rgba(255, 140, 0, 0.15);
+  border-color: color-mix(in srgb, var(--accent) 50%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 15%, transparent);
 }
 
 .buddy-days {
@@ -370,9 +370,9 @@
 }
 
 .buddy-day input:checked + span {
-  border-color: rgba(255, 140, 0, 0.55);
-  background: rgba(255, 140, 0, 0.2);
-  color: #ffd4a8;
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
+  color: var(--on-accent-text, #141414);
 }
 
 .customize-save-btn {
@@ -383,8 +383,8 @@
   border-radius: 999px;
   border: none;
   cursor: pointer;
-  background: linear-gradient(135deg, #ff8c00, #ff6a00);
-  color: #111;
+  background: linear-gradient(135deg, var(--accent), var(--accent-deep, var(--accent)));
+  color: var(--on-accent-text, #141414);
 }
 
 .customize-save-btn:disabled {
@@ -454,7 +454,7 @@
   margin-top: 0.15rem;
   padding: 0.45rem 0.75rem;
   border-radius: 999px;
-  border: 1px dashed rgba(255, 140, 0, 0.45);
+  border: 1px dashed color-mix(in srgb, var(--accent) 45%, transparent);
   background: transparent;
   color: #ffb04d;
   font: inherit;
@@ -513,36 +513,19 @@
   gap: 0.65rem;
 }
 
-.split-library-card {
-  position: relative;
-  padding-top: 1.75rem;
-}
-
+/* Split cards: theme-aligned; layout owned by create.css */
 .split-library-card--highlight {
-  border-color: rgba(255, 140, 0, 0.58);
+  border-color: color-mix(in srgb, var(--accent) 42%, var(--border-mid, rgba(255, 255, 255, 0.12)));
+  background:
+    linear-gradient(155deg, color-mix(in srgb, var(--accent) 10%, transparent), transparent 42%),
+    var(--bg-card, #1e1e1e);
   box-shadow:
-    inset 0 0 0 1px rgba(255, 140, 0, 0.2),
-    0 10px 28px rgba(255, 140, 0, 0.1);
+    0 14px 34px rgba(0, 0, 0, 0.22),
+    0 0 0 1px color-mix(in srgb, var(--accent) 14%, transparent);
 }
 
 .split-library-card--highlight:hover {
-  border-color: rgba(255, 140, 0, 0.72);
-}
-
-.split-library-card-tag {
-  position: absolute;
-  top: 0.55rem;
-  left: 0.65rem;
-  z-index: 1;
-  padding: 0.2rem 0.5rem;
-  border-radius: 999px;
-  background: linear-gradient(135deg, #ff8c00, #ff6a00);
-  color: #111;
-  font-size: 0.625rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  line-height: 1.2;
+  border-color: color-mix(in srgb, var(--accent) 58%, var(--border-mid, rgba(255, 255, 255, 0.12)));
 }
 
 .split-library-mount--dash {

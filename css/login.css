@@ -1,4 +1,6 @@
 @import url('site-fonts.css');
+@import url('theme.css');
+@import url('interactions.css');
 
 * {
   box-sizing: border-box;
@@ -9,7 +11,6 @@
 }
 
 html {
-  color-scheme: dark;
   height: 100%;
 }
 
@@ -20,7 +21,8 @@ body.auth-page {
   min-height: 100dvh;
   max-height: 100dvh;
   overflow: hidden;
-  background-color: #080808;
+  background-color: var(--bg-page);
+  color: var(--text-primary);
   font-family: var(--font);
 }
 
@@ -43,7 +45,7 @@ body.auth-page {
   height: min(70vw, 560px);
   top: -18%;
   right: 10%;
-  background: radial-gradient(circle, rgba(255, 140, 0, 0.45) 0%, transparent 70%);
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent) 45%, transparent) 0%, transparent 70%);
 }
 
 .auth-ambient-orb--b {
@@ -59,7 +61,7 @@ body.auth-page {
   height: min(40vw, 320px);
   top: 40%;
   left: 35%;
-  background: radial-gradient(circle, rgba(255, 120, 0, 0.12) 0%, transparent 70%);
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent) 12%, transparent) 0%, transparent 70%);
 }
 
 .auth-shell {
@@ -79,7 +81,7 @@ body.auth-page {
   justify-content: center;
   padding: clamp(2.5rem, 6vw, 5rem);
   background:
-    linear-gradient(165deg, rgba(255, 140, 0, 0.08) 0%, transparent 42%),
+    linear-gradient(165deg, color-mix(in srgb, var(--accent) 8%, transparent) 0%, transparent 42%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, transparent 100%);
   border-right: 1px solid rgba(100, 100, 100, 0.38);
 }
@@ -108,7 +110,7 @@ body.auth-page {
   font-size: 1.125rem;
   font-weight: 700;
   letter-spacing: 0.12em;
-  color: #ffffff;
+  color: var(--text-primary, #fff);
 }
 
 .auth-hero-headline {
@@ -118,7 +120,7 @@ body.auth-page {
   font-weight: 700;
   line-height: 1.08;
   letter-spacing: -0.03em;
-  color: #ffffff;
+  color: var(--text-primary, #fff);
 }
 
 .auth-hero-copy {
@@ -126,7 +128,7 @@ body.auth-page {
   max-width: 30rem;
   font-size: clamp(1rem, 1.6vw, 1.125rem);
   line-height: 1.65;
-  color: rgba(255, 255, 255, 0.58);
+  color: var(--text-muted, rgba(255, 255, 255, 0.58));
 }
 
 .auth-hero-points {
@@ -142,7 +144,7 @@ body.auth-page {
   position: relative;
   padding-left: 1.35rem;
   font-size: 0.975rem;
-  color: rgba(255, 255, 255, 0.72);
+  color: var(--text-secondary, rgba(255, 255, 255, 0.72));
 }
 
 .auth-hero-points li::before {
@@ -153,8 +155,8 @@ body.auth-page {
   width: 0.45rem;
   height: 0.45rem;
   border-radius: 50%;
-  background: #ff8c00;
-  box-shadow: 0 0 10px rgba(255, 140, 0, 0.55);
+  background: var(--accent);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 55%, transparent);
 }
 
 .auth-content {
@@ -180,7 +182,7 @@ body.auth-page {
   font-size: 0.9375rem;
   font-weight: 700;
   letter-spacing: 0.08em;
-  color: #ffffff;
+  color: var(--text-primary, #fff);
 }
 
 .auth-content-logo img {
@@ -199,7 +201,7 @@ body.auth-page {
 }
 
 .login-logo-accent {
-  color: #ff8c00;
+  color: var(--accent);
 }
 
 .auth-card {
@@ -231,7 +233,7 @@ body.auth-page {
   border: none;
   border-radius: 11px;
   background: transparent;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-muted, rgba(255, 255, 255, 0.5));
   font-size: 0.9375rem;
   font-weight: 600;
   letter-spacing: 0.01em;
@@ -240,13 +242,13 @@ body.auth-page {
 }
 
 .auth-tab[aria-selected="true"] {
-  background: rgba(255, 140, 0, 0.14);
-  color: #fff;
-  box-shadow: 0 0 0 1px rgba(255, 140, 0, 0.32);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--text-primary, #fff);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 32%, transparent);
 }
 
 .auth-tab:hover {
-  color: rgba(255, 255, 255, 0.92);
+  color: var(--text-primary, rgba(255, 255, 255, 0.92));
 }
 
 .auth-panels-viewport {
@@ -282,7 +284,7 @@ body.auth-page {
   font-family: var(--font);
   font-size: clamp(1.75rem, 3.5vw, 2.35rem);
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-primary, #fff);
   margin: 0 0 0.65rem;
   line-height: 1.12;
   letter-spacing: -0.025em;
@@ -293,7 +295,7 @@ body.auth-page {
   max-width: 26rem;
   font-size: 0.975rem;
   line-height: 1.6;
-  color: rgba(255, 255, 255, 0.52);
+  color: var(--text-muted, rgba(255, 255, 255, 0.52));
 }
 
 .auth-form {
@@ -306,7 +308,7 @@ body.auth-page {
   margin: -0.85rem 0 0;
   font-size: 0.8125rem;
   line-height: 1.45;
-  color: rgba(255, 255, 255, 0.42);
+  color: var(--text-muted, rgba(255, 255, 255, 0.42));
 }
 
 .login-input-group {
@@ -317,8 +319,8 @@ body.auth-page {
   width: 100%;
   padding: 1.05rem 1rem 0.55rem;
   font-size: 0.9375rem;
-  color: #ffffff;
-  background-color: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary, #fff);
+  background-color: var(--surface-inset, rgba(255, 255, 255, 0.04));
   border: 1px solid rgba(100, 100, 100, 0.5);
   border-radius: 11px;
   outline: none;
@@ -331,13 +333,13 @@ body.auth-page {
 
 .login-input:hover {
   border-color: rgba(100, 100, 100, 0.62);
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: var(--surface-inset, rgba(255, 255, 255, 0.05));
 }
 
 .login-input:focus {
-  border-color: rgba(255, 140, 0, 0.65);
-  box-shadow: 0 0 0 1px rgba(255, 140, 0, 0.35);
-  background-color: rgba(255, 255, 255, 0.05);
+  border-color: color-mix(in srgb, var(--accent) 65%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent);
+  background-color: var(--surface-inset, rgba(255, 255, 255, 0.05));
 }
 
 .login-label {
@@ -357,7 +359,7 @@ body.auth-page {
   top: 0;
   transform: translateY(-50%) scale(0.85);
   transform-origin: left center;
-  color: #ff8c00;
+  color: var(--accent);
   font-size: 0.8125rem;
   background: #101012;
   padding: 0 0.3rem;
@@ -366,8 +368,8 @@ body.auth-page {
 .login-input:-webkit-autofill,
 .login-input:-webkit-autofill:hover,
 .login-input:-webkit-autofill:focus {
-  -webkit-text-fill-color: #ffffff;
-  caret-color: #ffffff;
+  -webkit-text-fill-color: var(--text-primary, #fff);
+  caret-color: var(--text-primary, #fff);
   transition: background-color 99999s ease-out 0s;
   box-shadow: 0 0 0 1000px #101012 inset !important;
 }
@@ -378,7 +380,7 @@ body.auth-page {
   margin: -0.25rem 0 0;
   background: none;
   border: none;
-  color: rgba(255, 255, 255, 0.72);
+  color: var(--text-secondary, rgba(255, 255, 255, 0.72));
   font-size: 0.9375rem;
   cursor: pointer;
   text-decoration: none;
@@ -386,7 +388,7 @@ body.auth-page {
 }
 
 .login-toggle-btn:hover {
-  color: #ff8c00;
+  color: var(--accent);
   text-decoration: underline;
 }
 
@@ -403,17 +405,17 @@ body.auth-page {
   font-size: 0.975rem;
   font-weight: 600;
   color: #0a0a0a;
-  background: linear-gradient(180deg, #ff9f2e 0%, #ff8c00 100%);
+  background: linear-gradient(180deg, var(--accent-hover) 0%, var(--accent) 100%);
   border: none;
   border-radius: 11px;
   cursor: pointer;
   transition: transform 0.15s ease, filter 0.2s ease, box-shadow 0.2s ease;
-  box-shadow: 0 8px 28px rgba(255, 140, 0, 0.24);
+  box-shadow: 0 8px 28px color-mix(in srgb, var(--accent) 24%, transparent);
 }
 
 .login-btn:hover {
   filter: brightness(1.06);
-  box-shadow: 0 10px 32px rgba(255, 140, 0, 0.34);
+  box-shadow: 0 10px 32px color-mix(in srgb, var(--accent) 34%, transparent);
 }
 
 .login-btn:active {
@@ -421,7 +423,7 @@ body.auth-page {
 }
 
 .login-btn--signup {
-  background: linear-gradient(180deg, #ffa033 0%, #e67e00 100%);
+  background: linear-gradient(180deg, var(--accent-hover) 0%, var(--accent-deep) 100%);
 }
 
 .auth-panel--single {
@@ -437,7 +439,7 @@ body.auth-page {
   border: 1px solid rgba(100, 100, 100, 0.42);
   font-size: 0.9375rem;
   line-height: 1.55;
-  color: rgba(255, 255, 255, 0.58);
+  color: var(--text-muted, rgba(255, 255, 255, 0.58));
 }
 
 .auth-panel-desc--success {
@@ -463,7 +465,7 @@ body.auth-page {
 }
 
 .login-btn--secondary {
-  color: rgba(255, 255, 255, 0.88);
+  color: var(--text-secondary, rgba(255, 255, 255, 0.88));
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(100, 100, 100, 0.5);
   box-shadow: none;
@@ -483,7 +485,7 @@ textarea:focus {
 
 input:focus-visible,
 button:focus-visible {
-  outline: 2px solid rgba(255, 140, 0, 0.9);
+  outline: 2px solid color-mix(in srgb, var(--accent) 90%, transparent);
   outline-offset: 2px;
 }
 
@@ -582,7 +584,7 @@ body.auth-page--verify {
   font-family: var(--font);
   font-size: clamp(1.5rem, 4vw, 1.85rem);
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-primary, #fff);
   line-height: 1.2;
 }
 
@@ -590,7 +592,7 @@ body.auth-page--verify {
   margin: 0;
   font-size: 0.975rem;
   line-height: 1.6;
-  color: rgba(255, 255, 255, 0.58);
+  color: var(--text-muted, rgba(255, 255, 255, 0.58));
   max-width: 22rem;
 }
 
@@ -612,7 +614,7 @@ body.auth-page--verify {
 .verify-card-meta {
   margin: 0;
   font-size: 0.8125rem;
-  color: rgba(255, 255, 255, 0.42);
+  color: var(--text-muted, rgba(255, 255, 255, 0.42));
 }
 
 .verify-card-resend {
