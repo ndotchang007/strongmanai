@@ -1,0 +1,142 @@
+.tester-gate-overlay
+{
+    position: fixed;
+    inset: 0;
+    z-index: 100000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: max(1.25rem, env(safe-area-inset-top, 0px)) 1.25rem max(1.25rem, env(safe-area-inset-bottom, 0px));
+    background: rgba(8, 8, 10, 0.94);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    font-family: var(--font, "DM Sans", system-ui, sans-serif);
+}
+
+.tester-gate-overlay[hidden]
+{
+    display: none !important;
+}
+
+html.tester-gate-lock,
+html.tester-gate-lock body
+{
+    overflow: hidden !important;
+}
+
+.tester-gate-card
+{
+    width: 100%;
+    max-width: 22rem;
+    padding: 1.75rem 1.5rem 1.5rem;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 140, 0, 0.28);
+    background: linear-gradient(165deg, rgba(28, 28, 30, 0.98), rgba(18, 18, 20, 0.98));
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.55);
+    text-align: center;
+}
+
+.tester-gate-mark
+{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    margin-bottom: 1rem;
+    border-radius: 50%;
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--accent-bright, #ffb347);
+    background: linear-gradient(145deg, rgba(255, 140, 0, 0.22), rgba(180, 60, 0, 0.32));
+    border: 1px solid rgba(255, 140, 0, 0.45);
+}
+
+.tester-gate-title
+{
+    margin: 0 0 0.55rem;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #f4f4f5;
+    line-height: 1.3;
+}
+
+.tester-gate-lede
+{
+    margin: 0 0 1.15rem;
+    font-size: 0.875rem;
+    line-height: 1.55;
+    color: rgba(255, 255, 255, 0.72);
+}
+
+.tester-gate-form
+{
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    text-align: left;
+}
+
+.tester-gate-label
+{
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.55);
+}
+
+.tester-gate-input
+{
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.75rem 0.85rem;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(0, 0, 0, 0.35);
+    color: #f4f4f5;
+    font: inherit;
+    font-size: 0.95rem;
+}
+
+.tester-gate-input:focus
+{
+    outline: none;
+    border-color: rgba(255, 140, 0, 0.55);
+    box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.18);
+}
+
+.tester-gate-btn
+{
+    margin-top: 0.25rem;
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border: none;
+    border-radius: 10px;
+    font: inherit;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    color: #1a1208;
+    background: linear-gradient(135deg, #ffb347, #ff8c00);
+}
+
+.tester-gate-btn:disabled
+{
+    opacity: 0.65;
+    cursor: wait;
+}
+
+.tester-gate-error
+{
+    margin: 0;
+    min-height: 1.2em;
+    font-size: 0.8125rem;
+    color: #ff8a8a;
+    text-align: center;
+}
+
+.tester-gate-error[hidden]
+{
+    display: none !important;
+}
