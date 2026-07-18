@@ -1,5 +1,5 @@
 (function () {
-  var PRODUCTION_API_BASE = 'https://strongmanai-api.onrender.com/api/v1';
+  var PRODUCTION_API_BASE = 'https://strongmanai-api-test.onrender.com/api/v1';
   var LOCAL_API_BASE = 'http://127.0.0.1:8080/api/v1';
 
   function trimSlash(s) {
@@ -17,15 +17,21 @@
   }
 
   function resolveApiBase() {
-    // Localhost / file:// always hits the local API — never Render.
-    // Optional override: localStorage.strongman_api_base
-    if (isLocalDev()) {
-      try {
-        var ls = localStorage.getItem('strongman_api_base');
-        if (ls && ls.trim()) return trimSlash(ls.trim());
-      } catch (e) {}
-      return LOCAL_API_BASE;
-    }
+    // 1) Page meta (static hosting / private builds — preferred)
+    try {
+      var meta = document.querySelector('meta[name="strongman-api-base"]');
+      if (meta) {
+        var c = (meta.getAttribute('content') || '').trim();
+        if (c) return trimSlash(c);
+      }
+    } catch (e) {}
+    // 2) Optional override: localStorage.strongman_api_base
+    try {
+      var ls = localStorage.getItem('strongman_api_base');
+      if (ls && ls.trim()) return trimSlash(ls.trim());
+    } catch (e) {}
+    // 3) Localhost / file:// → local API; otherwise Render test/prod base
+    if (isLocalDev()) return LOCAL_API_BASE;
     return PRODUCTION_API_BASE;
   }
 
