@@ -173,6 +173,12 @@
         h.Authorization = 'Bearer ' + u.token;
       }
     } catch (e) {}
+    try {
+      var gate = localStorage.getItem('strongmanai_tester_gate');
+      if (gate && gate.trim()) {
+        h['X-Tester-Gate'] = gate.trim();
+      }
+    } catch (eGate) {}
     return h;
   }
 

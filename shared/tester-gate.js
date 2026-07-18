@@ -1,4 +1,5 @@
 (function () {
+  var GATE_STORAGE_KEY = 'strongmanai_tester_gate';
   var overlayEl = null;
   var inputEl = null;
   var errorEl = null;
@@ -6,10 +7,45 @@
   var checking = false;
   var released = false;
 
+  function resolveApiBase() {
+    if (window.API_BASE) return String(window.API_BASE).replace(/\/+$/, '');
+    try {
+      var meta = document.querySelector('meta[name="strongman-api-base"]');
+      if (meta) {
+        var c = (meta.getAttribute('content') || '').trim();
+        if (c) return c.replace(/\/+$/, '');
+      }
+    } catch (e) {}
+    return '';
+  }
+
   function apiRoot() {
-    var base = window.API_BASE || '';
+    var base = resolveApiBase();
     if (!base) return '';
     return base.replace(/\/api\/v1\/?$/i, '') + '/api/v1';
+  }
+
+  function readStoredGateToken() {
+    try {
+      var t = localStorage.getItem(GATE_STORAGE_KEY);
+      return t && t.trim() ? t.trim() : '';
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function storeGateToken(token) {
+    try {
+      if (token) localStorage.setItem(GATE_STORAGE_KEY, String(token));
+      else localStorage.removeItem(GATE_STORAGE_KEY);
+    } catch (e) {}
+  }
+
+  function gateHeaders(extra) {
+    var h = Object.assign({ 'Content-Type': 'application/json' }, extra || {});
+    var token = readStoredGateToken();
+    if (token) h['X-Tester-Gate'] = token;
+    return h;
   }
 
   function paintOverlayHtml() {
@@ -62,7 +98,6 @@
     return overlayEl;
   }
 
-  /** Called from <head> boot as soon as <body> exists — paints the form before page content. */
   function paintEarly() {
     document.documentElement.classList.add('tester-gate-pending');
     document.documentElement.classList.add('tester-gate-lock');
@@ -134,18 +169,26 @@
     fetch(root + '/tester-gate/unlock', {
       method: 'POST',
       credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password: password }),
+      headers: gateHeaders(),
+      body: JSON.stringify({ password: String(password).trim() }),
     })
       .then(function (r) {
-        return r.json().then(function (body) {
-          return { ok: r.ok, status: r.status, body: body || {} };
-        });
+        return r
+          .json()
+          .catch(function () {
+            return {};
+          })
+          .then(function (body) {
+            return { ok: r.ok, status: r.status, body: body || {} };
+          });
       })
       .then(function (res) {
         if (!res.ok) {
           setError(res.body.error || 'Incorrect password');
           return;
+        }
+        if (res.body.token) {
+          storeGateToken(res.body.token);
         }
         try {
           window.dispatchEvent(new CustomEvent('strongman:tester-gate-unlocked'));
@@ -164,7 +207,16 @@
   function checkStatus() {
     var root = apiRoot();
     if (!root) return;
-    fetch(root + '/tester-gate/status', { credentials: 'include' })
+
+    // Already unlocked in this browser — reveal immediately, then confirm with API.
+    if (readStoredGateToken()) {
+      // Keep lock until status confirms; still show form if token is stale.
+    }
+
+    fetch(root + '/tester-gate/status', {
+      credentials: 'include',
+      headers: gateHeaders(),
+    })
       .then(function (r) {
         return r.json().catch(function () {
           return null;
@@ -174,7 +226,13 @@
         if (!data) return;
         if (!data.required || data.unlocked) {
           releaseGate();
+          return;
         }
+        // Stale local token
+        if (readStoredGateToken() && !data.unlocked) {
+          storeGateToken('');
+        }
+        showGate();
       })
       .catch(function () {});
   }
@@ -201,7 +259,6 @@
     paintEarly: paintEarly,
   };
 
-  // If this file is loaded from <head>, paint as soon as body appears.
   if (!document.body) {
     var observer = new MutationObserver(function () {
       if (document.body) {
