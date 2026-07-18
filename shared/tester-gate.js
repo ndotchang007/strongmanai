@@ -4,6 +4,7 @@
   var errorEl = null;
   var submitEl = null;
   var checking = false;
+  var released = false;
 
   function apiRoot() {
     var base = window.API_BASE || '';
@@ -11,62 +12,86 @@
     return base.replace(/\/api\/v1\/?$/i, '') + '/api/v1';
   }
 
-  function ensureStyles() {
-    if (document.getElementById('tester-gate-css')) return;
-    var link = document.createElement('link');
-    link.id = 'tester-gate-css';
-    link.rel = 'stylesheet';
-    link.href = '/css/tester-gate.css';
-    document.head.appendChild(link);
+  function paintOverlayHtml() {
+    return (
+      '<div class="tester-gate-card">' +
+      '<div class="tester-gate-mark" aria-hidden="true">S</div>' +
+      '<h2 class="tester-gate-title" id="tester-gate-title">Private test access</h2>' +
+      '<p class="tester-gate-lede">Enter the tester password to continue.</p>' +
+      '<form class="tester-gate-form" id="tester-gate-form" autocomplete="off">' +
+      '<label class="tester-gate-label" for="tester-gate-password">Password</label>' +
+      '<input class="tester-gate-input" id="tester-gate-password" name="password" type="password" autocomplete="current-password" required autofocus />' +
+      '<p class="tester-gate-error" id="tester-gate-error" role="alert" hidden></p>' +
+      '<button class="tester-gate-btn" id="tester-gate-submit" type="submit">Unlock</button>' +
+      '</form>' +
+      '</div>'
+    );
+  }
+
+  function bindOverlay(el) {
+    overlayEl = el;
+    inputEl = document.getElementById('tester-gate-password');
+    errorEl = document.getElementById('tester-gate-error');
+    submitEl = document.getElementById('tester-gate-submit');
+    var form = document.getElementById('tester-gate-form');
+    if (form && !form.getAttribute('data-bound')) {
+      form.setAttribute('data-bound', '1');
+      form.addEventListener('submit', onSubmit);
+    }
   }
 
   function ensureOverlay() {
-    if (overlayEl) return overlayEl;
-    ensureStyles();
+    if (overlayEl && document.body.contains(overlayEl)) return overlayEl;
+    if (!document.body) return null;
+
+    var existing = document.getElementById('tester-gate-overlay');
+    if (existing) {
+      bindOverlay(existing);
+      return overlayEl;
+    }
+
     overlayEl = document.createElement('div');
     overlayEl.id = 'tester-gate-overlay';
     overlayEl.className = 'tester-gate-overlay';
     overlayEl.setAttribute('role', 'dialog');
     overlayEl.setAttribute('aria-modal', 'true');
     overlayEl.setAttribute('aria-labelledby', 'tester-gate-title');
-    overlayEl.hidden = true;
-    overlayEl.innerHTML =
-      '<div class="tester-gate-card">' +
-      '<div class="tester-gate-mark" aria-hidden="true">S</div>' +
-      '<h2 class="tester-gate-title" id="tester-gate-title">Private test access</h2>' +
-      '<p class="tester-gate-lede">Enter the tester password to use this build.</p>' +
-      '<form class="tester-gate-form" id="tester-gate-form" autocomplete="off">' +
-      '<label class="tester-gate-label" for="tester-gate-password">Password</label>' +
-      '<input class="tester-gate-input" id="tester-gate-password" name="password" type="password" autocomplete="current-password" required />' +
-      '<p class="tester-gate-error" id="tester-gate-error" role="alert" hidden></p>' +
-      '<button class="tester-gate-btn" id="tester-gate-submit" type="submit">Unlock</button>' +
-      '</form>' +
-      '</div>';
-    document.body.appendChild(overlayEl);
-    inputEl = document.getElementById('tester-gate-password');
-    errorEl = document.getElementById('tester-gate-error');
-    submitEl = document.getElementById('tester-gate-submit');
-    var form = document.getElementById('tester-gate-form');
-    if (form) form.addEventListener('submit', onSubmit);
+    overlayEl.innerHTML = paintOverlayHtml();
+    document.body.insertBefore(overlayEl, document.body.firstChild);
+    bindOverlay(overlayEl);
     return overlayEl;
   }
 
-  function showOverlay() {
-    ensureOverlay();
+  /** Called from <head> boot as soon as <body> exists — paints the form before page content. */
+  function paintEarly() {
+    document.documentElement.classList.add('tester-gate-pending');
     document.documentElement.classList.add('tester-gate-lock');
-    overlayEl.hidden = false;
+    if (!document.body) return false;
+    ensureOverlay();
+    if (overlayEl) overlayEl.hidden = false;
+    return true;
+  }
+
+  function showGate() {
+    document.documentElement.classList.add('tester-gate-pending');
+    document.documentElement.classList.add('tester-gate-lock');
+    var el = ensureOverlay();
+    if (!el) return;
+    el.hidden = false;
     if (errorEl) {
       errorEl.hidden = true;
       errorEl.textContent = '';
     }
     setTimeout(function () {
-      if (inputEl) inputEl.focus();
-    }, 50);
+      if (inputEl && !released) inputEl.focus();
+    }, 30);
   }
 
-  function hideOverlay() {
-    if (!overlayEl) return;
-    overlayEl.hidden = true;
+  function releaseGate() {
+    if (released) return;
+    released = true;
+    if (overlayEl) overlayEl.hidden = true;
+    document.documentElement.classList.remove('tester-gate-pending');
     document.documentElement.classList.remove('tester-gate-lock');
   }
 
@@ -88,7 +113,7 @@
 
   function onSubmit(e) {
     e.preventDefault();
-    if (checking) return;
+    if (checking || released) return;
     var password = inputEl ? String(inputEl.value || '') : '';
     if (!password) {
       setError('Enter the tester password.');
@@ -122,11 +147,9 @@
           setError(res.body.error || 'Incorrect password');
           return;
         }
-        hideOverlay();
         try {
           window.dispatchEvent(new CustomEvent('strongman:tester-gate-unlocked'));
         } catch (e) {}
-        // Reload so in-flight pages re-fetch with the gate cookie.
         window.location.reload();
       })
       .catch(function () {
@@ -148,28 +171,48 @@
         });
       })
       .then(function (data) {
-        if (!data || !data.required) return;
-        if (data.unlocked) return;
-        showOverlay();
+        if (!data) return;
+        if (!data.required || data.unlocked) {
+          releaseGate();
+        }
       })
-      .catch(function () {
-        // If the API is asleep / unreachable, server-wake handles wake-up.
-      });
+      .catch(function () {});
   }
 
   function boot() {
-    if (!window.API_BASE) return;
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', checkStatus);
-    } else {
+    showGate();
+
+    function afterReady() {
+      showGate();
       checkStatus();
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', afterReady);
+    } else {
+      afterReady();
     }
   }
 
   window.StrongmanTesterGate = {
-    show: showOverlay,
+    show: showGate,
+    release: releaseGate,
     check: checkStatus,
+    paintEarly: paintEarly,
   };
+
+  // If this file is loaded from <head>, paint as soon as body appears.
+  if (!document.body) {
+    var observer = new MutationObserver(function () {
+      if (document.body) {
+        observer.disconnect();
+        paintEarly();
+      }
+    });
+    observer.observe(document.documentElement, { childList: true });
+  } else {
+    paintEarly();
+  }
 
   boot();
 })();

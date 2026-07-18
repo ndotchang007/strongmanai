@@ -1,3 +1,29 @@
+/* Instant hide until unlock — paired with html.tester-gate-pending from <head> */
+html.tester-gate-pending,
+html.tester-gate-pending body,
+html.tester-gate-lock,
+html.tester-gate-lock body
+{
+    background: #08080a !important;
+    margin: 0;
+    min-height: 100%;
+    overflow: hidden !important;
+}
+
+html.tester-gate-pending body > *:not(#tester-gate-overlay),
+html.tester-gate-lock body > *:not(#tester-gate-overlay)
+{
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+html.tester-gate-pending #tester-gate-overlay,
+html.tester-gate-lock #tester-gate-overlay
+{
+    visibility: visible !important;
+    pointer-events: auto !important;
+}
+
 .tester-gate-overlay
 {
     position: fixed;
@@ -7,21 +33,13 @@
     align-items: center;
     justify-content: center;
     padding: max(1.25rem, env(safe-area-inset-top, 0px)) 1.25rem max(1.25rem, env(safe-area-inset-bottom, 0px));
-    background: rgba(8, 8, 10, 0.94);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    background: #08080a;
     font-family: var(--font, "DM Sans", system-ui, sans-serif);
 }
 
 .tester-gate-overlay[hidden]
 {
     display: none !important;
-}
-
-html.tester-gate-lock,
-html.tester-gate-lock body
-{
-    overflow: hidden !important;
 }
 
 .tester-gate-card
