@@ -714,6 +714,38 @@
     bubbleMountsReady = true;
   }
 
+  function remountBubbleField(field) {
+    var mountEl = document.querySelector('.init-bubble-mount[data-field="' + field + '"]');
+    if (!mountEl) return;
+    mountEl.innerHTML = '';
+    mountEl.removeAttribute('data-mounted');
+    mountBubbleField(mountEl);
+  }
+
+  var initHomeGymScanCtl = null;
+
+  function initHomeGymScanMount() {
+    var mount = document.getElementById('init-home-gym-scan');
+    if (!mount || !window.HomeGymScan) return;
+    var data = getInitData();
+    initHomeGymScanCtl = window.HomeGymScan.mount(mount, {
+      initial: data.homeGym || null,
+      onResult: function (homeGym) {
+        var HGS = window.HomeGymScan;
+        var current = getInitData().machines || [];
+        var merged = HGS.mergeMachineLabels(current, homeGym.suggestedLabels || []);
+        setInitData({
+          homeGym: homeGym,
+          machines: merged,
+        });
+        remountBubbleField('machines');
+      },
+      onClear: function () {
+        setInitData({ homeGym: null });
+      },
+    });
+  }
+
   function syncSliderLabels() {
     if (sliderExperience && experienceLabel) {
       var ei = parseInt(sliderExperience.value, 10) || 0;
@@ -906,6 +938,10 @@
     if (data.machines && data.machines.length) {
       parts.push('Equipment access: ' + data.machines.join(', '));
     }
+    if (data.homeGym && window.HomeGymScan && window.HomeGymScan.formatHomeGymNotesLine) {
+      var gymLine = window.HomeGymScan.formatHomeGymNotesLine(data.homeGym);
+      if (gymLine) parts.push(gymLine);
+    }
     if (data.favoriteExercises && data.favoriteExercises.length) {
       parts.push('Favorite exercises: ' + data.favoriteExercises.join(', '));
     }
@@ -985,6 +1021,7 @@
       weekendMaxMinutes: parseInt(data.weekendMax, 10) || 90,
       knownNotes: buildNotes(data),
       notes: null,
+      homeGym: data.homeGym || null,
     };
   }
 
@@ -1059,6 +1096,7 @@
     parsed.experience = currentUser.experience || parsed.experience || 'beginner';
     parsed.schoolNightMax = String(ctx.schoolNightMaxMinutes || 45);
     parsed.weekendMax = String(ctx.weekendMaxMinutes || 90);
+    if (ctx.homeGym) parsed.homeGym = ctx.homeGym;
     setInitData(parsed);
   }
 
@@ -1082,6 +1120,7 @@
       knownNotes: buildNotes(data),
       schoolNightMaxMinutes: parseInt(data.schoolNightMax, 10) || ctx.schoolNightMaxMinutes || 45,
       weekendMaxMinutes: parseInt(data.weekendMax, 10) || ctx.weekendMaxMinutes || 90,
+      homeGym: data.homeGym != null ? data.homeGym : ctx.homeGym || null,
     });
 
     var payload = {
@@ -1242,6 +1281,7 @@
 
   configureDobInputLimits();
   initBubbleMounts();
+  initHomeGymScanMount();
   bindGradePills();
   loadRefineBootstrap();
   restoreFields();
@@ -1249,6 +1289,10 @@
     document.body.classList.add('init-page--refine');
     var brandLink = document.querySelector('.init-brand');
     if (brandLink) brandLink.setAttribute('href', REFINE_RETURN_PATH);
+  }
+  // Re-apply home gym after refine bootstrap loads stored scan.
+  if (initHomeGymScanCtl && typeof initHomeGymScanCtl.setHomeGym === 'function') {
+    initHomeGymScanCtl.setHomeGym(getInitData().homeGym || null);
   }
   showSlide(0);
 })();

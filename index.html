@@ -56,6 +56,12 @@
                         <li class="hero-pill">Session analytics</li>
                         <li class="hero-pill">PR leaderboards</li>
                     </ul>
+                    <div class="hero-cta-row">
+                        <button type="button" class="hero-download-btn" id="hero-download-app" aria-haspopup="dialog" aria-controls="pwa-download-overlay">
+                            Download the app
+                        </button>
+                        <a href="/login" class="hero-download-secondary">Or train in the browser</a>
+                    </div>
                 </div>
             </div>
         </section>
@@ -362,6 +368,7 @@
                             </ul>
                             <div class="page3-cta-actions">
                                 <a href="/signup" class="page3-cta-button">Create your free account</a>
+                                <button type="button" class="page3-cta-download" id="page3-download-app" aria-haspopup="dialog" aria-controls="pwa-download-overlay">Download the app</button>
                                 <a href="/login" class="page3-cta-secondary">Already training here? Log in</a>
                             </div>
                             <p class="page3-cta-note">Free to start · Rocky AI included · No credit card required</p>
@@ -426,6 +433,28 @@
                 <button type="button" class="generate-workout-done footer-email-btn footer-email-btn--primary" id="generate-workout-done">Done</button>
                 <a href="/generate" class="generate-workout-full-link">Open full generator</a>
             </div>
+        </div>
+    </div>
+    <div id="pwa-download-overlay" class="pwa-download-overlay" hidden aria-hidden="true">
+        <div class="pwa-download-dialog" role="dialog" aria-modal="true" aria-labelledby="pwa-download-title">
+            <button type="button" class="pwa-download-close" id="pwa-download-close" aria-label="Close">&times;</button>
+            <div class="pwa-download-icon" aria-hidden="true">
+                <img src="/assets/logo.png" alt="" width="56" height="56" decoding="async">
+            </div>
+            <h2 id="pwa-download-title" class="pwa-download-title">Install Strongman AI</h2>
+            <p class="pwa-download-sub">Add the app to your home screen for faster launches and offline session logging.</p>
+            <ol class="pwa-download-steps" id="pwa-download-steps" aria-live="polite">
+                <li class="pwa-download-step" data-step="1"><span class="pwa-step-dot"></span><span class="pwa-step-label">Checking device support</span></li>
+                <li class="pwa-download-step" data-step="2"><span class="pwa-step-dot"></span><span class="pwa-step-label">Preparing install package</span></li>
+                <li class="pwa-download-step" data-step="3"><span class="pwa-step-dot"></span><span class="pwa-step-label">Ready to add to home screen</span></li>
+            </ol>
+            <div class="pwa-download-progress" aria-hidden="true"><span id="pwa-download-bar"></span></div>
+            <p class="pwa-download-status" id="pwa-download-status" role="status">Starting install preview…</p>
+            <div class="pwa-download-actions">
+                <button type="button" class="pwa-download-btn pwa-download-btn--ghost" id="pwa-download-cancel">Not now</button>
+                <button type="button" class="pwa-download-btn pwa-download-btn--primary" id="pwa-download-install" disabled>Install (coming soon)</button>
+            </div>
+            <p class="pwa-download-note">Preview only — install isn’t live yet. You can keep using Strongman AI in the browser.</p>
         </div>
     </div>
     <div id="footer-email-overlay" class="footer-email-overlay" hidden>

@@ -426,7 +426,7 @@ button.sidebar-profile
    --------------------------------------------------------------------------- */
 .dashboard-main
 {
-    padding: clamp(1.25rem, 3vw, 2rem) clamp(1rem, 3vw, 2rem) clamp(2rem, 4vw, 3rem);
+    padding: clamp(1.25rem, 3vw, 2rem) 0 clamp(2rem, 4vw, 3rem);
     display: flex;
     flex-direction: column;
     gap: clamp(1.25rem, 2.5vw, 1.75rem);
@@ -1761,6 +1761,7 @@ button.sidebar-profile
 {
     padding: 1.5rem clamp(1rem, 3vw, 2rem);
     border-top: 1px solid var(--border-subtle);
+    border-radius: 18px 18px 0 0;
 }
 
 /* In-app pages — minimal single-line footer (landing page unchanged) */
@@ -2896,6 +2897,23 @@ html[data-theme="light"] .footer-app-sep
 
 @media (max-width: 640px)
 {
+    body[data-current-page="home"] .dashboard-main
+    {
+        padding-top: 2rem;
+        gap: 1.5rem;
+    }
+
+    body[data-current-page="home"] .dash-header-text
+    {
+        gap: 0.45rem;
+    }
+
+    body[data-current-page="home"] .site-footer--compact
+    {
+        border-radius: 16px 16px 0 0;
+        margin-top: 0.5rem;
+    }
+
     .main-wrap
     {
         padding-left: max(0px, env(safe-area-inset-left, 0px));

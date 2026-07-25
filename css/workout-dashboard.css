@@ -131,8 +131,21 @@ body.workout-dashboard-open
     color: #ffd4a8;
 }
 
-.wd-rest-bar,
 .wd-since-bar
+{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.7rem 1rem;
+    border-radius: 14px;
+    border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+    margin: 0 0 0.35rem;
+}
+
+.wd-rest-bar
 {
     display: flex;
     flex-direction: row;
@@ -167,6 +180,11 @@ body.workout-dashboard-open
     color: rgba(255, 255, 255, 0.55);
 }
 
+.wd-since-label
+{
+    color: color-mix(in srgb, var(--accent-bright, var(--accent)) 75%, white);
+}
+
 .wd-rest-clock,
 .wd-since-clock
 {
@@ -174,6 +192,13 @@ body.workout-dashboard-open
     font-weight: 700;
     font-variant-numeric: tabular-nums;
     color: var(--accent-bright, #ffb347);
+}
+
+.wd-since-clock
+{
+    font-size: clamp(1.45rem, 4vw, 1.85rem);
+    letter-spacing: -0.02em;
+    font-family: var(--font, "DM Sans", system-ui, sans-serif);
 }
 
 .wd-rest-controls

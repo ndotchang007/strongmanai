@@ -1,6 +1,7 @@
 (function () {
   var ANYTHING_ELSE_KEY = 'strongman-coach-anything-else';
   var FAVORITES_KEY = 'strongman-favorite-movements';
+  var homeGymByPrefix = {};
 
   function el(id) {
     return document.getElementById(id);
@@ -171,6 +172,9 @@
         { value: 'home', label: 'Home gym' },
         { value: 'none', label: 'Minimal' },
       ]) +
+      '<div class="customize-home-gym-scan" id="' +
+      p +
+      'home-gym-scan" aria-label="Identify equipment from a photo"></div>' +
       '<p class="buddy-subprompt">Lifts you care about most</p>' +
       '<p class="buddy-notes-hint">One per line or comma-separated — Rocky uses these on Log and for overload suggestions.</p>' +
       '<textarea id="' +
@@ -342,6 +346,95 @@
       } catch (eLs) {}
     }
     initBuddyPills(document, opts);
+    mountHomeGymScan(user, opts);
+  }
+
+  function upsertKnownNotesHomeGymLine(knownNotes, homeGym) {
+    var base = knownNotes ? String(knownNotes).trim() : '';
+    var lines = base
+      ? base.split(/\n+/).filter(function (line) {
+          return line && !/^Home gym scan:/i.test(line.trim());
+        })
+      : [];
+    if (window.HomeGymScan && homeGym) {
+      var gymLine = window.HomeGymScan.formatHomeGymNotesLine(homeGym);
+      if (gymLine) lines.push(gymLine);
+    }
+    return lines.join('\n');
+  }
+
+  function mountHomeGymScan(user, opts) {
+    opts = opts || {};
+    var p = opts.prefix || 'customize-';
+    var mount = el(p + 'home-gym-scan');
+    if (!mount || !window.HomeGymScan) return;
+    var ctx = loadContext(user);
+    homeGymByPrefix[p] = ctx.homeGym || null;
+    window.HomeGymScan.mount(mount, {
+      initial: homeGymByPrefix[p],
+      onResult: function (homeGym) {
+        homeGymByPrefix[p] = homeGym;
+        if (el(p + 'equipment') && window.HomeGymScan.inferEquipmentTier) {
+          el(p + 'equipment').value = window.HomeGymScan.inferEquipmentTier(homeGym);
+          initBuddyPills(document, opts);
+        }
+        var u = user || (typeof window.getCurrentUser === 'function' ? window.getCurrentUser() : null);
+        if (!u || !u.id || typeof window.apiPut !== 'function') return;
+        var knownEl = el(p + 'known-notes');
+        var freshCtx = loadContext(u);
+        var fields = resolveCoachNotesFields(freshCtx);
+        var nextKnown = upsertKnownNotesHomeGymLine(fields.known || freshCtx.knownNotes, homeGym);
+        if (knownEl && window.KnownNotes && window.KnownNotes.renderInto) {
+          window.KnownNotes.renderInto(knownEl, nextKnown, 'Nothing saved from setup yet.');
+          knownEl.classList.toggle('buddy-known-notes--empty', !nextKnown);
+        }
+        window
+          .apiPut('/users/' + u.id, {
+            equipment: (el(p + 'equipment') || {}).value || u.equipment || 'home',
+            athleteContext: (function () {
+              var ctxUpdate = {
+                homeGym: homeGym,
+                knownNotes: nextKnown || null,
+              };
+              var hasCal =
+                homeGym &&
+                Array.isArray(homeGym.equipment) &&
+                homeGym.equipment.some(function (item) {
+                  return item && item.weightCalibration;
+                });
+              if (hasCal) {
+                ctxUpdate.weightIncrement = 'personal';
+                if (window.Units && typeof window.Units.setWeightIncrementMode === 'function') {
+                  window.Units.setWeightIncrementMode('personal');
+                }
+              }
+              return ctxUpdate;
+            })(),
+          })
+          .then(function (res) {
+            return res.json().then(function (body) {
+              if (res.ok && body && typeof window.setCurrentUser === 'function') {
+                var merged = Object.assign({}, u, body.user || body);
+                if (u.token) merged.token = u.token;
+                window.setCurrentUser(merged);
+              }
+            });
+          })
+          .catch(function () {});
+      },
+      onClear: function () {
+        homeGymByPrefix[p] = null;
+        var u = user || (typeof window.getCurrentUser === 'function' ? window.getCurrentUser() : null);
+        if (!u || !u.id || typeof window.apiPut !== 'function') return;
+        var fields = resolveCoachNotesFields(loadContext(u));
+        var nextKnown = upsertKnownNotesHomeGymLine(fields.known, null);
+        window
+          .apiPut('/users/' + u.id, {
+            athleteContext: { homeGym: null, knownNotes: nextKnown || null },
+          })
+          .catch(function () {});
+      },
+    });
   }
 
   function setStatus(statusEl, message, isError) {
@@ -433,8 +526,16 @@
       gameDays: form.gameDays,
       schoolNightMaxMinutes: form.schoolNightMaxMinutes,
       weekendMaxMinutes: form.weekendMaxMinutes,
-      knownNotes: knownNotes,
+      knownNotes: upsertKnownNotesHomeGymLine(
+        knownNotes,
+        Object.prototype.hasOwnProperty.call(homeGymByPrefix, p)
+          ? homeGymByPrefix[p]
+          : ctx.homeGym || null
+      ),
       notes: notesToSave,
+      homeGym: Object.prototype.hasOwnProperty.call(homeGymByPrefix, p)
+        ? homeGymByPrefix[p]
+        : ctx.homeGym || null,
     };
     try {
       if (notesToSave) localStorage.setItem(ANYTHING_ELSE_KEY, notesToSave);
@@ -594,5 +695,6 @@
     loadContext: loadContext,
     initSportPicker: initSportPicker,
     initBuddyPills: initBuddyPills,
+    mountHomeGymScan: mountHomeGymScan,
   };
 })();

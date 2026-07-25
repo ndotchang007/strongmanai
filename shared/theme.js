@@ -1,9 +1,9 @@
 /**
- * Appearance themes — 5 palettes + System.
+ * Appearance themes — 7 palettes + System.
  * Each palette is 4 role colors: bg, surface, accent, highlight
  * (plus derived tokens for borders/text).
  *
- * Stored: dark | light | system | voltage | forge | aurora
+ * Stored: dark | light | system | voltage | forge | aurora | mono-light | mono-dark
  * document.documentElement[data-theme] is always concrete (never "system").
  */
 (function () {
@@ -56,6 +56,20 @@
       kind: "dark",
       swatches: ["#0c0a14", "#1a1730", "#a78bfa", "#67e8f9"],
     },
+    {
+      id: "mono-light",
+      nickname: "Mono Light",
+      blurb: "Pure black and white",
+      kind: "light",
+      swatches: ["#ffffff", "#f5f5f5", "#000000", "#111111"],
+    },
+    {
+      id: "mono-dark",
+      nickname: "Mono Dark",
+      blurb: "Pure white and black",
+      kind: "dark",
+      swatches: ["#000000", "#121212", "#ffffff", "#f0f0f0"],
+    },
   ];
 
   var CONCRETE_IDS = {
@@ -64,6 +78,8 @@
     voltage: true,
     forge: true,
     aurora: true,
+    "mono-light": true,
+    "mono-dark": true,
   };
 
   var LEGACY_ALIASES = {

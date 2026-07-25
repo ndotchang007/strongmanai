@@ -675,6 +675,10 @@
   }
 
   function evaluate(user, opts) {
+    opts = opts || {};
+    if (canSync() && !opts.skipServerPull) {
+      pullFromServerAsync();
+    }
     var ctx = buildContext(user, opts);
     var results = [];
     CATALOG.forEach(function (def) {
@@ -716,6 +720,138 @@
   }
 
   var SEEN_KEY_BASE = 'strongman-achievements-seen';
+  var UNLOCKED_KEY_BASE = 'strongman-achievements-unlocked';
+  var pullInflight = null;
+
+  function canSync() {
+    return !!(
+      window.isLoggedIn &&
+      window.isLoggedIn() &&
+      window.getCurrentUser &&
+      window.apiGet &&
+      window.apiPut &&
+      window.apiPost
+    );
+  }
+
+  function unlockedStorageKey() {
+    return UNLOCKED_KEY_BASE + userSuffix();
+  }
+
+  function loadUnlockedMap() {
+    try {
+      var raw = localStorage.getItem(unlockedStorageKey());
+      if (!raw) return {};
+      var data = JSON.parse(raw);
+      return data && typeof data === 'object' ? data : {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function saveUnlockedMap(map) {
+    try {
+      localStorage.setItem(unlockedStorageKey(), JSON.stringify(map || {}));
+    } catch (e) {}
+  }
+
+  function mergeServerAchievements(rows) {
+    if (!Array.isArray(rows)) return;
+    var seen = loadSeenIds();
+    var unlocked = loadUnlockedMap();
+    rows.forEach(function (row) {
+      if (!row || !row.achievementId) return;
+      var id = row.achievementId;
+      unlocked[id] = {
+        unlockedAt:
+          row.unlockedAt ||
+          (unlocked[id] && unlocked[id].unlockedAt) ||
+          new Date().toISOString(),
+      };
+      if (row.seen) seen[id] = true;
+    });
+    saveUnlockedMap(unlocked);
+    saveSeenIds(seen);
+  }
+
+  function pullFromServerAsync() {
+    if (!canSync()) return Promise.resolve(null);
+    if (pullInflight) return pullInflight;
+    var u = window.getCurrentUser();
+    if (!u || u.id == null) return Promise.resolve(null);
+    pullInflight = window
+      .apiGet('/users/' + u.id + '/achievements')
+      .then(function (res) {
+        if (!res.ok) throw new Error('bad status');
+        return res.json();
+      })
+      .then(function (rows) {
+        mergeServerAchievements(rows);
+        return rows;
+      })
+      .catch(function () {
+        return null;
+      })
+      .finally(function () {
+        pullInflight = null;
+      });
+    return pullInflight;
+  }
+
+  function pushUnlockedToServer(items) {
+    if (!canSync() || !items || !items.length) return Promise.resolve(false);
+    var u = window.getCurrentUser();
+    if (!u || u.id == null) return Promise.resolve(false);
+    return window
+      .apiPut('/users/' + u.id + '/achievements', { achievements: items })
+      .then(function (res) {
+        if (!res.ok) return false;
+        return res.json();
+      })
+      .then(function (rows) {
+        if (!rows) return false;
+        mergeServerAchievements(rows);
+        return true;
+      })
+      .catch(function () {
+        return false;
+      });
+  }
+
+  function markSeenOnServer(ids) {
+    if (!canSync() || !ids || !ids.length) return Promise.resolve(false);
+    var u = window.getCurrentUser();
+    if (!u || u.id == null) return Promise.resolve(false);
+    return window
+      .apiPost('/users/' + u.id + '/achievements/seen', { ids: ids })
+      .then(function (res) {
+        if (!res.ok) return false;
+        return res.json();
+      })
+      .then(function (rows) {
+        if (!rows) return false;
+        mergeServerAchievements(rows);
+        return true;
+      })
+      .catch(function () {
+        return false;
+      });
+  }
+
+  function syncUnlockedAchievements(unlockedList) {
+    if (!unlockedList || !unlockedList.length) return;
+    var unlocked = loadUnlockedMap();
+    var items = [];
+    unlockedList.forEach(function (ach) {
+      if (!ach || !ach.id) return;
+      if (!unlocked[ach.id]) {
+        unlocked[ach.id] = { unlockedAt: new Date().toISOString() };
+        items.push({ achievementId: ach.id, unlockedAt: unlocked[ach.id].unlockedAt, seen: false });
+      }
+    });
+    saveUnlockedMap(unlocked);
+    if (items.length) pushUnlockedToServer(items);
+  }
 
   function userSuffix() {
     try {
@@ -754,6 +890,7 @@
       if (id) map[id] = true;
     });
     saveSeenIds(map);
+    markSeenOnServer(ids || []);
   }
 
   function findNewUnlocks(user, opts) {
@@ -770,6 +907,7 @@
           return a.id;
         })
       );
+      syncUnlockedAchievements(state.unlocked);
       return [];
     }
     return fresh;
@@ -865,6 +1003,7 @@
     }
     var fresh = findNewUnlocks(user, opts);
     if (!fresh.length) return [];
+    syncUnlockedAchievements(fresh);
     // Prefer lift unlocks in celebration order (newest/highest tier first already).
     unlockQueue = unlockQueue.concat(fresh);
     showNextUnlock();
@@ -880,6 +1019,8 @@
     getById: getById,
     findNewUnlocks: findNewUnlocks,
     celebrateNewUnlocks: celebrateNewUnlocks,
-    markSeen: markSeen
+    markSeen: markSeen,
+    pullFromServerAsync: pullFromServerAsync,
+    syncUnlockedAchievements: syncUnlockedAchievements
   };
 })();

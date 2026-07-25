@@ -74,6 +74,7 @@
       title: '',
       notes: '',
       viewMode: 'card',
+      loggingMode: 'live',
       workoutDate: null,
       focusPointer: { exerciseId: null, setId: null },
       pickerState: null,

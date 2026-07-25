@@ -946,13 +946,38 @@ body.coach-fullpage .coach-chat-toolbar
     50% { opacity: 0; }
 }
 
+.coach-msg--streaming
+{
+    position: relative;
+}
+
+.coach-msg-text--streaming
+{
+    white-space: pre-wrap;
+    word-break: break-word;
+    min-height: 1.2em;
+}
+
+.coach-msg-text--streaming::after
+{
+    content: "";
+    display: inline-block;
+    width: 0.45em;
+    height: 1.05em;
+    margin-left: 0.15em;
+    vertical-align: text-bottom;
+    background: var(--accent);
+    animation: coach-caret-blink 0.7s steps(1) infinite;
+}
+
 @media (prefers-reduced-motion: reduce)
 {
     .coach-gen-ring,
     .coach-gen-scan,
     .coach-gen-node,
     .coach-gen-ellipsis::after,
-    .coach-typewriter-caret
+    .coach-typewriter-caret,
+    .coach-msg-text--streaming::after
     {
         animation: none;
     }

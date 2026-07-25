@@ -56,9 +56,39 @@
 
 .wt-toolbar-meta
 {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.55rem;
     font-size: 0.8rem;
     font-weight: 600;
     color: rgba(255, 255, 255, 0.45);
+}
+
+.wt-quick-badge
+{
+    display: inline-flex;
+    align-items: center;
+    padding: 0.18rem 0.5rem;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    color: var(--accent-bright, var(--accent));
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.workout-tracker--quick .wt-set-row--quick
+{
+    grid-template-columns: auto 1fr auto;
+}
+
+.workout-tracker--quick .wt-set-check,
+.workout-tracker--quick .wt-set-rest
+{
+    display: none;
 }
 
 .wt-body

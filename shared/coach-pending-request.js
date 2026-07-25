@@ -152,6 +152,132 @@
     });
   }
 
+  function parseSseCoachResponse(res, handlers, signal) {
+    var contentType = (res.headers.get('content-type') || '').toLowerCase();
+    if (contentType.indexOf('text/event-stream') === -1) {
+      return res.json().then(function (body) {
+        if (!res.ok) {
+          throw new Error((body && body.error) || 'Request failed.');
+        }
+        return { body: body, streamed: false };
+      });
+    }
+
+    if (!res.body || typeof res.body.getReader !== 'function') {
+      return res.text().then(function (raw) {
+        throw new Error(raw || 'Streaming not supported in this browser.');
+      });
+    }
+
+    return new Promise(function (resolve, reject) {
+      var reader = res.body.getReader();
+      var decoder = new TextDecoder();
+      var buffer = '';
+      var currentEvent = '';
+      var doneBody = null;
+
+      function abortHandler() {
+        try {
+          reader.cancel();
+        } catch (eCancel) {}
+      }
+      if (signal) {
+        if (signal.aborted) {
+          abortHandler();
+          reject(Object.assign(new Error('Aborted'), { name: 'AbortError' }));
+          return;
+        }
+        signal.addEventListener('abort', abortHandler);
+      }
+
+      function finish(err, result) {
+        if (signal) signal.removeEventListener('abort', abortHandler);
+        if (err) reject(err);
+        else resolve(result);
+      }
+
+      function handleEvent(event, dataStr) {
+        if (!dataStr) return;
+        var data;
+        try {
+          data = JSON.parse(dataStr);
+        } catch (eParse) {
+          return;
+        }
+        if (event === 'delta' && data && typeof data.text === 'string' && data.text) {
+          if (handlers.onDelta) handlers.onDelta(data.text);
+          return;
+        }
+        if (event === 'done') {
+          doneBody = data;
+          return;
+        }
+        if (event === 'error') {
+          finish(new Error((data && data.error) || 'Request failed.'));
+        }
+      }
+
+      function pump() {
+        reader
+          .read()
+          .then(function (chunk) {
+            if (chunk.done) {
+              if (!res.ok) {
+                finish(new Error('Request failed.'));
+                return;
+              }
+              if (!doneBody) {
+                finish(new Error('Coach stream ended unexpectedly.'));
+                return;
+              }
+              finish(null, { body: doneBody, streamed: true });
+              return;
+            }
+
+            buffer += decoder.decode(chunk.value, { stream: true });
+            var lines = buffer.split('\n');
+            buffer = lines.pop() || '';
+
+            lines.forEach(function (line) {
+              if (line.indexOf('event:') === 0) {
+                currentEvent = line.slice(6).trim();
+                return;
+              }
+              if (line.indexOf('data:') === 0) {
+                handleEvent(currentEvent, line.slice(5).trim());
+                return;
+              }
+              if (line === '') currentEvent = '';
+            });
+
+            pump();
+          })
+          .catch(function (err) {
+            finish(err);
+          });
+      }
+
+      if (!res.ok) {
+        finish(new Error('Request failed.'));
+        return;
+      }
+
+      pump();
+    });
+  }
+
+  function handleCoachSuccess(x, messages, handlers) {
+    var assistantMsg = buildAssistantMsg(x.body);
+    messages.push(assistantMsg);
+    saveThread(messages);
+    clearPending();
+    setReplyReady(true);
+    if (handlers.onSuccess) {
+      handlers.onSuccess(assistantMsg, x.body.quota, messages, { streamed: !!x.streamed });
+    }
+    return assistantMsg;
+  }
+
   function runPendingRequest(handlers) {
     handlers = handlers || {};
     var pending = getPending();
@@ -188,27 +314,15 @@
         thread: pending.thread || [],
         images: pending.images || [],
         forceIntent: pending.forceIntent || undefined,
+        stream: true,
       },
       controller ? controller.signal : undefined
     )
       .then(function (res) {
-        return res.json().then(function (body) {
-          return { res: res, body: body };
-        });
+        return parseSseCoachResponse(res, handlers, controller ? controller.signal : undefined);
       })
       .then(function (x) {
-        if (!x.res.ok) {
-          throw new Error((x.body && x.body.error) || 'Request failed.');
-        }
-        var assistantMsg = buildAssistantMsg(x.body);
-        messages.push(assistantMsg);
-        saveThread(messages);
-        clearPending();
-        setReplyReady(true);
-        if (handlers.onSuccess) {
-          handlers.onSuccess(assistantMsg, x.body.quota, messages);
-        }
-        return assistantMsg;
+        return handleCoachSuccess(x, messages, handlers);
       })
       .catch(function (err) {
         if (timedOut) {

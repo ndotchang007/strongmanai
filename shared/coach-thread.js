@@ -32,6 +32,9 @@
     this.messages = [];
     this.pending = false;
     this.loadingEl = null;
+    this.streamingEl = null;
+    this.streamingTextEl = null;
+    this.streamedText = '';
     this.pendingAttachments = [];
     this.recognition = null;
     this.isListening = false;
@@ -835,6 +838,67 @@
     this.loadingEl = null;
   };
 
+  CoachThread.prototype.hideStreamingBubble = function () {
+    if (this.streamingEl && this.streamingEl.parentNode) {
+      this.streamingEl.parentNode.removeChild(this.streamingEl);
+    }
+    this.streamingEl = null;
+    this.streamingTextEl = null;
+    this.streamedText = '';
+  };
+
+  CoachThread.prototype.showStreamingBubble = function () {
+    if (this.streamingEl || !this.threadEl) return;
+    this.hideLoading();
+    var bubble = document.createElement('div');
+    bubble.className = 'coach-msg coach-msg--assistant coach-msg--streaming';
+    bubble.setAttribute('aria-busy', 'true');
+    var textNode = document.createElement('div');
+    textNode.className = 'coach-msg-text coach-msg-text--streaming';
+    bubble.appendChild(textNode);
+    this.streamingEl = this.createChatRow('assistant', bubble);
+    this.streamingTextEl = textNode;
+    this.streamedText = '';
+    this.threadEl.appendChild(this.streamingEl);
+    this.scrollThread(true);
+  };
+
+  CoachThread.prototype.appendStreamingDelta = function (text) {
+    if (!text) return;
+    if (!this.streamingEl) this.showStreamingBubble();
+    this.streamedText += text;
+    if (this.streamingTextEl) {
+      this.streamingTextEl.textContent = this.extractStreamingPreview(this.streamedText);
+    }
+    this.scrollThread(true);
+  };
+
+  CoachThread.prototype.extractStreamingPreview = function (raw) {
+    var t = String(raw || '');
+    var textMatch = /"text"\s*:\s*"((?:\\.|[^"\\])*)"/.exec(t);
+    if (textMatch) {
+      try {
+        return JSON.parse('"' + textMatch[1] + '"');
+      } catch (e) {
+        return textMatch[1].replace(/\\n/g, '\n').replace(/\\"/g, '"');
+      }
+    }
+    if (/^\s*\{/.test(t)) {
+      var tail = t.slice(-240);
+      return tail.replace(/^[\s\S]*"text"\s*:\s*"?/, '').replace(/\\n/g, '\n');
+    }
+    return t;
+  };
+
+  CoachThread.prototype.coachStreamHandlers = function () {
+    var self = this;
+    return {
+      onDelta: function (text) {
+        self.appendStreamingDelta(text);
+      },
+    };
+  };
+
   CoachThread.prototype.stopTypewriter = function () {
     if (this.typewriterTimer) {
       window.clearTimeout(this.typewriterTimer);
@@ -895,8 +959,12 @@
     tick();
   };
 
-  CoachThread.prototype.finishAssistantReply = function (assistantMsg, quota) {
+  CoachThread.prototype.finishAssistantReply = function (assistantMsg, quota, opts) {
+    opts = opts || {};
     var self = this;
+    var streamed = !!opts.streamed || !!this.streamedText;
+    this.hideLoading();
+    this.hideStreamingBubble();
     var last = this.messages.length ? this.messages[this.messages.length - 1] : null;
     if (!last || last.role !== 'assistant') {
       this.messages.push(assistantMsg);
@@ -906,6 +974,12 @@
     if (quota) this.setQuota(quota);
     this.saveToStorage();
     if (window.CoachPending) window.CoachPending.clearReplyReady();
+
+    if (streamed) {
+      this.render();
+      this.refreshBriefing();
+      return;
+    }
 
     this.typewriterUnveil(assistantMsg, function () {
       self.render();
@@ -923,23 +997,26 @@
     if (self.sendBtn) self.sendBtn.disabled = true;
     self.showLoading();
 
-    window.CoachPending.resume({
-      onSuccess: function (assistantMsg, quota) {
-        self.finishAssistantReply(assistantMsg, quota);
+    window.CoachPending.resume(
+      Object.assign(this.coachStreamHandlers(), {
+      onSuccess: function (assistantMsg, quota, _messages, meta) {
+        self.finishAssistantReply(assistantMsg, quota, meta || {});
       },
       onError: function (msg, retriable) {
         self.hideLoading();
+        self.hideStreamingBubble();
         if (msg && !retriable) self.setError(msg);
         else if (msg) self.setError(msg);
       },
       onAbort: function () {
         self.hideLoading();
+        self.hideStreamingBubble();
       },
       onEnd: function () {
         self.pending = false;
         if (self.sendBtn) self.sendBtn.disabled = false;
       },
-    });
+    }));
   };
 
   CoachThread.prototype.setCoachMode = function (mode) {
@@ -1016,8 +1093,8 @@
         contextBlock: this.getContextBlock(),
         thread: threadForApi,
       },
-      {
-        onSuccess: function (assistantMsg, quota) {
+      Object.assign(this.coachStreamHandlers(), {
+        onSuccess: function (assistantMsg, quota, _messages, meta) {
           self.hideLoading();
           var content = assistantMsg.content || assistantMsg.text || '';
           var parsed = window.RoutineImport ? window.RoutineImport.parseWeeklyRoutine(content) : null;
@@ -1025,16 +1102,17 @@
             assistantMsg.responseType = 'routine';
             assistantMsg.routineParsed = parsed;
           }
-          self.finishAssistantReply(assistantMsg, quota);
+          self.finishAssistantReply(assistantMsg, quota, meta || {});
         },
         onError: function (msg) {
           self.hideLoading();
+          self.hideStreamingBubble();
           if (msg) self.setError(msg);
         },
         onEnd: function () {
           self.setPendingUi(false);
         },
-      }
+      })
     );
   };
 
@@ -1139,24 +1217,26 @@
         images: imagesPayload,
         forceIntent: isPhysique || imagesPayload.length ? 'advice' : undefined,
       },
-      {
-        onSuccess: function (assistantMsg, quota) {
-          self.finishAssistantReply(assistantMsg, quota);
+      Object.assign(this.coachStreamHandlers(), {
+        onSuccess: function (assistantMsg, quota, _messages, meta) {
+          self.finishAssistantReply(assistantMsg, quota, meta || {});
         },
         onError: function (msg, retriable) {
           self.hideLoading();
+          self.hideStreamingBubble();
           self.stopTypewriter();
           if (msg) self.setError(msg);
           if (!retriable && window.CoachPending) window.CoachPending.clearPending();
         },
         onAbort: function () {
           self.hideLoading();
+          self.hideStreamingBubble();
           self.stopTypewriter();
         },
         onEnd: function () {
           self.setPendingUi(false);
         },
-      }
+      })
     );
   };
 

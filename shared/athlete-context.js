@@ -46,6 +46,7 @@
       weekendMaxMinutes: 90,
       notes: null,
       knownNotes: null,
+      homeGym: null,
     };
   }
 
@@ -638,6 +639,24 @@
     }
     if (user.equipment && EQUIPMENT_LABELS[user.equipment]) {
       lines.push('Equipment: ' + EQUIPMENT_LABELS[user.equipment]);
+    }
+    if (ctx.homeGym && window.HomeGymScan && typeof window.HomeGymScan.formatHomeGymForPrompt === 'function') {
+      var gymBlock = window.HomeGymScan.formatHomeGymForPrompt(ctx.homeGym);
+      if (gymBlock) lines.push(gymBlock);
+    } else if (ctx.homeGym && Array.isArray(ctx.homeGym.equipment) && ctx.homeGym.equipment.length) {
+      lines.push(
+        'Home gym inventory: ' +
+          ctx.homeGym.equipment
+            .map(function (item) {
+              var bit = item.name;
+              if (item.brand) bit += ' (' + item.brand + ')';
+              if (item.weightCalibration && item.weightCalibration.rule) {
+                bit += ' — ' + item.weightCalibration.rule;
+              }
+              return bit;
+            })
+            .join('; ')
+      );
     }
 
     var hint = getTodayTrainingHint(user);

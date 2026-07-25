@@ -284,6 +284,35 @@
   mountThemePicker();
 
   var unitsSelect = document.getElementById('settings-units-select');
+  var weightIncrementSelect = document.getElementById('settings-weight-increment');
+
+  function ensureWeightIncrementControl() {
+    if (weightIncrementSelect || !unitsSelect) return;
+    var section = unitsSelect.closest('.home-settings-section');
+    if (!section) return;
+    var label = document.createElement('label');
+    label.className = 'home-settings-field-label';
+    label.setAttribute('for', 'settings-weight-increment');
+    label.textContent = 'Weight increment';
+    var select = document.createElement('select');
+    select.id = 'settings-weight-increment';
+    select.className = unitsSelect.className;
+    select.innerHTML =
+      '<option value="standard">Standard (5 lb / 2.5 kg)</option>' +
+      '<option value="fine">Fine (2.5 lb / 1.25 kg)</option>' +
+      '<option value="personal">Personal (from your equipment scan)</option>';
+    var hint = document.createElement('p');
+    hint.className = 'home-settings-hint home-settings-hint--tight';
+    hint.textContent =
+      'Personal uses the plate/pin steps Rocky read from your equipment photos in Customize.';
+    unitsSelect.insertAdjacentElement('afterend', label);
+    label.insertAdjacentElement('afterend', select);
+    select.insertAdjacentElement('afterend', hint);
+    weightIncrementSelect = select;
+  }
+
+  ensureWeightIncrementControl();
+
   var notifyEmail = document.getElementById('settings-notify-email');
   var notifyPush = document.getElementById('settings-notify-push');
   var notifyBrowserStatus = document.getElementById('settings-notify-browser-status');
@@ -418,6 +447,7 @@
       } catch (eLs) {}
     }
     syncNotifyEmailFromUser();
+    syncWeightIncrementFromUser();
     if (notifyPush) notifyPush.checked = localStorage.getItem(NOTIFY_PUSH_KEY) === '1';
     if (profilePublic) profilePublic.checked = localStorage.getItem(PRIVACY_PUBLIC_KEY) !== '0';
     if (showActivity) showActivity.checked = localStorage.getItem(PRIVACY_ACTIVITY_KEY) !== '0';
@@ -638,6 +668,55 @@
     });
   }
 
+  function syncWeightIncrementFromUser() {
+    if (!weightIncrementSelect) return;
+    var mode =
+      window.Units && typeof window.Units.getWeightIncrementMode === 'function'
+        ? window.Units.getWeightIncrementMode()
+        : 'standard';
+    weightIncrementSelect.value = mode;
+  }
+
+  function persistWeightIncrement(mode) {
+    var next =
+      window.Units && typeof window.Units.setWeightIncrementMode === 'function'
+        ? window.Units.setWeightIncrementMode(mode)
+        : mode;
+    var u = typeof window.getCurrentUser === 'function' ? window.getCurrentUser() : null;
+    if (!u || !u.id || !u.token || typeof window.apiPut !== 'function') {
+      window.dispatchEvent(
+        new CustomEvent('strongman:weight-increment-changed', { detail: { mode: next } })
+      );
+      return Promise.resolve();
+    }
+    var athleteContext = Object.assign({}, u.athleteContext || {}, { weightIncrement: next });
+    return window
+      .apiPut('/users/' + u.id, { athleteContext: athleteContext })
+      .then(function (res) {
+        if (!res.ok) return;
+        return res.json().then(function (body) {
+          if (typeof window.setCurrentUser === 'function') {
+            var merged = Object.assign({}, u, body);
+            if (u.token) merged.token = u.token;
+            window.setCurrentUser(merged);
+          }
+        });
+      })
+      .catch(function () {})
+      .then(function () {
+        window.dispatchEvent(
+          new CustomEvent('strongman:weight-increment-changed', { detail: { mode: next } })
+        );
+      });
+  }
+
+  if (weightIncrementSelect) {
+    syncWeightIncrementFromUser();
+    weightIncrementSelect.addEventListener('change', function () {
+      persistWeightIncrement(weightIncrementSelect.value);
+    });
+  }
+
   function isEmailNotificationsEnabled() {
     var u = typeof window.getCurrentUser === 'function' ? window.getCurrentUser() : null;
     if (u && typeof u.notifyEmail === 'boolean') return u.notifyEmail;
@@ -660,17 +739,50 @@
     return window
       .apiPut('/users/' + u.id, { notifyEmail: !!enabled })
       .then(function (res) {
-        if (!res.ok) return;
+        if (!res.ok) {
+          if (notifyEmail) {
+            setNotifyBrowserStatus(
+              'Could not save email preference. Check your connection and try again.'
+            );
+          }
+          return;
+        }
         return res.json().then(function (body) {
           if (typeof window.setCurrentUser === 'function') {
             var merged = Object.assign({}, u, body);
             if (u.token) merged.token = u.token;
             window.setCurrentUser(merged);
           }
+          if (enabled && typeof window.apiPost === 'function') {
+            return window
+              .apiPost('/notifications/email/confirm', {})
+              .then(function (confirmRes) {
+                if (confirmRes.ok) {
+                  setNotifyBrowserStatus('Confirmation email sent — check your inbox.');
+                } else {
+                  return confirmRes.json().then(function (errBody) {
+                    var msg =
+                      (errBody && errBody.error) ||
+                      'Email preference saved, but confirmation email could not be sent.';
+                    setNotifyBrowserStatus(msg);
+                  }).catch(function () {
+                    setNotifyBrowserStatus(
+                      'Email preference saved, but confirmation email could not be sent.'
+                    );
+                  });
+                }
+              })
+              .catch(function () {
+                setNotifyBrowserStatus(
+                  'Email preference saved. Confirmation email may arrive shortly.'
+                );
+              });
+          }
+          if (!enabled) setNotifyBrowserStatus('');
         });
       })
       .catch(function () {
-        /* keep local toggle; server sync can retry on next open */
+        setNotifyBrowserStatus('Could not save email preference. Try again in a moment.');
       });
   }
 

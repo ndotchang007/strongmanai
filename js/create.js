@@ -351,9 +351,16 @@
     setMode: setMode,
     showQuickLog: function () {
       setMode('workout');
+      var shell = document.getElementById('create-workout-shell');
+      if (shell) shell.setAttribute('data-log-style', 'quick');
       if (history.replaceState) {
         history.replaceState(null, '', location.pathname + location.search + '#workout');
       }
+    },
+    showLiveWorkout: function () {
+      setMode('workout');
+      var shell = document.getElementById('create-workout-shell');
+      if (shell) shell.setAttribute('data-log-style', 'coach');
     },
   };
 
@@ -2354,7 +2361,17 @@
 
     if (workoutTracker) {
       workoutTracker.reset();
-      if (session.exercises && session.exercises.length) {
+      if (typeof workoutTracker.setLoggingMode === 'function') {
+        workoutTracker.setLoggingMode('quick');
+      }
+      if (
+        session.trackerData &&
+        Array.isArray(session.trackerData.exercises) &&
+        session.trackerData.exercises.length &&
+        typeof workoutTracker.loadFromTrackerExercises === 'function'
+      ) {
+        workoutTracker.loadFromTrackerExercises(session.trackerData.exercises);
+      } else if (session.exercises && session.exercises.length) {
         workoutTracker.loadFromLegacyExercises(session.exercises);
       }
     }

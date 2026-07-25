@@ -253,9 +253,9 @@
       '<button type="button" class="wd-btn wd-btn--finish" id="wd-finish-btn">Finish</button>' +
       '</div>' +
       '</header>' +
-      '<section class="wd-since-bar" id="wd-since-bar" aria-label="Time since last set" hidden>' +
+      '<section class="wd-since-bar" id="wd-since-bar" aria-label="Time since last set">' +
       '<span class="wd-since-label">Time since last set</span>' +
-      '<span class="wd-since-clock" id="wd-since-last-clock">0:00</span>' +
+      '<span class="wd-since-clock" id="wd-since-last-clock">—</span>' +
       '</section>' +
       '<section class="wd-log" id="wd-tracker-mount" aria-label="Log sets"></section>' +
       '</div>';
@@ -752,11 +752,11 @@
     var bar = document.getElementById('wd-since-bar');
     if (!sinceLastClockEl) sinceLastClockEl = document.getElementById('wd-since-last-clock');
     if (!sinceLastClockEl) return;
+    if (bar) bar.hidden = false;
     if (!sinceLastState.running) {
-      if (bar) bar.hidden = true;
+      sinceLastClockEl.textContent = '—';
       return;
     }
-    if (bar) bar.hidden = false;
     sinceLastClockEl.textContent = formatDuration(getSinceLastMs());
   }
 
@@ -828,6 +828,8 @@
     } else {
       var panel = document.getElementById('create-panel-workout');
       if (panel) panel.hidden = false;
+      var shell = document.getElementById('create-workout-shell');
+      if (shell) shell.setAttribute('data-log-style', 'quick');
     }
     var section = document.getElementById('logbook-quick-section');
     if (section) {
@@ -844,8 +846,15 @@
     var hero = document.getElementById('logbook-mode-hero');
     if (hero) hero.classList.add('logbook-mode-hero--compact');
     var t = ensureSessionReady();
-    if (t && t.setViewMode) {
-      t.setViewMode('card');
+    if (t) {
+      if (isLiveWorkoutActive()) {
+        // Don't rewrite the live session into quick-log mode.
+        if (t.setViewMode) t.setViewMode('card');
+      } else {
+        if (typeof t.reset === 'function') t.reset();
+        if (typeof t.setLoggingMode === 'function') t.setLoggingMode('quick');
+        else if (t.setViewMode) t.setViewMode('card');
+      }
     }
   }
 
@@ -872,6 +881,13 @@
         }
         persistLiveWorkout();
         startSessionClock();
+        if (window.CreateUI && typeof window.CreateUI.showLiveWorkout === 'function') {
+          window.CreateUI.showLiveWorkout();
+        } else {
+          var shell = document.getElementById('create-workout-shell');
+          if (shell) shell.setAttribute('data-log-style', 'coach');
+        }
+        if (typeof t.setLoggingMode === 'function') t.setLoggingMode('live');
         if (t.setViewMode) t.setViewMode('carousel');
         if (typeof t.setCarouselIndex === 'function') t.setCarouselIndex(0);
         lastCompletedCount = countCompletedSets(t.getSession());

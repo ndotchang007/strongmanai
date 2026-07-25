@@ -1673,6 +1673,13 @@
     closeSessionDetail();
     if (window.WorkoutEdit && typeof window.WorkoutEdit.open === 'function') {
       window.WorkoutEdit.open(session.id);
+      var shell = document.getElementById('create-workout-shell');
+      if (shell) shell.setAttribute('data-log-style', 'quick');
+      var section = document.getElementById('logbook-quick-section');
+      if (section) {
+        section.hidden = false;
+        section.classList.remove('logbook-quick-section--collapsed');
+      }
       return;
     }
     window.alert('Could not open the workout editor.');
@@ -1928,7 +1935,48 @@
   }
 
   function countSessionExercises(s) {
-    return (s.exercises || []).length;
+    if (s.exercises && s.exercises.length) return s.exercises.length;
+    if (s.trackerData && Array.isArray(s.trackerData.exercises)) {
+      return s.trackerData.exercises.filter(function (ex) {
+        return ex && ex.name;
+      }).length;
+    }
+    return 0;
+  }
+
+  function sessionExercisesForDisplay(s) {
+    if (s.exercises && s.exercises.length) return s.exercises;
+    if (s.trackerData && Array.isArray(s.trackerData.exercises)) {
+      return s.trackerData.exercises
+        .filter(function (ex) {
+          return ex && ex.name;
+        })
+        .map(function (ex) {
+          var sets = Array.isArray(ex.sets) ? ex.sets : [];
+          var weights = sets
+            .map(function (set) {
+              return set && set.weight != null ? set.weight : null;
+            })
+            .filter(function (w) {
+              return w != null;
+            });
+          var reps = sets
+            .map(function (set) {
+              return set && set.reps != null ? set.reps : null;
+            })
+            .filter(function (r) {
+              return r != null;
+            });
+          return {
+            name: ex.name,
+            sets: sets.length || '',
+            reps: reps.length ? reps.join('/') : '',
+            setWeights: weights,
+            weight: weights.length ? weights[0] : '',
+          };
+        });
+    }
+    return [];
   }
 
   function sessionIntensityLabel(s) {
@@ -1959,7 +2007,7 @@
     }
     var exUl = document.createElement('ul');
     exUl.className = 'tracking-saved-exercises';
-    (s.exercises || []).forEach(function (ex) {
+    sessionExercisesForDisplay(s).forEach(function (ex) {
       var exLi = document.createElement('li');
       var label = ex.name || 'Exercise';
       if (ex.blockName) label = ex.blockName + ' · ' + label;
@@ -2284,8 +2332,14 @@
       editBtn.className = 'dash-timeline-action tracking-session-edit-btn';
       editBtn.textContent = 'Edit';
       editBtn.setAttribute('data-session-edit-for', s.id || '');
+      var deleteBtn = document.createElement('button');
+      deleteBtn.type = 'button';
+      deleteBtn.className = 'dash-timeline-action tracking-session-delete-btn';
+      deleteBtn.textContent = 'Delete';
+      deleteBtn.setAttribute('data-session-delete-for', s.id || '');
       actions.appendChild(openBtn);
       actions.appendChild(editBtn);
+      actions.appendChild(deleteBtn);
 
       body.appendChild(meta);
       body.appendChild(title);
@@ -2711,70 +2765,77 @@
     fr.readAsDataURL(file);
   }
 
-  if (archiveScroll) {
-    archiveScroll.addEventListener('click', function (e) {
-      var storyBtn = e.target.closest && e.target.closest('.tracking-session-story-btn');
-      if (storyBtn) {
-        var sidStory = storyBtn.getAttribute('data-workout-story-for');
-        if (!sidStory) return;
-        e.preventDefault();
-        var sessStory = findTrackingSessionById(sidStory);
-        if (sessStory) openWorkoutShareModal(sessStory);
-        return;
-      }
-      var editBtn = e.target.closest && e.target.closest('.tracking-session-edit-btn');
-      if (editBtn) {
-        var sidEdit = editBtn.getAttribute('data-session-edit-for');
-        if (!sidEdit) return;
-        e.preventDefault();
-        var sessEdit = findTrackingSessionById(sidEdit);
-        if (sessEdit) openWorkoutEditor(sessEdit);
-        return;
-      }
-      var deleteBtn = e.target.closest && e.target.closest('.tracking-session-delete-btn');
-      if (deleteBtn) {
-        var sidDel = deleteBtn.getAttribute('data-session-delete-for');
-        if (!sidDel) return;
-        e.preventDefault();
-        var sessDel = findTrackingSessionById(sidDel);
-        if (sessDel) deleteWorkoutSession(sessDel);
-        return;
-      }
-      var openEl = e.target.closest && e.target.closest('[data-session-open]');
-      if (openEl) {
-        var sidOpen = openEl.getAttribute('data-session-open');
-        if (!sidOpen) return;
-        e.preventDefault();
-        var sessOpen = findTrackingSessionById(sidOpen);
-        if (sessOpen) openSessionDetail(sessOpen);
-        return;
-      }
-      var rmPhotoBtn = e.target.closest && e.target.closest('.tracking-session-photo-remove');
-      if (rmPhotoBtn && WL && typeof WL.updateSession === 'function') {
-        var sidRm = rmPhotoBtn.getAttribute('data-session-photo-remove-for');
-        var pid = rmPhotoBtn.getAttribute('data-photo-id');
-        var pidx = rmPhotoBtn.getAttribute('data-photo-index');
-        if (!sidRm) return;
-        e.preventDefault();
-        if (!window.confirm('Detach this photo from the workout?')) return;
-        WL.updateSession(sidRm, function (sess) {
-          var photos = sess.photos || [];
-          if (pid) {
-            sess.photos = photos.filter(function (x) {
-              return x && x.id !== pid;
-            });
-          } else if (pidx != null && pidx !== '') {
-            var ix = parseInt(pidx, 10);
-            if (!isNaN(ix) && ix >= 0 && ix < photos.length) {
-              photos.splice(ix, 1);
-              sess.photos = photos;
-            }
+  function handleWorkoutLogActionClick(e) {
+    var storyBtn = e.target.closest && e.target.closest('.tracking-session-story-btn');
+    if (storyBtn) {
+      var sidStory = storyBtn.getAttribute('data-workout-story-for');
+      if (!sidStory) return;
+      e.preventDefault();
+      e.stopPropagation();
+      var sessStory = findTrackingSessionById(sidStory);
+      if (sessStory) openWorkoutShareModal(sessStory);
+      return;
+    }
+    var editBtn = e.target.closest && e.target.closest('.tracking-session-edit-btn');
+    if (editBtn) {
+      var sidEdit = editBtn.getAttribute('data-session-edit-for');
+      if (!sidEdit) return;
+      e.preventDefault();
+      e.stopPropagation();
+      var sessEdit = findTrackingSessionById(sidEdit);
+      if (sessEdit) openWorkoutEditor(sessEdit);
+      return;
+    }
+    var deleteBtn = e.target.closest && e.target.closest('.tracking-session-delete-btn');
+    if (deleteBtn) {
+      var sidDel = deleteBtn.getAttribute('data-session-delete-for');
+      if (!sidDel) return;
+      e.preventDefault();
+      e.stopPropagation();
+      var sessDel = findTrackingSessionById(sidDel);
+      if (sessDel) deleteWorkoutSession(sessDel);
+      return;
+    }
+    var openEl = e.target.closest && e.target.closest('[data-session-open]');
+    if (openEl) {
+      var sidOpen = openEl.getAttribute('data-session-open');
+      if (!sidOpen) return;
+      e.preventDefault();
+      var sessOpen = findTrackingSessionById(sidOpen);
+      if (sessOpen) openSessionDetail(sessOpen);
+      return;
+    }
+    var rmPhotoBtn = e.target.closest && e.target.closest('.tracking-session-photo-remove');
+    if (rmPhotoBtn && WL && typeof WL.updateSession === 'function') {
+      var sidRm = rmPhotoBtn.getAttribute('data-session-photo-remove-for');
+      var pid = rmPhotoBtn.getAttribute('data-photo-id');
+      var pidx = rmPhotoBtn.getAttribute('data-photo-index');
+      if (!sidRm) return;
+      e.preventDefault();
+      if (!window.confirm('Detach this photo from the workout?')) return;
+      WL.updateSession(sidRm, function (sess) {
+        var photos = sess.photos || [];
+        if (pid) {
+          sess.photos = photos.filter(function (x) {
+            return x && x.id !== pid;
+          });
+        } else if (pidx != null && pidx !== '') {
+          var ix = parseInt(pidx, 10);
+          if (!isNaN(ix) && ix >= 0 && ix < photos.length) {
+            photos.splice(ix, 1);
+            sess.photos = photos;
           }
-        });
-        refreshTrackingUi();
-        return;
-      }
-    });
+        }
+      });
+      refreshTrackingUi();
+    }
+  }
+
+  if (archiveScroll) {
+    archiveScroll.addEventListener('click', handleWorkoutLogActionClick);
+  }
+  if (detailBodyEl) {
+    detailBodyEl.addEventListener('click', handleWorkoutLogActionClick);
   }
 
 

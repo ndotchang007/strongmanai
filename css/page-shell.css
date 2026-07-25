@@ -1,16 +1,45 @@
-/* Consistent page margins — prevents edge-to-edge content on app pages */
+/* Consistent page margins — match dashboard padding across app pages */
 
 body:not(.coach-fullpage):not(.create-focus-mode) .main-wrap
 {
-    padding-left: max(clamp(0.65rem, 2.2vw, 1.15rem), env(safe-area-inset-left, 0px));
-    padding-right: max(clamp(0.65rem, 2.2vw, 1.15rem), env(safe-area-inset-right, 0px));
+    padding-left: max(clamp(1rem, 3vw, 2rem), env(safe-area-inset-left, 0px));
+    padding-right: max(clamp(1rem, 3vw, 2rem), env(safe-area-inset-right, 0px));
+    box-sizing: border-box;
+}
+
+/* Shared vertical rhythm for primary page mains (dashboard is the reference) */
+.dashboard-main,
+.create-main,
+.customize-main,
+.timeline-main,
+.profile-shell,
+.learn-main,
+.info-main,
+.leaderboard-main
+{
+    padding-top: clamp(1.25rem, 3vw, 2rem);
+    padding-bottom: clamp(2rem, 4vw, 3rem);
     box-sizing: border-box;
 }
 
 .sports-editor-mount,
-#user-account-mount
+#profile-account-mount
 {
     padding-inline: 0;
+}
+
+/* Kill leftover orange accent bars above in-app footers */
+.site-footer--app::before,
+.site-footer--compact::before,
+body[data-current-page] .site-footer:not(.site-footer--scroll-gated)::before
+{
+    content: none !important;
+    display: none !important;
+}
+
+body[data-current-page] .site-footer:not(.site-footer--scroll-gated)
+{
+    border-top-color: var(--border-subtle, rgba(100, 100, 100, 0.35));
 }
 
 @media (max-width: 768px)

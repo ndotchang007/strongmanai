@@ -84,12 +84,41 @@
       this.session = S.createSession();
       S.saveSession(this.session);
     }
-    if (isMobileViewport() && this.session.viewMode === 'card' && !existing) {
+    if (
+      !this.isQuickLog() &&
+      isMobileViewport() &&
+      this.session.viewMode === 'card' &&
+      !existing
+    ) {
       this.session.viewMode = 'focus';
       S.saveSession(this.session);
     }
     this._syncLastCompleted();
     this._ensureFocusPointer();
+  };
+
+  Tracker.prototype.isQuickLog = function () {
+    return !!(this.session && this.session.loggingMode === 'quick');
+  };
+
+  Tracker.prototype.setLoggingMode = function (mode) {
+    var next = mode === 'quick' ? 'quick' : 'live';
+    this._flushDomToSession();
+    this.session.loggingMode = next;
+    if (next === 'quick') {
+      this.session.viewMode = 'card';
+      // Quick log is post-hoc — clear live rest/completion UI state.
+      (this.session.exercises || []).forEach(function (ex) {
+        (ex.sets || []).forEach(function (set) {
+          set.completed = false;
+          set.completedAt = null;
+          set.restSeconds = null;
+        });
+      });
+      this.lastCompletedAt = null;
+    }
+    this._persist();
+    this.render();
   };
 
   Tracker.prototype._syncLastCompleted = function () {
@@ -396,6 +425,7 @@
   };
 
   Tracker.prototype.completeSet = function (exerciseId, setId) {
+    if (this.isQuickLog()) return false;
     var found = this._findSet(exerciseId, setId);
     if (!found || found.set.completed) return false;
     var set = found.set;
@@ -422,6 +452,7 @@
   };
 
   Tracker.prototype.toggleSetComplete = function (exerciseId, setId) {
+    if (this.isQuickLog()) return;
     var found = this._findSet(exerciseId, setId);
     if (!found) return;
     var set = found.set;
@@ -481,6 +512,14 @@
 
   Tracker.prototype.loadFromLegacyExercises = function (exercises) {
     this.session.exercises = WS().fromLegacyExercises(exercises);
+    this._persist();
+    this.render();
+  };
+
+  Tracker.prototype.loadFromTrackerExercises = function (exercises) {
+    this.session.exercises = WS().clone(exercises || []);
+    this._syncLastCompleted();
+    this._ensureFocusPointer();
     this._persist();
     this.render();
   };
@@ -725,9 +764,12 @@
     var meta = el('div', 'wt-toolbar-meta');
     var count = this.getExerciseCount();
     meta.appendChild(el('span', 'wt-exercise-count', { text: count + (count === 1 ? ' lift' : ' lifts') }));
+    if (this.isQuickLog()) {
+      meta.appendChild(el('span', 'wt-quick-badge', { text: 'Quick log' }));
+    }
 
     // Workout mode: one-exercise focus only — hide view switcher clutter
-    if (isWorkoutDashboardOpen()) {
+    if (isWorkoutDashboardOpen() || this.isQuickLog()) {
       wrap.appendChild(meta);
       return wrap;
     }
@@ -765,13 +807,18 @@
 
   Tracker.prototype._renderSetRow = function (exercise, set, compact) {
     var S = WS();
-    var row = el('div', 'wt-set-row' + (set.completed ? ' wt-set-row--done' : ''));
+    var quick = this.isQuickLog();
+    var row = el(
+      'div',
+      'wt-set-row' + (!quick && set.completed ? ' wt-set-row--done' : '') + (quick ? ' wt-set-row--quick' : '')
+    );
     row.appendChild(el('span', 'wt-set-label', { text: 'Set ' + set.setNumber }));
 
     var fields = el('div', 'wt-set-fields');
     var weightInp = el('input', 'wt-set-input wt-set-input--weight create-input', {
       type: 'number',
       inputmode: 'decimal',
+      step: window.Units && window.Units.getWeightStep ? String(window.Units.getWeightStep()) : '0.5',
       placeholder: weightPlaceholder(),
       'data-wt-field': 'set-weight',
       'data-exercise-id': exercise.id,
@@ -798,16 +845,18 @@
     fields.appendChild(repsInp);
     row.appendChild(fields);
 
-    var checkBtn = el('button', 'wt-set-check' + (set.completed ? ' wt-set-check--done' : ''), {
-      type: 'button',
-      'data-wt-action': 'toggle-set',
-      'data-exercise-id': exercise.id,
-      'data-set-id': set.id,
-      'aria-label': set.completed ? 'Mark set incomplete' : 'Complete set',
-      'aria-pressed': set.completed ? 'true' : 'false'
-    });
-    checkBtn.innerHTML = set.completed ? '&#10003;' : '&#9633;';
-    row.appendChild(checkBtn);
+    if (!quick) {
+      var checkBtn = el('button', 'wt-set-check' + (set.completed ? ' wt-set-check--done' : ''), {
+        type: 'button',
+        'data-wt-action': 'toggle-set',
+        'data-exercise-id': exercise.id,
+        'data-set-id': set.id,
+        'aria-label': set.completed ? 'Mark set incomplete' : 'Complete set',
+        'aria-pressed': set.completed ? 'true' : 'false'
+      });
+      checkBtn.innerHTML = set.completed ? '&#10003;' : '&#9633;';
+      row.appendChild(checkBtn);
+    }
 
     if (!compact) {
       var delBtn = el('button', 'wt-set-delete', {
@@ -821,7 +870,7 @@
       row.appendChild(delBtn);
     }
 
-    if (set.restSeconds != null && set.completed) {
+    if (!quick && set.restSeconds != null && set.completed) {
       row.appendChild(el('span', 'wt-set-rest', { text: S.formatRest(set.restSeconds) }));
     }
 
@@ -1156,6 +1205,7 @@
         var wInp = el('input', 'wt-sheet-input create-input', {
           type: 'number',
           inputmode: 'decimal',
+          step: window.Units && window.Units.getWeightStep ? String(window.Units.getWeightStep()) : '0.5',
           'data-wt-field': 'set-weight',
           'data-exercise-id': ex.id,
           'data-set-id': set.id
@@ -1189,16 +1239,18 @@
         nCell.appendChild(nInp);
         row.appendChild(nCell);
 
-        var actionCell = el('div', 'wt-sheet-cell wt-sheet-cell--action');
-        var checkBtn = el('button', 'wt-set-check' + (set.completed ? ' wt-set-check--done' : ''), {
-          type: 'button',
-          'data-wt-action': 'toggle-set',
-          'data-exercise-id': ex.id,
-          'data-set-id': set.id
-        });
-        checkBtn.innerHTML = set.completed ? '&#10003;' : '&#9633;';
-        actionCell.appendChild(checkBtn);
-        row.appendChild(actionCell);
+        if (!self.isQuickLog()) {
+          var actionCell = el('div', 'wt-sheet-cell wt-sheet-cell--action');
+          var checkBtn = el('button', 'wt-set-check' + (set.completed ? ' wt-set-check--done' : ''), {
+            type: 'button',
+            'data-wt-action': 'toggle-set',
+            'data-exercise-id': ex.id,
+            'data-set-id': set.id
+          });
+          checkBtn.innerHTML = set.completed ? '&#10003;' : '&#9633;';
+          actionCell.appendChild(checkBtn);
+          row.appendChild(actionCell);
+        }
 
         table.appendChild(row);
       });
@@ -1586,11 +1638,16 @@
 
   Tracker.prototype._renderBody = function () {
     var body = el('div', 'wt-body');
-    if (this.session.viewMode === 'focus') body.appendChild(this._renderFocusView());
-    else if (this.session.viewMode === 'carousel') body.appendChild(this._renderCarouselView());
-    else if (this.session.viewMode === 'spreadsheet') body.appendChild(this._renderSpreadsheetView());
-    else if (this.session.viewMode === 'timeline') body.appendChild(this._renderTimelineView());
-    else if (this.session.viewMode === 'map') body.appendChild(this._renderMapView());
+    var mode = this.session.viewMode;
+    if (this.isQuickLog()) {
+      // Quick log is always a simple set list — no focus / carousel / rest timeline.
+      mode = mode === 'spreadsheet' ? 'spreadsheet' : 'card';
+    }
+    if (mode === 'focus') body.appendChild(this._renderFocusView());
+    else if (mode === 'carousel') body.appendChild(this._renderCarouselView());
+    else if (mode === 'spreadsheet') body.appendChild(this._renderSpreadsheetView());
+    else if (mode === 'timeline') body.appendChild(this._renderTimelineView());
+    else if (mode === 'map') body.appendChild(this._renderMapView());
     else body.appendChild(this._renderCardView());
     return body;
   };
@@ -1599,7 +1656,7 @@
     if (!this.root) return;
     this._flushDomToSession();
     this.root.innerHTML = '';
-    this.root.className = 'workout-tracker';
+    this.root.className = 'workout-tracker' + (this.isQuickLog() ? ' workout-tracker--quick' : '');
     this.root.appendChild(this._renderToolbar());
     this.root.appendChild(this._renderBody());
   };

@@ -1,8 +1,207 @@
 (function () {
   var STORAGE_KEY_BASE = 'strongmanai_workout_split_v1';
   var LEGACY_KEY = STORAGE_KEY_BASE;
-  var DEFAULT_DAYS = ['PUSH', 'PULL', 'LEGS', 'REST', 'ARMS', 'CHEST + BACK', 'REST'];
+  var DEFAULT_DAYS = ['PUSH', 'PULL', 'LEGS', 'REST', 'PUSH', 'PULL', 'REST'];
   var DAY_LETTERS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+
+  function ex(name, sets, reps) {
+    return { name: name, sets: String(sets), reps: String(reps), weight: '' };
+  }
+
+  function plan(title, exercises) {
+    return { title: title, exercises: exercises };
+  }
+
+  /** Built-in starter splits seeded for new users. */
+  function builtInPresetSplits() {
+    var pplDays = ['PUSH', 'PULL', 'LEGS', 'REST', 'PUSH', 'PULL', 'REST'];
+    var pplPlans = [
+      plan('Push', [
+        ex('Barbell bench press', 4, 6),
+        ex('Overhead press', 3, 8),
+        ex('Incline dumbbell press', 3, 10),
+        ex('Lateral raise', 3, 12),
+        ex('Tricep pushdown', 3, 12),
+      ]),
+      plan('Pull', [
+        ex('Barbell row', 4, 6),
+        ex('Lat pulldown', 3, 10),
+        ex('Seated cable row', 3, 10),
+        ex('Face pull', 3, 15),
+        ex('Dumbbell curl', 3, 12),
+      ]),
+      plan('Legs', [
+        ex('Back squat', 4, 6),
+        ex('Romanian deadlift', 3, 8),
+        ex('Leg press', 3, 10),
+        ex('Walking lunge', 3, 10),
+        ex('Calf raise', 3, 15),
+      ]),
+      null,
+      plan('Push', [
+        ex('Dumbbell bench press', 4, 8),
+        ex('Seated dumbbell press', 3, 10),
+        ex('Cable fly', 3, 12),
+        ex('Lateral raise', 3, 15),
+        ex('Overhead tricep extension', 3, 12),
+      ]),
+      plan('Pull', [
+        ex('Pull-up or assisted pull-up', 4, 6),
+        ex('Chest-supported row', 3, 10),
+        ex('Straight-arm pulldown', 3, 12),
+        ex('Rear delt fly', 3, 15),
+        ex('Hammer curl', 3, 12),
+      ]),
+      null,
+    ];
+
+    var ulDays = ['UPPER', 'LOWER', 'REST', 'UPPER', 'LOWER', 'REST', 'ACTIVE RECOVERY'];
+    var ulPlans = [
+      plan('Upper', [
+        ex('Bench press', 4, 6),
+        ex('Barbell row', 4, 6),
+        ex('Overhead press', 3, 8),
+        ex('Lat pulldown', 3, 10),
+        ex('Dumbbell curl', 2, 12),
+        ex('Tricep pushdown', 2, 12),
+      ]),
+      plan('Lower', [
+        ex('Squat', 4, 6),
+        ex('Romanian deadlift', 3, 8),
+        ex('Leg press', 3, 10),
+        ex('Hamstring curl', 3, 12),
+        ex('Calf raise', 3, 15),
+      ]),
+      null,
+      plan('Upper', [
+        ex('Incline press', 4, 8),
+        ex('Seated row', 4, 8),
+        ex('Dumbbell shoulder press', 3, 10),
+        ex('Pull-up or lat pulldown', 3, 8),
+        ex('Lateral raise', 3, 15),
+      ]),
+      plan('Lower', [
+        ex('Front squat or goblet squat', 4, 8),
+        ex('Hip thrust', 3, 10),
+        ex('Walking lunge', 3, 10),
+        ex('Leg extension', 3, 12),
+        ex('Calf raise', 3, 15),
+      ]),
+      null,
+      plan('Active recovery', [
+        ex('Easy bike or walk', 1, '20–30 min'),
+        ex('Mobility circuit', 2, 10),
+      ]),
+    ];
+
+    var fbDays = ['FULL BODY', 'REST', 'FULL BODY', 'REST', 'FULL BODY', 'REST', 'REST'];
+    var fbPlans = [
+      plan('Full body A', [
+        ex('Squat', 3, 8),
+        ex('Bench press', 3, 8),
+        ex('Barbell row', 3, 8),
+        ex('Overhead press', 2, 10),
+        ex('Plank', 3, '30–45s'),
+      ]),
+      null,
+      plan('Full body B', [
+        ex('Deadlift or RDL', 3, 6),
+        ex('Incline press', 3, 8),
+        ex('Lat pulldown', 3, 10),
+        ex('Walking lunge', 3, 10),
+        ex('Face pull', 3, 15),
+      ]),
+      null,
+      plan('Full body C', [
+        ex('Leg press', 3, 10),
+        ex('Dumbbell press', 3, 10),
+        ex('Seated row', 3, 10),
+        ex('Lateral raise', 3, 12),
+        ex('Curl + tricep superset', 2, 12),
+      ]),
+      null,
+      null,
+    ];
+
+    var broDays = ['CHEST', 'BACK', 'SHOULDERS', 'LEGS', 'ARMS', 'REST', 'REST'];
+    var broPlans = [
+      plan('Chest', [
+        ex('Bench press', 4, 6),
+        ex('Incline dumbbell press', 3, 10),
+        ex('Cable fly', 3, 12),
+        ex('Push-up', 2, 12),
+      ]),
+      plan('Back', [
+        ex('Deadlift', 3, 5),
+        ex('Pull-up or lat pulldown', 4, 8),
+        ex('Barbell row', 3, 8),
+        ex('Seated row', 3, 10),
+      ]),
+      plan('Shoulders', [
+        ex('Overhead press', 4, 6),
+        ex('Lateral raise', 4, 12),
+        ex('Rear delt fly', 3, 15),
+        ex('Face pull', 3, 15),
+      ]),
+      plan('Legs', [
+        ex('Squat', 4, 6),
+        ex('Romanian deadlift', 3, 8),
+        ex('Leg press', 3, 10),
+        ex('Leg curl', 3, 12),
+        ex('Calf raise', 4, 12),
+      ]),
+      plan('Arms', [
+        ex('Barbell curl', 3, 10),
+        ex('Hammer curl', 3, 12),
+        ex('Skull crusher', 3, 10),
+        ex('Tricep pushdown', 3, 12),
+      ]),
+      null,
+      null,
+    ];
+
+    return [
+      defaultSplitState({
+        id: 'preset_ppl',
+        programName: 'Push / Pull / Legs',
+        days: pplDays,
+        dayPlans: pplPlans,
+        source: 'preset',
+      }),
+      defaultSplitState({
+        id: 'preset_upper_lower',
+        programName: 'Upper / Lower',
+        days: ulDays,
+        dayPlans: ulPlans,
+        source: 'preset',
+      }),
+      defaultSplitState({
+        id: 'preset_full_body',
+        programName: 'Full Body (3×)',
+        days: fbDays,
+        dayPlans: fbPlans,
+        source: 'preset',
+      }),
+      defaultSplitState({
+        id: 'preset_bro',
+        programName: 'Bro Split',
+        days: broDays,
+        dayPlans: broPlans,
+        source: 'preset',
+      }),
+    ];
+  }
+
+  function defaultLibrary() {
+    var splits = builtInPresetSplits();
+    return {
+      version: 2,
+      activeSplitId: splits[0].id,
+      unseenSplitIds: [],
+      seededPresets: true,
+      splits: splits,
+    };
+  }
 
   function getUserId() {
     var user = typeof window.getCurrentUser === 'function' ? window.getCurrentUser() : null;
@@ -52,16 +251,6 @@
     );
   }
 
-  function defaultLibrary() {
-    var split = defaultSplitState();
-    return {
-      version: 2,
-      activeSplitId: split.id,
-      unseenSplitIds: [],
-      splits: [split],
-    };
-  }
-
   function normalizeDays(arr) {
     var out = [];
     for (var i = 0; i < 7; i++) {
@@ -109,7 +298,7 @@
       programName: raw.programName != null ? String(raw.programName) : '',
       days: days,
       dayPlans: normalizeDayPlans(raw.dayPlans, days),
-      source: raw.source === 'ai' ? 'ai' : 'manual',
+      source: raw.source === 'ai' ? 'ai' : raw.source === 'preset' ? 'preset' : 'manual',
       createdAt: raw.createdAt || new Date().toISOString(),
       updatedAt: raw.updatedAt || raw.createdAt || new Date().toISOString(),
     };
@@ -139,6 +328,20 @@
         var splits = d.splits.map(function (s, i) {
           return normalizeSplit(s, 'split_' + i);
         });
+        // Seed starter presets once for libraries that only have a blank custom split.
+        if (!d.seededPresets) {
+          var onlyBlank =
+            splits.length === 1 &&
+            !String(splits[0].programName || '').trim() &&
+            !(splits[0].dayPlans || []).some(function (p) {
+              return p && p.exercises && p.exercises.length;
+            });
+          if (onlyBlank) {
+            var seeded = defaultLibrary();
+            saveLibrary(seeded, { skipTouch: true, skipPush: true, skipSyncFlag: true });
+            return seeded;
+          }
+        }
         var activeId = d.activeSplitId;
         if (!splits.some(function (s) { return s.id === activeId; })) {
           activeId = splits[0].id;
@@ -151,6 +354,7 @@
                 return splits.some(function (s) { return s.id === id; });
               })
             : [],
+          seededPresets: !!d.seededPresets,
           splits: splits,
         };
       }
