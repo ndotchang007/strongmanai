@@ -4,10 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="strongman-api-base" content="https://strongmanai-api-test.onrender.com/api/v1">
-    <link rel="stylesheet" href="/css/tester-gate.css">
-    <style id="tester-gate-boot">html.tester-gate-pending,html.tester-gate-pending body{background:#08080a!important;margin:0;min-height:100%;overflow:hidden!important}html.tester-gate-pending body>*:not(#tester-gate-overlay){visibility:hidden!important;pointer-events:none!important}html.tester-gate-pending #tester-gate-overlay{visibility:visible!important;pointer-events:auto!important}</style>
-    <script>document.documentElement.classList.add("tester-gate-pending");</script>
-    <script src="/shared/tester-gate.js"></script>
     <title>Strongman AI – Leaderboards</title>
     <link rel="icon" type="image/png" href="/assets/logo.png">
     <link rel="apple-touch-icon" href="/assets/logo.png">
@@ -41,7 +37,7 @@
                 <img src="/assets/icons/explore-filled.png" alt="" class="sidebar-icon sidebar-icon-filled">
                 <span class="sidebar-label">Explore</span>
             </a>
-            <a href="/generate" class="sidebar-link" data-page="generate" aria-label="Generate">
+            <a href="/coach" class="sidebar-link" data-page="generate" aria-label="Generate">
                 <img src="/assets/icons/AI-outline.png" alt="" class="sidebar-icon sidebar-icon-outline">
                 <img src="/assets/icons/AI-outline.png" alt="" class="sidebar-icon sidebar-icon-filled">
                 <span class="sidebar-label">Generate</span>
@@ -51,9 +47,9 @@
                 <img src="/assets/icons/graph-outline.png" alt="" class="sidebar-icon sidebar-icon-filled">
                 <span class="sidebar-label">Tracking</span>
             </a>
-            <a href="/create" class="sidebar-link" data-page="create" aria-label="Create">
-                <img src="/assets/icons/create-outline.png" alt="" class="sidebar-icon sidebar-icon-outline">
-                <img src="/assets/icons/create-outline.png" alt="" class="sidebar-icon sidebar-icon-filled">
+            <a href="/log" class="sidebar-link" data-page="create" aria-label="Create">
+                <img src="/assets/icons/log-outline.png" alt="" class="sidebar-icon sidebar-icon-outline">
+                <img src="/assets/icons/log-outline.png" alt="" class="sidebar-icon sidebar-icon-filled">
                 <span class="sidebar-label">Create</span>
             </a>
         </nav>
@@ -90,15 +86,17 @@
                     </div>
                     <div class="lb-filter-row" role="group" aria-label="Leaderboard type">
                         <span class="lb-filter-label">Leaderboards:</span>
-                        <button type="button" class="lb-filter-btn active" data-group="mode" data-value="exercises">Exercises</button>
+                        <button type="button" class="lb-filter-btn" data-group="mode" data-value="exercises">Exercises</button>
                         <span class="lb-filter-sep">/</span>
-                        <button type="button" class="lb-filter-btn" data-group="mode" data-value="streak">Streak</button>
+                        <button type="button" class="lb-filter-btn active" data-group="mode" data-value="streak">Streak</button>
                         <span class="lb-filter-sep">/</span>
                         <button type="button" class="lb-filter-btn" data-group="mode" data-value="times">Times</button>
+                        <span class="lb-filter-sep">/</span>
+                        <button type="button" class="lb-filter-btn" data-group="mode" data-value="xp">XP</button>
                     </div>
                 </div>
 
-                <div class="lb-board" id="lb-board-exercises" data-lb-board="exercises">
+                <div class="lb-board" id="lb-board-exercises" data-lb-board="exercises" hidden>
                     <div class="lb-board-filters">
                         <div class="lb-picker-row">
                             <label class="lb-picker-label" for="lb-exercise-search">Exercise:</label>
@@ -136,7 +134,7 @@
                     <p class="lb-board-message" id="lb-message-exercises"></p>
                 </div>
 
-                <div class="lb-board" id="lb-board-streak" data-lb-board="streak" hidden>
+                <div class="lb-board" id="lb-board-streak" data-lb-board="streak">
                     <div class="lb-table-wrap">
                         <div class="lb-table-scroll">
                             <table class="lb-table">
@@ -160,6 +158,33 @@
                         </div>
                     </div>
                     <p class="lb-board-message" id="lb-message-streak"></p>
+                </div>
+
+                <div class="lb-board" id="lb-board-xp" data-lb-board="xp" hidden>
+                    <div class="lb-table-wrap">
+                        <div class="lb-table-scroll">
+                            <table class="lb-table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Rank</th>
+                                        <th scope="col">Username</th>
+                                        <th scope="col">XP</th>
+                                        <th scope="col">Level</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="leaderboard-body-xp"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="lb-user-rank-wrap">
+                        <p class="lb-user-rank-heading">Your rank</p>
+                        <div class="lb-user-rank lb-user-rank--3">
+                            <span class="lb-ur-rank" id="lb-xp-rank">—</span>
+                            <span class="lb-ur-name" id="lb-xp-name">—</span>
+                            <span class="lb-ur-stat" id="lb-xp-metric">—</span>
+                        </div>
+                    </div>
+                    <p class="lb-board-message" id="lb-message-xp"></p>
                 </div>
 
                 <div class="lb-board" id="lb-board-times" data-lb-board="times" hidden>
@@ -392,7 +417,7 @@
                 </section>
                 <section class="home-settings-section home-settings-section--footer" aria-labelledby="settings-about-heading">
                     <h3 class="home-settings-section-title" id="settings-about-heading">About</h3>
-                    <p class="home-settings-meta">Strongman AI v1.2</p>
+                    <p class="home-settings-meta">Strongman AI v1.3</p>
                     <div class="home-settings-inline-links">
                         <a href="/legal#terms" class="home-settings-inline-link">Terms</a>
                         <span class="home-settings-sep" aria-hidden="true">·</span>
@@ -406,6 +431,7 @@
     <script src="/shared/api.js"></script>
     <script src="/shared/units.js"></script>
     <script src="/shared/exercise-database.js"></script>
+    <script src="/shared/xp.js"></script>
     <script src="/shared/competitions-store.js"></script>
     <script src="/shared/notification-bell.js"></script>
     <script src="/shared/server-wake.js"></script>

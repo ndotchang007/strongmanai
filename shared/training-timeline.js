@@ -120,7 +120,7 @@
     workout:
       '<svg' +
       SVG_ATTR +
-      '><path d="M6.5 9.5v5M17.5 9.5v5M4 11v2M20 11v2M8 8h8v8H8z"/></svg>',
+      '><path d="M7.5 12h9M4.5 8.5v7M7.5 6.5v11M16.5 6.5v11M19.5 8.5v7"/></svg>',
     injury:
       '<svg' +
       SVG_ATTR +
@@ -504,7 +504,7 @@
           (s.totalIntensity != null && s.totalIntensity !== ''
             ? ' · intensity ' + s.totalIntensity
             : ''),
-        href: '/create#progress',
+        href: '/log#progress',
       });
     });
 
@@ -881,6 +881,10 @@
     collectEvents: collectEvents,
     loadCustomEvents: loadCustomEvents,
     saveCustomEvents: saveCustomEvents,
+    upsertCustom: upsertCustom,
+    removeCustom: removeCustom,
+    iconForType: iconForType,
+    typeMeta: typeMeta,
     TYPE_OPTIONS: TYPE_OPTIONS,
     mount: mount,
     render: render,

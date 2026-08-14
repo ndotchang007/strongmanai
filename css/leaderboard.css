@@ -215,10 +215,19 @@
 
 .lb-picker-select
 {
+    -webkit-appearance: none;
+    appearance: none;
     flex: 1 1 8rem;
     min-width: 8rem;
     max-width: 12rem;
+    padding-right: 1.85rem;
+    background-color: rgba(255, 255, 255, 0.04);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1.5 1.75L6 6.25L10.5 1.75' stroke='%23a1a1aa' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.7rem center;
+    background-size: 11px 7px;
     cursor: pointer;
+    color-scheme: dark;
 }
 
 .lb-picker-select option[disabled]
@@ -1143,7 +1152,12 @@ body.lb-public-page
     display: flex;
     flex-direction: column;
     min-height: 100vh;
-    background: #111;
+    background: var(--bg-page, #000);
+}
+
+body.lb-public-page.has-mkt-nav .main-wrap
+{
+    padding-top: 8px;
 }
 
 .lb-public-header
@@ -1155,7 +1169,7 @@ body.lb-public-page
     gap: 0.75rem 1rem;
     padding: 0.85rem 1.25rem;
     border-bottom: 1px solid rgba(100, 100, 100, 0.42);
-    font-family: var(--font, "DM Sans", system-ui, sans-serif);
+    font-family: var(--font, "Inter Tight", system-ui, sans-serif);
 }
 
 .lb-public-brand
@@ -1202,7 +1216,7 @@ body.lb-public-page .main-wrap
 {
     display: none;
     text-align: center;
-    font-family: var(--font, "DM Sans", system-ui, sans-serif);
+    font-family: var(--font, "Inter Tight", system-ui, sans-serif);
     font-size: 0.95rem;
     color: var(--text-muted, #9a9a9a);
     margin: 0 0 1.25rem;

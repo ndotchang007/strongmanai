@@ -1,29 +1,46 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-marketing="1">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="strongman-api-base" content="https://strongmanai-api-test.onrender.com/api/v1">
-    <link rel="stylesheet" href="/css/tester-gate.css">
-    <style id="tester-gate-boot">html.tester-gate-pending,html.tester-gate-pending body{background:#08080a!important;margin:0;min-height:100%;overflow:hidden!important}html.tester-gate-pending body>*:not(#tester-gate-overlay){visibility:hidden!important;pointer-events:none!important}html.tester-gate-pending #tester-gate-overlay{visibility:visible!important;pointer-events:auto!important}</style>
-    <script>document.documentElement.classList.add("tester-gate-pending");</script>
-    <script src="/shared/tester-gate.js"></script>
     <title>Strongman AI – Leaderboards</title>
     <link rel="icon" type="image/png" href="/assets/logo.png">
     <link rel="apple-touch-icon" href="/assets/logo.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="/shared/theme.js"></script>
+    <link rel="stylesheet" href="/css/marketing-nav.css">
     <link rel="stylesheet" href="/css/home.css">
     <link rel="stylesheet" href="/css/leaderboard.css">
+    <link rel="stylesheet" href="/css/cookie-consent.css">
 </head>
 <body class="lb-public-page" data-leaderboard-public="true">
-    <header class="lb-public-header">
-        <a href="/" class="lb-public-brand">STRONGMAN <span>AI</span></a>
-        <nav class="lb-public-nav" aria-label="Account">
-            <a href="/login">Sign in</a>
-            <a href="/signup">Sign up</a>
-        </nav>
-    </header>
-    <div class="main-wrap">
+    <header class="mkt-nav" id="mkt-nav">
+  <div class="mkt-nav-inner">
+    <a class="mkt-brand" href="/">
+      <img class="mkt-brand-logo" src="/assets/logo.png" alt="" width="22" height="22" decoding="async">
+      Strongman AI
+    </a>
+    <div class="mkt-nav-right">
+      <a href="/blog">Blog</a>
+      <a href="/leaderboards">Leaderboards</a>
+      <a href="/login">Login</a>
+      <a href="/#pricing">Pricing</a>
+      <a class="mkt-btn" href="/signup">Start free</a>
+    </div>
+    <button type="button" class="mkt-burger" id="mkt-burger" aria-label="Menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+<div class="mkt-panel" id="mkt-panel">
+  <a href="/blog">Blog</a>
+  <a href="/leaderboards">Leaderboards</a>
+  <a href="/login">Login</a>
+  <a href="/#pricing">Pricing</a>
+  <a class="mkt-btn" href="/signup">Start free</a>
+</div>
+<div class="main-wrap">
         <main class="lb-page">
             <section class="lb-section lb-section--leaderboards" aria-labelledby="lb-leaderboards-heading">
                 <h1 class="lb-section-title" id="lb-leaderboards-heading">Leaderboards</h1>
@@ -41,15 +58,17 @@
                     </div>
                     <div class="lb-filter-row" role="group" aria-label="Leaderboard type">
                         <span class="lb-filter-label">Leaderboards:</span>
-                        <button type="button" class="lb-filter-btn active" data-group="mode" data-value="exercises">Exercises</button>
+                        <button type="button" class="lb-filter-btn" data-group="mode" data-value="exercises">Exercises</button>
                         <span class="lb-filter-sep">/</span>
-                        <button type="button" class="lb-filter-btn" data-group="mode" data-value="streak">Streak</button>
+                        <button type="button" class="lb-filter-btn active" data-group="mode" data-value="streak">Streak</button>
                         <span class="lb-filter-sep">/</span>
                         <button type="button" class="lb-filter-btn" data-group="mode" data-value="times">Times</button>
+                        <span class="lb-filter-sep">/</span>
+                        <button type="button" class="lb-filter-btn" data-group="mode" data-value="xp">XP</button>
                     </div>
                 </div>
 
-                <div class="lb-board" id="lb-board-exercises" data-lb-board="exercises">
+                <div class="lb-board" id="lb-board-exercises" data-lb-board="exercises" hidden>
                     <div class="lb-board-filters">
                         <div class="lb-picker-row">
                             <label class="lb-picker-label" for="lb-exercise-search">Exercise:</label>
@@ -87,7 +106,7 @@
                     <p class="lb-board-message" id="lb-message-exercises"></p>
                 </div>
 
-                <div class="lb-board" id="lb-board-streak" data-lb-board="streak" hidden>
+                <div class="lb-board" id="lb-board-streak" data-lb-board="streak">
                     <div class="lb-table-wrap">
                         <div class="lb-table-scroll">
                             <table class="lb-table">
@@ -111,6 +130,25 @@
                         </div>
                     </div>
                     <p class="lb-board-message" id="lb-message-streak"></p>
+                </div>
+
+                <div class="lb-board" id="lb-board-xp" data-lb-board="xp" hidden>
+                    <div class="lb-table-wrap">
+                        <div class="lb-table-scroll">
+                            <table class="lb-table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Rank</th>
+                                        <th scope="col">Username</th>
+                                        <th scope="col">XP</th>
+                                        <th scope="col">Level</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="leaderboard-body-xp"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <p class="lb-board-message" id="lb-message-xp"></p>
                 </div>
 
                 <div class="lb-board" id="lb-board-times" data-lb-board="times" hidden>
@@ -227,7 +265,10 @@
     <script src="/shared/api.js"></script>
     <script src="/shared/units.js"></script>
     <script src="/shared/exercise-database.js"></script>
+    <script src="/shared/xp.js"></script>
     <script src="/shared/site-footer-email.js"></script>
     <script src="/js/leaderboard.js"></script>
+    <script src="/shared/marketing-nav.js"></script>
+    <script src="/shared/cookie-consent.js"></script>
 </body>
 </html>

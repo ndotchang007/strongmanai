@@ -147,7 +147,7 @@
 .footer-email-btn--primary
 {
     background: var(--accent);
-    color: #0a0a0a;
+    color: var(--on-accent-text, #0a0a0a);
     border-color: var(--accent);
 }
 .footer-email-btn--primary:hover

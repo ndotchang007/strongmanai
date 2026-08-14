@@ -17,6 +17,33 @@
     return d.innerHTML;
   }
 
+  /** YYYY-MM-DD → YYYY-MM for month inputs */
+  function dateToMonthValue(iso) {
+    if (!iso) return '';
+    var s = String(iso).trim();
+    if (/^\d{4}-\d{2}$/.test(s)) return s;
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s.slice(0, 7);
+    return '';
+  }
+
+  /** Month estimate → first day of month */
+  function monthToStartDate(yyyyMm) {
+    var m = dateToMonthValue(yyyyMm);
+    return m ? m + '-01' : null;
+  }
+
+  /** Month estimate → last day of month */
+  function monthToEndDate(yyyyMm) {
+    var m = dateToMonthValue(yyyyMm);
+    if (!m) return null;
+    var parts = m.split('-');
+    var y = parseInt(parts[0], 10);
+    var mo = parseInt(parts[1], 10);
+    if (!y || !mo) return null;
+    var last = new Date(y, mo, 0).getDate();
+    return m + '-' + (last < 10 ? '0' : '') + last;
+  }
+
   function programLabel(type) {
     var AC = window.AthleteContext;
     if (AC && AC.PROGRAM_LABELS && AC.PROGRAM_LABELS[type]) {
@@ -231,13 +258,14 @@
       dayChip('sport-modal-game', 0, 'S') +
       '</div>' +
       '<div class="sport-modal-dates">' +
-      '<div><label class="sport-modal-label" for="sport-modal-season-start">Season start</label>' +
-      '<input type="date" id="sport-modal-season-start" class="buddy-field customize-input" value="' +
-      escapeHtml(entry.seasonStartDate || '') +
-      '"></div>' +
-      '<div><label class="sport-modal-label" for="sport-modal-season-end">Season end</label>' +
-      '<input type="date" id="sport-modal-season-end" class="buddy-field customize-input" value="' +
-      escapeHtml(entry.seasonEndDate || '') +
+      '<div><label class="sport-modal-label" for="sport-modal-season-start-month">Season start month</label>' +
+      '<input type="month" id="sport-modal-season-start-month" class="buddy-field customize-input" value="' +
+      escapeHtml(dateToMonthValue(entry.seasonStartDate)) +
+      '">' +
+      '<p class="sport-modal-hint">Approximate is fine — most athletes just know the month.</p></div>' +
+      '<div><label class="sport-modal-label" for="sport-modal-season-end-month">Season end month</label>' +
+      '<input type="month" id="sport-modal-season-end-month" class="buddy-field customize-input" value="' +
+      escapeHtml(dateToMonthValue(entry.seasonEndDate)) +
       '"></div></div>' +
       '<div class="sport-modal-dates">' +
       '<div><label class="sport-modal-label" for="sport-modal-next-date">Next ' +
@@ -327,7 +355,7 @@
       warnings.push('No practice or game days selected yet.');
     }
     if (!entry.seasonStartDate && !entry.seasonEndDate) {
-      warnings.push('Season dates not set.');
+      warnings.push('Season months not set (approximate is fine).');
     }
     if (!entry.equipmentAccess) warnings.push('Equipment access not set.');
     return warnings;
@@ -366,8 +394,8 @@
       gameDays: gameDays,
       skipPracticeDays: skipPracticeDays,
       equipmentAccess: equipmentRaw || null,
-      seasonStartDate: (el('sport-modal-season-start') || {}).value || null,
-      seasonEndDate: (el('sport-modal-season-end') || {}).value || null,
+      seasonStartDate: monthToStartDate((el('sport-modal-season-start-month') || {}).value),
+      seasonEndDate: monthToEndDate((el('sport-modal-season-end-month') || {}).value),
       nextEventDate: (el('sport-modal-next-date') || {}).value || null,
       nextEventLabel: ((el('sport-modal-next-label') || {}).value || '').trim() || null,
       isPrimary: false,

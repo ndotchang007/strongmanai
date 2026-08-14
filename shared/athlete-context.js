@@ -549,6 +549,123 @@
     return needsGlobalSportsSetup(user);
   }
 
+  function truncatePromptText(text, maxLen) {
+    var s = String(text || '').trim();
+    if (!s) return '';
+    if (s.length <= maxLen) return s;
+    return s.slice(0, Math.max(0, maxLen - 1)).trim() + '…';
+  }
+
+  /**
+   * Compact context for coach chat (speed). Full block still available via buildCoachPromptBlock.
+   */
+  function buildCompactCoachPromptBlock(user, localExtras) {
+    localExtras = localExtras || {};
+    if (!user) return '';
+    var ctx = loadAthleteContext(user);
+    var sports = getSports(ctx);
+    var sportFocused = isSportFocusedGoal(ctx);
+    var lines = ['[Athlete context — tailor advice and workouts to schedule and goals]'];
+
+    if (ctx.primaryGoal === 'general_health') {
+      lines.push('Profile: general health / daily exercise.');
+    } else if (ctx.primaryGoal === 'strength' || ctx.primaryGoal === 'aesthetics') {
+      lines.push('Profile: recreational lifter.');
+    } else if (sportFocused) {
+      lines.push('Profile: student-athlete.');
+    } else {
+      lines.push('Profile: structured training.');
+    }
+
+    if (ctx.gradeLevel) lines.push('Grade: ' + ctx.gradeLevel);
+
+    if (sportFocused || sports.length) {
+      sports.slice(0, 3).forEach(function (entry, i) {
+        var comp = competitionLabelForEntry(entry);
+        var sportLine = 'Sport ' + (i + 1) + ': ' + entry.sport;
+        if (entry.position) sportLine += ' — ' + entry.position;
+        lines.push(sportLine);
+        var phase = resolveSeasonPhase(entry);
+        if (phase && SEASON_LABELS[phase]) {
+          lines.push('  Season: ' + SEASON_LABELS[phase]);
+        }
+        var practice = formatWeekdays(entry.practiceDays);
+        if (practice) lines.push('  Practice: ' + practice);
+        if (entry.gameDays && entry.gameDays.length) {
+          lines.push(
+            '  ' +
+              comp +
+              ': ' +
+              entry.gameDays
+                .map(function (g) {
+                  return WEEKDAY_SHORT[g.weekday];
+                })
+                .join(', ')
+          );
+        }
+        if (entry.nextEventDate) {
+          lines.push(
+            '  Next ' + (entry.nextEventLabel || comp) + ': ' + entry.nextEventDate
+          );
+        }
+      });
+    }
+
+    var goal = GOAL_LABELS[ctx.primaryGoal] || ctx.primaryGoal;
+    if (goal) lines.push('Primary goal: ' + goal);
+    if (user.experience && EXPERIENCE_LABELS[user.experience]) {
+      lines.push('Experience: ' + EXPERIENCE_LABELS[user.experience]);
+    }
+    if (user.experience === 'beginner') {
+      lines.push(
+        'BEGINNER MODE: Prefer machines/cables; avoid advanced free-weight lifts unless asked; short form cues; 2–3 sets, conservative loads.'
+      );
+    }
+    if (user.equipment && EQUIPMENT_LABELS[user.equipment]) {
+      lines.push('Equipment: ' + EQUIPMENT_LABELS[user.equipment]);
+    }
+    if (ctx.homeGym && Array.isArray(ctx.homeGym.equipment) && ctx.homeGym.equipment.length) {
+      lines.push(
+        'Home gym: ' +
+          ctx.homeGym.equipment
+            .slice(0, 12)
+            .map(function (item) {
+              var bit = item.name;
+              if (item.weightCalibration && item.weightCalibration.rule) {
+                bit += ' (' + item.weightCalibration.rule + ')';
+              }
+              return bit;
+            })
+            .join('; ')
+      );
+    }
+
+    var hint = getTodayTrainingHint(user);
+    lines.push('Today: ' + hint.label + ' — ~' + hint.maxMinutes + ' min cap.');
+    if (hint.kind === 'game') {
+      lines.push('Competition day — keep loading light.');
+    } else if (hint.kind === 'practice') {
+      lines.push('Practice day — complementary gym work.');
+    }
+
+    var notes = localExtras.notes || ctx.notes;
+    var knownNotes = ctx.knownNotes;
+    if (knownNotes && String(knownNotes).trim()) {
+      lines.push('Profile notes: ' + truncatePromptText(knownNotes, 500));
+    }
+    if (notes && String(notes).trim()) {
+      lines.push('Extra notes: ' + truncatePromptText(notes, 400));
+    }
+    if (localExtras.favoriteMovements && String(localExtras.favoriteMovements).trim()) {
+      lines.push(
+        'Favorite movements: ' + truncatePromptText(localExtras.favoriteMovements, 200)
+      );
+    }
+
+    lines.push('[End athlete context]');
+    return lines.join('\n');
+  }
+
   function buildCoachPromptBlock(user, localExtras) {
     localExtras = localExtras || {};
     if (!user) return '';
@@ -700,7 +817,7 @@
   }
 
   function buildThreadPayload(user, thread, localExtras) {
-    var block = buildCoachPromptBlock(user, localExtras);
+    var block = buildCompactCoachPromptBlock(user, localExtras);
     var messages = Array.isArray(thread) ? thread.slice() : [];
     return {
       contextBlock: block,
@@ -724,6 +841,7 @@
     competitionLabel: competitionLabel,
     competitionLabelForEntry: competitionLabelForEntry,
     buildCoachPromptBlock: buildCoachPromptBlock,
+    buildCompactCoachPromptBlock: buildCompactCoachPromptBlock,
     wrapPromptWithContext: wrapPromptWithContext,
     buildThreadPayload: buildThreadPayload,
     isProfileComplete: isProfileComplete,

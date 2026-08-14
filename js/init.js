@@ -5,7 +5,7 @@
   var MIN_AGE = 16;
   var MAX_AGE = 110;
   var USERNAME_RE = /^[A-Za-z0-9_]{3,30}$/;
-  var QUESTIONNAIRE_STEPS = 9;
+  var QUESTIONNAIRE_STEPS = 8;
   var REFINE_MODE = /(?:^|[?&])refine=1(?:&|$)/.test(window.location.search || '');
   var REFINE_RETURN_PATH = '/customize';
   var REFINE_SLIDE_KEYS = [
@@ -19,6 +19,8 @@
     'try-reason',
     'thanks',
   ];
+  /** First-run: identity only. Training prefs live on /customize + settings. */
+  var IDENTITY_SLIDE_KEYS = ['welcome', 'basic', 'dob', 'thanks'];
 
   var EXPERIENCE_VALUES = ['beginner', 'intermediate', 'advanced'];
   var EXPERIENCE_LABELS = ['Beginner', 'Intermediate', 'Advanced'];
@@ -119,24 +121,10 @@
     ],
   };
 
-  var SLIDE_ORDER = [
-    'welcome',
-    'basic',
-    'dob',
-    'small-goals',
-    'big-goals',
-    'discomfort',
-    'machines',
-    'sliders',
-    'favorite-exercises',
-    'least-favorite-exercises',
-    'try-reason',
-    'sports',
-    'thanks',
-  ];
+  var SLIDE_ORDER = IDENTITY_SLIDE_KEYS;
 
-  var ACTIVE_SLIDE_ORDER = REFINE_MODE ? REFINE_SLIDE_KEYS : SLIDE_ORDER;
-  var ACTIVE_QUESTIONNAIRE_STEPS = REFINE_MODE ? 8 : QUESTIONNAIRE_STEPS;
+  var ACTIVE_SLIDE_ORDER = REFINE_MODE ? REFINE_SLIDE_KEYS : IDENTITY_SLIDE_KEYS;
+  var ACTIVE_QUESTIONNAIRE_STEPS = REFINE_MODE ? QUESTIONNAIRE_STEPS : 0;
 
   var currentUser =
     typeof window.getCurrentUser === 'function' ? window.getCurrentUser() : null;
@@ -320,10 +308,10 @@
   }
 
   function questionnaireIndex(index) {
+    if (!REFINE_MODE) return -1;
     var key = slideKeyAt(index);
     var qStart = ACTIVE_SLIDE_ORDER.indexOf('small-goals');
-    var qEndKey = REFINE_MODE ? 'try-reason' : 'sports';
-    var qEnd = ACTIVE_SLIDE_ORDER.indexOf(qEndKey);
+    var qEnd = ACTIVE_SLIDE_ORDER.indexOf('try-reason');
     var slideIdx = ACTIVE_SLIDE_ORDER.indexOf(key);
     if (slideIdx < qStart || slideIdx > qEnd) return -1;
     return slideIdx - qStart;
@@ -516,7 +504,11 @@
         dobDay: parts.day,
         dobYear: parts.year,
       });
-      goNext();
+      if (REFINE_MODE) {
+        goNext();
+        return;
+      }
+      handleIdentityFinish();
     });
   }
 
@@ -1025,6 +1017,47 @@
     };
   }
 
+  function buildIdentityPayload() {
+    var data = getInitData();
+    var iso =
+      (data.dobIso && String(data.dobIso).trim()) ||
+      isoFromParts(data.dobYear, data.dobMonth, data.dobDay);
+    return {
+      username: data.username || null,
+      firstName: data.firstName || null,
+      lastName: data.lastName || null,
+      dateOfBirth: iso || null,
+      weight: null,
+      height: null,
+      measurement: data.measurement || 'metric',
+      experience: 'beginner',
+      equipment: 'local',
+      timeAvailable: '1hr',
+      reason: 'health',
+      source: null,
+      profileInitialized: true,
+      lastSeenVersion:
+        (window.VERSION_CATALOG && window.VERSION_CATALOG.current) || 'v1.3',
+      athleteContext: {
+        sports: [],
+        sport: null,
+        sportId: null,
+        position: null,
+        gradeLevel: null,
+        seasonPhase: null,
+        primaryGoal: 'general_health',
+        schoolDays: [1, 2, 3, 4, 5],
+        practiceDays: [],
+        gameDays: [],
+        schoolNightMaxMinutes: 45,
+        weekendMaxMinutes: 90,
+        knownNotes: null,
+        notes: null,
+        homeGym: null,
+      },
+    };
+  }
+
   function buildProfilePayload() {
     var data = getInitData();
     var iso =
@@ -1049,30 +1082,20 @@
       source: data.source || (data.tryReason && data.tryReason[0]) || null,
       profileInitialized: true,
       lastSeenVersion:
-        (window.VERSION_CATALOG && window.VERSION_CATALOG.current) || 'v1.2',
+        (window.VERSION_CATALOG && window.VERSION_CATALOG.current) || 'v1.3',
       athleteContext: buildAthleteContextPayload(data),
     };
   }
 
   function finishAndRedirect() {
     showSlide(ACTIVE_SLIDE_ORDER.indexOf('thanks'));
-    var data = getInitData();
-    var sportFocused = isSportFocusedReason(inferReasonFromGoals(data)) && !data.noSports;
     var dest = REFINE_MODE ? REFINE_RETURN_PATH : HOMEPAGE_PATH;
     var thanksSubtitle = document.getElementById('thanks-subtitle');
     if (!REFINE_MODE) {
-      if (sportFocused) {
-        dest = '/customize?setup=1';
-        if (thanksSubtitle) {
-          thanksSubtitle.textContent =
-            'Next up: set your practice nights and game days so Rocky can coach around your real schedule…';
-        }
-      } else {
-        dest = '/home';
-        if (thanksSubtitle) {
-          thanksSubtitle.textContent =
-            'You\'re ready to log workouts, chat with Rocky, and build your daily habit…';
-        }
+      dest = '/home';
+      if (thanksSubtitle) {
+        thanksSubtitle.textContent =
+          'You\'re in. Tune equipment, schedule, and goals anytime in User settings…';
       }
     } else if (thanksSubtitle) {
       thanksSubtitle.textContent = 'Taking you back to your settings…';
@@ -1151,26 +1174,13 @@
       });
   }
 
-  function handleFinish(e) {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-    if (slideKeyAt(currentIndex) !== 'sports' || proceedInFlight) return;
-
-    var err = validateQuestionStep('sports');
-    if (err) {
-      showStepError('sports', err);
-      return;
-    }
-    hideStepError('sports');
-
+  function handleIdentityFinish() {
+    if (proceedInFlight) return;
     var data = getInitData();
     var dobCheck = validateDob(
       data.dobIso || isoFromParts(data.dobYear, data.dobMonth, data.dobDay)
     );
     if (!dobCheck.ok) {
-      showSlide(SLIDE_ORDER.indexOf('dob'));
       if (formDobError) {
         formDobError.textContent = dobCheck.message;
         formDobError.hidden = false;
@@ -1179,64 +1189,47 @@
     }
 
     proceedInFlight = true;
-    persistSliders();
-    setInitData(data);
-
-    var payload = buildProfilePayload();
-    var btnFinish = document.getElementById('btn-finish');
-    if (btnFinish) btnFinish.disabled = true;
+    var payload = buildIdentityPayload();
+    var dobSubmit = formDob && formDob.querySelector('button[type="submit"]');
+    if (dobSubmit) dobSubmit.disabled = true;
 
     window
       .apiPut('/users/' + currentUser.id, payload)
       .then(function (res) {
         return res.json().then(function (body) {
           proceedInFlight = false;
-          if (btnFinish) btnFinish.disabled = false;
+          if (dobSubmit) dobSubmit.disabled = false;
 
           if (!res.ok) {
-            var errEl = document.getElementById('error-sports');
             var policyHit = apiBodyPolicyHit(body);
-            if (policyHit && errEl) {
-              showNamePolicyOnEl(errEl, policyHit);
-              errEl.hidden = false;
-            } else {
-              showStepError(
-                'sports',
-                (body && body.error) || 'Could not save. Try again.'
-              );
+            if (formDobError) {
+              if (policyHit) {
+                showNamePolicyOnEl(formDobError, policyHit);
+              } else {
+                formDobError.textContent =
+                  (body && body.error) || 'Could not save. Try again.';
+              }
+              formDobError.hidden = false;
             }
             return;
           }
           if (body && typeof window.setCurrentUser === 'function') {
             window.setCurrentUser(body);
           }
+          try {
+            localStorage.removeItem(INIT_DATA_KEY);
+          } catch (e) {}
           finishAndRedirect();
         });
       })
       .catch(function () {
         proceedInFlight = false;
-        if (btnFinish) btnFinish.disabled = false;
-        showStepError('sports', 'Network error. Check your connection and try again.');
+        if (dobSubmit) dobSubmit.disabled = false;
+        if (formDobError) {
+          formDobError.textContent = 'Network error. Check your connection and try again.';
+          formDobError.hidden = false;
+        }
       });
-  }
-
-  var btnFinish = document.getElementById('btn-finish');
-  if (btnFinish) {
-    btnFinish.addEventListener('click', handleFinish);
-  }
-
-  var btnSkipSports = document.getElementById('btn-skip-sports');
-  if (btnSkipSports) {
-    btnSkipSports.addEventListener('click', function () {
-      if (slideKeyAt(currentIndex) !== 'sports' || proceedInFlight) return;
-      var data = getInitData();
-      data.noSports = true;
-      data.sportSelections = [];
-      data.gradeLevel = null;
-      setInitData(data);
-      hideStepError('sports');
-      handleFinish();
-    });
   }
 
   function restoreFields() {
@@ -1289,6 +1282,10 @@
     document.body.classList.add('init-page--refine');
     var brandLink = document.querySelector('.init-brand');
     if (brandLink) brandLink.setAttribute('href', REFINE_RETURN_PATH);
+    var identityFinishBtn = document.getElementById('btn-identity-finish');
+    if (identityFinishBtn) identityFinishBtn.textContent = 'Continue';
+  } else {
+    document.body.classList.add('init-page--identity');
   }
   // Re-apply home gym after refine bootstrap loads stored scan.
   if (initHomeGymScanCtl && typeof initHomeGymScanCtl.setHomeGym === 'function') {

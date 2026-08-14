@@ -27,13 +27,14 @@
     var mount = document.getElementById('info-versions-mount');
     if (!mount || !window.VERSION_CATALOG) return;
 
-    var release = window.VERSION_CATALOG.get('v1.2');
+    var currentSlug = window.VERSION_CATALOG.current || 'v1.3';
+    var release = window.VERSION_CATALOG.get(currentSlug);
     if (!release) return;
 
     var link = document.createElement('a');
     link.className = 'survey-card survey-card--current';
-    link.href = '/versions/v1.2';
-    link.setAttribute('aria-label', 'Read patch notes for Version 1.2');
+    link.href = '/versions/' + encodeURIComponent(currentSlug);
+    link.setAttribute('aria-label', 'Read patch notes for ' + (release.title || currentSlug));
 
     link.innerHTML =
       '<div class="survey-card-top">' +

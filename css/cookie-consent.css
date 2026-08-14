@@ -5,8 +5,8 @@
   bottom: 0;
   z-index: 12000;
   padding: max(0.65rem, env(safe-area-inset-bottom, 0px)) max(1rem, env(safe-area-inset-right, 0px)) max(0.75rem, env(safe-area-inset-bottom, 0px)) max(1rem, env(safe-area-inset-left, 0px));
-  background: rgba(12, 12, 14, 0.96);
-  border-top: 1px solid rgba(100, 100, 100, 0.45);
+  background: rgba(0, 0, 0, 0.94);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.35);
@@ -32,20 +32,20 @@
 .cookie-consent-text {
   margin: 0;
   flex: 1 1 16rem;
-  font-family: var(--font, "DM Sans", system-ui, sans-serif);
+  font-family: var(--font, "Inter Tight", system-ui, sans-serif);
   font-size: 0.8125rem;
   line-height: 1.5;
-  color: rgba(255, 255, 255, 0.72);
+  color: var(--text-muted, #9a9aa2);
 }
 
 .cookie-consent-link {
-  color: #ff8c00;
+  color: var(--accent, #ff8c00);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
 
 .cookie-consent-link:hover {
-  color: #ffb04d;
+  color: var(--accent-bright, #ffb04d);
 }
 
 .cookie-consent-accept {
@@ -53,11 +53,11 @@
   padding: 0.55rem 1.1rem;
   border: none;
   border-radius: 8px;
-  font-family: var(--font, "DM Sans", system-ui, sans-serif);
+  font-family: var(--font, "Inter Tight", system-ui, sans-serif);
   font-size: 0.8125rem;
   font-weight: 600;
-  color: #0a0a0a;
-  background: linear-gradient(180deg, #ff9f2e 0%, #ff8c00 100%);
+  color: var(--on-accent-text, #08080a);
+  background: var(--accent, #ff5a1f);
   cursor: pointer;
   transition: filter 0.2s ease;
 }

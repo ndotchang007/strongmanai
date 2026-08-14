@@ -216,79 +216,73 @@
     go(0);
   });
 
-  const nav = document.querySelector('.page2-nav-inner');
-  const slider = document.querySelector('.page2-nav-slider');
-  const navButtons = document.querySelectorAll('.page2-nav-btn');
-  const tabContents = document.querySelectorAll('.page2-tab-content');
+  (function initLegacyPage2Tabs() {
+    var nav = document.querySelector('.page2-nav-inner');
+    var slider = document.querySelector('.page2-nav-slider');
+    var navButtons = document.querySelectorAll('.page2-nav-btn');
+    var tabContents = document.querySelectorAll('.page2-tab-content');
+    if (!navButtons.length || !tabContents.length) return;
 
-  var pendingGeneratePrompt = '';
-  var generateReadyBar = document.getElementById('page2-generate-ready');
-  var openGenerateDraftBtn = document.getElementById('page2-open-generate-modal');
-
-  var generateForm = document.getElementById('generate-ai-section');
-  if (generateForm) {
-    generateForm.addEventListener('submit', function (e) {
-      e.preventDefault();
-      var input = document.getElementById('page2-generate-prompt');
-      var prompt = input && input.value ? input.value.trim() : '';
-      if (!prompt) return;
-      pendingGeneratePrompt = prompt;
-      if (generateReadyBar) generateReadyBar.hidden = false;
-    });
-  }
-  if (openGenerateDraftBtn) {
-    openGenerateDraftBtn.addEventListener('click', function () {
-      if (!pendingGeneratePrompt) return;
-      openGenerateWorkoutModal(pendingGeneratePrompt);
-    });
-  }
-
-  function positionSlider(button) {
-    if (!nav || !slider || !button) return;
-    const navRect = nav.getBoundingClientRect();
-    const btnRect = button.getBoundingClientRect();
-    slider.style.left = (btnRect.left - navRect.left) + 'px';
-    slider.style.width = btnRect.width + 'px';
-  }
-
-  function setActive(btn) {
-    navButtons.forEach(function (b) {
-      b.classList.remove('active');
-    });
-    btn.classList.add('active');
-    positionSlider(btn);
-  }
-
-  if (nav && slider && navButtons.length) {
-    const activeBtn = document.querySelector('.page2-nav-btn.active');
-    if (activeBtn) {
-      positionSlider(activeBtn);
+    var pendingGeneratePrompt = '';
+    var generateReadyBar = document.getElementById('page2-generate-ready');
+    var openGenerateDraftBtn = document.getElementById('page2-open-generate-modal');
+    var generateForm = document.getElementById('generate-ai-section');
+    if (generateForm) {
+      generateForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var input = document.getElementById('page2-generate-prompt');
+        var prompt = input && input.value ? input.value.trim() : '';
+        if (!prompt) return;
+        pendingGeneratePrompt = prompt;
+        if (generateReadyBar) generateReadyBar.hidden = false;
+      });
     }
-    window.addEventListener('resize', function () {
-      const active = document.querySelector('.page2-nav-btn.active');
-      if (active) positionSlider(active);
-    });
-  }
+    if (openGenerateDraftBtn) {
+      openGenerateDraftBtn.addEventListener('click', function () {
+        if (!pendingGeneratePrompt) return;
+        openGenerateWorkoutModal(pendingGeneratePrompt);
+      });
+    }
 
-  if (!navButtons.length || !tabContents.length) return;
+    function positionSlider(button) {
+      if (!nav || !slider || !button) return;
+      var navRect = nav.getBoundingClientRect();
+      var btnRect = button.getBoundingClientRect();
+      slider.style.left = btnRect.left - navRect.left + 'px';
+      slider.style.width = btnRect.width + 'px';
+    }
 
-  navButtons.forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      const tab = this.getAttribute('data-tab');
-      if (!tab) return;
+    function setActive(btn) {
+      navButtons.forEach(function (b) {
+        b.classList.remove('active');
+      });
+      btn.classList.add('active');
+      positionSlider(btn);
+    }
 
-      setActive(this);
+    if (nav && slider) {
+      var activeBtn = document.querySelector('.page2-nav-btn.active');
+      if (activeBtn) positionSlider(activeBtn);
+      window.addEventListener('resize', function () {
+        var active = document.querySelector('.page2-nav-btn.active');
+        if (active) positionSlider(active);
+      });
+    }
 
-      tabContents.forEach(function (content) {
-        const id = content.getAttribute('id');
-        if (id === 'content-' + tab) {
-          content.classList.add('active');
-        } else {
-          content.classList.remove('active');
-        }
+    navButtons.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var tab = this.getAttribute('data-tab');
+        if (!tab) return;
+        setActive(this);
+        tabContents.forEach(function (content) {
+          var id = content.getAttribute('id');
+          if (id === 'content-' + tab) content.classList.add('active');
+          else content.classList.remove('active');
+        });
       });
     });
-  });
+  })();
+
   /* --- Page3: live stats + sticky scroll-scrub reveal --- */
   function formatNum(n) {
     return n.toLocaleString();

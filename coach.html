@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="strongman-api-base" content="https://strongmanai-api-test.onrender.com/api/v1">
+    <title>Strongman AI – Rocky</title>
+    <link rel="icon" type="image/png" href="/assets/logo.png">
+    <link rel="apple-touch-icon" href="/assets/logo.png">
+    <script src="/shared/theme.js"></script>
+    <script src="/shared/gh-pages-routes.js" data-restore="1"></script>
+    <link rel="stylesheet" href="/css/home.css">
+    <link rel="stylesheet" href="/css/app-nav.css">
+    <link rel="stylesheet" href="/css/notification-bell.css">
+    <link rel="stylesheet" href="/css/coach-page.css?v=1">
+    <link rel="stylesheet" href="/css/server-wake.css">
+    <link rel="stylesheet" href="/css/coach.css?v=hub10">
+    <link rel="stylesheet" href="/css/info-tip.css">
+    <link rel="stylesheet" href="/css/settings-app.css">
+    <link rel="stylesheet" href="/css/settings-buddy.css">
+    <link rel="stylesheet" href="/css/workout-dashboard.css">
+</head>
+<body class="generate-page coach-fullpage" data-current-page="coach">
+    <aside class="site-sidebar" id="site-sidebar" aria-label="Main navigation">
+        <div class="sidebar-brand">
+            <span class="sidebar-logo">STRONGMAN <span class="sidebar-logo-ai">AI</span></span>
+        </div>
+        <nav class="sidebar-nav" aria-label="App sections"></nav>
+        <div class="sidebar-bottom">
+            <div class="sidebar-profile-wrap">
+                <button type="button" class="sidebar-profile sidebar-profile-trigger" id="sidebar-profile-trigger" aria-label="Profile menu" aria-expanded="false" aria-haspopup="true" aria-controls="sidebar-profile-menu">
+                    <span class="sidebar-profile-avatar" aria-hidden="true"></span>
+                    <span class="sidebar-label">Profile</span>
+                </button>
+                <div class="sidebar-profile-menu" id="sidebar-profile-menu" role="menu" aria-hidden="true" hidden>
+                    <a href="/profile" class="sidebar-profile-menu-item" role="menuitem">View profile</a>
+                    <button type="button" class="sidebar-profile-menu-item sidebar-profile-menu-item--button" role="menuitem" id="sidebar-profile-logout">Log out</button>
+                </div>
+            </div>
+            <button type="button" class="sidebar-link sidebar-link-more sidebar-settings-trigger" id="sidebar-settings-trigger" aria-label="Settings" aria-haspopup="dialog" aria-expanded="false" aria-controls="home-settings-dialog">
+                <span class="sidebar-label">Settings</span>
+            </button>
+        </div>
+    </aside>
+    <div class="main-wrap">
+        <main class="generate-main coach-page-full" aria-label="Rocky coach">
+            <div class="coach-layout is-empty" id="coach-layout" data-coach-view="hub">
+                <section class="coach-chat" aria-label="Chat with Rocky">
+                    <div class="coach-chat-toolbar" id="coach-chat-toolbar">
+                        <button type="button" class="coach-mode-back coach-mode-back--toolbar" id="coach-modes-back" aria-label="Back to modes">← Modes</button>
+                        <div class="coach-chat-identity">
+                            <span class="coach-chat-mark" aria-hidden="true">R</span>
+                            <p class="coach-chat-name">Rocky</p>
+                        </div>
+                        <div class="coach-toolbar-actions" role="toolbar" aria-label="Coach tools">
+                            <button type="button" class="coach-tool-btn" id="coach-know-btn" title="What Rocky knows" aria-expanded="false" aria-controls="coach-know-drawer">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.75"/><path d="M12 10.5V17M12 7.5h.01" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>
+                                <span class="visually-hidden">What Rocky knows</span>
+                            </button>
+                            <a href="/customize" class="coach-tool-btn" title="Your setup" aria-label="Your setup">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.75"/><path d="M12 3.5v2M12 18.5v2M3.5 12h2M18.5 12h2M6.2 6.2l1.4 1.4M16.4 16.4l1.4 1.4M6.2 17.8l1.4-1.4M16.4 7.6l1.4-1.4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>
+                            </a>
+                            <a href="/log" class="coach-tool-btn" title="Muscle Summary" aria-label="Muscle Summary">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 4h9a2 2 0 0 1 2 2v14l-3-2-3 2-3-2-3 2V6a2 2 0 0 1 2-2z" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/><path d="M10 9h6M10 13h4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>
+                            </a>
+                            <button type="button" class="coach-tool-btn" id="coach-clear" title="Clear this chat" aria-label="Clear chat">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 7h14M10 11v6M14 11v6M8 7l1-2h6l1 2M7 7v12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V7" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="coach-chat-body" id="coach-chat-body">
+                        <div class="coach-empty-hero" id="coach-empty-hero">
+                            <p class="coach-empty-greeting">What's up Champ — what do you need?</p>
+                            <p class="coach-empty-lede">Pick a mode. No typing required.</p>
+                            <div class="coach-capability-grid" id="coach-capability-grid" role="group" aria-label="Coach capabilities">
+                                <button type="button" class="coach-capability is-locked" data-coach-capability="physique" disabled aria-disabled="true" title="Physique scanner coming later">
+                                    <span class="coach-capability-kicker">Photo</span>
+                                    <strong class="coach-capability-title">Rate my physique</strong>
+                                    <span class="coach-capability-desc">Scanner offline for now — check back later.</span>
+                                    <span class="coach-capability-lock">Coming soon</span>
+                                </button>
+                                <button type="button" class="coach-capability" data-coach-capability="routine">
+                                    <span class="coach-capability-kicker">Program</span>
+                                    <strong class="coach-capability-title">Generate a full routine</strong>
+                                    <span class="coach-capability-desc">Dial in days, goal, and split — then Rocky builds the week.</span>
+                                </button>
+                                <button type="button" class="coach-capability" data-coach-capability="projection">
+                                    <span class="coach-capability-kicker">Forecast</span>
+                                    <strong class="coach-capability-title">Future projection</strong>
+                                    <span class="coach-capability-desc">Enter a goal. Get a realistic timeline.</span>
+                                </button>
+                            </div>
+                            <div class="coach-hub-or" role="separator" aria-label="Or">
+                                <span class="coach-hub-or-line" aria-hidden="true"></span>
+                                <span class="coach-hub-or-label">OR</span>
+                                <span class="coach-hub-or-line" aria-hidden="true"></span>
+                            </div>
+                            <button type="button" class="coach-capability coach-capability--chat coach-capability--wide" id="coach-capability-chat" data-coach-capability="chat">
+                                <span class="coach-capability-kicker">Talk</span>
+                                <strong class="coach-capability-title">Just chatting</strong>
+                                <span class="coach-capability-desc">Ask Rocky anything in a normal chat.</span>
+                            </button>
+                        </div>
+
+
+                        <div class="coach-mode-stage" id="coach-mode-stage" hidden>
+                            <input type="file" id="coach-image-input" class="visually-hidden" accept="image/jpeg,image/png,image/webp,image/gif" multiple>
+                            <div class="coach-attach-preview coach-mode-attach-preview" id="coach-attach-preview" hidden></div>
+
+                            <section class="coach-mode-panel" id="coach-mode-physique" data-mode-panel="physique" hidden>
+                                <h2 class="coach-mode-title">Rate my physique</h2>
+                                <p class="coach-mode-lede">Physique scanner is offline while we figure out the pipeline. Pick another mode for now.</p>
+                                <div class="coach-mode-locked-note" role="status">
+                                    <strong>Coming soon</strong>
+                                    <p>Photo rating isn’t available yet. Use Just chatting or Future projection in the meantime.</p>
+                                </div>
+                                <button type="button" class="coach-mode-cta" id="coach-physique-go" disabled hidden>Rate my physique</button>
+                                <div class="coach-mode-output" id="coach-physique-output" hidden></div>
+                            </section>
+
+                            <section class="coach-mode-panel" id="coach-mode-routine" data-mode-panel="routine" hidden>
+                                <h2 class="coach-mode-title">Generate a full routine</h2>
+                                <p class="coach-mode-lede">Answer a few prompts. Rocky builds Mon–Sun around your sports, practice, and recovery.</p>
+
+                                <div class="coach-mode-form" id="coach-routine-form">
+                                    <fieldset class="coach-mode-fieldset">
+                                        <legend>Lift days per week</legend>
+                                        <div class="coach-choice-row" role="radiogroup" aria-label="Lift days per week">
+                                            <label class="coach-choice"><input type="radio" name="coach-routine-days" value="3"> 3</label>
+                                            <label class="coach-choice"><input type="radio" name="coach-routine-days" value="4" checked> 4</label>
+                                            <label class="coach-choice"><input type="radio" name="coach-routine-days" value="5"> 5</label>
+                                            <label class="coach-choice"><input type="radio" name="coach-routine-days" value="6"> 6</label>
+                                        </div>
+                                    </fieldset>
+
+                                    <fieldset class="coach-mode-fieldset">
+                                        <legend>Primary focus</legend>
+                                        <div class="coach-choice-row coach-choice-row--wrap" role="radiogroup" aria-label="Primary focus">
+                                            <label class="coach-choice"><input type="radio" name="coach-routine-goal" value="sport_performance"> Sport</label>
+                                            <label class="coach-choice"><input type="radio" name="coach-routine-goal" value="strength" checked> Strength</label>
+                                            <label class="coach-choice"><input type="radio" name="coach-routine-goal" value="aesthetics"> Physique</label>
+                                            <label class="coach-choice"><input type="radio" name="coach-routine-goal" value="general_health"> Health</label>
+                                        </div>
+                                    </fieldset>
+
+                                    <fieldset class="coach-mode-fieldset">
+                                        <legend>Typical session length</legend>
+                                        <div class="coach-choice-row" role="radiogroup" aria-label="Session length">
+                                            <label class="coach-choice"><input type="radio" name="coach-routine-minutes" value="45"> 45m</label>
+                                            <label class="coach-choice"><input type="radio" name="coach-routine-minutes" value="60" checked> 60m</label>
+                                            <label class="coach-choice"><input type="radio" name="coach-routine-minutes" value="75"> 75m</label>
+                                            <label class="coach-choice"><input type="radio" name="coach-routine-minutes" value="90"> 90m</label>
+                                        </div>
+                                    </fieldset>
+
+                                    <fieldset class="coach-mode-fieldset">
+                                        <legend>Split style</legend>
+                                        <div class="coach-choice-row coach-choice-row--wrap" role="radiogroup" aria-label="Split style">
+                                            <label class="coach-choice"><input type="radio" name="coach-routine-split" value="auto" checked> Auto</label>
+                                            <label class="coach-choice"><input type="radio" name="coach-routine-split" value="upper_lower"> Upper / Lower</label>
+                                            <label class="coach-choice"><input type="radio" name="coach-routine-split" value="ppl"> Push / Pull / Legs</label>
+                                            <label class="coach-choice"><input type="radio" name="coach-routine-split" value="full_body"> Full body</label>
+                                        </div>
+                                    </fieldset>
+
+                                    <label class="coach-mode-field">
+                                        <span>Notes (optional)</span>
+                                        <textarea id="coach-routine-notes" rows="3" placeholder="Injuries, equipment limits, contests, preferences…"></textarea>
+                                    </label>
+                                </div>
+
+                                <button type="button" class="coach-mode-cta" id="coach-routine-go">Build my week</button>
+                                <div class="coach-mode-output" id="coach-routine-output" hidden></div>
+                            </section>
+
+                            <section class="coach-mode-panel" id="coach-mode-projection" data-mode-panel="projection" hidden>
+                                <h2 class="coach-mode-title">Future projection</h2>
+                                <p class="coach-mode-lede">Enter the numbers. Rocky estimates a realistic timeline — no charts, just the math.</p>
+
+                                <div class="coach-mode-form" id="coach-projection-form">
+                                    <fieldset class="coach-mode-fieldset">
+                                        <legend>Goal type</legend>
+                                        <div class="coach-choice-row" role="radiogroup" aria-label="Goal type">
+                                            <label class="coach-choice"><input type="radio" name="coach-proj-kind" value="lift" data-proj-kind="lift" checked> Strength</label>
+                                            <label class="coach-choice"><input type="radio" name="coach-proj-kind" value="bodyweight" data-proj-kind="bodyweight"> Bodyweight</label>
+                                        </div>
+                                    </fieldset>
+
+                                    <div class="coach-proj-fields" id="coach-proj-bw-fields" hidden>
+                                        <fieldset class="coach-mode-fieldset">
+                                            <legend>Direction</legend>
+                                            <div class="coach-choice-row" role="radiogroup" aria-label="Bodyweight direction">
+                                                <label class="coach-choice"><input type="radio" name="coach-proj-bw-dir" value="lose" checked> Lose</label>
+                                                <label class="coach-choice"><input type="radio" name="coach-proj-bw-dir" value="gain"> Gain</label>
+                                            </div>
+                                        </fieldset>
+                                        <label class="coach-mode-field">
+                                            <span>Change amount (lb)</span>
+                                            <div class="coach-stepper" data-stepper-for="coach-proj-bw-amount">
+                                                <button type="button" class="coach-stepper-btn coach-stepper-btn--lg" data-adj="-10" aria-label="Decrease 10 pounds">−10</button>
+                                                <button type="button" class="coach-stepper-btn" data-adj="-5" aria-label="Decrease 5 pounds">−5</button>
+                                                <input type="number" id="coach-proj-bw-amount" class="coach-stepper-value" value="20" step="5" min="1" inputmode="decimal" aria-label="Change amount in pounds">
+                                                <button type="button" class="coach-stepper-btn" data-adj="5" aria-label="Increase 5 pounds">+5</button>
+                                                <button type="button" class="coach-stepper-btn coach-stepper-btn--lg" data-adj="10" aria-label="Increase 10 pounds">+10</button>
+                                            </div>
+                                        </label>
+                                        <label class="coach-mode-field">
+                                            <span>Current weight (lb)</span>
+                                            <div class="coach-stepper" data-stepper-for="coach-proj-bw-now">
+                                                <button type="button" class="coach-stepper-btn coach-stepper-btn--lg" data-adj="-10" aria-label="Decrease current weight 10 pounds">−10</button>
+                                                <button type="button" class="coach-stepper-btn" data-adj="-5" aria-label="Decrease current weight 5 pounds">−5</button>
+                                                <input type="number" id="coach-proj-bw-now" class="coach-stepper-value" value="180" step="5" min="50" inputmode="decimal" aria-label="Current bodyweight in pounds">
+                                                <button type="button" class="coach-stepper-btn" data-adj="5" aria-label="Increase current weight 5 pounds">+5</button>
+                                                <button type="button" class="coach-stepper-btn coach-stepper-btn--lg" data-adj="10" aria-label="Increase current weight 10 pounds">+10</button>
+                                            </div>
+                                        </label>
+                                        <input type="hidden" id="coach-proj-bw-delta" value="-20">
+                                    </div>
+
+                                    <div class="coach-proj-fields" id="coach-proj-lift-fields">
+                                        <label class="coach-mode-field">
+                                            <span>Lift</span>
+                                            <select id="coach-proj-lift-name">
+                                                <option>Bench Press</option>
+                                                <option>Squat</option>
+                                                <option>Deadlift</option>
+                                                <option>Overhead Press</option>
+                                            </select>
+                                        </label>
+                                        <div class="coach-stepper-block">
+                                            <div class="coach-stepper-head">
+                                                <span class="coach-stepper-label">Current best</span>
+                                                <span class="coach-stepper-source" id="coach-proj-lift-source">Default</span>
+                                            </div>
+                                            <div class="coach-stepper" data-stepper-for="coach-proj-lift-now">
+                                                <button type="button" class="coach-stepper-btn coach-stepper-btn--lg" data-adj="-10" aria-label="Decrease 10 pounds">−10</button>
+                                                <button type="button" class="coach-stepper-btn" data-adj="-5" aria-label="Decrease 5 pounds">−5</button>
+                                                <input type="number" id="coach-proj-lift-now" class="coach-stepper-value" value="185" step="5" min="0" inputmode="decimal" aria-label="Current best in pounds">
+                                                <button type="button" class="coach-stepper-btn" data-adj="5" aria-label="Increase 5 pounds">+5</button>
+                                                <button type="button" class="coach-stepper-btn coach-stepper-btn--lg" data-adj="10" aria-label="Increase 10 pounds">+10</button>
+                                            </div>
+                                        </div>
+                                        <div class="coach-stepper-block">
+                                            <div class="coach-stepper-head">
+                                                <span class="coach-stepper-label">Target</span>
+                                            </div>
+                                            <div class="coach-stepper" data-stepper-for="coach-proj-lift-target">
+                                                <button type="button" class="coach-stepper-btn coach-stepper-btn--lg" data-adj="-10" aria-label="Decrease target 10 pounds">−10</button>
+                                                <button type="button" class="coach-stepper-btn" data-adj="-5" aria-label="Decrease target 5 pounds">−5</button>
+                                                <input type="number" id="coach-proj-lift-target" class="coach-stepper-value" value="225" step="5" min="45" inputmode="decimal" aria-label="Target in pounds">
+                                                <button type="button" class="coach-stepper-btn" data-adj="5" aria-label="Increase target 5 pounds">+5</button>
+                                                <button type="button" class="coach-stepper-btn coach-stepper-btn--lg" data-adj="10" aria-label="Increase target 10 pounds">+10</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button type="button" class="coach-mode-cta" id="coach-projection-go">Project my timeline</button>
+                                <div class="coach-mode-output" id="coach-projection-output" hidden></div>
+                            </section>
+                        </div>
+
+                        <div class="coach-chat-notices coach-chat-notices--active-only">
+                            <div class="dash-rocky-setup-alert coach-rocky-setup-alert" data-rocky-setup-alert hidden role="alert">
+                                <span class="dash-rocky-setup-mark" aria-hidden="true">R</span>
+                                <div class="dash-rocky-setup-copy">
+                                    <p class="dash-rocky-setup-title">Hold it — your schedule isn't set up yet.</p>
+                                    <p class="dash-rocky-setup-text">Add practice nights and game days for each sport so Rocky can plan lifting around your real week. <a href="/customize" class="dash-rocky-setup-link">Set them up first →</a></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="coach-thread" id="coach-thread" role="log" aria-live="polite" aria-relevant="additions" hidden></div>
+                    </div>
+                    <div class="coach-composer" id="coach-composer" hidden>
+                        <div class="coach-chips coach-chat-notices--active-only" id="coach-chips" role="group" aria-label="Quick prompts" hidden></div>
+                        <div class="coach-composer-shell">
+                            <div class="coach-composer-top">
+                                <button type="button" class="coach-attach-btn" id="coach-attach-btn" aria-label="Attach image" title="Attach image">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                        <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="coach-input-row">
+                                <label class="visually-hidden" for="coach-input">Message Rocky</label>
+                                <textarea id="coach-input" class="coach-input" rows="1" placeholder="Talk to Rocky…"></textarea>
+                                <div class="coach-input-actions">
+                                    <button type="button" class="coach-mic-btn" id="coach-mic-btn" aria-label="Dictate message" title="Dictate">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                            <path d="M12 3a3 3 0 0 1 3 3v6a3 3 0 1 1-6 0V6a3 3 0 0 1 3-3z" stroke="currentColor" stroke-width="1.75"/>
+                                            <path d="M5 11a7 7 0 0 0 14 0M12 18v3" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+                                        </svg>
+                                    </button>
+                                    <button type="button" class="coach-send-btn" id="coach-send" aria-label="Send message">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                            <path d="M12 19V5M6 11l6-6 6 6" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="generate-error coach-error" id="coach-error" role="alert" hidden></p>
+                    <p class="generate-quota coach-quota" id="coach-quota" aria-live="polite" hidden></p>
+                </section>
+
+                <div class="coach-know-backdrop" id="coach-know-backdrop" hidden></div>
+                <aside class="coach-know-drawer" id="coach-know-drawer" aria-label="What Rocky knows" hidden>
+                    <header class="coach-know-drawer-header">
+                        <div class="coach-context-hero">
+                            <span class="coach-context-mark" aria-hidden="true">R</span>
+                            <div>
+                                <h2 class="coach-context-name">What I know</h2>
+                                <p class="coach-context-tagline">Used when Rocky coaches you</p>
+                            </div>
+                        </div>
+                        <button type="button" class="coach-know-close" id="coach-know-close" aria-label="Close">×</button>
+                    </header>
+                    <div id="coach-briefing" class="coach-briefing-mount" aria-live="polite"></div>
+                    <nav class="coach-context-nav" aria-label="Coach shortcuts">
+                        <a href="/customize" class="coach-context-nav-link">Edit in User settings</a>
+                        <a href="/log" class="coach-context-nav-link">Open Muscle Summary</a>
+                    </nav>
+                </aside>
+                <div id="coach-briefing-mobile" class="visually-hidden" aria-hidden="true"></div>
+            </div>
+        </main>
+    </div>
+
+    <div class="home-settings-backdrop" id="home-settings-backdrop" aria-hidden="true"></div>
+    <div class="home-settings-dialog settings-buddy settings-hub" id="home-settings-dialog" role="dialog" aria-modal="true" aria-labelledby="home-settings-title" aria-hidden="true">
+        <div class="home-settings-panel">
+            <header class="home-settings-header">
+                <div class="settings-hub-brand">
+                    <span class="settings-hub-mark" aria-hidden="true">SM</span>
+                    <div class="settings-hub-brand-text">
+                        <span class="settings-hub-eyebrow">Strongman AI</span>
+                        <span class="settings-hub-title-text">Settings</span>
+                    </div>
+                </div>
+                <h2 class="home-settings-title visually-hidden" id="home-settings-title">Settings</h2>
+                <button type="button" class="home-settings-close" id="home-settings-close" aria-label="Close settings">×</button>
+            </header>
+            <div class="home-settings-body">
+                <p class="settings-hub-intro">Theme, notifications, and app preferences. Account and training details live in User settings under You.</p>
+                <section class="home-settings-section settings-buddy-card" aria-labelledby="settings-appearance-heading">
+                    <h3 class="home-settings-section-title" id="settings-appearance-heading">Appearance</h3>
+                    <div class="home-settings-theme-row settings-theme-pills" role="group" aria-label="Color theme">
+                        <label class="settings-theme-pill"><input type="radio" name="home-theme" value="dark" class="home-settings-radio"> Ember</label>
+                        <label class="settings-theme-pill"><input type="radio" name="home-theme" value="light" class="home-settings-radio"> Daylight</label>
+                        <label class="settings-theme-pill"><input type="radio" name="home-theme" value="system" class="home-settings-radio"> System</label>
+                    </div>
+                </section>
+                <section class="home-settings-section settings-buddy-card" aria-labelledby="settings-units-heading">
+                    <h3 class="home-settings-section-title" id="settings-units-heading">Units</h3>
+                    <select id="settings-units-select" class="home-settings-select settings-buddy-select">
+                        <option value="imperial">Imperial (lb, ft)</option>
+                        <option value="metric">Metric (kg, m)</option>
+                    </select>
+                </section>
+                <section class="home-settings-section settings-buddy-card" aria-labelledby="settings-notifications-heading">
+                    <h3 class="home-settings-section-title" id="settings-notifications-heading">Notifications</h3>
+                    <label class="home-settings-toggle"><input type="checkbox" id="settings-notify-push" class="home-settings-checkbox"> Browser notifications</label>
+                    <label class="home-settings-toggle"><input type="checkbox" id="settings-notify-email" class="home-settings-checkbox"> Email notifications</label>
+                    <p class="home-settings-notify-status" id="settings-notify-browser-status" role="status" aria-live="polite" hidden></p>
+                    <div class="home-settings-reminder-wrap" id="settings-reminder-schedule-block">
+                        <label class="home-settings-toggle home-settings-toggle--reminder"><input type="checkbox" id="settings-reminder-enabled" class="home-settings-checkbox"> Scheduled reminders</label>
+                        <div class="home-settings-reminder-fields" id="settings-reminder-fields" hidden>
+                            <input type="time" id="settings-reminder-time" class="home-settings-time-input" value="09:00" aria-label="Reminder time">
+                            <select id="settings-reminder-frequency" class="home-settings-select" aria-label="Reminder frequency">
+                                <option value="daily">Every day</option>
+                                <option value="weekdays">Weekdays</option>
+                                <option value="weekends">Weekends</option>
+                                <option value="custom">Custom days</option>
+                            </select>
+                            <div class="home-settings-reminder-custom" id="settings-reminder-custom-days" hidden role="group" aria-label="Reminder days">
+                                <label class="home-settings-day-chip"><input type="checkbox" class="settings-reminder-day" data-weekday="1"> M</label>
+                                <label class="home-settings-day-chip"><input type="checkbox" class="settings-reminder-day" data-weekday="2"> T</label>
+                                <label class="home-settings-day-chip"><input type="checkbox" class="settings-reminder-day" data-weekday="3"> W</label>
+                                <label class="home-settings-day-chip"><input type="checkbox" class="settings-reminder-day" data-weekday="4"> T</label>
+                                <label class="home-settings-day-chip"><input type="checkbox" class="settings-reminder-day" data-weekday="5"> F</label>
+                                <label class="home-settings-day-chip"><input type="checkbox" class="settings-reminder-day" data-weekday="6"> S</label>
+                                <label class="home-settings-day-chip"><input type="checkbox" class="settings-reminder-day" data-weekday="0"> S</label>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <section class="home-settings-section settings-buddy-card" aria-labelledby="settings-privacy-heading">
+                    <h3 class="home-settings-section-title" id="settings-privacy-heading">Privacy</h3>
+                    <label class="home-settings-toggle"><input type="checkbox" id="settings-profile-public" class="home-settings-checkbox" checked> Public on leaderboards</label>
+                    <label class="home-settings-toggle"><input type="checkbox" id="settings-show-activity" class="home-settings-checkbox" checked> Show activity to friends</label>
+                </section>
+                <a href="/info" class="settings-hub-training-card settings-hub-info-card" id="settings-hub-info-card">
+                    <span class="settings-hub-training-kicker">Guide</span>
+                    <span class="settings-hub-training-title">How to use Strongman AI</span>
+                    <span class="settings-hub-training-desc">Setup steps, tips for Rocky, and where everything lives in the app.</span>
+                    <span class="settings-hub-training-arrow">Open guide →</span>
+                </a>
+                <section class="home-settings-section settings-buddy-card settings-hub-labs" aria-labelledby="settings-labs-heading">
+                    <h3 class="home-settings-section-title" id="settings-labs-heading">Labs <span class="settings-hub-labs-badge">Beta</span></h3>
+                    <div class="settings-hub-toggle-row">
+                        <div class="settings-hub-toggle-copy">
+                            <span class="settings-hub-toggle-label">Experimental mode</span>
+                            <span class="settings-hub-toggle-hint">Try in-progress features before they ship. May change or break without notice.</span>
+                        </div>
+                        <label class="settings-hub-switch" aria-label="Enable experimental mode">
+                            <input type="checkbox" id="settings-experimental-mode" class="home-settings-checkbox">
+                            <span class="settings-hub-switch-track" aria-hidden="true"></span>
+                        </label>
+                    </div>
+                </section>
+                <section class="home-settings-section home-settings-section--footer settings-buddy-card" aria-labelledby="settings-about-heading">
+                    <h3 class="home-settings-section-title" id="settings-about-heading">About</h3>
+                    <p class="home-settings-meta">Strongman AI v1.3</p>
+                    <div class="home-settings-inline-links">
+                        <a href="/legal#terms" class="home-settings-inline-link">Terms</a>
+                        <span class="home-settings-sep" aria-hidden="true">·</span>
+                        <a href="/legal#privacy" class="home-settings-inline-link">Privacy</a>
+                    </div>
+                </section>
+                <textarea id="settings-anything-else" class="visually-hidden" aria-hidden="true" tabindex="-1"></textarea>
+            </div>
+        </div>
+    </div>
+
+    <script src="/shared/api.js"></script>
+    <script src="/shared/notification-bell.js"></script>
+    <script src="/shared/server-wake.js"></script>
+    <script src="/shared/user-avatar.js"></script>
+    <script src="/shared/routine-import.js"></script>
+    <script src="/shared/workout-split.js"></script>
+    <script src="/shared/app-nav.js"></script>
+    <script src="/shared/sidebar-profile-menu.js"></script>
+    <script src="/shared/auth-guard.js"></script>
+    <script src="/shared/info-tip.js"></script>
+    <script src="/shared/exercise-database.js"></script>
+    <script src="/shared/coach-memory.js"></script>
+    <script src="/shared/coach-briefing.js"></script>
+    <script src="/shared/workout-archive.js"></script>
+    <script src="/shared/training-sync.js"></script>
+    <script src="/shared/sport-database.js"></script>
+    <script src="/shared/athlete-context.js"></script>
+    <script src="/shared/rocky-setup-alert.js"></script>
+    <script src="/shared/coach-pending-request.js"></script>
+    <script src="/shared/coach-expand-card.js"></script>
+    <script src="/shared/workout-plan-preview.js"></script>
+    <script src="/shared/coach-advice-card.js"></script>
+    <script src="/shared/progression-engine.js"></script>
+    <script src="/shared/coach-thread.js?v=hub9"></script>
+    <script src="/shared/site-footer-email.js"></script>
+    <script src="/shared/name-policy.js"></script>
+    <script src="/shared/push-client.js"></script>
+    <script src="/shared/settings-popup.js"></script>
+    <script src="/js/coach.js?v=hub4"></script>
+    <script src="/shared/workout-dashboard.js"></script>
+    <script>if (window.WorkoutDashboard) window.WorkoutDashboard.init({});</script>
+</body>
+</html>

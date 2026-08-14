@@ -4,7 +4,7 @@ body.profile-page .profile-mainContent
 {
     flex: 1;
     width: 100%;
-    padding-top: clamp(1rem, 3vw, 1.75rem);
+    padding-top: clamp(1.75rem, 5vw, 2.75rem);
     padding-bottom: clamp(2rem, 5vh, 3rem);
     box-sizing: border-box;
 }
@@ -64,7 +64,7 @@ body.profile-page .profile-mainContent
     padding: 1rem 1.05rem;
     border-radius: var(--radius-sm);
     border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
-    background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 14%, transparent), color-mix(in srgb, var(--accent) 6%, transparent));
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
     text-decoration: none;
     color: inherit;
     transition: border-color 0.15s, transform 0.15s;
@@ -158,11 +158,7 @@ body.profile-page .profile-mainContent
 {
     position: absolute;
     inset: 0;
-    background:
-        radial-gradient(ellipse 80% 120% at 20% 0%, color-mix(in srgb, var(--accent) 45%, transparent) 0%, transparent 55%),
-        radial-gradient(ellipse 60% 80% at 85% 20%, color-mix(in srgb, var(--accent) 25%, transparent) 0%, transparent 50%),
-        radial-gradient(ellipse 100% 60% at 50% 100%, color-mix(in srgb, var(--bg-deep) 90%, transparent) 0%, transparent 70%),
-        linear-gradient(135deg, color-mix(in srgb, var(--accent) 12%, var(--bg-deep)) 0%, var(--bg-page) 40%, var(--bg-deep) 100%);
+    background: color-mix(in srgb, var(--accent) 18%, var(--bg-deep));
     transition: opacity 0.35s ease;
 }
 
@@ -171,7 +167,7 @@ body.profile-page .profile-mainContent
     content: "";
     position: absolute;
     inset: 0;
-    background: linear-gradient(to bottom, transparent 40%, var(--bg-card) 100%);
+    background: color-mix(in srgb, var(--bg-card) 55%, transparent);
 }
 
 .pf-cover-edit
@@ -230,7 +226,7 @@ body.profile-page .profile-mainContent
     display: inline-flex;
     padding: 4px;
     border-radius: 18px;
-    background: linear-gradient(145deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 15%, transparent) 60%, var(--border-mid) 100%);
+    background: var(--accent);
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
     overflow: hidden;
     isolation: isolate;
@@ -250,7 +246,7 @@ body.profile-page .profile-mainContent
     height: clamp(6.5rem, 20vw, 9.25rem);
     border-radius: 14px;
     object-fit: cover;
-    background: linear-gradient(145deg, var(--accent) 0%, var(--accent-deep) 100%);
+    background: var(--accent);
     border: none;
     box-sizing: border-box;
 }
@@ -270,6 +266,16 @@ body.profile-page .profile-mainContent
     opacity: 0;
     transition: opacity 0.2s ease;
     backdrop-filter: blur(4px);
+}
+
+/* Calling card uses a corner badge — kill the full-photo overlay. */
+.pf-calling-card .pf-avatar-edit
+{
+    inset: unset;
+    background: var(--accent);
+    opacity: 1;
+    backdrop-filter: none;
+    border-radius: 50%;
 }
 
 .pf-avatar-ring:hover .pf-avatar-edit,
@@ -478,7 +484,7 @@ body.profile-page .profile-mainContent
 .profile-btn--primary
 {
     background: var(--accent);
-    color: #0a0a0a;
+    color: var(--on-accent-text, #0a0a0a);
     border-color: var(--accent);
     box-shadow: 0 4px 20px color-mix(in srgb, var(--accent) 25%, transparent);
 }
@@ -555,7 +561,7 @@ body.profile-page .profile-mainContent
     padding: clamp(1rem, 2.5vw, 1.35rem) 0.75rem;
     border-radius: var(--radius-md);
     border: 1px solid var(--border-subtle);
-    background: linear-gradient(165deg, rgba(255, 255, 255, 0.04) 0%, rgba(0, 0, 0, 0.2) 100%);
+    background: rgba(255, 255, 255, 0.03);
     backdrop-filter: blur(8px);
     transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
 }
@@ -570,7 +576,7 @@ body.profile-page .profile-mainContent
 .pf-stat-card--accent
 {
     border-color: color-mix(in srgb, var(--accent) 20%, transparent);
-    background: linear-gradient(165deg, color-mix(in srgb, var(--accent) 10%, transparent) 0%, rgba(0, 0, 0, 0.2) 100%);
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
 }
 
 .pf-stat-card--accent:hover
@@ -681,7 +687,7 @@ body.profile-page .profile-mainContent
     padding: clamp(1.25rem, 3vw, 1.75rem);
     border-radius: var(--radius-lg);
     border: 1px solid var(--border-strong);
-    background: linear-gradient(168deg, var(--bg-card) 0%, var(--bg-elevated) 100%);
+    background: var(--bg-card);
     box-shadow: var(--shadow-soft);
 }
 
@@ -738,7 +744,7 @@ body.profile-page .profile-mainContent
 .pf-trophy--gold
 {
     border-color: rgba(240, 196, 106, 0.35);
-    background: linear-gradient(165deg, rgba(240, 196, 106, 0.12) 0%, rgba(0, 0, 0, 0.25) 100%);
+    background: rgba(240, 196, 106, 0.1);
 }
 
 .pf-trophy--gold .pf-trophy-icon
@@ -750,7 +756,7 @@ body.profile-page .profile-mainContent
 .pf-trophy--accent
 {
     border-color: color-mix(in srgb, var(--accent) 25%, transparent);
-    background: linear-gradient(165deg, color-mix(in srgb, var(--accent) 8%, transparent) 0%, rgba(0, 0, 0, 0.25) 100%);
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
 }
 
 .pf-trophy--accent .pf-trophy-icon
@@ -886,7 +892,7 @@ body.profile-page .profile-mainContent
     padding: clamp(1.25rem, 3vw, 1.75rem);
     border-radius: var(--radius-lg);
     border: 1px solid var(--border-strong);
-    background: linear-gradient(168deg, var(--bg-elevated) 0%, var(--bg-card) 100%);
+    background: var(--bg-elevated);
     box-shadow: var(--shadow-soft);
 }
 
@@ -1103,7 +1109,7 @@ body.profile-page .profile-mainContent
     flex-direction: column;
     border-radius: var(--radius-lg);
     border: 1px solid var(--border-strong);
-    background: linear-gradient(168deg, #1c1c1c 0%, #141414 100%);
+    background: #161616;
     box-shadow: 0 24px 80px rgba(0, 0, 0, 0.65);
     overflow: hidden;
     animation: pf-ach-slide-up 0.28s ease;
@@ -1185,7 +1191,7 @@ body.profile-page .profile-mainContent
 {
     height: 100%;
     border-radius: var(--radius-full);
-    background: linear-gradient(90deg, var(--accent) 0%, #ffc46a 100%);
+    background: var(--accent);
     transition: width 0.4s ease;
 }
 
@@ -1290,7 +1296,7 @@ body.profile-page .profile-mainContent
 .pf-ach-card--tier-platinum.pf-ach-card--unlocked { border-color: rgba(180, 220, 255, 0.45); }
 .pf-ach-card--tier-legendary.pf-ach-card--unlocked {
     border-color: color-mix(in srgb, var(--accent) 55%, transparent);
-    background: linear-gradient(165deg, color-mix(in srgb, var(--accent) 10%, transparent) 0%, rgba(0, 0, 0, 0.28) 100%);
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
     box-shadow: 0 0 28px color-mix(in srgb, var(--accent) 15%, transparent);
 }
 
@@ -1386,11 +1392,11 @@ body.profile-page .profile-mainContent
 
 .pf-trophy--tier-bronze   { border-color: rgba(205, 127, 50, 0.4); }
 .pf-trophy--tier-silver   { border-color: rgba(192, 192, 192, 0.35); }
-.pf-trophy--tier-gold     { border-color: rgba(240, 196, 106, 0.45); background: linear-gradient(165deg, rgba(240, 196, 106, 0.1) 0%, rgba(0, 0, 0, 0.25) 100%); }
+.pf-trophy--tier-gold     { border-color: rgba(240, 196, 106, 0.45); background: rgba(240, 196, 106, 0.1); }
 .pf-trophy--tier-platinum { border-color: rgba(180, 220, 255, 0.4); }
 .pf-trophy--tier-legendary {
     border-color: color-mix(in srgb, var(--accent) 50%, transparent);
-    background: linear-gradient(165deg, color-mix(in srgb, var(--accent) 12%, transparent) 0%, rgba(0, 0, 0, 0.25) 100%);
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
 }
 
 .pf-trophy-tier

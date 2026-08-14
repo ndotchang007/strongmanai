@@ -4,18 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="strongman-api-base" content="https://strongmanai-api-test.onrender.com/api/v1">
-    <link rel="stylesheet" href="/css/tester-gate.css">
-    <style id="tester-gate-boot">html.tester-gate-pending,html.tester-gate-pending body{background:#08080a!important;margin:0;min-height:100%;overflow:hidden!important}html.tester-gate-pending body>*:not(#tester-gate-overlay){visibility:hidden!important;pointer-events:none!important}html.tester-gate-pending #tester-gate-overlay{visibility:visible!important;pointer-events:auto!important}</style>
-    <script>document.documentElement.classList.add("tester-gate-pending");</script>
-    <script src="/shared/tester-gate.js"></script>
-    <title>Strongman AI – Log &amp; Progress</title>
+    <title>Strongman AI – Muscle Summary</title>
     <link rel="icon" type="image/png" href="/assets/logo.png">
     <link rel="apple-touch-icon" href="/assets/logo.png">
     <script src="/shared/theme.js"></script>
+    <script src="/shared/gh-pages-routes.js" data-restore="1"></script>
     <link rel="stylesheet" href="/css/home.css">
     <link rel="stylesheet" href="/css/app-nav.css">
     <link rel="stylesheet" href="/css/notification-bell.css">
-    <link rel="stylesheet" href="/css/create.css">
+    <link rel="stylesheet" href="/css/log.css">
     <link rel="stylesheet" href="/css/athlete-sports.css">
     <link rel="stylesheet" href="/css/server-wake.css">
     <link rel="stylesheet" href="/css/coach.css">
@@ -23,6 +20,9 @@
     <link rel="stylesheet" href="/css/tracking.css">
     <link rel="stylesheet" href="/css/workout-tracker.css">
     <link rel="stylesheet" href="/css/workout-dashboard.css">
+    <link rel="stylesheet" href="/css/workout-v2.css">
+    <link rel="stylesheet" href="/css/home-gym-scan.css">
+    <link rel="stylesheet" href="/css/muscle-map.css">
     <link rel="stylesheet" href="/css/settings-app.css">
 </head>
 <body class="create-page" data-current-page="log">
@@ -51,24 +51,48 @@
     </aside>
     <div class="main-wrap">
         <main class="create-main">
-            <header class="create-mode-header tracking-mode-header" aria-label="Logbook sections">
+            <header class="dash-plan-header log-plan-header">
+                <div class="dash-plan-heading">
+                    <h1 class="dash-plan-title">Muscle Summary</h1>
+                    <p class="dash-plan-date" id="log-plan-subtitle">Progress, timeline, records &amp; split</p>
+                </div>
+                <div class="dash-plan-tools">
+                    <button type="button" class="dash-tool-btn sidebar-settings-trigger" id="log-settings-trigger" aria-label="Settings" aria-haspopup="dialog" aria-controls="home-settings-dialog" title="Settings">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <circle cx="12" cy="12" r="3"/>
+                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                        </svg>
+                    </button>
+                </div>
+            </header>
+
+            <header class="create-mode-header tracking-mode-header" aria-label="Muscle Summary sections">
                 <nav class="create-mode-tabs tracking-mode-tabs" role="tablist" aria-label="Progress and split">
                     <button type="button" class="create-mode-tab tracking-mode-tab active" role="tab" id="tracking-tab-stats" aria-selected="true" aria-controls="tracking-panel-stats" data-tracking-panel="stats">Stats</button>
                     <button type="button" class="create-mode-tab tracking-mode-tab" role="tab" id="tracking-tab-archive" aria-selected="false" aria-controls="tracking-panel-archive" data-tracking-panel="archive">Timeline</button>
-                    <button type="button" class="create-mode-tab tracking-mode-tab" role="tab" id="tracking-tab-pr" aria-selected="false" aria-controls="tracking-panel-pr" data-tracking-panel="prs">Personal bests</button>
-                    <button type="button" class="create-mode-tab" role="tab" aria-selected="false" aria-controls="create-panel-split" id="create-tab-split" data-mode="split">Workout split<span class="split-tab-badge" id="create-split-tab-badge" hidden aria-label="New AI split saved"></span></button>
+                    <button type="button" class="create-mode-tab" role="tab" aria-selected="false" aria-controls="create-panel-split" id="create-tab-split" data-mode="split">Split<span class="split-tab-badge" id="create-split-tab-badge" hidden aria-label="New AI split saved"></span></button>
                 </nav>
                 <div class="create-mode-rule" aria-hidden="true"></div>
             </header>
 
-            <div id="create-progress-shell">
-            <section class="logbook-mode-hero" id="logbook-mode-hero" aria-labelledby="logbook-mode-hero-title">
-                <h2 class="logbook-mode-hero-title" id="logbook-mode-hero-title">Ready to train?</h2>
-                <p class="logbook-mode-hero-lede">Open workout mode for a guided session, or quickly log sets below.</p>
-                <div class="logbook-mode-actions">
-                    <button type="button" id="wd-start-workout-btn" class="wd-start-btn wd-start-btn--hero">Start workout</button>
-                    <button type="button" id="wd-quick-log-btn" class="wd-quick-log-btn">Quick log</button>
+            </header>
+
+            <section class="log-train-banner" id="log-train-banner" hidden>
+                <div class="log-train-banner-copy">
+                    <p class="log-train-banner-kicker">Today</p>
+                    <p class="log-train-banner-title" id="log-train-banner-title">Start today’s workout</p>
+                    <p class="log-train-banner-sub" id="log-train-banner-sub"></p>
                 </div>
+                <div class="log-train-banner-actions">
+                    <button type="button" class="log-train-banner-btn log-train-banner-btn--primary" id="log-train-start">Start workout</button>
+                    <button type="button" class="log-train-banner-btn" id="log-train-quick">Quick log</button>
+                </div>
+            </section>
+
+            <div id="create-progress-shell">
+            <section class="logbook-mode-hero" id="logbook-mode-hero" hidden aria-hidden="true">
+                <button type="button" id="wd-start-workout-btn" class="wd-start-btn" hidden tabindex="-1" aria-hidden="true">Start workout</button>
+                <button type="button" id="wd-quick-log-btn" class="wd-quick-log-btn" hidden tabindex="-1" aria-hidden="true">Quick log</button>
             </section>
 
             <section id="create-panel-workout" class="create-panel" role="region" aria-label="Quick log workout" hidden>
@@ -292,15 +316,20 @@
                     <div class="tracking-panel tracking-panel--stats" id="tracking-panel-stats" role="tabpanel" aria-labelledby="tracking-tab-stats">
                         <div class="tracking-stats-hero">
                             <div class="tracking-stats-toolbar">
-                                <nav class="tracking-stats-range" aria-label="Stats time range">
-                                    <button type="button" class="tracking-stats-range-btn active" data-stats-range="month">This Month</button>
-                                    <span class="tracking-stats-range-sep" aria-hidden="true">/</span>
-                                    <button type="button" class="tracking-stats-range-btn" data-stats-range="year">This Year</button>
-                                    <span class="tracking-stats-range-sep" aria-hidden="true">/</span>
-                                    <button type="button" class="tracking-stats-range-btn" data-stats-range="all">All Time</button>
-                                </nav>
+                                <div class="tracking-viewing-wrap">
+                                    <span class="tracking-viewing-label visually-hidden">Time period</span>
+                                    <button type="button" class="tracking-viewing-btn" id="tracking-viewing-btn" aria-haspopup="listbox" aria-expanded="false" aria-controls="tracking-viewing-menu">
+                                        <svg class="tracking-viewing-chevron" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                        <span class="tracking-viewing-value" id="tracking-viewing-value">Past month</span>
+                                    </button>
+                                    <div class="tracking-viewing-menu" id="tracking-viewing-menu" role="listbox" hidden>
+                                        <button type="button" class="tracking-viewing-option is-active" role="option" aria-selected="true" data-stats-range="month">Past month</button>
+                                        <button type="button" class="tracking-viewing-option" role="option" aria-selected="false" data-stats-range="year">Past year</button>
+                                        <button type="button" class="tracking-viewing-option" role="option" aria-selected="false" data-stats-range="all">All time</button>
+                                    </div>
+                                </div>
                             </div>
-                            <p class="tracking-stats-range-hint" id="tracking-stats-range-hint">Showing <strong>this month</strong> — charts use logged sets, reps &amp; weight.</p>
+                            <p class="tracking-stats-range-hint" id="tracking-stats-range-hint" hidden>Showing <strong>this month</strong> — charts use logged sets, reps &amp; weight.</p>
                         </div>
                         <div class="tracking-panel-fill tracking-panel-fill--stats">
                             <div class="tracking-panel-scroll tracking-stats-scroll">
@@ -324,83 +353,165 @@
                         </div>
                     </div>
                 </details>
-                <div class="grid-container tracking-stats-grid--charts" id="tracking-stats-grid" aria-label="Strength charts">
-                    <div class="card chart-card tracking-complication-card" data-grid-card-id="volume-chart" data-complication-detail="volume-chart" draggable="false">
+                <div class="grid-container tracking-stats-grid--charts" id="tracking-stats-grid" aria-label="Strength summary">
+                    <div class="card chart-card tracking-complication-card tracking-health-card" data-grid-card-id="volume-chart" data-complication-detail="volume-chart" data-health-tone="volume" draggable="false">
                         <div class="tracking-grid-drag-handle" role="button" tabindex="0" aria-label="Drag to reorder this tile" title="Drag to reorder"></div>
-                        <header class="tracking-chart-card-head">
-                            <h2 class="tracking-chart-card-title">Training volume</h2>
-                            <p class="tracking-chart-card-sub" id="tracking-volume-chart-sub">Load over time</p>
+                        <header class="tracking-health-card-head">
+                            <span class="tracking-health-card-cat">
+                                <svg class="tracking-health-card-icon" viewBox="0 0 20 20" aria-hidden="true"><path fill="currentColor" d="M10.8 2.2c.3-.5 1-.5 1.3 0l1.4 2.4 2.7.5c.6.1.8.8.4 1.2l-1.9 2 .4 2.7c.1.6-.5 1-1 .7L11.4 10l-2.4 1.3c-.5.3-1.1-.1-1-.7l.4-2.7-1.9-2c-.4-.4-.2-1.1.4-1.2l2.7-.5 1.2-2.4z"/></svg>
+                                Volume
+                            </span>
+                            <span class="tracking-health-card-meta">
+                                <span class="tracking-health-card-when" data-stats-when>Past month</span>
+                                <svg class="tracking-health-card-chevron" width="10" height="14" viewBox="0 0 10 14" aria-hidden="true"><path d="M2 1.5L7.5 7 2 12.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </span>
                         </header>
-                        <div class="tracking-chart-canvas-wrap">
-                            <canvas id="trackingVolumeChart" aria-label="Total training volume over time"></canvas>
-                        </div>
-                        <p class="tracking-chart-caption" id="tracking-volume-chart-caption"></p>
-                    </div>
-
-                    <div class="card chart-card tracking-complication-card" data-grid-card-id="peak-chart" data-complication-detail="peak-chart" draggable="false">
-                        <div class="tracking-grid-drag-handle" role="button" tabindex="0" aria-label="Drag to reorder this tile" title="Drag to reorder"></div>
-                        <header class="tracking-chart-card-head tracking-chart-card-head--row">
-                            <div>
-                                <h2 class="tracking-chart-card-title">Peak load</h2>
-                                <p class="tracking-chart-card-sub" id="tracking-peak-chart-sub">Heaviest sets</p>
+                        <div class="tracking-health-card-body">
+                            <div class="tracking-health-card-main">
+                                <p class="tracking-health-card-value" id="tracking-volume-chart-value">—</p>
+                                <p class="tracking-health-card-sub" id="tracking-volume-chart-sub">Total load in view</p>
                             </div>
-                            <label class="tracking-chart-select-label">
-                                <span class="visually-hidden">Exercise</span>
-                                <select id="tracking-peak-exercise" class="tracking-chart-select" aria-label="Exercise for peak load"></select>
-                            </label>
-                        </header>
-                        <div class="tracking-chart-canvas-wrap">
-                            <canvas id="trackingPeakChart" aria-label="Peak load for selected exercise"></canvas>
+                            <div class="tracking-health-card-viz" aria-hidden="true">
+                                <div class="tracking-chart-canvas-wrap tracking-health-spark">
+                                    <canvas id="trackingVolumeChart"></canvas>
+                                </div>
+                            </div>
                         </div>
-                        <p class="tracking-chart-caption" id="tracking-peak-chart-caption"></p>
+                        <ul class="tracking-health-card-facts" id="tracking-volume-chart-facts" aria-label="Volume details"></ul>
                     </div>
 
-                    <div class="card chart-card tracking-complication-card" data-grid-card-id="e1rm-chart" data-complication-detail="e1rm-chart" draggable="false">
+                    <div class="card chart-card tracking-complication-card tracking-health-card" data-grid-card-id="peak-chart" data-complication-detail="peak-chart" data-health-tone="peak" draggable="false">
                         <div class="tracking-grid-drag-handle" role="button" tabindex="0" aria-label="Drag to reorder this tile" title="Drag to reorder"></div>
-                        <header class="tracking-chart-card-head">
-                            <h2 class="tracking-chart-card-title">Est. 1RM trend</h2>
-                            <p class="tracking-chart-card-sub" id="tracking-e1rm-chart-sub">Best estimated maxes</p>
+                        <header class="tracking-health-card-head">
+                            <span class="tracking-health-card-cat">
+                                <svg class="tracking-health-card-icon" viewBox="0 0 20 20" aria-hidden="true"><path fill="currentColor" d="M3 14.5h14v1.5H3zm2.2-2.2 2.3-6.2L10 10l2.5-3.9 2.3 6.2H14l-1.5-4-2.2 3.4L8 6.1 5.8 12.3H5.2z"/></svg>
+                                Peak load
+                            </span>
+                            <span class="tracking-health-card-meta">
+                                <span class="tracking-health-card-when" data-stats-when>Past month</span>
+                                <svg class="tracking-health-card-chevron" width="10" height="14" viewBox="0 0 10 14" aria-hidden="true"><path d="M2 1.5L7.5 7 2 12.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </span>
                         </header>
-                        <div class="tracking-chart-canvas-wrap">
-                            <canvas id="trackingE1rmChart" aria-label="Estimated one-rep max over time"></canvas>
+                        <div class="tracking-health-card-body">
+                            <div class="tracking-health-card-main">
+                                <p class="tracking-health-card-value" id="tracking-peak-chart-value">—</p>
+                                <p class="tracking-health-card-sub" id="tracking-peak-chart-sub">Heaviest sets</p>
+                                <label class="tracking-chart-select-label tracking-health-select-label">
+                                    <span class="visually-hidden">Exercise</span>
+                                    <select id="tracking-peak-exercise" class="tracking-chart-select" aria-label="Exercise for peak load"></select>
+                                </label>
+                            </div>
+                            <div class="tracking-health-card-viz" aria-hidden="true">
+                                <div class="tracking-chart-canvas-wrap tracking-health-spark">
+                                    <canvas id="trackingPeakChart"></canvas>
+                                </div>
+                            </div>
                         </div>
-                        <p class="tracking-chart-caption" id="tracking-e1rm-chart-caption"></p>
+                        <ul class="tracking-health-card-facts" id="tracking-peak-chart-facts" aria-label="Peak load details"></ul>
                     </div>
 
-                    <div class="card chart-card tracking-complication-card" data-grid-card-id="compare-chart" data-complication-detail="compare-chart" draggable="false">
+                    <div class="card chart-card tracking-complication-card tracking-health-card" data-grid-card-id="e1rm-chart" data-complication-detail="e1rm-chart" data-health-tone="e1rm" draggable="false">
                         <div class="tracking-grid-drag-handle" role="button" tabindex="0" aria-label="Drag to reorder this tile" title="Drag to reorder"></div>
-                        <header class="tracking-chart-card-head">
-                            <h2 class="tracking-chart-card-title">Lift progress</h2>
-                            <p class="tracking-chart-card-sub" id="tracking-compare-chart-sub">Early vs late in range</p>
+                        <header class="tracking-health-card-head">
+                            <span class="tracking-health-card-cat">
+                                <svg class="tracking-health-card-icon" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7.25" fill="none" stroke="currentColor" stroke-width="1.8"/><path fill="currentColor" d="M9.2 6.2h1.6v5.1H9.2zm0 6.2h1.6V14H9.2z"/></svg>
+                                Est. 1RM
+                            </span>
+                            <span class="tracking-health-card-meta">
+                                <span class="tracking-health-card-when" data-stats-when>Past month</span>
+                                <svg class="tracking-health-card-chevron" width="10" height="14" viewBox="0 0 10 14" aria-hidden="true"><path d="M2 1.5L7.5 7 2 12.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </span>
                         </header>
-                        <div class="tracking-chart-canvas-wrap">
-                            <canvas id="trackingCompareChart" aria-label="Peak load early versus late in range"></canvas>
+                        <div class="tracking-health-card-body">
+                            <div class="tracking-health-card-main">
+                                <p class="tracking-health-card-value" id="tracking-e1rm-chart-value">—</p>
+                                <p class="tracking-health-card-sub" id="tracking-e1rm-chart-sub">Best estimated max</p>
+                            </div>
+                            <div class="tracking-health-card-viz" aria-hidden="true">
+                                <div class="tracking-chart-canvas-wrap tracking-health-spark">
+                                    <canvas id="trackingE1rmChart"></canvas>
+                                </div>
+                            </div>
                         </div>
-                        <p class="tracking-chart-caption" id="tracking-compare-chart-caption"></p>
+                        <ul class="tracking-health-card-facts" id="tracking-e1rm-chart-facts" aria-label="Estimated 1RM details"></ul>
                     </div>
 
-                    <div class="card chart-card tracking-complication-card" data-grid-card-id="chart" data-complication-detail="chart" draggable="false">
+                    <div class="card chart-card tracking-complication-card tracking-health-card" data-grid-card-id="compare-chart" data-complication-detail="compare-chart" data-health-tone="compare" draggable="false">
                         <div class="tracking-grid-drag-handle" role="button" tabindex="0" aria-label="Drag to reorder this tile" title="Drag to reorder"></div>
-                        <header class="tracking-chart-card-head">
-                            <h2 class="tracking-chart-card-title">Session frequency</h2>
-                            <p class="tracking-chart-card-sub" id="tracking-chart-card-sub">How often you train</p>
+                        <header class="tracking-health-card-head">
+                            <span class="tracking-health-card-cat">
+                                <svg class="tracking-health-card-icon" viewBox="0 0 20 20" aria-hidden="true"><path fill="currentColor" d="M4 14V9h2.2v5H4zm4.9 0V6h2.2v8H8.9zm4.9 0V4H16v10h-2.2z"/></svg>
+                                Lift progress
+                            </span>
+                            <span class="tracking-health-card-meta">
+                                <span class="tracking-health-card-when" data-stats-when>Past month</span>
+                                <svg class="tracking-health-card-chevron" width="10" height="14" viewBox="0 0 10 14" aria-hidden="true"><path d="M2 1.5L7.5 7 2 12.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </span>
                         </header>
-                        <div class="tracking-chart-canvas-wrap">
-                            <canvas id="statsChart" aria-label="Session frequency over time"></canvas>
+                        <div class="tracking-health-card-body">
+                            <div class="tracking-health-card-main">
+                                <p class="tracking-health-card-value" id="tracking-compare-chart-value">—</p>
+                                <p class="tracking-health-card-sub" id="tracking-compare-chart-sub">Early vs late in range</p>
+                            </div>
+                            <div class="tracking-health-card-viz" aria-hidden="true">
+                                <div class="tracking-chart-canvas-wrap tracking-health-spark">
+                                    <canvas id="trackingCompareChart"></canvas>
+                                </div>
+                            </div>
                         </div>
-                        <p class="tracking-chart-caption" id="tracking-chart-caption"></p>
+                        <ul class="tracking-health-card-facts" id="tracking-compare-chart-facts" aria-label="Lift progress details"></ul>
                     </div>
 
-                    <div class="card chart-card tracking-complication-card" data-grid-card-id="intensity-chart" data-complication-detail="intensity-chart" draggable="false">
+                    <div class="card chart-card tracking-complication-card tracking-health-card" data-grid-card-id="chart" data-complication-detail="chart" data-health-tone="freq" draggable="false">
                         <div class="tracking-grid-drag-handle" role="button" tabindex="0" aria-label="Drag to reorder this tile" title="Drag to reorder"></div>
-                        <header class="tracking-chart-card-head">
-                            <h2 class="tracking-chart-card-title">How hard it felt</h2>
-                            <p class="tracking-chart-card-sub" id="tracking-intensity-chart-sub">Session intensity scores</p>
+                        <header class="tracking-health-card-head">
+                            <span class="tracking-health-card-cat">
+                                <svg class="tracking-health-card-icon" viewBox="0 0 20 20" aria-hidden="true"><path fill="currentColor" d="M3.5 15.5h13v1.3h-13zm1.3-1.8V8.2h1.8v5.5zm3.5 0V5h1.8v8.7zm3.5 0V6.6h1.8v7.1zm3.5 0V4h1.8v9.7z"/></svg>
+                                Sessions
+                            </span>
+                            <span class="tracking-health-card-meta">
+                                <span class="tracking-health-card-when" data-stats-when>Past month</span>
+                                <svg class="tracking-health-card-chevron" width="10" height="14" viewBox="0 0 10 14" aria-hidden="true"><path d="M2 1.5L7.5 7 2 12.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </span>
                         </header>
-                        <div class="tracking-chart-canvas-wrap">
-                            <canvas id="trackingIntensityChart" aria-label="Average session intensity over time"></canvas>
+                        <div class="tracking-health-card-body">
+                            <div class="tracking-health-card-main">
+                                <p class="tracking-health-card-value" id="tracking-chart-card-value">—</p>
+                                <p class="tracking-health-card-sub" id="tracking-chart-card-sub">How often you train</p>
+                            </div>
+                            <div class="tracking-health-card-viz" aria-hidden="true">
+                                <div class="tracking-chart-canvas-wrap tracking-health-spark">
+                                    <canvas id="statsChart"></canvas>
+                                </div>
+                            </div>
                         </div>
-                        <p class="tracking-chart-caption" id="tracking-intensity-chart-caption"></p>
+                        <ul class="tracking-health-card-facts" id="tracking-chart-card-facts" aria-label="Session frequency details"></ul>
+                    </div>
+
+                    <div class="card chart-card tracking-complication-card tracking-health-card" data-grid-card-id="intensity-chart" data-complication-detail="intensity-chart" data-health-tone="intensity" draggable="false">
+                        <div class="tracking-grid-drag-handle" role="button" tabindex="0" aria-label="Drag to reorder this tile" title="Drag to reorder"></div>
+                        <header class="tracking-health-card-head">
+                            <span class="tracking-health-card-cat">
+                                <svg class="tracking-health-card-icon" viewBox="0 0 20 20" aria-hidden="true"><path fill="currentColor" d="M10 2.4c.4 0 .8.2 1 .6l1.7 3.5 3.8.6c.9.1 1.3 1.2.6 1.8l-2.8 2.7.7 3.8c.2.9-.8 1.6-1.6 1.2L10 14.8l-3.4 1.8c-.8.4-1.8-.3-1.6-1.2l.7-3.8-2.8-2.7c-.7-.6-.3-1.7.6-1.8l3.8-.6L9 3c.2-.4.6-.6 1-.6z"/></svg>
+                                Intensity
+                            </span>
+                            <span class="tracking-health-card-meta">
+                                <span class="tracking-health-card-when" data-stats-when>Past month</span>
+                                <svg class="tracking-health-card-chevron" width="10" height="14" viewBox="0 0 10 14" aria-hidden="true"><path d="M2 1.5L7.5 7 2 12.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </span>
+                        </header>
+                        <div class="tracking-health-card-body">
+                            <div class="tracking-health-card-main">
+                                <p class="tracking-health-card-value" id="tracking-intensity-chart-value">—</p>
+                                <p class="tracking-health-card-sub" id="tracking-intensity-chart-sub">Avg felt effort</p>
+                            </div>
+                            <div class="tracking-health-card-viz" aria-hidden="true">
+                                <div class="tracking-chart-canvas-wrap tracking-health-spark">
+                                    <canvas id="trackingIntensityChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <ul class="tracking-health-card-facts" id="tracking-intensity-chart-facts" aria-label="Intensity details"></ul>
                     </div>
                 </div>
                 <section class="tracking-physique-section" aria-labelledby="tracking-gallery-heading">
@@ -416,162 +527,83 @@
                     </div>
 
                     <div class="tracking-panel tracking-panel--archive" id="tracking-panel-archive" role="tabpanel" hidden aria-labelledby="tracking-tab-archive">
-                        <section class="dash-archive dash-archive--timeline" aria-labelledby="tracking-archive-heading">
-                            <div class="dash-section-head">
-                                <div>
-                                    <p class="dash-eyebrow">Your history</p>
-                                    <h2 class="dash-section-title" id="tracking-archive-heading">Timeline</h2>
-                                    <p class="dash-section-lead">Logged sessions in one feed. Tap a workout to view or edit it.</p>
+                        <section class="dash-archive dash-archive--timeline log-timeline-shell" aria-labelledby="tracking-archive-heading">
+                            <div class="log-timeline-top">
+                                <div class="log-timeline-head">
+                                    <div>
+                                        <h2 class="log-timeline-title" id="tracking-archive-heading">Timeline</h2>
+                                    </div>
+                                    <div class="log-timeline-head-tools">
+                                        <span class="dash-archive-count log-timeline-count" id="tracking-archive-count" aria-live="polite">0 sessions</span>
+                                        <button type="button" class="log-tl-new-btn" id="log-timeline-new-pr" aria-haspopup="dialog" aria-controls="tl-pr-dialog">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                                            New entry
+                                        </button>
+                                    </div>
                                 </div>
-                                <span class="dash-archive-count" id="tracking-archive-count" aria-live="polite">0 sessions</span>
-                            </div>
-
-                            <div class="dash-archive-toolbar dash-archive-toolbar--timeline">
-                                <form class="dash-archive-search-form" role="search" id="tracking-archive-search-form" action="#" onsubmit="return false;">
+                                <form class="dash-archive-search-form log-timeline-search" role="search" id="tracking-archive-search-form" action="#" onsubmit="return false;">
                                     <label class="visually-hidden" for="tracking-archive-search">Search workouts</label>
-                                    <input type="search" id="tracking-archive-search" class="dash-archive-search-input" placeholder="Search by title, date, or exercise…" autocomplete="off" aria-label="Search by title, date, or exercise">
+                                    <input type="search" id="tracking-archive-search" class="dash-archive-search-input" placeholder="Search title, date, or exercise…" autocomplete="off" aria-label="Search by title, date, or exercise">
                                 </form>
+                                <div class="log-tl-filters" id="log-timeline-filters" role="group" aria-label="Filter by type">
+                                    <button type="button" class="log-tl-filter is-active" data-tl-filter="all" aria-pressed="true">All</button>
+                                    <button type="button" class="log-tl-filter" data-tl-filter="workout" aria-pressed="false" title="Workouts">
+                                        <span class="log-tl-filter-icon log-tl-filter-icon--workout" aria-hidden="true"></span>
+                                        Workouts
+                                    </button>
+                                    <button type="button" class="log-tl-filter" data-tl-filter="pr" aria-pressed="false" title="Personal records">
+                                        <span class="log-tl-filter-icon log-tl-filter-icon--pr" aria-hidden="true"></span>
+                                        PRs
+                                    </button>
+                                    <button type="button" class="log-tl-filter" data-tl-filter="note" aria-pressed="false" title="Notes &amp; other">
+                                        <span class="log-tl-filter-icon log-tl-filter-icon--note" aria-hidden="true"></span>
+                                        Notes
+                                    </button>
+                                </div>
                             </div>
 
-                            <div class="dash-archive-results" id="tracking-archive-scroll" data-archive-view="timeline">
-                                <div id="tracking-archive-view-root" class="tracking-archive-view-root" aria-live="polite"></div>
-                                <p class="dash-archive-empty" id="tracking-archive-inline-empty">No workouts logged yet.</p>
-                                <p class="dash-archive-empty" id="tracking-archive-search-empty" hidden>No sessions match your search.</p>
+                            <div class="dash-archive-results log-timeline-carousel" id="tracking-archive-scroll" data-archive-view="timeline">
+                                <div id="tracking-archive-view-root" class="tracking-archive-view-root log-timeline-track" aria-live="polite"></div>
+                                <p class="dash-archive-empty" id="tracking-archive-inline-empty">No timeline entries yet.</p>
+                                <p class="dash-archive-empty" id="tracking-archive-search-empty" hidden>No entries match your search.</p>
                             </div>
-                            <!-- kept for summary wiring; visually unused -->
-                            <div id="tracking-archive-stats" hidden>
-                                <span id="tracking-archive-stat-shown"></span>
-                                <span id="tracking-archive-stat-lifts"></span>
-                                <span id="tracking-archive-stat-intensity"></span>
-                                <span id="tracking-archive-stat-total"></span>
+                            <div class="tracking-archive-stats" id="tracking-archive-stats" aria-label="Timeline summary">
+                                <div class="tracking-archive-stat">
+                                    <span class="tracking-archive-stat-label">Shown</span>
+                                    <strong id="tracking-archive-stat-shown">0</strong>
+                                </div>
+                                <div class="tracking-archive-stat">
+                                    <span class="tracking-archive-stat-label">All sessions</span>
+                                    <strong id="tracking-archive-stat-total">0</strong>
+                                </div>
+                                <div class="tracking-archive-stat">
+                                    <span class="tracking-archive-stat-label">Lifts</span>
+                                    <strong id="tracking-archive-stat-lifts">0</strong>
+                                </div>
+                                <div class="tracking-archive-stat">
+                                    <span class="tracking-archive-stat-label">Avg intensity</span>
+                                    <strong id="tracking-archive-stat-intensity">—</strong>
+                                </div>
                             </div>
                         </section>
-                    </div>
-
-                    <div class="tracking-panel tracking-panel--prs" id="tracking-panel-pr" role="tabpanel" hidden aria-labelledby="tracking-tab-pr">
-                        <div class="tracking-panel-list-shell">
-                            <header class="tracking-archive-panel-head">
-                                <h2 class="tracking-archive-heading" id="tracking-pr-header-title">Personal bests</h2>
-                                <p class="tracking-archive-lede">Log running, swimming, or weightlifting PRs. Entries appear below; after saving you can share a story graphic like on Create.</p>
-                            </header>
-                            <div class="tracking-pr-tab-body">
-                <form class="tracking-pr-form" id="tracking-pr-form">
-                    <div class="tracking-field">
-                        <label for="tracking-pr-datetime">Date &amp; time</label>
-                        <input type="datetime-local" id="tracking-pr-datetime" class="tracking-input" required aria-label="PR date and time">
-                    </div>
-                    <fieldset class="tracking-pr-discipline-fieldset">
-                        <legend class="tracking-pr-discipline-legend">Discipline</legend>
-                        <div class="tracking-pr-discipline-row">
-                            <label class="tracking-pr-radio-label"><input type="radio" name="tracking-pr-discipline" value="running" id="tracking-pr-disc-running" checked> Running</label>
-                            <label class="tracking-pr-radio-label"><input type="radio" name="tracking-pr-discipline" value="swimming" id="tracking-pr-disc-swimming"> Swimming</label>
-                            <label class="tracking-pr-radio-label"><input type="radio" name="tracking-pr-discipline" value="weightlifting" id="tracking-pr-disc-weightlifting"> Weightlifting</label>
-                        </div>
-                    </fieldset>
-
-                    <div id="tracking-pr-panel-running" class="tracking-pr-panel">
-                        <div class="tracking-field-row">
-                            <div class="tracking-field tracking-field--grow">
-                                <label for="tracking-pr-run-event">Event / distance</label>
-                                <input type="text" id="tracking-pr-run-event" class="tracking-input" placeholder="e.g. 5k, Mile, 800m" aria-label="Running event or distance">
-                            </div>
-                        </div>
-                        <div class="tracking-pr-time-row">
-                            <div class="tracking-field tracking-pr-time-part">
-                                <label for="tracking-pr-run-min">Minutes</label>
-                                <input type="number" id="tracking-pr-run-min" class="tracking-input" min="0" step="1" value="0" aria-label="Minutes">
-                            </div>
-                            <div class="tracking-field tracking-pr-time-part">
-                                <label for="tracking-pr-run-sec">Seconds</label>
-                                <input type="number" id="tracking-pr-run-sec" class="tracking-input" min="0" max="59.99" step="0.01" value="0" aria-label="Seconds">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div id="tracking-pr-panel-swimming" class="tracking-pr-panel" hidden>
-                        <div class="tracking-field-row">
-                            <div class="tracking-field tracking-field--grow">
-                                <label for="tracking-pr-swim-event">Event</label>
-                                <input type="text" id="tracking-pr-swim-event" class="tracking-input" placeholder="e.g. 100m Freestyle" aria-label="Swimming event">
-                            </div>
-                            <div class="tracking-field tracking-field--grow">
-                                <label for="tracking-pr-swim-course">Course <span class="tracking-optional">(optional)</span></label>
-                                <select id="tracking-pr-swim-course" class="tracking-input" aria-label="Pool course">
-                                    <option value="">—</option>
-                                    <option value="LCM">LCM</option>
-                                    <option value="SCM">SCM</option>
-                                    <option value="SCY">SCY</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="tracking-pr-time-row">
-                            <div class="tracking-field tracking-pr-time-part">
-                                <label for="tracking-pr-swim-min">Minutes</label>
-                                <input type="number" id="tracking-pr-swim-min" class="tracking-input" min="0" step="1" value="0" aria-label="Minutes">
-                            </div>
-                            <div class="tracking-field tracking-pr-time-part">
-                                <label for="tracking-pr-swim-sec">Seconds</label>
-                                <input type="number" id="tracking-pr-swim-sec" class="tracking-input" min="0" max="59.99" step="0.01" value="0" aria-label="Seconds">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div id="tracking-pr-panel-weightlifting" class="tracking-pr-panel" hidden>
-                        <div class="tracking-field-row">
-                            <div class="tracking-field tracking-field--grow">
-                                <label for="tracking-pr-wl-lift">Lift</label>
-                                <input type="text" id="tracking-pr-wl-lift" class="tracking-input" placeholder="e.g. Deadlift, Log press" aria-label="Lift name">
-                            </div>
-                            <div class="tracking-field tracking-field--narrow">
-                                <label for="tracking-pr-wl-weight">Weight</label>
-                                <input type="number" id="tracking-pr-wl-weight" class="tracking-input" min="0" step="0.5" placeholder="0" aria-label="Weight">
-                            </div>
-                            <div class="tracking-field tracking-field--narrow">
-                                <label for="tracking-pr-wl-unit">Unit</label>
-                                <select id="tracking-pr-wl-unit" class="tracking-input" aria-label="Weight unit">
-                                    <option value="lb">lb</option>
-                                    <option value="kg">kg</option>
-                                </select>
-                            </div>
-                            <div class="tracking-field tracking-field--narrow">
-                                <label for="tracking-pr-wl-reps">Reps <span class="tracking-optional">(optional)</span></label>
-                                <input type="number" id="tracking-pr-wl-reps" class="tracking-input" min="1" step="1" placeholder="1" aria-label="Reps">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="tracking-field">
-                        <label for="tracking-pr-notes">Notes <span class="tracking-optional">(optional)</span></label>
-                        <textarea id="tracking-pr-notes" class="tracking-textarea" rows="2" placeholder="Context, meet name, how it felt…" aria-label="PR notes"></textarea>
-                    </div>
-                    <p class="tracking-error" id="tracking-pr-error" role="alert" hidden></p>
-                    <button type="submit" class="tracking-submit tracking-pr-submit">Save personal record</button>
-                </form>
-                <p class="tracking-pr-message" id="tracking-pr-message" role="status" hidden></p>
-                            <div class="tracking-pr-archive-scroll">
-                                <ul class="tracking-pr-archive-list" id="tracking-pr-archive-list" aria-label="Saved personal bests"></ul>
-                                <p class="tracking-archive-inline-empty" id="tracking-pr-archive-empty">No personal bests yet. Use the form above.</p>
-                            </div>
-                        </div>
-                        </div>
                     </div>
                 </div>
             </div>
             </section>
 
-            </div><!-- /create-progress-shell -->
+            </div><!-- /log-progress-shell -->
 
             <section id="create-panel-split" class="create-panel create-panel--split" role="tabpanel" aria-labelledby="create-tab-split" hidden>
                 <form class="create-form create-form--split" id="create-split-form">
                     <header class="create-split-hero">
-                        <p class="create-split-eyebrow">Program builder</p>
                         <h2 class="create-split-heading">Weekly split</h2>
-                        <p class="create-split-hint">Build your training week day by day. Save multiple splits, switch anytime, and let Rocky fill weights when you start a workout.</p>
                     </header>
                     <div id="create-split-editor-mount" class="split-editor-mount sports-editor-mount"></div>
                     <p class="create-error" id="create-split-error" role="alert" hidden></p>
                     <div class="create-split-footer">
-                        <button type="submit" class="create-submit create-submit--split">Save split</button>
+                        <button type="button" class="create-split-action-btn" id="create-split-share">Share</button>
+                        <button type="button" class="create-split-action-btn create-split-action-btn--accent" id="create-split-save-current" hidden>Set to current</button>
+                        <button type="submit" class="create-submit create-submit--split create-split-action-btn create-split-action-btn--primary">Save</button>
                     </div>
                 </form>
                 <p class="create-message" id="create-split-message" hidden></p>
@@ -822,7 +854,7 @@
                 </section>
                 <section class="home-settings-section home-settings-section--footer" aria-labelledby="settings-about-heading">
                     <h3 class="home-settings-section-title" id="settings-about-heading">About</h3>
-                    <p class="home-settings-meta">Strongman AI v1.2</p>
+                    <p class="home-settings-meta">Strongman AI v1.3</p>
                     <div class="home-settings-inline-links">
                         <a href="/legal#terms" class="home-settings-inline-link">Terms</a>
                         <span class="home-settings-sep" aria-hidden="true">·</span>
@@ -904,6 +936,170 @@
         </div>
     </div>
 
+    <div class="pr-edit-backdrop" id="tl-pr-backdrop" aria-hidden="true"></div>
+    <div class="pr-edit-dialog" id="tl-pr-dialog" role="dialog" aria-modal="true" aria-labelledby="tl-pr-heading" aria-hidden="true" hidden>
+        <div class="pr-edit-panel">
+            <header class="pr-edit-header">
+                <div>
+                    <p class="pr-edit-kicker">Timeline entry</p>
+                    <h2 class="pr-edit-title" id="tl-pr-heading">New personal record</h2>
+                </div>
+                <button type="button" class="pr-edit-close" id="tl-pr-close" aria-label="Close">×</button>
+            </header>
+            <p class="pr-edit-lede">Saved PRs land on your timeline next to your workouts.</p>
+            <form class="pr-edit-form" id="tl-pr-form">
+                <div class="tracking-field">
+                    <label for="tl-pr-datetime">Date &amp; time</label>
+                    <input type="datetime-local" id="tl-pr-datetime" class="tracking-input" required aria-label="PR date and time">
+                </div>
+                <fieldset class="tracking-pr-discipline-fieldset">
+                    <legend class="tracking-pr-discipline-legend">Discipline</legend>
+                    <div class="tracking-pr-discipline-row">
+                        <label class="tracking-pr-radio-label"><input type="radio" name="tl-pr-discipline" value="running" id="tl-pr-disc-running" checked> Running</label>
+                        <label class="tracking-pr-radio-label"><input type="radio" name="tl-pr-discipline" value="swimming" id="tl-pr-disc-swimming"> Swimming</label>
+                        <label class="tracking-pr-radio-label"><input type="radio" name="tl-pr-discipline" value="weightlifting" id="tl-pr-disc-weightlifting"> Lifting</label>
+                    </div>
+                </fieldset>
+
+                <div id="tl-pr-panel-running" class="tracking-pr-panel">
+                    <div class="tracking-field-row">
+                        <div class="tracking-field tracking-field--grow">
+                            <label for="tl-pr-run-event">Event / distance</label>
+                            <input type="text" id="tl-pr-run-event" class="tracking-input" placeholder="e.g. 5k, Mile, 800m" aria-label="Running event or distance">
+                        </div>
+                    </div>
+                    <div class="tracking-pr-time-row">
+                        <div class="tracking-field tracking-pr-time-part">
+                            <label for="tl-pr-run-min">Minutes</label>
+                            <input type="number" id="tl-pr-run-min" class="tracking-input" min="0" step="1" value="0" aria-label="Minutes">
+                        </div>
+                        <div class="tracking-field tracking-pr-time-part">
+                            <label for="tl-pr-run-sec">Seconds</label>
+                            <input type="number" id="tl-pr-run-sec" class="tracking-input" min="0" max="59.99" step="0.01" value="0" aria-label="Seconds">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tl-pr-panel-swimming" class="tracking-pr-panel" hidden>
+                    <div class="tracking-field-row">
+                        <div class="tracking-field tracking-field--grow">
+                            <label for="tl-pr-swim-event">Event</label>
+                            <input type="text" id="tl-pr-swim-event" class="tracking-input" placeholder="e.g. 100m Freestyle" aria-label="Swimming event">
+                        </div>
+                        <div class="tracking-field tracking-field--grow">
+                            <label for="tl-pr-swim-course">Course <span class="tracking-optional">(optional)</span></label>
+                            <select id="tl-pr-swim-course" class="tracking-input" aria-label="Pool course">
+                                <option value="">—</option>
+                                <option value="LCM">LCM</option>
+                                <option value="SCM">SCM</option>
+                                <option value="SCY">SCY</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="tracking-pr-time-row">
+                        <div class="tracking-field tracking-pr-time-part">
+                            <label for="tl-pr-swim-min">Minutes</label>
+                            <input type="number" id="tl-pr-swim-min" class="tracking-input" min="0" step="1" value="0" aria-label="Minutes">
+                        </div>
+                        <div class="tracking-field tracking-pr-time-part">
+                            <label for="tl-pr-swim-sec">Seconds</label>
+                            <input type="number" id="tl-pr-swim-sec" class="tracking-input" min="0" max="59.99" step="0.01" value="0" aria-label="Seconds">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tl-pr-panel-weightlifting" class="tracking-pr-panel" hidden>
+                    <div class="tracking-field-row">
+                        <div class="tracking-field tracking-field--grow">
+                            <label for="tl-pr-wl-lift">Lift</label>
+                            <input type="text" id="tl-pr-wl-lift" class="tracking-input" placeholder="e.g. Deadlift, Bench" aria-label="Lift name">
+                        </div>
+                        <div class="tracking-field tracking-field--narrow">
+                            <label for="tl-pr-wl-weight">Weight</label>
+                            <input type="number" id="tl-pr-wl-weight" class="tracking-input" min="0" step="0.5" placeholder="0" aria-label="Weight">
+                        </div>
+                        <div class="tracking-field tracking-field--narrow">
+                            <label for="tl-pr-wl-unit">Unit</label>
+                            <select id="tl-pr-wl-unit" class="tracking-input" aria-label="Weight unit">
+                                <option value="lb">lb</option>
+                                <option value="kg">kg</option>
+                            </select>
+                        </div>
+                        <div class="tracking-field tracking-field--narrow">
+                            <label for="tl-pr-wl-reps">Reps <span class="tracking-optional">(optional)</span></label>
+                            <input type="number" id="tl-pr-wl-reps" class="tracking-input" min="1" step="1" placeholder="1" aria-label="Reps">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tracking-field">
+                    <label for="tl-pr-notes">Notes <span class="tracking-optional">(optional)</span></label>
+                    <textarea id="tl-pr-notes" class="tracking-textarea" rows="2" placeholder="Context, meet name, how it felt…" aria-label="PR notes"></textarea>
+                </div>
+                <p class="tracking-error" id="tl-pr-error" role="alert" hidden></p>
+                <button type="submit" class="tracking-submit pr-edit-save">Add to timeline</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="pr-edit-backdrop" id="pr-edit-backdrop" aria-hidden="true"></div>
+    <div class="pr-edit-dialog" id="pr-edit-dialog" role="dialog" aria-modal="true" aria-labelledby="pr-edit-title" aria-hidden="true" hidden>
+        <div class="pr-edit-panel">
+            <header class="pr-edit-header">
+                <div>
+                    <p class="pr-edit-kicker" id="pr-edit-disc">PR</p>
+                    <h2 class="pr-edit-title" id="pr-edit-title">Update personal record</h2>
+                </div>
+                <button type="button" class="pr-edit-close" id="pr-edit-close" aria-label="Close">×</button>
+            </header>
+            <p class="pr-edit-lede">New values become the current PR. The previous result stays in progress history.</p>
+            <form class="pr-edit-form" id="pr-edit-form">
+                <input type="hidden" id="pr-edit-id" value="">
+                <div class="tracking-field">
+                    <label for="pr-edit-datetime">Date &amp; time</label>
+                    <input type="datetime-local" id="pr-edit-datetime" class="tracking-input" required>
+                </div>
+                <div id="pr-edit-fields-lift" class="pr-edit-fields" hidden>
+                    <div class="tracking-field-row">
+                        <div class="tracking-field tracking-field--narrow">
+                            <label for="pr-edit-weight">Weight</label>
+                            <input type="number" id="pr-edit-weight" class="tracking-input" min="0" step="0.5">
+                        </div>
+                        <div class="tracking-field tracking-field--narrow">
+                            <label for="pr-edit-unit">Unit</label>
+                            <select id="pr-edit-unit" class="tracking-input">
+                                <option value="lb">lb</option>
+                                <option value="kg">kg</option>
+                            </select>
+                        </div>
+                        <div class="tracking-field tracking-field--narrow">
+                            <label for="pr-edit-reps">Reps</label>
+                            <input type="number" id="pr-edit-reps" class="tracking-input" min="1" step="1" placeholder="1">
+                        </div>
+                    </div>
+                </div>
+                <div id="pr-edit-fields-time" class="pr-edit-fields" hidden>
+                    <div class="tracking-pr-time-row">
+                        <div class="tracking-field tracking-pr-time-part">
+                            <label for="pr-edit-min">Minutes</label>
+                            <input type="number" id="pr-edit-min" class="tracking-input" min="0" step="1" value="0">
+                        </div>
+                        <div class="tracking-field tracking-pr-time-part">
+                            <label for="pr-edit-sec">Seconds</label>
+                            <input type="number" id="pr-edit-sec" class="tracking-input" min="0" max="59.99" step="0.01" value="0">
+                        </div>
+                    </div>
+                </div>
+                <div class="tracking-field">
+                    <label for="pr-edit-notes">Notes <span class="tracking-optional">(optional)</span></label>
+                    <textarea id="pr-edit-notes" class="tracking-textarea" rows="2" placeholder="How it felt, meet name…"></textarea>
+                </div>
+                <p class="tracking-error" id="pr-edit-error" role="alert" hidden></p>
+                <button type="submit" class="tracking-submit pr-edit-save">Save update</button>
+            </form>
+        </div>
+    </div>
+
     <div class="home-settings-backdrop" id="tracking-detail-backdrop" aria-hidden="true"></div>
     <div class="home-settings-dialog" id="tracking-detail-dialog" role="dialog" aria-modal="true" aria-labelledby="tracking-detail-title" aria-hidden="true">
         <div class="home-settings-panel tracking-detail-panel">
@@ -929,23 +1125,32 @@
     <script src="/shared/site-footer-email.js"></script>
     <script src="/shared/workout-split.js"></script>
     <script src="/shared/workout-split-library.js"></script>
+    <script src="/shared/exercise-database.js"></script>
     <script src="/shared/workout-split-editor.js"></script>
     <script src="/shared/split-recommendations.js"></script>
     <script src="/shared/routine-import.js"></script>
     <script src="/shared/workout-log.js"></script>
+    <script src="/shared/xp.js"></script>
     <script src="/shared/timed-event-fields.js"></script>
     <script src="/shared/pr-log.js"></script>
     <script src="/shared/training-sync.js"></script>
     <script src="/shared/coach-memory.js"></script>
+    <script src="/shared/training-timeline.js"></script>
     <script src="/shared/instagram-connect.js"></script>
     <script src="/shared/story-sticker.js"></script>
     <script src="/shared/workout-session.js"></script>
-    <script src="/shared/exercise-database.js"></script>
+    <script src="/shared/progression-engine.js"></script>
+    <script src="/shared/workout-predict.js"></script>
+    <script src="/shared/equipment-detect.js"></script>
+    <script src="/shared/home-gym-scan.js"></script>
+    <script src="/shared/workout-equipment-session.js"></script>
     <script src="/shared/workout-tracker.js"></script>
     <script src="/shared/post-workout-summary.js"></script>
     <script src="/shared/rocky-coaching-insights.js"></script>
+    <script src="/shared/muscle-map.js"></script>
     <script src="/shared/workout-dashboard.js"></script>
     <script src="/shared/athlete-context.js"></script>
+    <script src="/shared/daily-plan.js"></script>
     <script src="/shared/name-policy.js"></script>
     <script src="/shared/known-notes.js"></script>
     <script src="/shared/units.js"></script>
@@ -954,6 +1159,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="/shared/strength-stats.js"></script>
     <script src="/js/tracking.js"></script>
-    <script src="/js/create.js"></script>
+    <script src="/js/log.js"></script>
 </body>
 </html>

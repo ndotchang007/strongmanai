@@ -206,11 +206,105 @@
   function addRecord(record) {
     record = ensureClientId(enrichTimedRecord(record));
     record.createdAt = record.createdAt || new Date().toISOString();
+    if (!Array.isArray(record.history)) record.history = [];
     var store = loadStore();
     store.records.unshift(record);
     saveStore(store);
     pushRecordToServer(record);
+    if (window.StrongmanXp && typeof window.StrongmanXp.awardPr === 'function') {
+      try {
+        window.StrongmanXp.awardPr(record);
+      } catch (e) {}
+    }
     return record;
+  }
+
+  function snapshotProgress(record) {
+    if (!record) return null;
+    return {
+      valueDisplay: record.valueDisplay || '',
+      valueSeconds: record.valueSeconds != null ? record.valueSeconds : null,
+      weight: record.weight != null ? record.weight : null,
+      reps: record.reps != null ? record.reps : null,
+      unit: record.unit || null,
+      date: record.date || '',
+      time: record.time || '',
+      notes: record.notes || '',
+      at: record.updatedAt
+        ? Date.parse(record.updatedAt) || Date.now()
+        : record.createdAt
+          ? Date.parse(record.createdAt) || Date.now()
+          : Date.now(),
+    };
+  }
+
+  function findRecordIndex(store, id) {
+    if (!store || !Array.isArray(store.records) || !id) return -1;
+    for (var i = 0; i < store.records.length; i++) {
+      var r = store.records[i];
+      if (!r) continue;
+      if (String(r.id) === String(id) || String(r.clientId) === String(id)) return i;
+    }
+    return -1;
+  }
+
+  function updateRecord(id, patch) {
+    var store = loadStore();
+    var idx = findRecordIndex(store, id);
+    if (idx < 0) return null;
+    var current = store.records[idx];
+    var snap = snapshotProgress(current);
+    if (!Array.isArray(current.history)) current.history = [];
+    if (snap && snap.valueDisplay) current.history.push(snap);
+
+    var next = Object.assign({}, current, patch || {});
+    next.id = current.id;
+    next.clientId = current.clientId || current.id;
+    next.serverId = current.serverId;
+    next.createdAt = current.createdAt;
+    next.history = current.history;
+    next.updatedAt = new Date().toISOString();
+    next = enrichTimedRecord(next);
+    store.records[idx] = next;
+    saveStore(store);
+    pushRecordToServer(next);
+    return next;
+  }
+
+  function getRecordById(id) {
+    var store = loadStore();
+    var idx = findRecordIndex(store, id);
+    return idx >= 0 ? store.records[idx] : null;
+  }
+
+  function progressSeries(record) {
+    if (!record) return [];
+    var points = [];
+    (record.history || []).forEach(function (h) {
+      if (!h) return;
+      points.push({
+        at: h.at || (h.date ? Date.parse(h.date) : 0) || 0,
+        date: h.date || '',
+        valueDisplay: h.valueDisplay || '',
+        valueSeconds: h.valueSeconds != null ? Number(h.valueSeconds) : null,
+        weight: h.weight != null ? Number(h.weight) : null,
+      });
+    });
+    points.push({
+      at: record.updatedAt
+        ? Date.parse(record.updatedAt) || Date.now()
+        : record.createdAt
+          ? Date.parse(record.createdAt) || Date.now()
+          : Date.now(),
+      date: record.date || '',
+      valueDisplay: record.valueDisplay || '',
+      valueSeconds: record.valueSeconds != null ? Number(record.valueSeconds) : null,
+      weight: record.weight != null ? Number(record.weight) : null,
+    });
+    points.sort(function (a, b) {
+      return (a.at || 0) - (b.at || 0);
+    });
+    return points;
   }
 
   function getRecords() {
@@ -315,7 +409,10 @@
     loadStore: loadStore,
     saveStore: saveStore,
     addRecord: addRecord,
+    updateRecord: updateRecord,
+    getRecordById: getRecordById,
     getRecords: getRecords,
+    progressSeries: progressSeries,
     disciplineLabel: disciplineLabel,
     syncFromServer: syncFromServer,
     syncFromServerAsync: syncFromServerAsync,

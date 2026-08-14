@@ -4,10 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="strongman-api-base" content="https://strongmanai-api-test.onrender.com/api/v1">
-    <link rel="stylesheet" href="/css/tester-gate.css">
-    <style id="tester-gate-boot">html.tester-gate-pending,html.tester-gate-pending body{background:#08080a!important;margin:0;min-height:100%;overflow:hidden!important}html.tester-gate-pending body>*:not(#tester-gate-overlay){visibility:hidden!important;pointer-events:none!important}html.tester-gate-pending #tester-gate-overlay{visibility:visible!important;pointer-events:auto!important}</style>
-    <script>document.documentElement.classList.add("tester-gate-pending");</script>
-    <script src="/shared/tester-gate.js"></script>
     <title>Strongman AI – User settings</title>
     <link rel="icon" type="image/png" href="/assets/logo.png">
     <link rel="apple-touch-icon" href="/assets/logo.png">
@@ -64,7 +60,7 @@
                 <p class="customize-setup-banner-text">For each sport, pick school or club, set practice nights and game/meet days, and choose your season phase. Rocky uses this to plan lifting around your real week.</p>
             </div>
             <header class="user-settings-hero">
-                <p class="user-settings-eyebrow">Under You · v1.2</p>
+                <p class="user-settings-eyebrow">Under You · v1.3</p>
                 <h1 class="user-settings-title">User settings</h1>
                 <p class="user-settings-lead">Your account, goals, session caps, and optional sports schedule — everything Rocky uses to coach you.</p>
                 <a href="/info" class="user-settings-info-link">New here? Read the guide →</a>
@@ -78,12 +74,12 @@
                         <h2 class="customize-split-redirect-title">Weekly workout split</h2>
                         <p class="customize-split-redirect-text">Your split lives in Log — build each day’s exercises, save routines from Rocky, and switch between saved splits there.</p>
                     </div>
-                    <a href="/create#split" class="customize-split-redirect-link">Edit workout split in Log →</a>
+                    <a href="/log#split" class="customize-split-redirect-link">Edit workout split in Log →</a>
                 </div>
                 <div id="customize-form-mount"></div>
                 <div class="customize-actions">
                     <button type="button" class="customize-save-btn" id="customize-save-btn">Save changes</button>
-                    <a href="/generate" class="customize-secondary-link">Chat with Rocky →</a>
+                    <a href="/coach" class="customize-secondary-link">Chat with Rocky →</a>
                 </div>
                 <p class="customize-completion" id="customize-completion">Let's fill in a few things…</p>
             </section>
@@ -157,7 +153,7 @@
                 </section>
                 <section class="home-settings-section home-settings-section--footer settings-buddy-card" aria-labelledby="settings-about-heading">
                     <h3 class="home-settings-section-title" id="settings-about-heading">About</h3>
-                    <p class="home-settings-meta">Strongman AI v1.2</p>
+                    <p class="home-settings-meta">Strongman AI v1.3</p>
                     <div class="home-settings-inline-links">
                         <a href="/legal#terms" class="home-settings-inline-link">Terms</a>
                         <span class="home-settings-sep" aria-hidden="true">·</span>
@@ -181,6 +177,7 @@
     <script src="/shared/sport-database.js"></script>
     <script src="/shared/sport-picker.js"></script>
     <script src="/shared/athlete-context.js"></script>
+    <script src="/shared/equipment-detect.js"></script>
     <script src="/shared/home-gym-scan.js"></script>
     <script src="/shared/rocky-setup-alert.js"></script>
     <script src="/shared/athlete-sports-editor.js"></script>

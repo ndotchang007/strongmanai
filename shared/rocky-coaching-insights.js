@@ -397,7 +397,7 @@
         callouts.push({
           text: 'No sessions yet — ask Rocky for a simple machine workout and hit Start workout on Home.',
           tone: 'neutral',
-          linkHref: '/generate',
+          linkHref: '/coach',
           linkLabel: 'Ask Rocky',
         });
         return callouts.slice(0, limit);
@@ -423,7 +423,7 @@
         callouts.push({
           text: 'Keep logging — after a week of consistent training, Rocky’s tips get sharper. Stick with machines and cables for now.',
           tone: 'neutral',
-          linkHref: hasSeenLearnGuide() ? '/generate' : '/learn',
+          linkHref: hasSeenLearnGuide() ? '/coach' : '/learn',
           linkLabel: hasSeenLearnGuide() ? 'Ask Rocky' : 'Beginner guide',
         });
       } else {
@@ -639,10 +639,21 @@
     return null;
   }
 
+  function shortenInsight(text, maxLen) {
+    var t = String(text || '').replace(/\s+/g, ' ').trim();
+    maxLen = maxLen || 110;
+    if (t.length <= maxLen) return t;
+    var cut = t.slice(0, maxLen - 1);
+    var sp = cut.lastIndexOf(' ');
+    if (sp > 48) cut = cut.slice(0, sp);
+    return cut.replace(/[.,;:!?-]+$/, '') + '…';
+  }
+
   function renderInto(container, sessions, opts) {
     opts = opts || {};
     if (!container) return;
-    var callouts = buildCoachingCallouts(sessions, opts);
+    var limit = opts.limit != null ? opts.limit : opts.hierarchy ? 3 : 6;
+    var callouts = buildCoachingCallouts(sessions, { limit: limit });
     if (opts.compact) {
       container.innerHTML =
         '<p class="wd-coach-insights-label">Rocky noticed</p>' +
@@ -656,10 +667,17 @@
       return;
     }
     container.innerHTML = '';
-    callouts.forEach(function (c) {
+    if (!callouts.length) return;
+
+    var useHierarchy = opts.hierarchy !== false;
+    callouts.forEach(function (c, idx) {
       var tone = c.tone || 'neutral';
+      var isPrimary = useHierarchy && idx === 0;
       var article = document.createElement('article');
-      article.className = 'dash-roast-card dash-roast-card--' + tone;
+      article.className =
+        'dash-roast-card dash-roast-card--' +
+        tone +
+        (isPrimary ? ' dash-roast-card--primary' : ' dash-roast-card--secondary');
       article.setAttribute('role', 'listitem');
       var icon =
         tone === 'warn'
@@ -674,19 +692,32 @@
           escapeHtml(c.linkLabel || 'Learn more') +
           ' →</a>'
         : '';
-      article.innerHTML =
-        '<span class="dash-roast-icon" aria-hidden="true">' +
-        icon +
-        '</span><div class="dash-roast-copy"><p class="dash-roast-text">' +
-        escapeHtml(c.text) +
-        '</p>' +
-        linkHtml +
-        '</div>';
+      var body = isPrimary ? c.text : shortenInsight(c.text, 96);
+      if (isPrimary) {
+        article.innerHTML =
+          '<div class="dash-roast-copy">' +
+          '<p class="dash-roast-kicker">Primary insight</p>' +
+          '<p class="dash-roast-text">' +
+          escapeHtml(body) +
+          '</p>' +
+          linkHtml +
+          '</div>';
+      } else {
+        article.innerHTML =
+          '<span class="dash-roast-icon" aria-hidden="true">' +
+          icon +
+          '</span><div class="dash-roast-copy"><p class="dash-roast-text">' +
+          escapeHtml(body) +
+          '</p>' +
+          linkHtml +
+          '</div>';
+      }
       container.appendChild(article);
     });
   }
 
   window.RockyCoachingInsights = {
+    MUSCLE_GROUPS: MUSCLE_GROUPS,
     buildCallouts: buildCoachingCallouts,
     renderInto: renderInto,
     hasConsistentUse: hasConsistentUse,

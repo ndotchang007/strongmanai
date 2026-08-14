@@ -16,6 +16,8 @@
     this.sendBtn = opts.sendBtn;
     this.routineToggle = opts.routineToggle || null;
     this.physiqueToggle = opts.physiqueToggle || null;
+    this.projectionToggle = opts.projectionToggle || document.getElementById('coach-projection-mode');
+    this.capabilityGrid = opts.capabilityGrid || document.getElementById('coach-capability-grid');
     this.attachBtn = opts.attachBtn || null;
     this.imageInput = opts.imageInput || null;
     this.attachPreviewEl = opts.attachPreviewEl || null;
@@ -29,8 +31,31 @@
     this.chipsEl = opts.chipsEl;
     this.briefingEl = opts.briefingEl;
     this.briefingMobileEl = opts.briefingMobileEl;
+    this.layoutEl = opts.layoutEl || document.getElementById('coach-layout');
+    this.emptyHeroEl = opts.emptyHeroEl || document.getElementById('coach-empty-hero');
+    this.modeStageEl = opts.modeStageEl || document.getElementById('coach-mode-stage');
+    this.chatBodyEl =
+      opts.chatBodyEl ||
+      document.getElementById('coach-chat-body') ||
+      (this.threadEl && this.threadEl.closest('.coach-chat-body')) ||
+      null;
+    this.modeBackBtn =
+      opts.modeBackBtn ||
+      document.getElementById('coach-modes-back') ||
+      document.getElementById('coach-mode-back');
+    this.chatBackBtn =
+      opts.chatBackBtn ||
+      document.getElementById('coach-modes-back') ||
+      document.getElementById('coach-chat-back');
+    this.projKind = 'lift';
+    this.knowBtn = opts.knowBtn || null;
+    this.knowDrawer = opts.knowDrawer || null;
+    this.knowBackdrop = opts.knowBackdrop || null;
+    this.knowCloseBtn = opts.knowCloseBtn || null;
     this.messages = [];
     this.pending = false;
+    this.coachView = 'hub';
+    this.projKind = 'lift';
     this.loadingEl = null;
     this.streamingEl = null;
     this.streamingTextEl = null;
@@ -40,16 +65,551 @@
     this.isListening = false;
     this.typewriterTimer = null;
     this.loadFromStorage();
+    if (window.location.search && /(?:^|[?&])new=1(?:&|$)/.test(window.location.search)) {
+      this.messages = [];
+      this.saveToStorage();
+      try {
+        history.replaceState(null, '', window.location.pathname);
+      } catch (e) {}
+    }
     this.syncMemoryFromThread();
     this.bindEvents();
+    this.bindKnowDrawer();
     this.refreshBriefing();
     this.buildChips();
-    this.render();
+    this.applyCoachView('hub');
     this.fetchQuota();
     this.resumePendingReply();
     if (window.CoachPending) window.CoachPending.clearReplyReady();
-    this.syncModeFromToggles();
   }
+
+  CoachThread.prototype.hasActiveThread = function () {
+    return this.coachView === 'chat';
+  };
+
+  CoachThread.prototype.getModeOutputEl = function () {
+    if (this.coachView === 'physique') return document.getElementById('coach-physique-output');
+    if (this.coachView === 'routine') return document.getElementById('coach-routine-output');
+    if (this.coachView === 'projection') return document.getElementById('coach-projection-output');
+    return null;
+  };
+
+  CoachThread.prototype.getMountEl = function () {
+    if (this.coachView === 'chat') return this.threadEl;
+    return this.getModeOutputEl() || this.threadEl;
+  };
+
+  CoachThread.prototype.viewScreenEl = function (view) {
+    if (view === 'hub') return this.emptyHeroEl;
+    if (view === 'physique' || view === 'routine' || view === 'projection') return this.modeStageEl;
+    if (view === 'chat') return this.threadEl;
+    return null;
+  };
+
+  CoachThread.prototype.prefersReducedMotion = function () {
+    return (
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    );
+  };
+
+  CoachThread.prototype.navDirection = function (from, to) {
+    if (to === 'hub') return 'back';
+    if (from === 'hub') return 'forward';
+    if (from === 'chat' && to !== 'chat') return 'back';
+    return 'forward';
+  };
+
+  CoachThread.prototype.setCoachView = function (view) {
+    var next = view || 'hub';
+    if (next === 'physique') {
+      this.setError('Physique scanner is coming soon.');
+      next = 'hub';
+    }
+    if (next !== 'hub' && next !== 'chat' && next !== 'physique' && next !== 'routine' && next !== 'projection') {
+      next = 'hub';
+    }
+    var prev = this.coachView || 'hub';
+    if (this._viewTransitioning) return;
+    if (prev === next) {
+      this.applyCoachView(next);
+      return;
+    }
+    if (this.prefersReducedMotion()) {
+      this.applyCoachView(next);
+      return;
+    }
+    this.transitionCoachView(prev, next, this.navDirection(prev, next));
+  };
+
+  CoachThread.prototype.applyCoachView = function (next) {
+    this.coachView = next;
+    if (next === 'physique' || next === 'routine' || next === 'projection' || next === 'chat') {
+      this.coachMode = next === 'chat' ? 'chat' : next;
+    } else {
+      this.coachMode = 'chat';
+    }
+    if (this.emptyHeroEl) {
+      this.emptyHeroEl.classList.remove(
+        'coach-screen-enter-forward',
+        'coach-screen-enter-back',
+        'coach-screen-exit-forward',
+        'coach-screen-exit-back'
+      );
+    }
+    if (this.modeStageEl) {
+      this.modeStageEl.classList.remove(
+        'coach-screen-enter-forward',
+        'coach-screen-enter-back',
+        'coach-screen-exit-forward',
+        'coach-screen-exit-back'
+      );
+    }
+    if (this.threadEl) {
+      this.threadEl.classList.remove(
+        'coach-screen-enter-forward',
+        'coach-screen-enter-back',
+        'coach-screen-exit-forward',
+        'coach-screen-exit-back'
+      );
+    }
+    if (this.composerEl) {
+      this.composerEl.classList.remove('coach-composer-enter', 'coach-composer-exit');
+    }
+    if (this.layoutEl) {
+      this.layoutEl.classList.remove('is-transitioning', 'nav-back', 'nav-forward');
+    }
+    this.syncLayoutState();
+    this.resetViewScroll();
+    if (next === 'chat') {
+      this.render();
+      if (this.inputEl) {
+        try {
+          this.inputEl.focus({ preventScroll: true });
+        } catch (e) {
+          try {
+            this.inputEl.focus();
+          } catch (e2) {}
+        }
+      }
+    }
+    if (next === 'hub') {
+      // Do not restart the typewriter — clearing the greeting reflows the hub and feels like a jump.
+      this.runEmptyGreetingTypewriter({ restart: false });
+    }
+    if (next === 'projection') this.prefillProjectionDefaults();
+    if (next === 'routine') this.prefillRoutineDefaults();
+    this.setError('');
+    var self = this;
+    requestAnimationFrame(function () {
+      self.resetViewScroll();
+    });
+  };
+
+  CoachThread.prototype.resetViewScroll = function () {
+    var nodes = [];
+    var body = this.chatBodyEl || (this.threadEl && this.threadEl.closest('.coach-chat-body'));
+    if (body) nodes.push(body);
+    if (this.modeStageEl) nodes.push(this.modeStageEl);
+    if (this.emptyHeroEl) nodes.push(this.emptyHeroEl);
+    var mainWrap = document.querySelector('.main-wrap');
+    if (mainWrap) nodes.push(mainWrap);
+    var chat = document.querySelector('.coach-chat');
+    if (chat) nodes.push(chat);
+    nodes.push(document.documentElement, document.body);
+    nodes.forEach(function (el) {
+      if (el && typeof el.scrollTop === 'number') el.scrollTop = 0;
+    });
+    try {
+      window.scrollTo(0, 0);
+    } catch (e) {}
+    this.updateScrollFade();
+  };
+
+  CoachThread.prototype.transitionCoachView = function (from, to, dir) {
+    var self = this;
+    var fromEl = this.viewScreenEl(from);
+    var toEl = this.viewScreenEl(to);
+    this._viewTransitioning = true;
+    this.coachView = to;
+    if (to === 'physique' || to === 'routine' || to === 'projection' || to === 'chat') {
+      this.coachMode = to === 'chat' ? 'chat' : to;
+    } else {
+      this.coachMode = 'chat';
+    }
+
+    var isMode = to === 'physique' || to === 'routine' || to === 'projection';
+    if (this.layoutEl) {
+      this.layoutEl.classList.toggle('is-empty', to === 'hub');
+      this.layoutEl.classList.toggle('is-active', to !== 'hub');
+      this.layoutEl.classList.toggle('is-mode', isMode);
+      this.layoutEl.classList.toggle('is-chat', to === 'chat');
+      this.layoutEl.dataset.coachView = to;
+      this.layoutEl.classList.add('is-transitioning', dir === 'back' ? 'nav-back' : 'nav-forward');
+    }
+
+    // Show both screens for the slide, then settle.
+    if (this.emptyHeroEl) this.emptyHeroEl.hidden = !(from === 'hub' || to === 'hub');
+    if (this.modeStageEl) {
+      this.modeStageEl.hidden = !(
+        from === 'physique' ||
+        from === 'routine' ||
+        from === 'projection' ||
+        isMode
+      );
+    }
+    if (this.threadEl) this.threadEl.hidden = !(from === 'chat' || to === 'chat');
+    if (this.composerEl) this.composerEl.hidden = to !== 'chat' && from !== 'chat';
+
+    if (isMode) {
+      document.querySelectorAll('[data-mode-panel]').forEach(function (panel) {
+        panel.hidden = panel.getAttribute('data-mode-panel') !== to;
+      });
+    }
+    if (to === 'chat') {
+      if (this.composerEl) {
+        this.composerEl.hidden = false;
+        this.composerEl.classList.add('coach-composer-enter');
+      }
+      this.render();
+    }
+    if (from === 'chat' && to !== 'chat' && this.composerEl) {
+      this.composerEl.classList.add('coach-composer-exit');
+    }
+    if (to === 'projection') this.prefillProjectionDefaults();
+    if (to === 'routine') this.prefillRoutineDefaults();
+
+    if (toEl) {
+      toEl.hidden = false;
+      toEl.classList.remove(
+        'coach-screen-exit-forward',
+        'coach-screen-exit-back',
+        'coach-screen-enter-forward',
+        'coach-screen-enter-back'
+      );
+      void toEl.offsetWidth;
+      toEl.classList.add(dir === 'back' ? 'coach-screen-enter-back' : 'coach-screen-enter-forward');
+    }
+    if (fromEl && fromEl !== toEl) {
+      fromEl.hidden = false;
+      fromEl.classList.remove(
+        'coach-screen-exit-forward',
+        'coach-screen-exit-back',
+        'coach-screen-enter-forward',
+        'coach-screen-enter-back'
+      );
+      void fromEl.offsetWidth;
+      fromEl.classList.add(dir === 'back' ? 'coach-screen-exit-back' : 'coach-screen-exit-forward');
+    }
+
+    var settled = false;
+    function finish() {
+      if (settled) return;
+      settled = true;
+      self._viewTransitioning = false;
+      self.applyCoachView(to);
+    }
+    window.setTimeout(finish, 360);
+  };
+
+  CoachThread.prototype.prefillRoutineDefaults = function () {
+    var user = typeof window.getCurrentUser === 'function' ? window.getCurrentUser() : null;
+    var AC = window.AthleteContext;
+    var ctx = AC && user && typeof AC.loadAthleteContext === 'function' ? AC.loadAthleteContext(user) : null;
+    var goal = (ctx && ctx.primaryGoal) || 'strength';
+    var goalRadio = document.querySelector(
+      'input[name="coach-routine-goal"][value="' + goal + '"]'
+    );
+    if (goalRadio) goalRadio.checked = true;
+
+    var schoolCap =
+      ctx && ctx.schoolNightMaxMinutes != null ? Number(ctx.schoolNightMaxMinutes) : null;
+    if (schoolCap) {
+      var nearest = [45, 60, 75, 90].reduce(function (best, n) {
+        return Math.abs(n - schoolCap) < Math.abs(best - schoolCap) ? n : best;
+      }, 60);
+      var minRadio = document.querySelector(
+        'input[name="coach-routine-minutes"][value="' + nearest + '"]'
+      );
+      if (minRadio) minRadio.checked = true;
+    }
+  };
+
+  CoachThread.prototype.syncProjectionBwDelta = function () {
+    var amountEl = document.getElementById('coach-proj-bw-amount');
+    var deltaEl = document.getElementById('coach-proj-bw-delta');
+    var dirEl = document.querySelector('input[name="coach-proj-bw-dir"]:checked');
+    if (!amountEl || !deltaEl) return;
+    var amount = Math.abs(parseFloat(amountEl.value) || 0);
+    var dir = dirEl ? dirEl.value : 'lose';
+    deltaEl.value = String(dir === 'gain' ? amount : -amount);
+  };
+
+  CoachThread.prototype.bestPrForLift = function (liftName) {
+    var best = null;
+    if (!window.PRLog || typeof window.PRLog.getRecords !== 'function') return best;
+    var needle = String(liftName || '')
+      .toLowerCase()
+      .split(' ')[0];
+    window.PRLog.getRecords().forEach(function (r) {
+      if (!r || r.discipline !== 'weightlifting') return;
+      if (String(r.eventLabel || '').toLowerCase().indexOf(needle) === -1) return;
+      if (r.weight == null) return;
+      var w = Number(r.weight);
+      if (!isFinite(w)) return;
+      if (best == null || w > best) best = w;
+    });
+    return best;
+  };
+
+  CoachThread.prototype.defaultLiftCurrent = function (liftName) {
+    var n = String(liftName || '').toLowerCase();
+    if (n.indexOf('squat') !== -1) return 225;
+    if (n.indexOf('deadlift') !== -1) return 275;
+    if (n.indexOf('overhead') !== -1 || n.indexOf('ohp') !== -1) return 115;
+    return 185; // bench / default
+  };
+
+  CoachThread.prototype.syncLiftProjectionFields = function (opts) {
+    opts = opts || {};
+    var liftSelect = document.getElementById('coach-proj-lift-name');
+    var liftNow = document.getElementById('coach-proj-lift-now');
+    var liftTarget = document.getElementById('coach-proj-lift-target');
+    var sourceEl = document.getElementById('coach-proj-lift-source');
+    if (!liftSelect || !liftNow) return;
+    var lift = liftSelect.value || 'Bench Press';
+    var best = this.bestPrForLift(lift);
+    var current;
+    var source;
+    if (best != null) {
+      current = Math.round(best);
+      source = 'From your PRs';
+    } else {
+      current = this.defaultLiftCurrent(lift);
+      source = 'Default start';
+    }
+    if (opts.force || !liftNow.dataset.userTouched) {
+      liftNow.value = String(current);
+    }
+    if (sourceEl) sourceEl.textContent = source;
+    if (liftTarget && (opts.force || !liftTarget.dataset.userTouched)) {
+      var t = Math.max(Number(liftTarget.value) || 0, Math.round(current + 40));
+      liftTarget.value = String(Math.round(t / 5) * 5);
+    }
+  };
+
+  CoachThread.prototype.adjustStepperValue = function (inputId, delta) {
+    var el = document.getElementById(inputId);
+    if (!el) return;
+    var min = el.min !== '' && el.min != null ? Number(el.min) : null;
+    var max = el.max !== '' && el.max != null ? Number(el.max) : null;
+    var cur = parseFloat(el.value);
+    if (isNaN(cur)) cur = 0;
+    var next = cur + Number(delta || 0);
+    if (min != null && isFinite(min)) next = Math.max(min, next);
+    if (max != null && isFinite(max)) next = Math.min(max, next);
+    // Keep 5 lb increments for lift/bodyweight steppers
+    next = Math.round(next / 5) * 5;
+    if (min != null && isFinite(min) && next < min) next = min;
+    el.value = String(next);
+    el.dataset.userTouched = '1';
+    if (inputId === 'coach-proj-bw-amount' || inputId === 'coach-proj-bw-now') {
+      this.syncProjectionBwDelta();
+    }
+    try {
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+    } catch (e) {}
+  };
+
+  CoachThread.prototype.prefillProjectionDefaults = function () {
+    var user = typeof window.getCurrentUser === 'function' ? window.getCurrentUser() : null;
+    var bwEl = document.getElementById('coach-proj-bw-now');
+    if (bwEl && !bwEl.dataset.userTouched && user && user.weight != null && !isNaN(Number(user.weight))) {
+      bwEl.value = String(Math.round(Number(user.weight) / 5) * 5);
+    }
+    this.syncProjectionBwDelta();
+    this.syncLiftProjectionFields({ force: true });
+  };
+
+  CoachThread.prototype.syncLayoutState = function () {
+    var view = this.coachView || 'hub';
+    var isHub = view === 'hub';
+    var isChat = view === 'chat';
+    var isMode = view === 'physique' || view === 'routine' || view === 'projection';
+
+    if (this.layoutEl) {
+      this.layoutEl.classList.toggle('is-empty', isHub);
+      this.layoutEl.classList.toggle('is-active', !isHub);
+      this.layoutEl.classList.toggle('is-mode', isMode);
+      this.layoutEl.classList.toggle('is-chat', isChat);
+      this.layoutEl.dataset.coachView = view;
+    }
+
+    if (this.emptyHeroEl) {
+      if (isHub) this.emptyHeroEl.removeAttribute('hidden');
+      else this.emptyHeroEl.setAttribute('hidden', '');
+    }
+    if (this.modeStageEl) {
+      if (isMode) this.modeStageEl.removeAttribute('hidden');
+      else this.modeStageEl.setAttribute('hidden', '');
+    }
+    if (this.composerEl) {
+      if (isChat) this.composerEl.removeAttribute('hidden');
+      else this.composerEl.setAttribute('hidden', '');
+    }
+    if (this.threadEl) {
+      if (isChat) this.threadEl.removeAttribute('hidden');
+      else this.threadEl.setAttribute('hidden', '');
+    }
+
+    document.querySelectorAll('[data-mode-panel]').forEach(function (panel) {
+      var on = isMode && panel.getAttribute('data-mode-panel') === view;
+      if (on) panel.removeAttribute('hidden');
+      else panel.setAttribute('hidden', '');
+    });
+
+    document.body.classList.toggle('coach-chat-active', isChat);
+    document.body.classList.toggle('coach-chat-empty', isHub);
+    document.body.classList.toggle('coach-mode-active', isMode);
+
+    // Don't restart the typewriter here — syncLayoutState runs often and
+    // was causing overlapping animations. applyCoachView handles hub entry.
+    this.bindScrollFade();
+    this.updateScrollFade();
+  };
+
+  CoachThread.prototype.bindScrollFade = function () {
+    var el = this.getScrollContainer();
+    if (!el || el.getAttribute('data-scroll-fade-bound') === '1') return;
+    el.setAttribute('data-scroll-fade-bound', '1');
+    var self = this;
+    el.addEventListener(
+      'scroll',
+      function () {
+        self.updateScrollFade();
+      },
+      { passive: true }
+    );
+    window.addEventListener('resize', function () {
+      self.updateScrollFade();
+    });
+  };
+
+  CoachThread.prototype.updateScrollFade = function () {
+    var el = this.getScrollContainer();
+    if (!el) return;
+    var canScroll = el.scrollHeight > el.clientHeight + 8;
+    el.classList.toggle('is-scrollable', canScroll);
+  };
+
+  CoachThread.prototype.showHubGreeting = function () {
+    var el =
+      (this.emptyHeroEl && this.emptyHeroEl.querySelector('.coach-empty-greeting')) ||
+      document.querySelector('.coach-empty-greeting');
+    if (!el) return;
+    if (this._greetingTimer) {
+      window.clearTimeout(this._greetingTimer);
+      this._greetingTimer = null;
+    }
+    this._greetingGen = (this._greetingGen || 0) + 1;
+    el.classList.remove('is-typing');
+    el.textContent = "What's up Champ — what do you need?";
+  };
+
+  CoachThread.prototype.runEmptyGreetingTypewriter = function (opts) {
+    opts = opts || {};
+    var el =
+      (this.emptyHeroEl && this.emptyHeroEl.querySelector('.coach-empty-greeting')) ||
+      document.querySelector('.coach-empty-greeting');
+    if (!el) return;
+
+    var full = "What's up Champ — what do you need?";
+    if (this._greetingTimer) {
+      window.clearTimeout(this._greetingTimer);
+      this._greetingTimer = null;
+    }
+
+    // Already finished once this session and not forced — keep static text.
+    if (!opts.restart && el.dataset.typed === '1') {
+      el.classList.remove('is-typing');
+      el.textContent = full;
+      return;
+    }
+
+    var reduce =
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce) {
+      el.dataset.typed = '1';
+      el.classList.remove('is-typing');
+      el.textContent = full;
+      return;
+    }
+
+    var gen = (this._greetingGen || 0) + 1;
+    this._greetingGen = gen;
+    el.dataset.typed = '0';
+    el.textContent = '';
+    el.classList.add('is-typing');
+
+    var self = this;
+    var i = 0;
+    function tick() {
+      if (self._greetingGen !== gen) return;
+      if (i >= full.length) {
+        el.classList.remove('is-typing');
+        el.dataset.typed = '1';
+        self._greetingTimer = null;
+        return;
+      }
+      el.textContent += full.charAt(i);
+      i += 1;
+      self._greetingTimer = window.setTimeout(
+        tick,
+        22 + (full.charAt(i - 1) === ' ' ? 18 : 0)
+      );
+    }
+    tick();
+  };
+
+  CoachThread.prototype.setKnowDrawerOpen = function (open) {
+    var isOpen = !!open;
+    if (this.knowDrawer) {
+      this.knowDrawer.hidden = !isOpen;
+      this.knowDrawer.classList.toggle('is-open', isOpen);
+    }
+    if (this.knowBackdrop) {
+      this.knowBackdrop.hidden = !isOpen;
+    }
+    if (this.knowBtn) {
+      this.knowBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    }
+    document.body.classList.toggle('coach-know-open', isOpen);
+    if (isOpen) this.refreshBriefing();
+  };
+
+  CoachThread.prototype.bindKnowDrawer = function () {
+    var self = this;
+    if (this.knowBtn) {
+      this.knowBtn.addEventListener('click', function () {
+        var open = self.knowBtn.getAttribute('aria-expanded') === 'true';
+        self.setKnowDrawerOpen(!open);
+      });
+    }
+    if (this.knowCloseBtn) {
+      this.knowCloseBtn.addEventListener('click', function () {
+        self.setKnowDrawerOpen(false);
+      });
+    }
+    if (this.knowBackdrop) {
+      this.knowBackdrop.addEventListener('click', function () {
+        self.setKnowDrawerOpen(false);
+      });
+    }
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') self.setKnowDrawerOpen(false);
+    });
+  };
 
   CoachThread.prototype.getScrollContainer = function () {
     if (!this.threadEl) return null;
@@ -65,6 +625,7 @@
     } else {
       el.scrollTop = 0;
     }
+    this.updateScrollFade();
   };
 
   CoachThread.prototype.loadFromStorage = function () {
@@ -141,7 +702,11 @@
     } catch (e) {}
     var parts = [];
     if (window.AthleteContext && user) {
-      parts.push(window.AthleteContext.buildCoachPromptBlock(user, extras));
+      var builder =
+        typeof window.AthleteContext.buildCompactCoachPromptBlock === 'function'
+          ? window.AthleteContext.buildCompactCoachPromptBlock
+          : window.AthleteContext.buildCoachPromptBlock;
+      parts.push(builder.call(window.AthleteContext, user, extras));
     }
     if (window.CoachMemory) {
       var memBlock = window.CoachMemory.buildPromptBlock(window.CoachMemory.load());
@@ -152,147 +717,8 @@
 
   CoachThread.prototype.buildChips = function () {
     if (!this.chipsEl) return;
-    var AC = window.AthleteContext;
-    var user = typeof window.getCurrentUser === 'function' ? window.getCurrentUser() : null;
-    var hint = AC && user ? AC.getTodayTrainingHint(user) : null;
-    var ctx = AC && user ? AC.loadAthleteContext(user) : null;
-    var maxMin = hint ? hint.maxMinutes : 45;
-    var sports = AC && ctx && AC.getSports ? AC.getSports(ctx) : [];
-    var sport =
-      sports.length > 0
-        ? sports
-            .map(function (s) {
-              return s.sport;
-            })
-            .filter(Boolean)
-            .join(' + ')
-        : ctx && ctx.sport
-          ? ctx.sport
-          : 'my sport';
-    var sportFocused = AC && ctx && AC.isSportFocusedGoal ? AC.isSportFocusedGoal(ctx) : sports.length > 0;
-    var comp = AC && ctx ? AC.competitionLabel(ctx) : 'Game';
-    var isBeginner = user && (!user.experience || user.experience === 'beginner');
-
-    var prompts;
-    if (isBeginner) {
-      prompts = [
-        { label: 'Feeling sick', text: "I'm sick today — what should I do about training?" },
-        { label: 'Really sore', text: "I'm really sore from yesterday. Should I train today and how hard?" },
-        {
-          label: 'Beginner full body',
-          text:
-            "I'm new to the gym — build a " +
-            maxMin +
-            '-minute full-body session with machines and cables only (chest press, lat pulldown, leg press, etc.) and include form cues',
-        },
-        {
-          label: 'Form tips',
-          text:
-            'Give me beginner form cues for lat pulldown and chest press — grip, posture, and common mistakes',
-        },
-        {
-          label: 'Build habit',
-          text:
-            'I need a simple consistent routine I can stick to — about ' +
-            maxMin +
-            ' minutes today, beginner-friendly machines',
-        },
-        {
-          label: 'Low impact',
-          text:
-            'Low-impact training day — joints feel tired, keep it around ' +
-            Math.min(40, maxMin) +
-            ' minutes with easy machines',
-        },
-      ];
-    } else if (!sportFocused) {
-      prompts = [
-        { label: 'Feeling sick', text: "I'm sick today — what should I do about training?" },
-        { label: 'Really sore', text: "I'm really sore from yesterday. Should I train today and how hard?" },
-        {
-          label: '30-min workout',
-          text:
-            'Put together a ' +
-            maxMin +
-            '-minute full-body session for general fitness — nothing crazy, just move well',
-        },
-        {
-          label: 'Build habit',
-          text:
-            'I need a simple consistent routine I can stick to — about ' +
-            maxMin +
-            ' minutes today',
-        },
-        {
-          label: 'Low impact',
-          text:
-            'Low-impact training day — joints feel tired, keep it around ' +
-            Math.min(40, maxMin) +
-            ' minutes',
-        },
-        {
-          label: 'Recovery / mobility',
-          text:
-            'Recovery and mobility focus today (~' +
-            Math.min(35, maxMin) +
-            ' min) — help me stay active without overdoing it',
-        },
-      ];
-    } else {
-      prompts = [
-        { label: 'Feeling sick', text: "I'm sick today — what should I do about training?" },
-        { label: 'Really sore', text: "I'm really sore from yesterday. Should I train today and how hard?" },
-        {
-          label: hint && hint.kind === 'game' ? comp + ' day' : comp + ' tomorrow',
-          text:
-            hint && hint.kind === 'game'
-              ? 'Light recovery session for ' + comp.toLowerCase() + ' day (~' + Math.min(30, maxMin) + ' min)'
-              : comp + ' tomorrow — program a short complementary lift (~' + maxMin + ' min), nothing that will hurt performance',
-        },
-        {
-          label: 'Practice day',
-          text:
-            'Practice day — ' +
-            maxMin +
-            ' min gym session for ' +
-            sport +
-            ' that complements practice, not duplicates it',
-        },
-        {
-          label: 'Build session',
-          text:
-            'Put together a ' +
-            maxMin +
-            '-minute session for ' +
-            sport +
-            ' — hit my main goal',
-        },
-        {
-          label: 'Off-season',
-          text:
-            'Off-season hypertrophy session (~' +
-            (ctx && ctx.weekendMaxMinutes ? ctx.weekendMaxMinutes : 90) +
-            ' min) for ' +
-            sport,
-        },
-      ];
-    }
-
     this.chipsEl.innerHTML = '';
-    var self = this;
-    prompts.forEach(function (p) {
-      var b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'coach-chip';
-      b.textContent = p.label;
-      b.addEventListener('click', function () {
-        if (self.inputEl) {
-          self.inputEl.value = p.text;
-          self.inputEl.focus();
-        }
-      });
-      self.chipsEl.appendChild(b);
-    });
+    this.chipsEl.hidden = true;
   };
 
   CoachThread.prototype.autosizeInput = function () {
@@ -310,9 +736,17 @@
       this.setCoachMode('physique');
     } else if (this.routineToggle && this.routineToggle.checked) {
       this.setCoachMode('routine');
+    } else if (this.projectionToggle && this.projectionToggle.checked) {
+      this.setCoachMode('projection');
     } else {
       this.setCoachMode('chat');
     }
+  };
+
+  CoachThread.prototype.clearModeTogglesExcept = function (keep) {
+    if (this.routineToggle && keep !== 'routine') this.routineToggle.checked = false;
+    if (this.physiqueToggle && keep !== 'physique') this.physiqueToggle.checked = false;
+    if (this.projectionToggle && keep !== 'projection') this.projectionToggle.checked = false;
   };
 
   CoachThread.prototype.renderAttachPreview = function () {
@@ -498,20 +932,129 @@
     }
     if (this.routineToggle) {
       this.routineToggle.addEventListener('change', function () {
-        if (self.routineToggle.checked && self.physiqueToggle) {
-          self.physiqueToggle.checked = false;
-        }
+        if (self.routineToggle.checked) self.clearModeTogglesExcept('routine');
         self.setCoachMode(self.routineToggle.checked ? 'routine' : 'chat');
       });
     }
     if (this.physiqueToggle) {
       this.physiqueToggle.addEventListener('change', function () {
-        if (self.physiqueToggle.checked && self.routineToggle) {
-          self.routineToggle.checked = false;
-        }
+        if (self.physiqueToggle.checked) self.clearModeTogglesExcept('physique');
         self.setCoachMode(self.physiqueToggle.checked ? 'physique' : 'chat');
       });
     }
+    if (this.projectionToggle) {
+      this.projectionToggle.addEventListener('change', function () {
+        if (self.projectionToggle.checked) self.clearModeTogglesExcept('projection');
+        self.setCoachMode(self.projectionToggle.checked ? 'projection' : 'chat');
+      });
+    }
+    if (this.emptyHeroEl) {
+      this.emptyHeroEl.addEventListener('click', function (e) {
+        var btn = e.target.closest && e.target.closest('[data-coach-capability]');
+        if (!btn || btn.disabled || btn.getAttribute('aria-disabled') === 'true') return;
+        var cap = btn.getAttribute('data-coach-capability') || 'chat';
+        if (cap === 'physique') {
+          self.setError('Physique scanner is coming soon.');
+          return;
+        }
+        self.setCoachView(cap);
+      });
+    }
+    function goHub() {
+      if (self.pending) return;
+      self.setCoachView('hub');
+    }
+    if (this.modeBackBtn) this.modeBackBtn.addEventListener('click', goHub);
+    if (this.chatBackBtn && this.chatBackBtn !== this.modeBackBtn) {
+      this.chatBackBtn.addEventListener('click', goHub);
+    }
+    var physiqueGo = document.getElementById('coach-physique-go');
+    if (physiqueGo) {
+      physiqueGo.addEventListener('click', function () {
+        self.setError('Physique scanner is coming soon.');
+      });
+    }
+    var routineGo = document.getElementById('coach-routine-go');
+    if (routineGo) {
+      routineGo.addEventListener('click', function () {
+        self.generateFullRoutine();
+      });
+    }
+    var projectionGo = document.getElementById('coach-projection-go');
+    if (projectionGo) {
+      projectionGo.addEventListener('click', function () {
+        self.runFutureProjectionFromUi();
+      });
+    }
+    function setProjKind(kind) {
+      self.projKind = kind || 'lift';
+      document.querySelectorAll('[data-proj-kind], input[name="coach-proj-kind"]').forEach(function (el) {
+        var k = el.getAttribute('data-proj-kind') || el.value;
+        if (el.tagName === 'INPUT') el.checked = k === self.projKind;
+        else el.classList.toggle('is-active', k === self.projKind);
+      });
+      var bw = document.getElementById('coach-proj-bw-fields');
+      var lift = document.getElementById('coach-proj-lift-fields');
+      if (bw) bw.hidden = self.projKind !== 'bodyweight';
+      if (lift) lift.hidden = self.projKind !== 'lift';
+    }
+    document.querySelectorAll('[data-proj-kind], input[name="coach-proj-kind"]').forEach(function (el) {
+      el.addEventListener('change', function () {
+        setProjKind(el.getAttribute('data-proj-kind') || el.value);
+      });
+      el.addEventListener('click', function () {
+        if (el.tagName === 'INPUT') return;
+        setProjKind(el.getAttribute('data-proj-kind') || 'lift');
+      });
+    });
+    document.querySelectorAll('input[name="coach-proj-bw-dir"], #coach-proj-bw-amount').forEach(function (el) {
+      el.addEventListener('change', function () {
+        self.syncProjectionBwDelta();
+      });
+      el.addEventListener('input', function () {
+        self.syncProjectionBwDelta();
+      });
+    });
+    var liftSelect = document.getElementById('coach-proj-lift-name');
+    if (liftSelect) {
+      liftSelect.addEventListener('change', function () {
+        var liftNow = document.getElementById('coach-proj-lift-now');
+        var liftTarget = document.getElementById('coach-proj-lift-target');
+        if (liftNow) delete liftNow.dataset.userTouched;
+        if (liftTarget) delete liftTarget.dataset.userTouched;
+        self.syncLiftProjectionFields({ force: true });
+      });
+    }
+    document.querySelectorAll('.coach-stepper [data-adj]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var host = btn.closest('.coach-stepper');
+        var id = host && host.getAttribute('data-stepper-for');
+        var adj = parseFloat(btn.getAttribute('data-adj'));
+        if (!id || isNaN(adj)) return;
+        self.adjustStepperValue(id, adj);
+      });
+    });
+    ['coach-proj-lift-now', 'coach-proj-lift-target', 'coach-proj-bw-now', 'coach-proj-bw-amount'].forEach(
+      function (id) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('input', function () {
+          el.dataset.userTouched = '1';
+        });
+      }
+    );
+    document.querySelectorAll('.coach-choice input[type="radio"]').forEach(function (input) {
+      function syncChoice() {
+        var name = input.name;
+        if (!name) return;
+        document.querySelectorAll('input[name="' + name + '"]').forEach(function (el) {
+          var label = el.closest && el.closest('.coach-choice');
+          if (label) label.classList.toggle('is-selected', !!el.checked);
+        });
+      }
+      input.addEventListener('change', syncChoice);
+      syncChoice();
+    });
     if (this.attachBtn && this.imageInput) {
       this.attachBtn.addEventListener('click', function () {
         self.imageInput.click();
@@ -519,6 +1062,21 @@
       this.imageInput.addEventListener('change', function () {
         self.addImageFiles(self.imageInput.files);
         self.imageInput.value = '';
+      });
+    }
+    var dropzone = document.getElementById('coach-physique-dropzone');
+    if (dropzone) {
+      dropzone.addEventListener('dragover', function (e) {
+        e.preventDefault();
+        dropzone.classList.add('is-dragover');
+      });
+      dropzone.addEventListener('dragleave', function () {
+        dropzone.classList.remove('is-dragover');
+      });
+      dropzone.addEventListener('drop', function (e) {
+        e.preventDefault();
+        dropzone.classList.remove('is-dragover');
+        if (e.dataTransfer && e.dataTransfer.files) self.addImageFiles(e.dataTransfer.files);
       });
     }
     if (this.micBtn) {
@@ -538,6 +1096,11 @@
     if (this.modelMenu) {
       this.modelMenu.addEventListener('click', function (e) {
         e.stopPropagation();
+        var opt = e.target.closest('[data-coach-mode]');
+        if (!opt || opt.disabled) return;
+        var mode = opt.getAttribute('data-coach-mode') || 'chat';
+        self.setCoachMode(mode);
+        self.toggleModelMenu(false);
       });
     }
     this.clearBtns.forEach(function (btn) {
@@ -545,11 +1108,10 @@
       btn.addEventListener('click', function () {
         if (self.pending) return;
         self.messages = [];
-        // Keep CoachMemory — athlete facts (pain, tightness, etc.) should survive clearing chat UI
         if (window.CoachPending) window.CoachPending.clearPending();
         self.clearAttachments();
         self.saveToStorage();
-        self.render();
+        self.setCoachView('hub');
         self.refreshBriefing();
         self.setError('');
       });
@@ -576,7 +1138,7 @@
 
     window.addEventListener('pageshow', function () {
       self.loadFromStorage();
-      self.render();
+      self.setCoachView('hub');
       if (window.CoachPending && window.CoachPending.hasPendingReply()) {
         self.resumePendingReply();
       }
@@ -589,29 +1151,15 @@
     this.errorEl.hidden = !msg;
   };
 
-  CoachThread.prototype.setQuota = function (q) {
-    if (!this.quotaEl) return;
-    if (!q || typeof q.used !== 'number') {
+  CoachThread.prototype.setQuota = function () {
+    if (this.quotaEl) {
       this.quotaEl.textContent = '';
-      return;
+      this.quotaEl.hidden = true;
     }
-    var IT = window.InfoTip;
-    var tip = IT ? IT.iconHtml('coach_quota') : '';
-    this.quotaEl.innerHTML =
-      'Messages today: ' + q.used + ' / ' + q.limit + ' · ' + q.remaining + ' left' + tip;
   };
 
   CoachThread.prototype.fetchQuota = function () {
-    var self = this;
-    if (typeof apiGet !== 'function') return;
-    apiGet('/coach/quota')
-      .then(function (res) {
-        return res.json();
-      })
-      .then(function (body) {
-        if (body && body.quota) self.setQuota(body.quota);
-      })
-      .catch(function () {});
+    /* Quota UI removed from coach hub. */
   };
 
   CoachThread.prototype.createChatRow = function (role, bubbleNode) {
@@ -671,10 +1219,14 @@
 
   CoachThread.prototype.render = function () {
     if (!this.threadEl) return;
+    this.syncLayoutState();
+    if (this.coachView !== 'chat') {
+      this.renderModeOutput();
+      return;
+    }
     this.threadEl.innerHTML = '';
     var self = this;
     if (!this.messages.length) {
-      this.threadEl.appendChild(this.renderWelcome());
       this.scrollThread(false);
       return;
     }
@@ -682,6 +1234,79 @@
       self.threadEl.appendChild(self.renderMessage(msg));
     });
     this.scrollThread(true);
+  };
+
+  CoachThread.prototype.renderModeOutput = function () {
+    var mount = this.getModeOutputEl();
+    if (!mount) return;
+    var last = null;
+    for (var i = this.messages.length - 1; i >= 0; i--) {
+      if (this.messages[i] && this.messages[i].role === 'assistant') {
+        last = this.messages[i];
+        break;
+      }
+    }
+    if (!last) return;
+    mount.hidden = false;
+    mount.innerHTML = '';
+    if (this.coachView === 'projection' && last.projection) {
+      mount.appendChild(this.renderProjectionGraphic(last.projection));
+    }
+    mount.appendChild(this.renderMessage(last));
+  };
+
+  CoachThread.prototype.renderProjectionGraphic = function (proj) {
+    var wrap = document.createElement('div');
+    wrap.className = 'coach-proj-result';
+    var weeks = proj.weeks != null ? proj.weeks : '—';
+    var months = proj.months != null ? proj.months : '—';
+    var rate =
+      proj.weeklyRate != null
+        ? (proj.weeklyRate > 0 ? '+' : '') + proj.weeklyRate + ' / week'
+        : '';
+    wrap.innerHTML =
+      '<div class="coach-proj-result-copy">' +
+      '<strong>~' +
+      weeks +
+      ' weeks</strong>' +
+      '<p>' +
+      (proj.label || 'Goal') +
+      ' · ~' +
+      months +
+      ' months' +
+      (rate ? ' · ' + rate : '') +
+      '</p>' +
+      '</div>';
+    return wrap;
+  };
+
+  CoachThread.prototype.formatWorkoutPlain = function (workout) {
+    if (!workout) return '';
+    var lines = [];
+    if (workout.title) lines.push(workout.title);
+    if (workout.focus) lines.push(workout.focus);
+    if (workout.durationMin) lines.push(workout.durationMin + ' min');
+    if (workout.fyi) {
+      lines.push('');
+      lines.push(workout.fyi);
+    }
+    (workout.blocks || []).forEach(function (block) {
+      lines.push('');
+      lines.push((block.name || 'BLOCK').toUpperCase());
+      (block.exercises || []).forEach(function (ex) {
+        var row = '- ' + (ex.name || 'Exercise');
+        if (ex.prescription) row += '  ' + ex.prescription;
+        lines.push(row);
+        if (ex.why) lines.push('    ' + ex.why);
+      });
+    });
+    (workout.notes || []).forEach(function (n, i) {
+      var t = typeof n === 'string' ? n : n && n.text;
+      if (!t) return;
+      if (i === 0) lines.push('', 'Notes');
+      lines.push('- ' + t);
+    });
+    return lines.join('\n').trim();
   };
 
   CoachThread.prototype.renderMessage = function (msg) {
@@ -721,26 +1346,23 @@
       return this.createChatRow('user', bubble);
     }
 
-    if (msg.responseType === 'advice' && window.CoachAdviceCard) {
-      bubble.classList.add('coach-msg--rich');
-      if (msg.advice) {
-        bubble.appendChild(window.CoachAdviceCard.renderAdviceCard(msg.advice));
-      } else {
-        bubble.appendChild(
-          window.CoachAdviceCard.renderPlainMessage(msg.content || msg.text || '')
-        );
-      }
-      return this.createChatRow('assistant', bubble);
+    var bodyText = msg.content || msg.text || '';
+    if (
+      msg.responseType === 'workout' &&
+      msg.workout &&
+      (!bodyText || bodyText.length < 40) &&
+      typeof this.formatWorkoutPlain === 'function'
+    ) {
+      bodyText = this.formatWorkoutPlain(msg.workout) || bodyText;
     }
+    var textNode = document.createElement('div');
+    textNode.className = 'coach-msg-text coach-msg-text--plain';
+    textNode.textContent = bodyText;
+    bubble.appendChild(textNode);
 
     if (msg.responseType === 'routine' && msg.routineParsed && window.WorkoutSplit) {
-      bubble.classList.add('coach-msg--rich');
-      var card = document.createElement('div');
-      card.className = 'coach-routine-card';
-      var title = document.createElement('p');
-      title.className = 'coach-routine-card-title';
-      title.textContent = (msg.routineParsed.programName || 'Weekly routine') + ' ready';
-      card.appendChild(title);
+      var routineActions = document.createElement('div');
+      routineActions.className = 'coach-msg-actions';
       var saveBtn = document.createElement('button');
       saveBtn.type = 'button';
       saveBtn.className = 'coach-primary-btn coach-routine-save';
@@ -753,63 +1375,71 @@
           window.dispatchEvent(new CustomEvent('strongman:splits-updated'));
         } catch (eSave) {}
       });
-      card.appendChild(saveBtn);
+      routineActions.appendChild(saveBtn);
       var logLink = document.createElement('a');
-      logLink.href = '/create#split';
+      logLink.href = '/log#split';
       logLink.className = 'coach-routine-edit';
       logLink.textContent = 'Edit in Log → Workout split';
-      card.appendChild(logLink);
-      bubble.appendChild(card);
+      routineActions.appendChild(logLink);
+      bubble.appendChild(routineActions);
       return this.createChatRow('assistant', bubble);
     }
 
-    if (msg.responseType === 'workout' && msg.workout && window.WorkoutPlanPreview) {
-      bubble.classList.add('coach-msg--rich');
-      var user = typeof window.getCurrentUser === 'function' ? window.getCurrentUser() : null;
-      var ctx = window.AthleteContext && user ? window.AthleteContext.loadAthleteContext(user) : null;
-      var sp = window.AthleteContext && ctx ? window.AthleteContext.getSportRecord(ctx) : null;
-      var meta =
-        ctx && window.AthleteContext
-          ? window.AthleteContext.GOAL_LABELS[ctx.primaryGoal]
-          : '';
-      bubble.appendChild(
-        window.WorkoutPlanPreview.renderWorkoutPreview(msg.workout, {
-          metaLine: meta,
-          rockyFyi: msg.workout.fyi || msg.text || msg.content || '',
-          athleteContext: ctx,
-          sportRecord: sp,
-          showActions: true,
-          onApply: function (plain) {
-            if (typeof window.coachApplyWorkout === 'function') {
-              window.coachApplyWorkout(plain);
-            }
-          },
-          onSave: function (plain, workout) {
-            var WA = window.WorkoutArchive;
-            if (WA && typeof WA.add === 'function') {
-              WA.add({
-                name: (workout && workout.title) || 'Coach plan',
-                bodyText: plain,
-                source: 'ai',
-              });
-            }
-            if (window.WorkoutSplit && typeof window.WorkoutSplit.importAiWorkout === 'function' && workout) {
-              window.WorkoutSplit.importAiWorkout(workout, { activate: false });
-              try {
-                window.dispatchEvent(new CustomEvent('strongman:splits-updated'));
-              } catch (eImp) {}
-            }
-          },
-        })
-      );
+    if (msg.responseType === 'workout' && msg.workout) {
+      var actions = document.createElement('div');
+      actions.className = 'coach-msg-actions';
+      var applyBtn = document.createElement('button');
+      applyBtn.type = 'button';
+      applyBtn.className = 'coach-primary-btn';
+      applyBtn.textContent = 'Apply to log';
+      applyBtn.addEventListener('click', function () {
+        if (typeof window.coachApplyWorkout === 'function') {
+          window.coachApplyWorkout(bodyText, msg.workout);
+        }
+      });
+      actions.appendChild(applyBtn);
+      var archiveBtn = document.createElement('button');
+      archiveBtn.type = 'button';
+      archiveBtn.className = 'coach-secondary-btn';
+      archiveBtn.textContent = 'Save plan';
+      archiveBtn.addEventListener('click', function () {
+        var WA = window.WorkoutArchive;
+        if (WA && typeof WA.add === 'function') {
+          WA.add({
+            name: (msg.workout && msg.workout.title) || 'Coach plan',
+            bodyText: bodyText,
+            source: 'ai',
+          });
+        }
+        if (
+          window.WorkoutSplit &&
+          typeof window.WorkoutSplit.importAiWorkout === 'function' &&
+          msg.workout
+        ) {
+          window.WorkoutSplit.importAiWorkout(msg.workout, { activate: false });
+          try {
+            window.dispatchEvent(new CustomEvent('strongman:splits-updated'));
+          } catch (eImp) {}
+        }
+        archiveBtn.textContent = 'Saved ✓';
+        archiveBtn.disabled = true;
+      });
+      actions.appendChild(archiveBtn);
+      bubble.appendChild(actions);
       return this.createChatRow('assistant', bubble);
     }
 
-    bubble.textContent = msg.content || msg.text || '';
     return this.createChatRow('assistant', bubble);
   };
 
   CoachThread.prototype.showLoading = function () {
+    this.hideLoading();
+    var mount = this.getMountEl();
+    if (!mount) return;
+    if (mount !== this.threadEl) {
+      mount.hidden = false;
+      mount.innerHTML = '';
+    }
     var bubble = document.createElement('div');
     bubble.className = 'coach-msg coach-msg--assistant coach-msg--loading';
     bubble.setAttribute('aria-busy', 'true');
@@ -825,10 +1455,8 @@
       '<p class="coach-gen-label">Syncing corner intel<span class="coach-gen-ellipsis"></span></p>' +
       '</div>';
     this.loadingEl = this.createChatRow('assistant', bubble);
-    if (this.threadEl) {
-      this.threadEl.appendChild(this.loadingEl);
-      this.scrollThread(true);
-    }
+    mount.appendChild(this.loadingEl);
+    this.scrollThread(true);
   };
 
   CoachThread.prototype.hideLoading = function () {
@@ -848,8 +1476,12 @@
   };
 
   CoachThread.prototype.showStreamingBubble = function () {
-    if (this.streamingEl || !this.threadEl) return;
+    var mount = this.getMountEl();
+    if (this.streamingEl || !mount) return;
     this.hideLoading();
+    if (mount !== this.threadEl) {
+      mount.hidden = false;
+    }
     var bubble = document.createElement('div');
     bubble.className = 'coach-msg coach-msg--assistant coach-msg--streaming';
     bubble.setAttribute('aria-busy', 'true');
@@ -859,7 +1491,7 @@
     this.streamingEl = this.createChatRow('assistant', bubble);
     this.streamingTextEl = textNode;
     this.streamedText = '';
-    this.threadEl.appendChild(this.streamingEl);
+    mount.appendChild(this.streamingEl);
     this.scrollThread(true);
   };
 
@@ -875,17 +1507,24 @@
 
   CoachThread.prototype.extractStreamingPreview = function (raw) {
     var t = String(raw || '');
-    var textMatch = /"text"\s*:\s*"((?:\\.|[^"\\])*)"/.exec(t);
-    if (textMatch) {
+    function unescapeJsonFragment(frag) {
       try {
-        return JSON.parse('"' + textMatch[1] + '"');
+        return JSON.parse('"' + frag + '"');
       } catch (e) {
-        return textMatch[1].replace(/\\n/g, '\n').replace(/\\"/g, '"');
+        return frag.replace(/\\n/g, '\n').replace(/\\"/g, '"');
       }
     }
+    var textMatch = /"text"\s*:\s*"((?:\\.|[^"\\])*)"/.exec(t);
+    if (textMatch) return unescapeJsonFragment(textMatch[1]);
+    var summaryMatch = /"summary"\s*:\s*"((?:\\.|[^"\\])*)"/.exec(t);
+    if (summaryMatch) return unescapeJsonFragment(summaryMatch[1]);
+    var fyiMatch = /"fyi"\s*:\s*"((?:\\.|[^"\\])*)"/.exec(t);
+    if (fyiMatch) return unescapeJsonFragment(fyiMatch[1]);
+    // Partial in-progress string value for typing feel before the closing quote arrives.
+    var partial = /"(?:text|summary|fyi)"\s*:\s*"((?:\\.|[^"\\])*)$/.exec(t);
+    if (partial) return unescapeJsonFragment(partial[1]);
     if (/^\s*\{/.test(t)) {
-      var tail = t.slice(-240);
-      return tail.replace(/^[\s\S]*"text"\s*:\s*"?/, '').replace(/\\n/g, '\n');
+      return 'Rocky is typing…';
     }
     return t;
   };
@@ -907,56 +1546,10 @@
   };
 
   CoachThread.prototype.typewriterUnveil = function (assistantMsg, onDone) {
-    var self = this;
+    // Streaming already provides the typing feel — skip post-response typewriter delay.
     this.stopTypewriter();
     this.hideLoading();
-    if (!this.threadEl) {
-      if (onDone) onDone();
-      return;
-    }
-
-    var prefersReduce =
-      window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    var unveilText =
-      (assistantMsg && (assistantMsg.content || assistantMsg.text)) ||
-      (assistantMsg && assistantMsg.advice && assistantMsg.advice.summary) ||
-      '';
-
-    if (prefersReduce || !unveilText || unveilText.length > 2200) {
-      if (onDone) onDone();
-      return;
-    }
-
-    var bubble = document.createElement('div');
-    bubble.className = 'coach-msg coach-msg--assistant coach-msg--typewriter';
-    var span = document.createElement('span');
-    span.className = 'coach-typewriter-text';
-    bubble.appendChild(span);
-    var caret = document.createElement('span');
-    caret.className = 'coach-typewriter-caret';
-    caret.setAttribute('aria-hidden', 'true');
-    bubble.appendChild(caret);
-    var row = this.createChatRow('assistant', bubble);
-    this.threadEl.appendChild(row);
-    this.scrollThread(true);
-
-    var i = 0;
-    var chunk = Math.max(2, Math.ceil(unveilText.length / 90));
-    function tick() {
-      i = Math.min(unveilText.length, i + chunk);
-      span.textContent = unveilText.slice(0, i);
-      self.scrollThread(true);
-      if (i < unveilText.length) {
-        self.typewriterTimer = window.setTimeout(tick, 12);
-      } else {
-        self.typewriterTimer = window.setTimeout(function () {
-          if (row.parentNode) row.parentNode.removeChild(row);
-          self.typewriterTimer = null;
-          if (onDone) onDone();
-        }, 90);
-      }
-    }
-    tick();
+    if (onDone) onDone();
   };
 
   CoachThread.prototype.finishAssistantReply = function (assistantMsg, quota, opts) {
@@ -964,7 +1557,6 @@
     var self = this;
     var streamed = !!opts.streamed || !!this.streamedText;
     this.hideLoading();
-    this.hideStreamingBubble();
     var last = this.messages.length ? this.messages[this.messages.length - 1] : null;
     if (!last || last.role !== 'assistant') {
       this.messages.push(assistantMsg);
@@ -974,6 +1566,30 @@
     if (quota) this.setQuota(quota);
     this.saveToStorage();
     if (window.CoachPending) window.CoachPending.clearReplyReady();
+
+    // Keep the same bubble the user watched stream — swap in final plain text + actions.
+    if (streamed && this.streamingEl && this.streamingTextEl) {
+      var finalText = assistantMsg.content || assistantMsg.text || '';
+      this.streamingTextEl.textContent = finalText;
+      this.streamingTextEl.className = 'coach-msg-text coach-msg-text--plain';
+      var bubble = this.streamingEl.querySelector('.coach-msg');
+      if (bubble) {
+        bubble.classList.remove('coach-msg--streaming');
+        bubble.removeAttribute('aria-busy');
+        // Drop any prior action row, then re-render actions via a fresh message node.
+        var oldActions = bubble.querySelector('.coach-msg-actions');
+        if (oldActions) oldActions.parentNode.removeChild(oldActions);
+      }
+      this.streamingEl = null;
+      this.streamingTextEl = null;
+      this.streamedText = '';
+      // Rebuild from messages so workout Apply/Save actions attach consistently.
+      this.render();
+      this.refreshBriefing();
+      return;
+    }
+
+    this.hideStreamingBubble();
 
     if (streamed) {
       this.render();
@@ -992,9 +1608,9 @@
     if (!window.CoachPending || !window.CoachPending.hasPendingReply()) return;
     if (self.pending) return;
 
+    self.setCoachView('chat');
     self.setError('');
-    self.pending = true;
-    if (self.sendBtn) self.sendBtn.disabled = true;
+    self.setPendingUi(true);
     self.showLoading();
 
     window.CoachPending.resume(
@@ -1013,8 +1629,7 @@
         self.hideStreamingBubble();
       },
       onEnd: function () {
-        self.pending = false;
-        if (self.sendBtn) self.sendBtn.disabled = false;
+        self.setPendingUi(false);
       },
     }));
   };
@@ -1022,18 +1637,42 @@
   CoachThread.prototype.setCoachMode = function (mode) {
     if (mode === 'routine') this.coachMode = 'routine';
     else if (mode === 'physique') this.coachMode = 'physique';
+    else if (mode === 'projection') this.coachMode = 'projection';
     else this.coachMode = 'chat';
 
-    if (this.routineToggle) this.routineToggle.checked = this.coachMode === 'routine';
-    if (this.physiqueToggle) this.physiqueToggle.checked = this.coachMode === 'physique';
+    var currentMode = this.coachMode;
+    if (this.routineToggle) this.routineToggle.checked = currentMode === 'routine';
+    if (this.physiqueToggle) this.physiqueToggle.checked = currentMode === 'physique';
+    if (this.projectionToggle) this.projectionToggle.checked = currentMode === 'projection';
+    if (this.modelMenu) {
+      this.modelMenu.querySelectorAll('[data-coach-mode]').forEach(function (opt) {
+        var on = opt.getAttribute('data-coach-mode') === currentMode;
+        opt.classList.toggle('is-active', on);
+        opt.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+    }
+    var modeLabel = document.getElementById('coach-mode-label');
+    if (modeLabel) {
+      modeLabel.textContent =
+        currentMode === 'routine'
+          ? 'Full routine'
+          : currentMode === 'physique'
+            ? 'Rate physique'
+            : currentMode === 'projection'
+              ? 'Projection'
+              : 'Chat';
+    }
     if (this.chipsEl) {
-      this.chipsEl.hidden = this.coachMode === 'routine' || this.coachMode === 'physique';
+      this.chipsEl.hidden =
+        currentMode === 'routine' || currentMode === 'physique' || currentMode === 'projection';
     }
     if (this.inputEl) {
       if (this.coachMode === 'routine') {
         this.inputEl.placeholder = 'Optional notes for your weekly split (equipment, goals)…';
       } else if (this.coachMode === 'physique') {
         this.inputEl.placeholder = 'Attach a photo, then add notes if you want…';
+      } else if (this.coachMode === 'projection') {
+        this.inputEl.placeholder = 'e.g. lose 45 lb, or bench 225…';
       } else {
         this.inputEl.placeholder = 'Talk to Rocky…';
       }
@@ -1042,12 +1681,267 @@
       var label = 'Send message';
       if (this.coachMode === 'routine') label = 'Generate full weekly routine';
       if (this.coachMode === 'physique') label = 'Rate physique';
+      if (this.coachMode === 'projection') label = 'Project my goal';
       this.sendBtn.setAttribute('aria-label', label);
     }
     if (this.composerEl) {
       this.composerEl.dataset.coachMode = this.coachMode;
     }
+    if (this.capabilityGrid) {
+      this.capabilityGrid.querySelectorAll('[data-coach-capability]').forEach(function (btn) {
+        btn.classList.toggle('is-active', btn.getAttribute('data-coach-capability') === currentMode);
+      });
+    }
     this.setError('');
+  };
+
+  CoachThread.prototype.parseProjectionGoal = function (text) {
+    var raw = String(text || '').trim();
+    var user = typeof window.getCurrentUser === 'function' ? window.getCurrentUser() : null;
+    var bw = user && user.weight != null ? Number(user.weight) : null;
+
+    var lose = /(?:lose|drop|cut|down)\s*(-?\d+(?:\.\d+)?)\s*(?:lb|lbs|pounds)?/i.exec(raw);
+    var gainBw =
+      /(?:gain|add)\s*(-?\d+(?:\.\d+)?)\s*(?:lb|lbs|pounds)?\s*(?:of\s*)?(?:body\s*)?weight/i.exec(
+        raw
+      );
+    var signed = /([+-]\d+(?:\.\d+)?)\s*(?:lb|lbs)?\s*(?:body\s*)?weight/i.exec(raw);
+    if (lose || gainBw || signed) {
+      var delta = lose
+        ? -Math.abs(parseFloat(lose[1]))
+        : gainBw
+          ? Math.abs(parseFloat(gainBw[1]))
+          : parseFloat(signed[1]);
+      var start = bw && bw > 0 ? bw : 180;
+      return {
+        type: 'bodyweight',
+        start: start,
+        target: start + delta,
+        label: (delta < 0 ? delta : '+' + delta) + ' lb bodyweight',
+      };
+    }
+
+    var liftMatch =
+      /(?:bench|squat|deadlift|ohp|press|row|curl)[a-z\s]*?(?:to\s+)?(\d{2,3}(?:\.\d+)?)\s*(?:lb|lbs)?/i.exec(
+        raw
+      ) || /(\d{2,3}(?:\.\d+)?)\s*(?:lb|lbs)?\s*(bench|squat|deadlift)/i.exec(raw);
+    if (liftMatch) {
+      var target = parseFloat(liftMatch[1]);
+      var liftName = /bench/i.test(raw)
+        ? 'Bench Press'
+        : /squat/i.test(raw)
+          ? 'Squat'
+          : /deadlift/i.test(raw)
+            ? 'Deadlift'
+            : /ohp|overhead|press/i.test(raw)
+              ? 'Overhead Press'
+              : 'Lift';
+      var start = Math.max(45, Math.round(target * 0.8));
+      if (window.PRLog && typeof window.PRLog.getRecords === 'function') {
+        var best = start;
+        var needle = liftName.toLowerCase().split(' ')[0];
+        window.PRLog.getRecords().forEach(function (r) {
+          if (!r || r.discipline !== 'weightlifting') return;
+          if (String(r.eventLabel || '').toLowerCase().indexOf(needle) === -1) return;
+          if (r.weight != null && r.weight > best) best = Number(r.weight);
+        });
+        start = best;
+      }
+      return {
+        type: 'lift',
+        lift: liftName,
+        start: start,
+        target: target,
+        label: liftName + ' → ' + target + ' lb',
+      };
+    }
+
+    return null;
+  };
+
+  CoachThread.prototype.runFutureProjectionFromUi = function () {
+    this.syncProjectionBwDelta();
+    var kindRadio = document.querySelector('input[name="coach-proj-kind"]:checked');
+    var kind =
+      (kindRadio && kindRadio.value) ||
+      this.projKind ||
+      'lift';
+    this.projKind = kind;
+    var goal = null;
+    if (kind === 'bodyweight') {
+      var delta = parseFloat((document.getElementById('coach-proj-bw-delta') || {}).value);
+      var now = parseFloat((document.getElementById('coach-proj-bw-now') || {}).value);
+      if (isNaN(delta) || delta === 0 || isNaN(now) || now <= 0) {
+        this.setError('Enter a bodyweight change and your current weight.');
+        return;
+      }
+      goal = {
+        type: 'bodyweight',
+        start: now,
+        target: now + delta,
+        label: (delta < 0 ? delta : '+' + delta) + ' lb bodyweight',
+      };
+    } else {
+      var lift = ((document.getElementById('coach-proj-lift-name') || {}).value || 'Bench Press').trim();
+      var target = parseFloat((document.getElementById('coach-proj-lift-target') || {}).value);
+      var start = parseFloat((document.getElementById('coach-proj-lift-now') || {}).value);
+      if (!lift || isNaN(target) || target <= 0 || isNaN(start) || start < 0) {
+        this.setError('Enter lift name, current best, and target.');
+        return;
+      }
+      goal = {
+        type: 'lift',
+        lift: lift,
+        start: start,
+        target: target,
+        label: lift + ' → ' + target + ' lb',
+      };
+    }
+    this.applyProjectionGoal(goal);
+  };
+
+  CoachThread.prototype.applyProjectionGoal = function (goal) {
+    if (!goal) {
+      this.setError('Pick a goal first.');
+      return;
+    }
+    if (!window.ProgressionEngine || typeof window.ProgressionEngine.projectGoal !== 'function') {
+      this.setError('Projection engine is unavailable.');
+      return;
+    }
+    var result = window.ProgressionEngine.projectGoal(goal);
+    var reply =
+      'Future projection — ' +
+      (goal.label || 'goal') +
+      '\n\n' +
+      result.message +
+      '\n\nAssumptions: consistent training, recovery in the ballpark, and no major interruptions. Push harder and you can beat it; miss weeks and it stretches.';
+
+    this.messages.push({ role: 'user', content: 'Project: ' + (goal.label || 'goal') });
+    this.messages.push({
+      role: 'assistant',
+      content: reply,
+      projection: {
+        weeks: result.weeks,
+        months: result.months,
+        label: goal.label,
+        weeklyRate: result.weeklyRate,
+      },
+    });
+    this.saveToStorage();
+    this.setError('');
+    this.renderModeOutput();
+  };
+
+  CoachThread.prototype.runFutureProjection = function () {
+    this.runFutureProjectionFromUi();
+  };
+
+  CoachThread.prototype.runPhysiqueRate = function () {
+    var self = this;
+    if (this.pending) return;
+    var images = this.attachmentsForApi();
+    if (!images.length) {
+      this.setError('Add at least one physique photo first.');
+      return;
+    }
+    if (!window.CoachPending) {
+      this.setError('Could not reach the API.');
+      return;
+    }
+
+    this.coachMode = 'physique';
+    this.setError('');
+    this.setPendingUi(true);
+
+    var displayText = 'Rate my physique';
+    var apiMessage =
+      'Rate my physique from the attached photo(s). Be honest, constructive, and specific about muscle development, proportions, posture, and training priorities. Keep it encouraging with Rocky energy.';
+
+    var threadForApi = this.messages
+      .filter(function (m) {
+        return m.role === 'user' || m.role === 'assistant';
+      })
+      .map(function (m) {
+        return { role: m.role, content: m.content || m.text || '' };
+      });
+
+    var userMsg = {
+      role: 'user',
+      content: displayText,
+      images: this.attachmentsForThread(),
+    };
+    this.messages.push(userMsg);
+    var imagesPayload = images.slice();
+    this.clearAttachments();
+    this.saveToStorage();
+    this.showLoading();
+
+    window.CoachPending.startRequest(
+      {
+        message: apiMessage,
+        userContent: displayText,
+        contextBlock: this.getContextBlock(),
+        thread: threadForApi.slice(-12),
+        images: imagesPayload,
+        forceIntent: 'advice',
+      },
+      Object.assign(this.coachStreamHandlers(), {
+        onSuccess: function (assistantMsg, quota, _messages, meta) {
+          self.finishAssistantReply(assistantMsg, quota, meta || {});
+        },
+        onError: function (msg, retriable) {
+          self.hideLoading();
+          self.hideStreamingBubble();
+          self.stopTypewriter();
+          if (msg) self.setError(msg);
+          if (!retriable && window.CoachPending) window.CoachPending.clearPending();
+        },
+        onAbort: function () {
+          self.hideLoading();
+          self.hideStreamingBubble();
+          self.stopTypewriter();
+        },
+        onEnd: function () {
+          self.setPendingUi(false);
+        },
+      })
+    );
+  };
+
+  CoachThread.prototype.readRoutineForm = function () {
+    function checked(name, fallback) {
+      var el = document.querySelector('input[name="' + name + '"]:checked');
+      return el && el.value ? el.value : fallback;
+    }
+    var notesEl = document.getElementById('coach-routine-notes');
+    var goal = checked('coach-routine-goal', 'strength');
+    var goalLabel =
+      goal === 'sport_performance'
+        ? 'sport performance'
+        : goal === 'aesthetics'
+          ? 'physique / hypertrophy'
+          : goal === 'general_health'
+            ? 'general health'
+            : 'max strength';
+    var split = checked('coach-routine-split', 'auto');
+    var splitLabel =
+      split === 'upper_lower'
+        ? 'upper/lower'
+        : split === 'ppl'
+          ? 'push/pull/legs'
+          : split === 'full_body'
+            ? 'full body'
+            : 'auto (choose the best split for this athlete)';
+    return {
+      days: checked('coach-routine-days', '4'),
+      goal: goal,
+      goalLabel: goalLabel,
+      minutes: checked('coach-routine-minutes', '60'),
+      split: split,
+      splitLabel: splitLabel,
+      notes: notesEl && notesEl.value ? notesEl.value.trim() : '',
+    };
   };
 
   CoachThread.prototype.generateFullRoutine = function () {
@@ -1058,12 +1952,24 @@
       return;
     }
 
+    this.coachMode = 'routine';
     this.setPendingUi(true);
 
-    var userNotes = this.inputEl && this.inputEl.value ? this.inputEl.value.trim() : '';
+    var form = this.readRoutineForm();
     var text =
-      'Generate my full weekly training split (Monday through Sunday). Factor in my practice days, game days, and season — avoid stacking heavy leg work before games.' +
-      (userNotes ? '\n\nAthlete notes: ' + userNotes : '') +
+      'Generate my full weekly training split (Monday through Sunday).' +
+      '\nPreferences from the form:' +
+      '\n- Lift days per week: ' +
+      form.days +
+      '\n- Primary focus: ' +
+      form.goalLabel +
+      '\n- Typical session length: ~' +
+      form.minutes +
+      ' minutes' +
+      '\n- Split style: ' +
+      form.splitLabel +
+      (form.notes ? '\n- Athlete notes: ' + form.notes : '') +
+      '\n\nFactor in my practice days, game days, and season — avoid stacking heavy leg work before games.' +
       '\n\nReply in this EXACT format:\n' +
       'Program: [program name]\n' +
       'Monday: [day focus]\n' +
@@ -1081,17 +1987,13 @@
         return { role: m.role, content: m.content || m.text || '' };
       });
 
-    if (this.inputEl) {
-      this.inputEl.value = '';
-      this.inputEl.style.height = 'auto';
-    }
     this.showLoading();
 
     window.CoachPending.startRequest(
       {
         message: text,
         contextBlock: this.getContextBlock(),
-        thread: threadForApi,
+        thread: threadForApi.slice(-12),
       },
       Object.assign(this.coachStreamHandlers(), {
         onSuccess: function (assistantMsg, quota, _messages, meta) {
@@ -1135,23 +2037,27 @@
   CoachThread.prototype.setPendingUi = function (on) {
     this.pending = !!on;
     if (this.sendBtn) this.sendBtn.disabled = !!on;
-    if (this.routineToggle) this.routineToggle.disabled = !!on;
-    if (this.physiqueToggle) this.physiqueToggle.disabled = !!on;
     if (this.attachBtn) this.attachBtn.disabled = !!on;
     if (this.micBtn) this.micBtn.disabled = !!on;
+    ['coach-physique-go', 'coach-routine-go', 'coach-projection-go', 'coach-modes-back', 'coach-mode-back', 'coach-chat-back'].forEach(
+      function (id) {
+        var el = document.getElementById(id);
+        if (el) el.disabled = !!on;
+      }
+    );
+    this.syncLayoutState();
   };
 
   CoachThread.prototype.send = function () {
     var self = this;
     if (this.pending) return;
-    if (this.coachMode === 'routine' || (this.routineToggle && this.routineToggle.checked)) {
-      this.generateFullRoutine();
-      return;
+    if (this.coachView !== 'chat') {
+      this.setCoachView('chat');
     }
 
     var text = this.inputEl && this.inputEl.value ? this.inputEl.value.trim() : '';
     var images = this.attachmentsForApi();
-    var isPhysique = this.coachMode === 'physique';
+    var isPhysique = false;
 
     if (isPhysique && !images.length) {
       this.setError('Attach at least one physique photo for Rocky to review.');
@@ -1203,17 +2109,20 @@
     }
     var imagesPayload = images.slice();
     this.clearAttachments();
+    this.syncLayoutState();
     this.render();
     this.refreshBriefing();
     this.saveToStorage();
     this.showLoading();
+
+    var threadRecent = threadForApi.slice(-12);
 
     window.CoachPending.startRequest(
       {
         message: apiMessage,
         userContent: displayText,
         contextBlock: this.getContextBlock(),
-        thread: threadForApi,
+        thread: threadRecent,
         images: imagesPayload,
         forceIntent: isPhysique || imagesPayload.length ? 'advice' : undefined,
       },

@@ -1,8 +1,8 @@
 (function () {
   var NAV_ITEMS = [
     { page: 'home', href: '/home', label: 'Home', icon: 'home' },
-    { page: 'log', href: '/create', label: 'Log', icon: 'log' },
-    { page: 'coach', href: '/generate', label: 'Coach', icon: 'coach' },
+    { page: 'log', href: '/log', label: 'Log', icon: 'log' },
+    { page: 'coach', href: '/coach', label: 'Coach', icon: 'coach' },
     { page: 'leaderboards', href: '/leaderboard', label: 'Rank', icon: 'trophy' },
     { page: 'profile', href: '/profile', label: 'You', icon: 'profile' }
   ];
@@ -77,9 +77,11 @@
   }
 
   function setActiveNav(currentPage) {
-    var map = {
+      var map = {
       create: 'log',
+      log: 'log',
       generate: 'coach',
+      coach: 'coach',
       leaderboard: 'leaderboards',
       leaderboards: 'leaderboards',
       tracking: 'log',

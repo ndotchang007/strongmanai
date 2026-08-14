@@ -25,6 +25,7 @@
     var exact = [
       '/leaderboards',
       '/about',
+      '/download',
       '/login',
       '/signup',
       '/verify-email',

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en" data-marketing="1">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Strongman AI journal — feature stories, release notes, and engineering behind sport-aware training software.">
+    <meta name="strongman-api-base" content="https://strongmanai-api-test.onrender.com/api/v1">
+    <title>Blog – Strongman AI</title>
+    <link rel="icon" type="image/png" href="/assets/logo.png">
+    <link rel="apple-touch-icon" href="/assets/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="/shared/theme.js"></script>
+    <link rel="stylesheet" href="/css/marketing-nav.css">
+    <link rel="stylesheet" href="/css/blog.css">
+    <link rel="stylesheet" href="/css/cookie-consent.css">
+</head>
+<body class="blog-page">
+<header class="mkt-nav" id="mkt-nav">
+  <div class="mkt-nav-inner">
+    <a class="mkt-brand" href="/">
+      <img class="mkt-brand-logo" src="/assets/logo.png" alt="" width="22" height="22" decoding="async">
+      Strongman AI
+    </a>
+    <div class="mkt-nav-right">
+      <a href="/blog">Blog</a>
+      <a href="/leaderboards">Leaderboards</a>
+      <a href="/login">Login</a>
+      <a href="/#pricing">Pricing</a>
+      <a class="mkt-btn" href="/signup">Start free</a>
+    </div>
+    <button type="button" class="mkt-burger" id="mkt-burger" aria-label="Menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+<div class="mkt-panel" id="mkt-panel">
+  <a href="/blog">Blog</a>
+  <a href="/leaderboards">Leaderboards</a>
+  <a href="/login">Login</a>
+  <a href="/#pricing">Pricing</a>
+  <a class="mkt-btn" href="/signup">Start free</a>
+</div>
+
+<main class="blog-main">
+  <header class="blog-intro">
+    <p class="blog-eyebrow">Journal</p>
+    <h1 class="blog-title">What’s new<span class="blog-dot">.</span></h1>
+    <p class="blog-lead">Feature stories, release notes, and the systems behind Strongman AI — written for athletes and for the portfolio.</p>
+  </header>
+
+  <section class="blog-updates" aria-labelledby="updates-heading">
+    <div class="blog-updates-head">
+      <h2 id="updates-heading" class="blog-section-kicker">Updates</h2>
+      <p class="blog-section-hint">Shipping notes, pinned at the top</p>
+    </div>
+    <div class="blog-updates-rail" id="blog-updates" tabindex="0" aria-label="Update articles"></div>
+  </section>
+
+  <section class="blog-stream" aria-labelledby="stream-heading">
+    <div class="blog-stream-head">
+      <h2 id="stream-heading" class="blog-section-kicker">All articles</h2>
+      <p class="blog-section-hint" id="blog-count"></p>
+    </div>
+    <div class="blog-stream-list" id="blog-gallery"></div>
+  </section>
+</main>
+
+<footer class="blog-foot">
+  <div class="blog-foot-inner">
+    <div class="blog-foot-brand">
+      <a class="blog-foot-logo" href="/">
+        <img src="/assets/logo.png" alt="" width="22" height="22" decoding="async">
+        Strongman AI
+      </a>
+      <p class="blog-foot-tag">Built for becoming.</p>
+      <p class="blog-foot-email"><a href="mailto:strongmanaioutreach@gmail.com">strongmanaioutreach@gmail.com</a></p>
+    </div>
+    <div class="blog-foot-cols">
+      <div class="blog-foot-col">
+        <h3 class="blog-foot-heading">Product</h3>
+        <a href="/about">About</a>
+        <a href="/blog">Blog</a>
+        <a href="/leaderboards">Leaderboards</a>
+      </div>
+      <div class="blog-foot-col">
+        <h3 class="blog-foot-heading">Legal</h3>
+        <a href="/legal">Terms &amp; Privacy</a>
+      </div>
+      <div class="blog-foot-col">
+        <h3 class="blog-foot-heading">Social</h3>
+        <a href="https://www.instagram.com/strongmanai/" target="_blank" rel="noopener noreferrer">Instagram</a>
+      </div>
+    </div>
+  </div>
+  <p class="blog-foot-copy">© 2026 Strongman AI</p>
+</footer>
+
+<script src="/shared/api.js"></script>
+<script src="/shared/blog-catalog.js"></script>
+<script src="/shared/marketing-nav.js"></script>
+<script src="/js/blog.js"></script>
+<script src="/shared/cookie-consent.js"></script>
+</body>
+</html>

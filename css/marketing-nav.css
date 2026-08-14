@@ -1,0 +1,180 @@
+/* Marketing shell — matches live landing header */
+
+:root {
+  --mkt-nav-h: 56px;
+  --mkt-page-x: 24px;
+  --mkt-line: rgba(255, 255, 255, 0.1);
+  --mkt-orange: #ff5a1f;
+  --mkt-white: #f7f7f8;
+  --mkt-muted: #9a9aa2;
+}
+
+@media (max-width: 900px) {
+  :root { --mkt-page-x: 20px; }
+}
+
+.mkt-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  height: var(--mkt-nav-h);
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid var(--mkt-line);
+}
+
+.mkt-nav-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  height: 100%;
+  padding: 0 var(--mkt-page-x);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.mkt-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14.5px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--mkt-white);
+  text-decoration: none;
+  flex-shrink: 0;
+  font-family: "Inter Tight", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.mkt-brand-logo {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.mkt-nav-right {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  flex-shrink: 0;
+}
+
+.mkt-nav-right a {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--mkt-muted);
+  text-decoration: none;
+  font-family: "Inter Tight", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  transition: color 0.18s ease;
+}
+
+.mkt-nav-right a:hover {
+  color: var(--mkt-white);
+}
+
+.mkt-btn {
+  font-size: 13.5px !important;
+  font-weight: 600 !important;
+  background: var(--mkt-orange);
+  color: #000 !important;
+  padding: 7px 13px;
+  border-radius: 7px;
+  transition: opacity 0.18s ease;
+}
+
+.mkt-btn:hover {
+  opacity: 0.88;
+  color: #000 !important;
+}
+
+.mkt-burger {
+  display: none;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  width: 34px;
+  height: 34px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0;
+}
+
+.mkt-burger span {
+  display: block;
+  width: 16px;
+  height: 1.5px;
+  background: var(--mkt-white);
+  transition: transform 0.3s, opacity 0.2s;
+}
+
+.mkt-burger.is-open span:nth-child(1) {
+  transform: translateY(5.5px) rotate(45deg);
+}
+
+.mkt-burger.is-open span:nth-child(2) {
+  opacity: 0;
+}
+
+.mkt-burger.is-open span:nth-child(3) {
+  transform: translateY(-5.5px) rotate(-45deg);
+}
+
+.mkt-panel {
+  position: fixed;
+  top: var(--mkt-nav-h);
+  left: 0;
+  right: 0;
+  z-index: 99;
+  background: rgba(0, 0, 0, 0.97);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--mkt-line);
+  padding: 8px var(--mkt-page-x) 24px;
+  display: none;
+  flex-direction: column;
+  font-family: "Inter Tight", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.mkt-panel.is-open {
+  display: flex;
+}
+
+.mkt-panel a {
+  padding: 15px 0;
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--mkt-white);
+  text-decoration: none;
+  border-bottom: 1px solid var(--mkt-line);
+}
+
+.mkt-panel .mkt-btn {
+  margin-top: 20px;
+  text-align: center;
+  padding: 13px;
+  font-size: 15px !important;
+  border-bottom: 0;
+}
+
+@media (max-width: 860px) {
+  .mkt-nav-right {
+    display: none;
+  }
+
+  .mkt-burger {
+    display: flex;
+  }
+}
+
+body.has-mkt-nav {
+  padding-top: var(--mkt-nav-h);
+}

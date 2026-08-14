@@ -24,8 +24,8 @@
     max-width: 22rem;
     padding: 1.75rem 1.5rem 1.5rem;
     border-radius: 18px;
-    border: 1px solid rgba(255, 140, 0, 0.28);
-    background: linear-gradient(165deg, rgba(28, 28, 30, 0.98), rgba(18, 18, 20, 0.98));
+    border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
+    background: linear-gradient(165deg, var(--bg-elevated, rgba(28, 28, 30, 0.98)), var(--bg-card, rgba(18, 18, 20, 0.98)));
     box-shadow: 0 24px 64px rgba(0, 0, 0, 0.55);
     text-align: center;
 }
@@ -42,8 +42,8 @@
     font-size: 1.15rem;
     font-weight: 800;
     color: var(--accent-bright, #ffb347);
-    background: linear-gradient(145deg, rgba(255, 140, 0, 0.22), rgba(180, 60, 0, 0.32));
-    border: 1px solid rgba(255, 140, 0, 0.45);
+    background: color-mix(in srgb, var(--accent) 22%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
 }
 
 .server-wake-title
@@ -84,7 +84,7 @@
     height: 100%;
     width: 0%;
     border-radius: inherit;
-    background: linear-gradient(90deg, #ff8c00, var(--accent-bright, #ffb347));
+    background: var(--accent);
     transition: width 0.4s ease;
 }
 

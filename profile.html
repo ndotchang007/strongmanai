@@ -4,10 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="strongman-api-base" content="https://strongmanai-api-test.onrender.com/api/v1">
-    <link rel="stylesheet" href="/css/tester-gate.css">
-    <style id="tester-gate-boot">html.tester-gate-pending,html.tester-gate-pending body{background:#08080a!important;margin:0;min-height:100%;overflow:hidden!important}html.tester-gate-pending body>*:not(#tester-gate-overlay){visibility:hidden!important;pointer-events:none!important}html.tester-gate-pending #tester-gate-overlay{visibility:visible!important;pointer-events:auto!important}</style>
-    <script>document.documentElement.classList.add("tester-gate-pending");</script>
-    <script src="/shared/tester-gate.js"></script>
     <title>Strongman AI – Profile</title>
     <link rel="icon" type="image/png" href="/assets/logo.png">
     <link rel="apple-touch-icon" href="/assets/logo.png">
@@ -20,11 +16,13 @@
     <link rel="stylesheet" href="/css/app-nav.css">
     <link rel="stylesheet" href="/css/notification-bell.css">
     <link rel="stylesheet" href="/css/server-wake.css">
-    <link rel="stylesheet" href="/css/profile.css">
+    <link rel="stylesheet" href="/css/profile.css?v=cc15">
+    <link rel="stylesheet" href="/css/profile-calling-card.css?v=cc16">
     <link rel="stylesheet" href="/css/athlete-sports.css">
     <link rel="stylesheet" href="/css/info-tip.css">
     <link rel="stylesheet" href="/css/settings-app.css">
     <link rel="stylesheet" href="/css/workout-dashboard.css">
+    <link rel="stylesheet" href="/css/muscle-map.css?v=cc15">
 </head>
 <body class="profile-page" data-current-page="profile">
     <aside class="site-sidebar" id="site-sidebar" aria-label="Main navigation">
@@ -47,7 +45,7 @@
                 <img src="/assets/icons/explore-filled.png" alt="" class="sidebar-icon sidebar-icon-filled">
                 <span class="sidebar-label">Explore</span>
             </a>
-            <a href="/generate" class="sidebar-link" data-page="generate" aria-label="Generate">
+            <a href="/coach" class="sidebar-link" data-page="generate" aria-label="Generate">
                 <img src="/assets/icons/AI-outline.png" alt="" class="sidebar-icon sidebar-icon-outline">
                 <img src="/assets/icons/AI-outline.png" alt="" class="sidebar-icon sidebar-icon-filled">
                 <span class="sidebar-label">Generate</span>
@@ -57,9 +55,9 @@
                 <img src="/assets/icons/graph-outline.png" alt="" class="sidebar-icon sidebar-icon-filled">
                 <span class="sidebar-label">Tracking</span>
             </a>
-            <a href="/create" class="sidebar-link" data-page="create" aria-label="Create">
-                <img src="/assets/icons/create-outline.png" alt="" class="sidebar-icon sidebar-icon-outline">
-                <img src="/assets/icons/create-outline.png" alt="" class="sidebar-icon sidebar-icon-filled">
+            <a href="/log" class="sidebar-link" data-page="create" aria-label="Create">
+                <img src="/assets/icons/log-outline.png" alt="" class="sidebar-icon sidebar-icon-outline">
+                <img src="/assets/icons/log-outline.png" alt="" class="sidebar-icon sidebar-icon-filled">
                 <span class="sidebar-label">Create</span>
             </a>
         </nav>
@@ -89,128 +87,109 @@
                 <p class="profile-login-banner" id="profile-login-banner" hidden></p>
                 <p class="profile-error-banner" id="profile-error-banner" hidden></p>
 
-                <a href="/customize" class="profile-user-settings-banner">
-                    <span class="profile-user-settings-kicker">User settings</span>
-                    <span class="profile-user-settings-title">Update your account, sports &amp; schedule</span>
-                    <span class="profile-user-settings-arrow">Open User settings →</span>
-                </a>
-
-                <div class="profile-shell profile-card" aria-label="Profile">
-
-                    <!-- Hero identity strip -->
-                    <section class="pf-hero">
-                        <div class="pf-cover" id="profile-banner-wrap" aria-hidden="true">
-                            <div class="pf-cover-mesh" id="profile-banner-fallback" aria-hidden="true"></div>
-                        </div>
-
-                        <div class="pf-hero-content">
-                            <div class="pf-avatar-col">
-                                <div class="pf-avatar-ring">
-                                    <div class="pf-avatar-glow" aria-hidden="true"></div>
-                                    <img
-                                        src=""
-                                        alt=""
-                                        class="profile-avatar-img"
-                                        id="profile-avatar-img"
-                                        width="148"
-                                        height="148"
-                                        decoding="async"
-                                        fetchpriority="high">
-                                    <label class="pf-avatar-edit" id="profile-avatar-change-label" hidden>
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                                        <input type="file" id="profile-avatar-input" accept="image/jpeg,image/png,image/gif,image/webp" hidden>
-                                    </label>
-                                </div>
+                <article class="profile-shell profile-card pf-calling-card" aria-label="Athlete calling card">
+                    <section class="pf-card-identity">
+                        <p class="pf-card-brand">STRONGMAN <span>AI</span></p>
+                        <div class="pf-avatar-wrap">
+                            <div class="pf-avatar-ring">
+                                <img
+                                    src=""
+                                    alt=""
+                                    class="profile-avatar-img"
+                                    id="profile-avatar-img"
+                                    width="160"
+                                    height="160"
+                                    decoding="async"
+                                    fetchpriority="high">
                             </div>
-
-                            <div class="pf-identity">
-                                <p class="profile-eyebrow" id="profile-eyebrow">Your profile</p>
-                                <h1 class="profile-display-name" id="profile-username">username</h1>
+                            <label class="pf-avatar-edit" id="profile-avatar-change-label" hidden>
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                                <span class="visually-hidden">Change profile photo</span>
+                                <input type="file" id="profile-avatar-input" accept="image/jpeg,image/png,image/gif,image/webp" hidden>
+                            </label>
+                        </div>
+                        <div class="pf-identity">
+                            <p class="profile-eyebrow" id="profile-eyebrow" hidden>Athlete card</p>
+                            <h1 class="profile-display-name" id="profile-username">username</h1>
+                            <div class="pf-meta-row" id="profile-meta-row">
                                 <p class="pf-level-pill" id="profile-experience-tag" hidden>
-                                    <span class="pf-level-dot" aria-hidden="true"></span>
                                     <span id="profile-experience-text">Athlete</span>
                                 </p>
-
-                                <div class="pf-bio-block" id="profile-bio-wrap">
-                                    <p class="profile-bio profile-bio--display" id="profile-bio">no bio written</p>
-                                    <div class="profile-bio-edit" id="profile-bio-edit" hidden aria-hidden="true">
-                                        <label class="profile-bio-edit-label" for="profile-bio-input">Bio</label>
-                                        <textarea id="profile-bio-input" class="profile-bio-input" rows="3" maxlength="500" placeholder="Tell the community about your training…" spellcheck="true"></textarea>
-                                        <p class="profile-bio-charcount" id="profile-bio-charcount" aria-live="polite">0 / 500</p>
-                                        <div class="profile-bio-edit-actions">
-                                            <button type="button" class="profile-btn profile-btn--ghost" id="profile-bio-cancel">Cancel</button>
-                                            <button type="button" class="profile-btn profile-btn--primary" id="profile-bio-save">Save bio</button>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="pf-actions">
-                                    <div class="profile-toolbar">
-                                        <button type="button" class="profile-btn profile-btn--primary profile-btn--lg" id="profile-follow-btn">Follow</button>
-                                        <button type="button" class="profile-btn profile-btn--ghost profile-btn--lg" id="profile-compete-btn">Compete</button>
-                                    </div>
-                                    <div class="profile-hero-actions" id="profile-hero-actions">
-                                        <button type="button" class="profile-btn profile-btn--primary profile-btn--lg profile-edit-profile-btn" id="profile-edit-toggle">Edit profile</button>
-                                        <button type="button" class="profile-btn profile-btn--ghost profile-btn--lg sidebar-settings-trigger" id="profile-settings-open" aria-haspopup="dialog" aria-expanded="false" aria-controls="home-settings-dialog">Settings</button>
-                                    </div>
-                                </div>
-
-                                <p class="profile-save-status" id="profile-save-status" role="status" aria-live="polite" hidden></p>
+                                <ul class="pf-sport-chips" id="profile-sports-chips" hidden aria-label="Sports"></ul>
                             </div>
+                            <div class="pf-bio-block" id="profile-bio-wrap" hidden>
+                                <p class="profile-bio profile-bio--display" id="profile-bio">no bio written</p>
+                                <div class="profile-bio-edit" id="profile-bio-edit" hidden aria-hidden="true">
+                                    <label class="profile-bio-edit-label" for="profile-bio-input">Bio</label>
+                                    <textarea id="profile-bio-input" class="profile-bio-input" rows="3" maxlength="500" placeholder="Tell the community about your training…" spellcheck="true"></textarea>
+                                    <p class="profile-bio-charcount" id="profile-bio-charcount" aria-live="polite">0 / 500</p>
+                                    <div class="profile-bio-edit-actions">
+                                        <button type="button" class="profile-btn profile-btn--ghost" id="profile-bio-cancel">Cancel</button>
+                                        <button type="button" class="profile-btn profile-btn--primary" id="profile-bio-save">Save bio</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="profile-save-status" id="profile-save-status" role="status" aria-live="polite" hidden></p>
                         </div>
                     </section>
 
-                    <!-- Stats row -->
-                    <section class="pf-stats" id="profile-stats-row" aria-label="Profile stats">
-                        <article class="pf-stat-card" id="profile-followers">
-                            <span class="pf-stat-icon" aria-hidden="true">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                            </span>
-                            <span class="profile-stat-value pf-stat-num">—</span>
-                            <span class="profile-stat-label pf-stat-label">Followers</span>
-                        </article>
-                        <article class="pf-stat-card" id="profile-following">
-                            <span class="pf-stat-icon" aria-hidden="true">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
-                            </span>
-                            <span class="profile-stat-value pf-stat-num">—</span>
-                            <span class="profile-stat-label pf-stat-label">Following</span>
-                        </article>
-                        <article class="pf-stat-card pf-stat-card--accent" id="profile-badge-stat">
-                            <span class="pf-stat-icon" aria-hidden="true">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>
-                            </span>
-                            <span class="profile-stat-value pf-stat-num" id="profile-badge-count">0</span>
-                            <span class="profile-stat-label pf-stat-label">Badges</span>
-                        </article>
+                    <section class="pf-card-radar" id="profile-radar-wrap" role="button" tabindex="0" aria-label="Muscle skills map — open detailed scores" aria-haspopup="dialog" aria-controls="profile-hex-overlay">
+                        <p class="pf-card-kicker">Muscle map</p>
+                        <div class="pf-radar-mount" id="profile-radar-mount"></div>
+                        <p class="pf-radar-hint">Tap for scores</p>
+                        <p class="pf-radar-empty" id="profile-radar-empty" hidden>Log lifts to shape your hexagon.</p>
                     </section>
 
-                    <!-- Badge trophy wall -->
-                    <section class="pf-badges" id="profile-highlights-wrap" aria-labelledby="profile-highlights-title">
+                    <section class="pf-badges pf-card-trophies" id="profile-highlights-wrap" aria-labelledby="profile-highlights-title" tabindex="0" role="button">
                         <header class="pf-section-head pf-section-head--row">
                             <div>
-                                <h2 class="pf-section-title" id="profile-highlights-title">Trophy case</h2>
-                                <p class="pf-section-sub" id="profile-badges-subtitle">Your latest unlocks</p>
+                                <p class="pf-card-kicker" id="profile-highlights-title">Trophy case</p>
+                                <p class="pf-section-sub" id="profile-badges-subtitle">Tap to choose 3</p>
                             </div>
-                            <button type="button" class="profile-btn profile-btn--ghost pf-view-badges-btn" id="profile-view-badges-btn">View all badges</button>
+                            <span class="pf-trophy-hint" id="profile-trophy-hint" aria-hidden="true">Edit</span>
                         </header>
-                        <p class="pf-badges-empty" id="profile-highlights-empty" hidden>No badges unlocked yet — start training to earn some.</p>
-                        <ul class="pf-badge-grid" id="profile-highlights-list"></ul>
+                        <p class="pf-badges-empty" id="profile-highlights-empty" hidden>No badges yet — start training to earn some.</p>
+                        <ul class="pf-badge-grid pf-badge-grid--showcase" id="profile-highlights-list"></ul>
                     </section>
 
-                    <!-- Athlete snapshot -->
-                    <section class="pf-snapshot" id="profile-athlete-wrap" hidden aria-label="Athlete details">
-                        <header class="pf-section-head pf-section-head--row">
-                            <div>
-                                <h2 class="pf-section-title">Athlete snapshot</h2>
-                                <p class="pf-section-sub">Training profile</p>
+                    <footer class="pf-card-footer">
+                        <div class="pf-stats" id="profile-stats-row" aria-label="Profile stats">
+                            <div class="pf-stat" id="profile-followers">
+                                <span class="profile-stat-value pf-stat-num">—</span>
+                                <span class="profile-stat-label pf-stat-label">Followers</span>
                             </div>
-                            <a href="/customize" class="pf-section-link" id="profile-athlete-edit">Edit</a>
-                        </header>
-                        <div class="pf-snapshot-grid" id="profile-athlete-grid"></div>
-                    </section>
+                            <div class="pf-stat" id="profile-following">
+                                <span class="profile-stat-value pf-stat-num">—</span>
+                                <span class="profile-stat-label pf-stat-label">Following</span>
+                            </div>
+                            <div class="pf-stat pf-stat--level" id="profile-level-stat">
+                                <span class="profile-stat-value pf-stat-num" id="profile-level-value">1</span>
+                                <span class="profile-stat-label pf-stat-label">Level</span>
+                            </div>
+                            <div class="pf-stat pf-stat--accent" id="profile-badge-stat">
+                                <span class="profile-stat-value pf-stat-num" id="profile-badge-count">0</span>
+                                <span class="profile-stat-label pf-stat-label">Badges</span>
+                            </div>
+                        </div>
+                        <div class="pf-actions">
+                            <div class="profile-toolbar">
+                                <button type="button" class="profile-btn profile-btn--primary profile-btn--lg" id="profile-follow-btn">Follow</button>
+                                <button type="button" class="profile-btn profile-btn--ghost profile-btn--lg" id="profile-compete-btn">Compete</button>
+                            </div>
+                            <div class="profile-hero-actions" id="profile-hero-actions">
+                                <button type="button" class="profile-btn profile-btn--ghost profile-btn--lg" id="profile-share-btn">Share</button>
+                                <a href="/customize" class="profile-btn profile-btn--primary profile-btn--lg" id="profile-user-settings-cta">User settings</a>
+                            </div>
+                        </div>
+                        <p class="pf-brand-seal" aria-hidden="true">STRONGMAN <span>AI</span></p>
+                    </footer>
 
-                </div>
+                    <!-- Kept for JS compatibility; content moved into sports chips + radar -->
+                    <section class="pf-snapshot" id="profile-athlete-wrap" hidden aria-hidden="true">
+                        <a href="/customize" class="pf-section-link" id="profile-athlete-edit" hidden>Edit</a>
+                        <div class="pf-snapshot-grid" id="profile-athlete-grid" hidden></div>
+                    </section>
+                </article>
 
                 <p class="profile-logout" id="profile-logout-wrap" hidden><a href="#" id="profile-logout">Log out</a></p>
             </div>
@@ -366,7 +345,7 @@
                 </section>
                 <section class="home-settings-section home-settings-section--footer" aria-labelledby="settings-about-heading">
                     <h3 class="home-settings-section-title" id="settings-about-heading">About</h3>
-                    <p class="home-settings-meta">Strongman AI v1.2</p>
+                    <p class="home-settings-meta">Strongman AI v1.3</p>
                     <div class="home-settings-inline-links">
                         <a href="/legal#terms" class="home-settings-inline-link">Terms</a>
                         <span class="home-settings-sep" aria-hidden="true">·</span>
@@ -398,6 +377,41 @@
         </div>
     </div>
 
+    <div class="pf-ach-overlay" id="profile-hex-overlay" hidden>
+        <div class="pf-ach-dialog pf-hex-dialog" role="dialog" aria-modal="true" aria-labelledby="profile-hex-title">
+            <header class="pf-ach-header">
+                <div class="pf-ach-header-text">
+                    <h2 class="pf-ach-title" id="profile-hex-title">Strength map</h2>
+                    <p class="pf-ach-subtitle" id="profile-hex-subtitle">Est. 1RM vs advanced standards</p>
+                </div>
+                <button type="button" class="pf-ach-close" id="profile-hex-close" aria-label="Close strength map">&times;</button>
+            </header>
+            <div class="pf-hex-detail-mount" id="profile-hex-detail-mount"></div>
+            <ul class="pf-hex-scores" id="profile-hex-scores"></ul>
+            <p class="pf-hex-note">Each spoke is your best estimated one-rep max for that category, scored against an impressive target. Dumbbell loads are doubled to compare with barbell standards.</p>
+        </div>
+    </div>
+
+    <div class="pf-ach-overlay pf-showcase-overlay" id="profile-showcase-overlay" hidden>
+        <div class="pf-ach-dialog pf-showcase-dialog" role="dialog" aria-modal="true" aria-labelledby="profile-showcase-title">
+            <header class="pf-ach-header">
+                <div class="pf-ach-header-text">
+                    <h2 class="pf-ach-title" id="profile-showcase-title">Showcase trophies</h2>
+                    <p class="pf-ach-subtitle" id="profile-showcase-subtitle">Pick up to 3 for your card</p>
+                </div>
+                <button type="button" class="pf-ach-close" id="profile-showcase-close" aria-label="Close trophy picker">&times;</button>
+            </header>
+            <p class="pf-showcase-count" id="profile-showcase-count" aria-live="polite">0 / 3 selected</p>
+            <div class="pf-ach-body pf-showcase-body">
+                <ul class="pf-showcase-grid" id="profile-showcase-grid"></ul>
+            </div>
+            <footer class="pf-showcase-footer">
+                <button type="button" class="profile-btn profile-btn--ghost" id="profile-showcase-view-all">All achievements</button>
+                <button type="button" class="profile-btn profile-btn--primary" id="profile-showcase-save">Save</button>
+            </footer>
+        </div>
+    </div>
+
     <script src="/shared/name-policy.js"></script>
     <script src="/shared/api.js"></script>
     <script src="/shared/notification-bell.js"></script>
@@ -409,7 +423,11 @@
     <script src="/shared/info-tip.js"></script>
     <script src="/shared/sport-database.js"></script>
     <script src="/shared/athlete-context.js"></script>
+    <script src="/shared/rocky-coaching-insights.js"></script>
+    <script src="/shared/strength-stats.js?v=cc15"></script>
+    <script src="/shared/muscle-map.js?v=cc15"></script>
     <script src="/shared/achievements.js"></script>
+    <script src="/shared/xp.js"></script>
     <script src="/shared/app-nav.js"></script>
     <script src="/shared/sidebar-profile-menu.js"></script>
     <script src="/shared/auth-guard.js"></script>
@@ -417,7 +435,7 @@
     <script src="/shared/known-notes.js"></script>
     <script src="/shared/push-client.js"></script>
     <script src="/shared/settings-popup.js"></script>
-    <script src="/js/profile.js"></script>
+    <script src="/js/profile.js?v=cc15"></script>
     <script src="/shared/workout-dashboard.js"></script>
     <script>if (window.WorkoutDashboard) window.WorkoutDashboard.init({});</script>
 </body>

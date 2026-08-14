@@ -90,16 +90,19 @@
   }
 
   function renderExerciseRow(ex, opts) {
+    var medical =
+      ex && typeof ex.medicalOverview === 'string' ? ex.medicalOverview.trim() : '';
+    var citation = ex && typeof ex.citation === 'string' ? ex.citation.trim() : '';
     var EC = window.CoachExpandCard;
-    if (EC && typeof EC.renderExpandCard === 'function') {
+    if (EC && typeof EC.renderExpandCard === 'function' && (medical || citation)) {
       return EC.renderExpandCard({
         variant: 'exercise',
         text: ex.name,
         meta: ex.prescription || '',
         why: ex.why || resolveExerciseWhy(ex, opts),
-        medicalOverview: ex.medicalOverview || ex.why || resolveExerciseWhy(ex, opts),
-        citation: ex.citation || '',
-        forceExpand: true,
+        medicalOverview: medical,
+        citation: citation,
+        forceExpand: false,
       });
     }
     var li = document.createElement('li');
@@ -153,14 +156,18 @@
     if (fyiText) {
       var EC = window.CoachExpandCard;
       if (EC && typeof EC.renderExpandCard === 'function') {
+        var fyiMedical =
+          typeof workout.fyiMedicalOverview === 'string'
+            ? workout.fyiMedicalOverview.trim()
+            : '';
         rockyBlock.appendChild(
           EC.renderExpandCard({
             variant: 'fyi',
             text: String(fyiText).trim(),
-            medicalOverview:
-              workout.fyiMedicalOverview || workout.fyi || String(fyiText).trim(),
-            citation: workout.fyiCitation || '',
-            forceExpand: true,
+            medicalOverview: fyiMedical,
+            citation:
+              typeof workout.fyiCitation === 'string' ? workout.fyiCitation.trim() : '',
+            forceExpand: false,
           })
         );
       } else {
@@ -231,14 +238,21 @@
         if (!text) return;
         var EC = window.CoachExpandCard;
         if (EC && typeof EC.renderExpandCard === 'function') {
+          var noteMedical =
+            typeof n === 'object' && typeof n.medicalOverview === 'string'
+              ? n.medicalOverview.trim()
+              : '';
+          var noteCite =
+            typeof n === 'object' && typeof n.citation === 'string'
+              ? n.citation.trim()
+              : '';
           notesList.appendChild(
             EC.renderExpandCard({
               variant: 'note',
               text: text,
-              medicalOverview:
-                (typeof n === 'object' && n.medicalOverview) || text,
-              citation: (typeof n === 'object' && n.citation) || '',
-              forceExpand: true,
+              medicalOverview: noteMedical,
+              citation: noteCite,
+              forceExpand: false,
             })
           );
         } else {

@@ -530,7 +530,7 @@
         try {
           sessionStorage.setItem('strongman-apply-today-routine', '1');
         } catch (e) {}
-        window.location.href = '/create';
+        window.location.href = '/log';
       });
     });
   }

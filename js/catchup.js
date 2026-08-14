@@ -19,12 +19,13 @@
   populateUnits();
 
   function currentVersion() {
-    return (window.VERSION_CATALOG && window.VERSION_CATALOG.current) || 'v1.2';
+    return (window.VERSION_CATALOG && window.VERSION_CATALOG.current) || 'v1.3';
   }
 
   function populateFeatures() {
     if (!featureList || !window.VERSION_CATALOG) return;
-    var release = window.VERSION_CATALOG.get(currentVersion());
+    var ver = currentVersion();
+    var release = window.VERSION_CATALOG.get(ver);
     if (!release) return;
     var items = release.majorFeatures || release.highlights || [];
     featureList.innerHTML = items
@@ -32,6 +33,17 @@
         return '<li>' + escapeHtml(item) + '</li>';
       })
       .join('');
+
+    var patchLink = document.getElementById('catchup-patch-link');
+    if (patchLink) patchLink.href = '/versions/' + encodeURIComponent(ver);
+
+    var newHeading = document.getElementById('catchup-new-heading');
+    if (newHeading) newHeading.textContent = 'Major features in ' + ver;
+
+    var doneHeading = document.getElementById('catchup-done-heading');
+    if (doneHeading) doneHeading.textContent = "You're on " + ver;
+
+    document.title = 'Welcome to ' + ver + ' – Strongman AI';
   }
 
   function populateUnits() {

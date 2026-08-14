@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-marketing="1">
 <head>
     <meta charset="UTF-8">
     <script src="/shared/gh-pages-routes.js"></script>
@@ -15,8 +15,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="/shared/theme.js"></script>
+    <link rel="stylesheet" href="/css/marketing-nav.css">
     <link rel="stylesheet" href="/css/index.css">
+    <link rel="stylesheet" href="/css/cookie-consent.css">
     <style>
         .not-found-main {
             flex: 1;
@@ -64,19 +67,38 @@
     </style>
 </head>
 <body>
-    <header class="site-header">
-        <div class="site-header-island">
-            <a href="/" class="site-header-logo-link">
-                <span class="site-header-logo">STRONGMAN <span class="site-header-logo-ai">AI</span></span>
-            </a>
-        </div>
-    </header>
-
-    <main class="not-found-main">
+    <header class="mkt-nav" id="mkt-nav">
+  <div class="mkt-nav-inner">
+    <a class="mkt-brand" href="/">
+      <img class="mkt-brand-logo" src="/assets/logo.png" alt="" width="22" height="22" decoding="async">
+      Strongman AI
+    </a>
+    <div class="mkt-nav-right">
+      <a href="/blog">Blog</a>
+      <a href="/leaderboards">Leaderboards</a>
+      <a href="/login">Login</a>
+      <a href="/#pricing">Pricing</a>
+      <a class="mkt-btn" href="/signup">Start free</a>
+    </div>
+    <button type="button" class="mkt-burger" id="mkt-burger" aria-label="Menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+<div class="mkt-panel" id="mkt-panel">
+  <a href="/blog">Blog</a>
+  <a href="/leaderboards">Leaderboards</a>
+  <a href="/login">Login</a>
+  <a href="/#pricing">Pricing</a>
+  <a class="mkt-btn" href="/signup">Start free</a>
+</div>
+<main class="not-found-main">
         <p class="not-found-code" aria-hidden="true">404</p>
         <h1 class="not-found-title">Page not found</h1>
         <p class="not-found-lead">That URL doesn’t exist or may have moved. Head back to the landing page to pick up where you left off.</p>
         <a href="/" class="not-found-link">Back to home</a>
     </main>
+    <script src="/shared/marketing-nav.js"></script>
+    <script src="/shared/cookie-consent.js"></script>
 </body>
 </html>

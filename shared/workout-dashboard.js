@@ -199,7 +199,10 @@
       (!document.getElementById('wd-cancel-btn') ||
         !document.getElementById('workout-routine-picker') ||
         !document.getElementById('workout-confirm-dialog') ||
-        document.getElementById('wd-coach-mount'));
+        !document.getElementById('wd-advanced-btn') ||
+        !document.getElementById('wd-oneclick-ai') ||
+        document.getElementById('wd-coach-mount') ||
+        document.getElementById('wd-since-bar'));
     if (needsRebuild) {
       existing.parentNode && existing.parentNode.removeChild(existing);
       var oldFab = document.getElementById('workout-dashboard-fab');
@@ -210,6 +213,8 @@
       if (oldPicker && oldPicker.parentNode) oldPicker.parentNode.removeChild(oldPicker);
       var oldConfirm = document.getElementById('workout-confirm-dialog');
       if (oldConfirm && oldConfirm.parentNode) oldConfirm.parentNode.removeChild(oldConfirm);
+      var oldAdv = document.getElementById('wd-advanced-sheet');
+      if (oldAdv && oldAdv.parentNode) oldAdv.parentNode.removeChild(oldAdv);
       existing = null;
     }
     if (existing) {
@@ -224,10 +229,12 @@
       }
       finishScreen = document.getElementById('workout-dashboard-finish');
       sessionClockEl = document.getElementById('wd-session-clock');
-      sinceLastClockEl = document.getElementById('wd-since-last-clock');
+      sinceLastClockEl = null;
       coachMount = document.getElementById('wd-coach-mount');
       trackerMount = document.getElementById('wd-tracker-mount');
       bindOverlayActions();
+      bindLogTools();
+      bindAdvancedSheet();
       bindSwipeToMinimize();
       return;
     }
@@ -248,18 +255,66 @@
       '<span class="wd-session-clock" id="wd-session-clock">0:00</span>' +
       '</div>' +
       '<div class="wd-topbar-actions">' +
+      '<button type="button" class="wd-icon-btn" id="wd-advanced-btn" title="Advanced settings" aria-label="Advanced settings" aria-expanded="false" aria-controls="wd-advanced-sheet">' +
+      '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.75"/><path d="M12 3.5v2M12 18.5v2M3.5 12h2M18.5 12h2M6.2 6.2l1.4 1.4M16.4 16.4l1.4 1.4M6.2 17.8l1.4-1.4M16.4 7.6l1.4-1.4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>' +
+      '</button>' +
       '<button type="button" class="wd-btn wd-btn--ghost wd-btn--danger" id="wd-cancel-btn">Cancel</button>' +
       '<button type="button" class="wd-btn wd-btn--ghost" id="wd-minimize-btn" aria-label="Minimize workout">Minimize</button>' +
       '<button type="button" class="wd-btn wd-btn--finish" id="wd-finish-btn">Finish</button>' +
       '</div>' +
       '</header>' +
-      '<section class="wd-since-bar" id="wd-since-bar" aria-label="Time since last set">' +
-      '<span class="wd-since-label">Time since last set</span>' +
-      '<span class="wd-since-clock" id="wd-since-last-clock">—</span>' +
+      '<section class="wd-log-tools" id="wd-log-tools" aria-label="Logging shortcuts">' +
+      '<button type="button" class="wd-log-tool" id="wd-camera-log">' +
+      '<span class="wd-new-banner">New</span>' +
+      '<span class="wd-log-tool-icon" aria-hidden="true">📷</span>' +
+      '<span class="wd-log-tool-label">Camera log</span>' +
+      '</button>' +
+      '<button type="button" class="wd-log-tool" id="wd-mic-log">' +
+      '<span class="wd-new-banner">New</span>' +
+      '<span class="wd-log-tool-icon" aria-hidden="true">Mic</span>' +
+      '<span class="wd-log-tool-label">Mic log</span>' +
+      '</button>' +
+      '<button type="button" class="wd-log-tool wd-log-tool--ai" id="wd-oneclick-ai">' +
+      '<span class="wd-log-tool-icon" aria-hidden="true">⚡</span>' +
+      '<span class="wd-log-tool-label">One-click workout</span>' +
+      '</button>' +
       '</section>' +
+      '<p class="wd-log-tool-status" id="wd-log-tool-status" role="status" hidden></p>' +
+      '<div class="wd-mic-panel" id="wd-mic-panel" hidden>' +
+      '<p class="wd-mic-rocky" id="wd-mic-rocky" aria-live="polite">Got it.</p>' +
+      '<p class="wd-mic-transcript" id="wd-mic-transcript"></p>' +
+      '</div>' +
+      '<div class="wd-oneclick-panel" id="wd-oneclick-panel" hidden>' +
+      '<p class="wd-oneclick-status" id="wd-oneclick-status">Rocky is building your session…</p>' +
+      '<pre class="wd-oneclick-body" id="wd-oneclick-body"></pre>' +
+      '<div class="wd-oneclick-actions" id="wd-oneclick-actions" hidden>' +
+      '<button type="button" class="wd-oneclick-apply" id="wd-oneclick-apply">Apply workout</button>' +
+      '<button type="button" class="wd-oneclick-dismiss" id="wd-oneclick-dismiss">Dismiss</button>' +
+      '</div>' +
+      '</div>' +
       '<section class="wd-log" id="wd-tracker-mount" aria-label="Log sets"></section>' +
       '</div>';
     document.body.appendChild(overlay);
+
+    var advanced = document.createElement('div');
+    advanced.id = 'wd-advanced-sheet';
+    advanced.className = 'wd-advanced-sheet';
+    advanced.hidden = true;
+    advanced.setAttribute('role', 'dialog');
+    advanced.setAttribute('aria-modal', 'true');
+    advanced.setAttribute('aria-labelledby', 'wd-advanced-title');
+    advanced.innerHTML =
+      '<div class="wd-advanced-panel">' +
+      '<header class="wd-advanced-head">' +
+      '<h2 id="wd-advanced-title">Advanced</h2>' +
+      '<button type="button" class="wd-know-close" id="wd-advanced-close" aria-label="Close">×</button>' +
+      '</header>' +
+      '<p class="wd-advanced-lede">Extras that stay out of the way until you need them.</p>' +
+      '<label class="wd-advanced-toggle"><input type="checkbox" id="wd-adv-supersets"> Enable supersets</label>' +
+      '<label class="wd-advanced-toggle"><input type="checkbox" id="wd-adv-dropsets"> Enable dropsets</label>' +
+      '<p class="wd-advanced-hint">When on, use the exercise tools to link supersets or mark dropsets.</p>' +
+      '</div>';
+    document.body.appendChild(advanced);
 
     fab = document.createElement('button');
     fab.type = 'button';
@@ -283,7 +338,7 @@
     picker.innerHTML =
       '<div class="wd-routine-picker-panel">' +
       '<h2 class="wd-routine-picker-title" id="wd-routine-picker-title">Start workout</h2>' +
-      '<p class="wd-routine-picker-lede">Pick a saved split or freestyle with your own exercises.</p>' +
+      '<p class="wd-routine-picker-lede">Quick log past sets, or start a live session from freestyle / your split.</p>' +
       '<div class="wd-routine-picker-list" id="wd-routine-picker-list"></div>' +
       '<button type="button" class="wd-btn wd-btn--ghost wd-routine-picker-cancel" id="wd-routine-picker-cancel">Cancel</button>' +
       '</div>';
@@ -323,12 +378,463 @@
     document.body.appendChild(finishScreen);
 
     sessionClockEl = document.getElementById('wd-session-clock');
-    sinceLastClockEl = document.getElementById('wd-since-last-clock');
+    sinceLastClockEl = null;
     coachMount = document.getElementById('wd-coach-mount');
     trackerMount = document.getElementById('wd-tracker-mount');
 
     bindOverlayActions();
+    bindLogTools();
+    bindAdvancedSheet();
     bindSwipeToMinimize();
+  }
+
+  function setLogToolStatus(msg) {
+    var el = document.getElementById('wd-log-tool-status');
+    if (!el) return;
+    if (!msg) {
+      el.hidden = true;
+      el.textContent = '';
+      return;
+    }
+    el.hidden = false;
+    el.textContent = msg;
+  }
+
+  var micRecognition = null;
+  var micListening = false;
+  var oneClickWorkout = null;
+  var GOT_IT_LINES = ['Got it.', 'Got it.', 'Got it.'];
+
+  function showMicPanel(show) {
+    var panel = document.getElementById('wd-mic-panel');
+    if (panel) panel.hidden = !show;
+  }
+
+  function appendMicTranscript(line) {
+    var el = document.getElementById('wd-mic-transcript');
+    if (!el) return;
+    var prev = el.textContent ? el.textContent + '\n' : '';
+    el.textContent = prev + line;
+    el.scrollTop = el.scrollHeight;
+  }
+
+  function sayGotIt() {
+    var rocky = document.getElementById('wd-mic-rocky');
+    if (!rocky) return;
+    var line = GOT_IT_LINES[Math.floor(Math.random() * GOT_IT_LINES.length)] || 'Got it.';
+    rocky.textContent = line;
+  }
+
+  function parseRockyLogUtterance(transcript) {
+    var t = String(transcript || '').trim();
+    // Accept with or without "Rocky" wake word once mic mode is on
+    var m =
+      /(\d+(?:\.\d+)?)\s*[x×]\s*(\d+)/i.exec(t) ||
+      /(\d+(?:\.\d+)?)\s*(?:for|@)\s*(\d+)/i.exec(t);
+    if (!m) return null;
+    return { weight: parseFloat(m[1]), reps: parseInt(m[2], 10) };
+  }
+
+  function applyMicLogToCurrentSet(parsed) {
+    var tracker = getTracker();
+    if (!tracker || !tracker.session) return false;
+    var fp = tracker.session.focusPointer;
+    var found = null;
+    if (fp && fp.exerciseId && fp.setId && tracker._findSet) {
+      found = tracker._findSet(fp.exerciseId, fp.setId);
+    }
+    if (!found && tracker.session.exercises) {
+      for (var i = 0; i < tracker.session.exercises.length && !found; i++) {
+        var ex = tracker.session.exercises[i];
+        for (var j = 0; j < (ex.sets || []).length; j++) {
+          if (!ex.sets[j].completed) {
+            found = { exercise: ex, set: ex.sets[j] };
+            break;
+          }
+        }
+      }
+    }
+    if (!found) return false;
+    found.set.weight = parsed.weight;
+    found.set.reps = parsed.reps;
+    if (typeof tracker._persist === 'function') tracker._persist();
+    if (typeof tracker.render === 'function') tracker.render();
+    return true;
+  }
+
+  function buildOneClickContext() {
+    var user = typeof window.getCurrentUser === 'function' ? window.getCurrentUser() : null;
+    if (window.AthleteContext && user) {
+      var builder =
+        typeof window.AthleteContext.buildCompactCoachPromptBlock === 'function'
+          ? window.AthleteContext.buildCompactCoachPromptBlock
+          : window.AthleteContext.buildCoachPromptBlock;
+      if (builder) return builder.call(window.AthleteContext, user, {});
+    }
+    return '';
+  }
+
+  function formatOneClickPlain(workout, text) {
+    if (text && String(text).trim().length > 40) return String(text).trim();
+    if (window.CoachThread && window.CoachThread.prototype.formatWorkoutPlain) {
+      try {
+        return window.CoachThread.prototype.formatWorkoutPlain(workout);
+      } catch (e) {}
+    }
+    return text || '';
+  }
+
+  function applyAiWorkoutToTracker(workout) {
+    var tracker = getTracker();
+    if (!tracker || !workout) return false;
+    var S = window.WorkoutSession;
+    tracker.session.exercises = [];
+    var blocks = workout.blocks || [];
+    blocks.forEach(function (block) {
+      (block.exercises || []).forEach(function (ex) {
+        if (!ex || !ex.name) return;
+        var sets = 3;
+        var reps = 8;
+        var weight = null;
+        var rx = String(ex.prescription || '');
+        var m = /(\d+)\s*[x×]\s*(\d+)/i.exec(rx);
+        if (m) {
+          sets = parseInt(m[1], 10) || 3;
+          reps = parseInt(m[2], 10) || 8;
+        }
+        var wm = /@\s*(\d+(?:\.\d+)?)/i.exec(rx);
+        if (wm) weight = parseFloat(wm[1]);
+        if (weight != null && window.WorkoutPredict && window.WorkoutPredict.roundToGymWeight) {
+          weight = window.WorkoutPredict.roundToGymWeight(weight, false);
+        }
+        var setObjs = [];
+        for (var i = 0; i < Math.max(1, Math.min(6, sets)); i++) {
+          setObjs.push(
+            S
+              ? S.createSet({ setNumber: i + 1, weight: weight, reps: reps })
+              : { setNumber: i + 1, weight: weight, reps: reps, completed: false }
+          );
+        }
+        tracker.addExercise(ex.name, { sets: setObjs });
+      });
+    });
+    if (tracker.session.exercises.length && tracker.setCarouselIndex) {
+      tracker.session.focusPointer = {
+        exerciseId: tracker.session.exercises[0].id,
+        setId: tracker.session.exercises[0].sets[0]
+          ? tracker.session.exercises[0].sets[0].id
+          : null,
+      };
+    }
+    if (typeof tracker.render === 'function') tracker.render();
+    return tracker.session.exercises.length > 0;
+  }
+
+  function bindLogTools() {
+    var cam = document.getElementById('wd-camera-log');
+    if (cam && cam.dataset.wdBound !== '1') {
+      cam.dataset.wdBound = '1';
+      cam.addEventListener('click', function () {
+        setLogToolStatus(
+          'Camera logging is a placeholder — point-and-log is coming. Use buttons for now.'
+        );
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+          navigator.mediaDevices
+            .getUserMedia({ video: { facingMode: 'environment' } })
+            .then(function (stream) {
+              stream.getTracks().forEach(function (tr) {
+                tr.stop();
+              });
+            })
+            .catch(function () {});
+        }
+      });
+    }
+
+    var mic = document.getElementById('wd-mic-log');
+    if (mic && mic.dataset.wdBound !== '1') {
+      mic.dataset.wdBound = '1';
+      mic.addEventListener('click', function () {
+        var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SR) {
+          setLogToolStatus('Speech recognition is not available in this browser.');
+          return;
+        }
+        if (micListening && micRecognition) {
+          try {
+            micRecognition.stop();
+          } catch (e) {}
+          micListening = false;
+          mic.classList.remove('is-listening');
+          showMicPanel(false);
+          setLogToolStatus('');
+          return;
+        }
+        var transcriptEl = document.getElementById('wd-mic-transcript');
+        if (transcriptEl) transcriptEl.textContent = '';
+        showMicPanel(true);
+        sayGotIt();
+        micRecognition = new SR();
+        micRecognition.continuous = true;
+        micRecognition.interimResults = true;
+        micRecognition.lang = 'en-US';
+        micRecognition.onresult = function (event) {
+          var chunk = '';
+          for (var i = event.resultIndex; i < event.results.length; i++) {
+            chunk += event.results[i][0].transcript;
+          }
+          chunk = String(chunk || '').trim();
+          if (!chunk) return;
+          if (event.results[event.results.length - 1].isFinal) {
+            appendMicTranscript(chunk);
+            sayGotIt();
+            var parsed = parseRockyLogUtterance(chunk);
+            if (parsed) applyMicLogToCurrentSet(parsed);
+          } else {
+            var live = document.getElementById('wd-mic-transcript');
+            if (live) {
+              var base = live.getAttribute('data-final') || '';
+              live.textContent = base ? base + '\n' + chunk : chunk;
+            }
+          }
+          if (event.results[event.results.length - 1].isFinal) {
+            var tEl = document.getElementById('wd-mic-transcript');
+            if (tEl) tEl.setAttribute('data-final', tEl.textContent);
+          }
+        };
+        micRecognition.onerror = function () {
+          micListening = false;
+          mic.classList.remove('is-listening');
+          setLogToolStatus('Mic error — try again.');
+        };
+        micRecognition.onend = function () {
+          micListening = false;
+          mic.classList.remove('is-listening');
+        };
+        try {
+          micRecognition.start();
+          micListening = true;
+          mic.classList.add('is-listening');
+          setLogToolStatus('Mic on — say your set, e.g. “225 for 10”.');
+        } catch (err) {
+          setLogToolStatus('Could not start microphone.');
+          showMicPanel(false);
+        }
+      });
+    }
+
+    var oneClick = document.getElementById('wd-oneclick-ai');
+    if (oneClick && oneClick.dataset.wdBound !== '1') {
+      oneClick.dataset.wdBound = '1';
+      oneClick.addEventListener('click', runOneClickWorkout);
+    }
+
+    var applyBtn = document.getElementById('wd-oneclick-apply');
+    if (applyBtn && applyBtn.dataset.wdBound !== '1') {
+      applyBtn.dataset.wdBound = '1';
+      applyBtn.addEventListener('click', function () {
+        if (!oneClickWorkout) return;
+        if (applyAiWorkoutToTracker(oneClickWorkout)) {
+          setLogToolStatus('Applied Rocky’s workout — you’re ready to roll.');
+          var panel = document.getElementById('wd-oneclick-panel');
+          if (panel) panel.hidden = true;
+        } else {
+          setLogToolStatus('Couldn’t apply that plan — try again.');
+        }
+      });
+    }
+    var dismissBtn = document.getElementById('wd-oneclick-dismiss');
+    if (dismissBtn && dismissBtn.dataset.wdBound !== '1') {
+      dismissBtn.dataset.wdBound = '1';
+      dismissBtn.addEventListener('click', function () {
+        var panel = document.getElementById('wd-oneclick-panel');
+        if (panel) panel.hidden = true;
+        oneClickWorkout = null;
+      });
+    }
+  }
+
+  function runOneClickWorkout() {
+    var tracker = getTracker();
+    if (!tracker) {
+      setLogToolStatus('Start a workout first.');
+      return;
+    }
+
+    var panel = document.getElementById('wd-oneclick-panel');
+    var status = document.getElementById('wd-oneclick-status');
+    var body = document.getElementById('wd-oneclick-body');
+    var actions = document.getElementById('wd-oneclick-actions');
+    if (panel) panel.hidden = false;
+    if (status) status.textContent = 'Rocky is building your session…';
+    if (body) body.textContent = '';
+    if (actions) actions.hidden = true;
+    oneClickWorkout = null;
+    setLogToolStatus('');
+
+    var dayHint = '';
+    try {
+      if (window.WorkoutSplit && window.WorkoutSplit.splitFieldLineForDate) {
+        dayHint = window.WorkoutSplit.splitFieldLineForDate(null, new Date()) || '';
+      }
+    } catch (e) {}
+
+    var message =
+      "Build today's gym workout for me right now. Match my split day" +
+      (dayHint ? ' (' + dayHint + ')' : '') +
+      '. Keep it ready to log — include sets×reps @ weight. Equipment is already on my profile.';
+
+    var headers = { 'Content-Type': 'application/json' };
+    try {
+      var u = window.getCurrentUser && window.getCurrentUser();
+      if (u && u.token) headers.Authorization = 'Bearer ' + u.token;
+    } catch (eAuth) {}
+
+    var streamedRaw = '';
+    function previewText(raw) {
+      var t = String(raw || '');
+      function unescapeJsonFragment(frag) {
+        try {
+          return JSON.parse('"' + frag + '"');
+        } catch (e) {
+          return frag.replace(/\\n/g, '\n').replace(/\\"/g, '"');
+        }
+      }
+      var textMatch = /"text"\s*:\s*"((?:\\.|[^"\\])*)"/.exec(t);
+      if (textMatch) return unescapeJsonFragment(textMatch[1]);
+      var partial = /"text"\s*:\s*"((?:\\.|[^"\\])*)$/.exec(t);
+      if (partial) return unescapeJsonFragment(partial[1]);
+      if (/^\s*\{/.test(t)) return 'Rocky is building…';
+      return t;
+    }
+
+    fetch((window.API_BASE || '') + '/coach/chat', {
+      method: 'POST',
+      credentials: 'include',
+      headers: headers,
+      body: JSON.stringify({
+        message: message,
+        contextBlock: buildOneClickContext(),
+        thread: [],
+        forceIntent: 'workout',
+        stream: true,
+      }),
+    })
+      .then(function (res) {
+        var ct = (res.headers.get('content-type') || '').toLowerCase();
+        if (ct.indexOf('text/event-stream') === -1) {
+          return res.json().then(function (json) {
+            if (!res.ok) throw new Error((json && json.error) || 'Request failed.');
+            return json;
+          });
+        }
+        if (!res.ok) throw new Error('Request failed.');
+        var reader = res.body.getReader();
+        var decoder = new TextDecoder();
+        var buffer = '';
+        var currentEvent = '';
+        var doneBody = null;
+
+        function handleEvent(event, dataStr) {
+          if (!dataStr) return;
+          var data;
+          try {
+            data = JSON.parse(dataStr);
+          } catch (eParse) {
+            return;
+          }
+          if (event === 'delta' && data && data.text) {
+            streamedRaw += data.text;
+            if (body) body.textContent = previewText(streamedRaw);
+          }
+          if (event === 'done') doneBody = data;
+          if (event === 'error') throw new Error((data && data.error) || 'Request failed.');
+        }
+
+        function pump() {
+          return reader.read().then(function (chunk) {
+            if (chunk.done) {
+              if (!doneBody) throw new Error('Stream ended unexpectedly.');
+              return doneBody;
+            }
+            buffer += decoder.decode(chunk.value, { stream: true });
+            var parts = buffer.split('\n');
+            buffer = parts.pop() || '';
+            parts.forEach(function (line) {
+              if (line.indexOf('event:') === 0) currentEvent = line.slice(6).trim();
+              else if (line.indexOf('data:') === 0) handleEvent(currentEvent, line.slice(5).trim());
+              else if (line === '') currentEvent = '';
+            });
+            return pump();
+          });
+        }
+        return pump();
+      })
+      .then(function (done) {
+        oneClickWorkout = done && done.workout ? done.workout : null;
+        var plain = formatOneClickPlain(oneClickWorkout, (done && done.text) || '');
+        if (body) body.textContent = plain || previewText(streamedRaw);
+        if (status) {
+          status.textContent = oneClickWorkout
+            ? (oneClickWorkout.title || 'Your session') + ' — ready'
+            : 'Here’s what Rocky drafted';
+        }
+        if (actions) actions.hidden = !oneClickWorkout;
+        if (!oneClickWorkout) {
+          setLogToolStatus('Rocky replied, but no structured workout came back.');
+        }
+      })
+      .catch(function (err) {
+        if (status) status.textContent = 'Couldn’t generate — try again.';
+        if (body) body.textContent = String((err && err.message) || 'Something went wrong.');
+        if (actions) actions.hidden = true;
+      });
+  }
+
+  function bindAdvancedSheet() {
+    var btn = document.getElementById('wd-advanced-btn');
+    var sheet = document.getElementById('wd-advanced-sheet');
+    var closeBtn = document.getElementById('wd-advanced-close');
+    function setOpen(open) {
+      if (!sheet) return;
+      sheet.hidden = !open;
+      if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      document.body.classList.toggle('wd-advanced-open', !!open);
+      // Defaults off every time the sheet opens — not restored from storage.
+      if (open) {
+        var ssEl = document.getElementById('wd-adv-supersets');
+        var dsEl = document.getElementById('wd-adv-dropsets');
+        if (ssEl) ssEl.checked = false;
+        if (dsEl) dsEl.checked = false;
+        document.body.classList.remove('wd-adv-supersets', 'wd-adv-dropsets');
+      }
+    }
+    if (btn && btn.dataset.wdBound !== '1') {
+      btn.dataset.wdBound = '1';
+      btn.addEventListener('click', function () {
+        setOpen(sheet && sheet.hidden);
+      });
+    }
+    if (closeBtn && closeBtn.dataset.wdBound !== '1') {
+      closeBtn.dataset.wdBound = '1';
+      closeBtn.addEventListener('click', function () {
+        setOpen(false);
+      });
+    }
+    var ssEl = document.getElementById('wd-adv-supersets');
+    var dsEl = document.getElementById('wd-adv-dropsets');
+    if (ssEl && ssEl.dataset.wdBound !== '1') {
+      ssEl.dataset.wdBound = '1';
+      ssEl.addEventListener('change', function () {
+        document.body.classList.toggle('wd-adv-supersets', !!ssEl.checked);
+      });
+    }
+    if (dsEl && dsEl.dataset.wdBound !== '1') {
+      dsEl.dataset.wdBound = '1';
+      dsEl.addEventListener('change', function () {
+        document.body.classList.toggle('wd-adv-dropsets', !!dsEl.checked);
+      });
+    }
   }
 
   function bindOverlayActions() {
@@ -422,6 +928,9 @@
     stopSessionClock();
     if (typeof opts.onCancel === 'function') opts.onCancel();
     deactivate();
+    try {
+      window.location.href = '/home';
+    } catch (e) {}
   }
 
   function hideRoutinePicker() {
@@ -435,6 +944,29 @@
     var list = document.getElementById('wd-routine-picker-list');
     if (!picker || !list) return;
     list.innerHTML = '';
+
+    var lede = picker.querySelector('.wd-routine-picker-lede');
+    if (lede) {
+      lede.textContent =
+        'Quick log past sets, or start a live session from freestyle / your split.';
+    }
+
+    var quick = document.createElement('button');
+    quick.type = 'button';
+    quick.className = 'wd-routine-option wd-routine-option--quick';
+    quick.innerHTML =
+      '<span class="wd-routine-option-title">Quick log</span>' +
+      '<span class="wd-routine-option-sub">Fill in sets &amp; reps · today\'s split + guessed weights</span>';
+    quick.addEventListener('click', function () {
+      hideRoutinePicker();
+      openQuickLog({ autofillSplit: true });
+    });
+    list.appendChild(quick);
+
+    var liveLabel = document.createElement('p');
+    liveLabel.className = 'wd-routine-section-label';
+    liveLabel.textContent = 'Live workout';
+    list.appendChild(liveLabel);
 
     var freestyle = document.createElement('button');
     freestyle.type = 'button';
@@ -818,7 +1350,8 @@
     return t;
   }
 
-  function openQuickLog() {
+  function openQuickLog(choice) {
+    choice = choice || {};
     injectDom();
     if (dashboardActive && !minimized) {
       minimize();
@@ -846,22 +1379,26 @@
     var hero = document.getElementById('logbook-mode-hero');
     if (hero) hero.classList.add('logbook-mode-hero--compact');
     var t = ensureSessionReady();
-    if (t) {
+    var prep =
+      typeof opts.prepareQuickLog === 'function'
+        ? opts.prepareQuickLog(choice)
+        : Promise.resolve();
+    Promise.resolve(prep).then(function () {
+      t = getTracker() || t;
+      if (!t) return;
       if (isLiveWorkoutActive()) {
-        // Don't rewrite the live session into quick-log mode.
         if (t.setViewMode) t.setViewMode('card');
-      } else {
-        if (typeof t.reset === 'function') t.reset();
-        if (typeof t.setLoggingMode === 'function') t.setLoggingMode('quick');
-        else if (t.setViewMode) t.setViewMode('card');
+        return;
       }
-    }
+      if (typeof t.setLoggingMode === 'function') t.setLoggingMode('quick');
+      else if (t.setViewMode) t.setViewMode('card');
+    });
   }
 
   function beginWorkout(choice) {
     injectDom();
     if (!getTracker() && (hasStoredSession() || isLiveWorkoutActive())) {
-      window.location.href = '/create?workout=1';
+      window.location.href = '/log?workout=1';
       return;
     }
     var start =
@@ -888,8 +1425,7 @@
           if (shell) shell.setAttribute('data-log-style', 'coach');
         }
         if (typeof t.setLoggingMode === 'function') t.setLoggingMode('live');
-        if (t.setViewMode) t.setViewMode('carousel');
-        if (typeof t.setCarouselIndex === 'function') t.setCarouselIndex(0);
+        if (t.setViewMode) t.setViewMode('focus');
         lastCompletedCount = countCompletedSets(t.getSession());
         mountTracker();
         syncFab();
@@ -901,16 +1437,59 @@
       });
   }
 
+  function resetEphemeralWorkoutPrefs() {
+    // Mic / one-click / advanced are session-only — never carry across workouts.
+    if (micListening && micRecognition) {
+      try {
+        micRecognition.stop();
+      } catch (eStop) {}
+    }
+    micListening = false;
+    micRecognition = null;
+    oneClickWorkout = null;
+    var micBtn = document.getElementById('wd-mic-log');
+    if (micBtn) micBtn.classList.remove('is-listening');
+    var micPanel = document.getElementById('wd-mic-panel');
+    if (micPanel) micPanel.hidden = true;
+    var transcript = document.getElementById('wd-mic-transcript');
+    if (transcript) {
+      transcript.textContent = '';
+      transcript.removeAttribute('data-final');
+    }
+    var onePanel = document.getElementById('wd-oneclick-panel');
+    if (onePanel) onePanel.hidden = true;
+    var oneBody = document.getElementById('wd-oneclick-body');
+    if (oneBody) oneBody.textContent = '';
+    var oneActions = document.getElementById('wd-oneclick-actions');
+    if (oneActions) oneActions.hidden = true;
+    var ssEl = document.getElementById('wd-adv-supersets');
+    var dsEl = document.getElementById('wd-adv-dropsets');
+    if (ssEl) ssEl.checked = false;
+    if (dsEl) dsEl.checked = false;
+    document.body.classList.remove('wd-adv-supersets', 'wd-adv-dropsets', 'wd-advanced-open');
+    var advSheet = document.getElementById('wd-advanced-sheet');
+    if (advSheet) advSheet.hidden = true;
+    setLogToolStatus('');
+    if (window.WorkoutPredict && typeof window.WorkoutPredict.clearSessionEquipment === 'function') {
+      window.WorkoutPredict.clearSessionEquipment();
+    }
+    try {
+      localStorage.removeItem('strongman-wd-adv-supersets');
+      localStorage.removeItem('strongman-wd-adv-dropsets');
+      localStorage.removeItem('strongman-session-equipment');
+    } catch (eClear) {}
+  }
+
   function open(options) {
     options = options || {};
     injectDom();
     if (!getTracker() && (hasStoredSession() || isLiveWorkoutActive())) {
-      window.location.href = '/create?workout=1';
+      window.location.href = '/log?workout=1';
       return;
     }
 
-    // Resume live / mid-session without re-picking routine
-    if (options.resume || options.skipPicker || isLiveWorkoutActive()) {
+    // Resume only when a live workout is actually ongoing (or caller asks to resume).
+    if (options.resume || (options.skipPicker && isLiveWorkoutActive()) || isLiveWorkoutActive()) {
       var t = ensureSessionReady();
       if (!t) return;
       minimized = false;
@@ -922,13 +1501,17 @@
       }
       persistLiveWorkout();
       startSessionClock();
-      if (t.setViewMode) t.setViewMode('carousel');
+      if (t.setViewMode) t.setViewMode('focus');
       lastCompletedCount = countCompletedSets(t.getSession());
       mountTracker();
       syncFab();
       return;
     }
 
+    // New workout: wipe draft session + ephemeral prefs, then pick routine.
+    resetEphemeralWorkoutPrefs();
+    var fresh = getTracker();
+    if (fresh && typeof fresh.reset === 'function') fresh.reset();
     showRoutinePicker();
   }
 
@@ -1428,29 +2011,11 @@
     }
     photosHtml += '</div>';
 
-    var rockyHtml = '';
-    if (finishState.rockyData && PWS && PWS.renderRecoveryHtml) {
-      rockyHtml =
-        '<div class="wd-finish-rocky">' +
-        (finishState.rockyData.summary && finishState.rockyData.summary.headline
-          ? '<p class="wd-finish-rocky-kicker">' +
-            escapeHtml(finishState.rockyData.summary.headline) +
-            '</p>'
-          : '') +
-        PWS.renderRecoveryHtml(finishState.rockyData.recovery) +
-        '</div>';
-    } else if (finishState.rockyError) {
-      rockyHtml =
-        '<p class="wd-recovery-error">' + escapeHtml(finishState.rockyError) + '</p>';
-    } else {
-      rockyHtml = rockyGeneratingHtml();
-    }
-
     var html =
       '<div class="wd-finish-page" id="wd-finish-dash">' +
       '<header class="wd-finish-page-head">' +
       '<p class="wd-finish-kicker">Session complete</p>' +
-      '<h1 class="wd-finish-dash-title">You put in the work</h1>' +
+      '<h1 class="wd-finish-dash-title">Workout summary</h1>' +
       '<p class="wd-finish-trend wd-finish-trend--' +
       escapeHtml(trend.tone || 'steady') +
       '">' +
@@ -1461,11 +2026,21 @@
     cards.slice(0, 6).forEach(function (c) {
       html += '<li class="wd-finish-stat">' + escapeHtml(c) + '</li>';
     });
+    var muscleHtml = '';
+    if (window.MuscleMap && typeof window.MuscleMap.renderPair === 'function') {
+      var finishExercises =
+        (draft && draft.exercises) ||
+        (finishState.draft && finishState.draft.exercises) ||
+        [];
+      muscleHtml =
+        '<section class="wd-finish-section wd-finish-section--muscles" aria-label="Muscles hit">' +
+        window.MuscleMap.renderPair(finishExercises, { title: 'Muscles hit' }) +
+        '</section>';
+    }
+
     html +=
       '</ul>' +
-      '<section class="wd-finish-section wd-finish-section--rocky" aria-label="Rocky advice">' +
-      rockyHtml +
-      '</section>' +
+      muscleHtml +
       '<section class="wd-finish-section">' +
       photosHtml +
       '</section>' +
@@ -1476,7 +2051,7 @@
       '</div>' +
       '<p class="wd-finish-share-status" id="wd-finish-share-status" role="status"></p>' +
       '<div class="wd-finish-footer">' +
-      '<button type="button" class="wd-rest-btn" id="wd-finish-rest">Start resting</button>' +
+      '<button type="button" class="wd-rest-btn" id="wd-finish-rest">Save workout</button>' +
       '</div>' +
       '</div>';
 
@@ -1485,37 +2060,12 @@
     bindFinishDashboardActions();
   }
 
-  function loadRockyForFinish() {
-    var PWS = window.PostWorkoutSummary;
-    if (!finishState || !PWS || !PWS.fetchRecoveryAdvice) {
-      if (finishState) {
-        finishState.rockyError = 'Rocky tips unavailable offline.';
-        renderFinishDashboard();
-      }
-      return;
-    }
-    PWS.fetchRecoveryAdvice(finishState.draft, finishState.durationMs)
-      .then(function (data) {
-        if (!finishState) return;
-        finishState.rockyData = data;
-        finishState.rockyError = null;
-        renderFinishDashboard();
-      })
-      .catch(function (err) {
-        if (!finishState) return;
-        finishState.rockyError =
-          (err && err.message) || 'Rocky got distracted. Your stats still count.';
-        renderFinishDashboard();
-      });
-  }
-
   function showFinishDashboard(draft, durationMs) {
     ensureFinishState(draft, durationMs);
     syncDraftToFormFields();
     var mark = document.getElementById('wd-finish-mark');
     if (mark) mark.hidden = true;
     renderFinishDashboard();
-    loadRockyForFinish();
   }
 
   function restingMarkHtml() {
@@ -1571,12 +2121,12 @@
           var root = document.getElementById('wd-resting');
           var textEl = document.getElementById('wd-resting-text');
           if (root) root.classList.add('wd-resting--done');
-          if (textEl) textEl.textContent = 'Well done.';
+          if (textEl) textEl.textContent = 'Good job.';
           window.setTimeout(function () {
             destroySummaryCharts();
             finishState = null;
             deactivate();
-            window.location.href = '/home';
+            window.location.href = '/log#archive';
           }, 950);
         }, minSpin);
       })
@@ -1656,7 +2206,7 @@
       open({ resume: true });
       return;
     }
-    window.location.href = '/create?workout=1';
+    window.location.href = '/log?workout=1';
   }
 
   function bindGlobalListeners() {

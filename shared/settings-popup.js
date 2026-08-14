@@ -10,6 +10,8 @@
   var FAVORITES_KEY = 'strongman-favorite-movements';
   var ANYTHING_ELSE_KEY = 'strongman-coach-anything-else';
   var EXPERIMENTAL_KEY = 'strongman-experimental-mode';
+  var LOG_STYLE_KEY = 'strongman-preferred-log-style';
+  var LOG_STYLE_VALUES = ['coach', 'quick', 'guided', 'table'];
 
   function getStoredTheme() {
     if (window.StrongmanTheme && typeof window.StrongmanTheme.getStoredTheme === 'function') {
@@ -18,10 +20,10 @@
     var v = localStorage.getItem(THEME_KEY);
     if (v === 'auto') return 'system';
     if (v === 'dark' || v === 'light' || v === 'system') return v;
-    if (v === 'voltage' || v === 'forge' || v === 'aurora') return v;
+    if (v === 'voltage' || v === 'forge' || v === 'aurora' || v === 'signal') return v;
     if (v === 'tidepool' || v === 'noir-lilac' || v === 'citrus') return 'aurora';
     if (v === 'marble') return 'light';
-    return 'dark';
+    return 'signal';
   }
 
   function getEffectiveTheme() {
@@ -30,7 +32,7 @@
     }
     var stored = getStoredTheme();
     if (stored === 'system') {
-      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'signal' : 'light';
     }
     return stored;
   }
@@ -312,6 +314,112 @@
   }
 
   ensureWeightIncrementControl();
+
+  var preferredLogStyleSelect = document.getElementById('settings-preferred-log-style');
+
+  function normalizeLogStyle(value) {
+    var v = String(value || '').trim().toLowerCase();
+    return LOG_STYLE_VALUES.indexOf(v) !== -1 ? v : 'coach';
+  }
+
+  function getPreferredLogStyle() {
+    var u = typeof window.getCurrentUser === 'function' ? window.getCurrentUser() : null;
+    var fromUser =
+      u && u.athleteContext && u.athleteContext.preferredLogStyle
+        ? u.athleteContext.preferredLogStyle
+        : null;
+    if (fromUser) return normalizeLogStyle(fromUser);
+    return normalizeLogStyle(localStorage.getItem(LOG_STYLE_KEY));
+  }
+
+  function ensurePreferredLogStyleControl() {
+    if (preferredLogStyleSelect) return;
+    var appearanceHeading = document.getElementById('settings-appearance-heading');
+    var section = appearanceHeading
+      ? appearanceHeading.closest('.home-settings-section')
+      : null;
+    if (!section) return;
+    var label = document.createElement('label');
+    label.className = 'home-settings-field-label';
+    label.setAttribute('for', 'settings-preferred-log-style');
+    label.textContent = 'Preferred log view';
+    var select = document.createElement('select');
+    select.id = 'settings-preferred-log-style';
+    select.className = 'home-settings-select';
+    select.innerHTML =
+      '<option value="coach">Coach</option>' +
+      '<option value="quick">Quick</option>' +
+      '<option value="guided">Guided</option>' +
+      '<option value="table">Table</option>';
+    var hint = document.createElement('p');
+    hint.className = 'home-settings-hint home-settings-hint--tight';
+    hint.textContent = 'Default layout when you open the logbook. Change anytime.';
+    section.appendChild(label);
+    section.appendChild(select);
+    section.appendChild(hint);
+    preferredLogStyleSelect = select;
+  }
+
+  ensurePreferredLogStyleControl();
+
+  function syncPreferredLogStyleFromUser() {
+    if (!preferredLogStyleSelect) return;
+    preferredLogStyleSelect.value = getPreferredLogStyle();
+  }
+
+  function persistPreferredLogStyle(style) {
+    var next = normalizeLogStyle(style);
+    try {
+      localStorage.setItem(LOG_STYLE_KEY, next);
+    } catch (e) {}
+    var u = typeof window.getCurrentUser === 'function' ? window.getCurrentUser() : null;
+    if (!u || !u.id || !u.token || typeof window.apiPut !== 'function') {
+      window.dispatchEvent(
+        new CustomEvent('strongman:preferred-log-style-changed', { detail: { style: next } })
+      );
+      return Promise.resolve(next);
+    }
+    var athleteContext = Object.assign({}, u.athleteContext || {}, {
+      preferredLogStyle: next,
+    });
+    return window
+      .apiPut('/users/' + u.id, { athleteContext: athleteContext })
+      .then(function (res) {
+        if (!res.ok) return next;
+        return res.json().then(function (body) {
+          if (typeof window.setCurrentUser === 'function') {
+            var merged = Object.assign({}, u, body);
+            if (u.token) merged.token = u.token;
+            window.setCurrentUser(merged);
+          }
+          return next;
+        });
+      })
+      .catch(function () {
+        return next;
+      })
+      .then(function (saved) {
+        window.dispatchEvent(
+          new CustomEvent('strongman:preferred-log-style-changed', {
+            detail: { style: saved },
+          })
+        );
+        return saved;
+      });
+  }
+
+  if (preferredLogStyleSelect) {
+    syncPreferredLogStyleFromUser();
+    preferredLogStyleSelect.addEventListener('change', function () {
+      persistPreferredLogStyle(preferredLogStyleSelect.value);
+    });
+  }
+
+  window.strongmanPreferredLogStyle = {
+    get: getPreferredLogStyle,
+    set: persistPreferredLogStyle,
+    normalize: normalizeLogStyle,
+  };
 
   var notifyEmail = document.getElementById('settings-notify-email');
   var notifyPush = document.getElementById('settings-notify-push');
@@ -1030,7 +1138,7 @@
       var intro = document.createElement('p');
       intro.className = 'settings-hub-intro';
       intro.textContent =
-        'Theme, notifications, and app preferences. Account and training details live in User settings under You.';
+        'Theme, log view, notifications, and app preferences. Equipment, schedule, and goals live in User settings under You.';
       body.insertBefore(intro, body.firstChild);
     }
 
@@ -1062,11 +1170,13 @@
     if (injectedAccount) injectedAccount.remove();
 
     var themeRow = body.querySelector('.home-settings-theme-row');
-    if (themeRow) {
+    if (themeRow && !themeRow.querySelector('.settings-theme-card')) {
       themeRow.classList.add('settings-theme-pills');
       themeRow.querySelectorAll('.home-settings-radio-label').forEach(function (lbl) {
         lbl.classList.add('settings-theme-pill');
       });
+    } else if (themeRow) {
+      themeRow.classList.remove('settings-theme-pills');
     }
 
     var unitsSection = document.getElementById('settings-units-heading');
@@ -1136,15 +1246,29 @@
     }
 
     if (!body.querySelector('#settings-hub-versions-card')) {
+      var currentSlug =
+        (window.VERSION_CATALOG && window.VERSION_CATALOG.current) || 'v1.3';
+      var currentRelease =
+        window.VERSION_CATALOG && typeof window.VERSION_CATALOG.get === 'function'
+          ? window.VERSION_CATALOG.get(currentSlug)
+          : null;
       var versionsCard = document.createElement('a');
-      versionsCard.href = '/versions/v1.2';
+      versionsCard.href = '/versions/' + encodeURIComponent(currentSlug);
       versionsCard.className = 'settings-hub-training-card settings-hub-info-card';
       versionsCard.id = 'settings-hub-versions-card';
       versionsCard.innerHTML =
-        '<span class="settings-hub-training-kicker">v1.2 · Patch notes</span>' +
+        '<span class="settings-hub-training-kicker">' +
+        currentSlug +
+        ' · Patch notes</span>' +
         '<span class="settings-hub-training-title">Version history</span>' +
-        '<span class="settings-hub-training-desc">Beginner guide, simpler workout mode, experience-aware Rocky, and post-workout charts.</span>' +
-        '<span class="settings-hub-training-arrow">Read v1.2 notes →</span>';
+        '<span class="settings-hub-training-desc">' +
+        (currentRelease && currentRelease.summary
+          ? currentRelease.summary
+          : 'Download page, progressive-overload docs, modernized Settings, and marketing polish.') +
+        '</span>' +
+        '<span class="settings-hub-training-arrow">Read ' +
+        currentSlug +
+        ' notes →</span>';
       var aboutHeading = document.getElementById('settings-about-heading');
       var aboutSec = aboutHeading && aboutHeading.closest('.home-settings-section');
       if (aboutSec && aboutSec.parentNode) {
@@ -1172,6 +1296,13 @@
       patchLink.textContent = 'Patch notes';
       aboutLinks.appendChild(sep);
       aboutLinks.appendChild(patchLink);
+    }
+
+    var aboutMeta = body.querySelector('.home-settings-meta');
+    if (aboutMeta) {
+      aboutMeta.textContent =
+        'Strongman AI ' +
+        ((window.VERSION_CATALOG && window.VERSION_CATALOG.current) || 'v1.3');
     }
 
     var lede = body.querySelector('.settings-buddy-lede');

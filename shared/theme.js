@@ -1,9 +1,9 @@
 /**
- * Appearance themes — 7 palettes + System.
+ * Appearance themes — 8 palettes + System.
  * Each palette is 4 role colors: bg, surface, accent, highlight
  * (plus derived tokens for borders/text).
  *
- * Stored: dark | light | system | voltage | forge | aurora | mono-light | mono-dark
+ * Stored: dark | light | system | voltage | forge | aurora | signal | mono-light | mono-dark
  * document.documentElement[data-theme] is always concrete (never "system").
  */
 (function () {
@@ -14,6 +14,13 @@
    * @type {ReadonlyArray<{ id: string, nickname: string, blurb: string, kind: 'dark'|'light'|'system', swatches: string[] }>}
    */
   var THEME_CATALOG = [
+    {
+      id: "signal",
+      nickname: "Signal",
+      blurb: "Landing black, signal orange",
+      kind: "dark",
+      swatches: ["#08080a", "#16161c", "#ff4d0d", "#ff8a3a"],
+    },
     {
       id: "dark",
       nickname: "Ember",
@@ -33,7 +40,7 @@
       nickname: "System",
       blurb: "Follows your device setting",
       kind: "system",
-      swatches: ["#141414", "#f2f2f2", "#ff8c00", "#b35300"],
+      swatches: ["#08080a", "#f2f2f2", "#ff4d0d", "#b35300"],
     },
     {
       id: "voltage",
@@ -78,6 +85,7 @@
     voltage: true,
     forge: true,
     aurora: true,
+    signal: true,
     "mono-light": true,
     "mono-dark": true,
   };
@@ -91,18 +99,18 @@
   };
 
   function normalizeStored(raw) {
-    if (raw == null || raw === "") return "dark";
+    if (raw == null || raw === "") return "signal";
     var v = String(raw).toLowerCase().trim();
     if (LEGACY_ALIASES[v]) return LEGACY_ALIASES[v];
     if (v === "system" || CONCRETE_IDS[v]) return v;
-    return "dark";
+    return "signal";
   }
 
   function getStoredTheme() {
     try {
       return normalizeStored(localStorage.getItem(STORAGE_KEY));
     } catch (e) {
-      return "dark";
+      return "signal";
     }
   }
 
@@ -116,7 +124,7 @@
 
   function resolveTheme(stored) {
     var s = normalizeStored(stored);
-    if (s === "system") return prefersDark() ? "dark" : "light";
+    if (s === "system") return prefersDark() ? "signal" : "light";
     return s;
   }
 
@@ -132,8 +140,38 @@
     return THEME_CATALOG[0];
   }
 
+  function isPublicMarketingPath() {
+    try {
+      if (document.documentElement.getAttribute("data-marketing") === "1") return true;
+      var p = window.location.pathname || "/";
+      if (p.length > 1 && p.slice(-1) === "/") p = p.slice(0, -1);
+      if (p === "" || p === "/") return true;
+      var exact = [
+        "/leaderboards",
+        "/about",
+        "/download",
+        "/login",
+        "/signup",
+        "/verify-email",
+        "/legal",
+        "/surveys",
+        "/blog",
+        "/versions",
+        "/version",
+      ];
+      for (var i = 0; i < exact.length; i++) {
+        if (p === exact[i]) return true;
+      }
+      if (p.indexOf("/survey/") === 0) return true;
+      if (p.indexOf("/blog/") === 0 || p.indexOf("/post") === 0) return true;
+      return false;
+    } catch (e) {
+      return false;
+    }
+  }
+
   function applyDocumentTheme() {
-    var effective = getEffectiveTheme();
+    var effective = isPublicMarketingPath() ? "signal" : getEffectiveTheme();
     document.documentElement.setAttribute("data-theme", effective);
     var entry = catalogEntry(effective);
     var scheme = entry && entry.kind === "light" ? "light" : "dark";

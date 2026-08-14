@@ -946,8 +946,8 @@
     font-weight: 700;
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    color: #0a0a0a;
-    background: linear-gradient(180deg, var(--accent-bright) 0%, var(--accent) 100%);
+    color: var(--on-accent-text, #0a0a0a);
+    background: var(--accent);
 }
 
 .wt-focus-next-exercise
@@ -981,6 +981,54 @@
     align-items: stretch;
     height: 100%;
     touch-action: pan-y;
+    will-change: transform, opacity;
+}
+
+.wt-carousel-track.wt-carousel-out-left
+{
+    animation: wt-carousel-out-left 0.18s ease forwards;
+}
+.wt-carousel-track.wt-carousel-out-right
+{
+    animation: wt-carousel-out-right 0.18s ease forwards;
+}
+.wt-carousel-track.wt-carousel-in-from-right
+{
+    animation: wt-carousel-in-right 0.28s ease;
+}
+.wt-carousel-track.wt-carousel-in-from-left
+{
+    animation: wt-carousel-in-left 0.28s ease;
+}
+
+@keyframes wt-carousel-out-left
+{
+    to { transform: translateX(-22%); opacity: 0; }
+}
+@keyframes wt-carousel-out-right
+{
+    to { transform: translateX(22%); opacity: 0; }
+}
+@keyframes wt-carousel-in-right
+{
+    from { transform: translateX(20%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+@keyframes wt-carousel-in-left
+{
+    from { transform: translateX(-20%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce)
+{
+    .wt-carousel-track.wt-carousel-out-left,
+    .wt-carousel-track.wt-carousel-out-right,
+    .wt-carousel-track.wt-carousel-in-from-right,
+    .wt-carousel-track.wt-carousel-in-from-left
+    {
+        animation: none;
+    }
 }
 
 .wt-carousel-card
@@ -1093,4 +1141,85 @@
     {
         font-size: 0.78rem;
     }
+}
+
+.wt-picker-row
+{
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.45rem;
+    align-items: stretch;
+}
+.wt-picker-row .wt-picker-option
+{
+    width: 100%;
+}
+.wt-picker-tip-btn
+{
+    appearance: none;
+    width: 2.65rem;
+    min-width: 2.65rem;
+    border-radius: 12px;
+    border: 1px solid rgba(100, 100, 100, 0.45);
+    background: rgba(30, 30, 30, 0.92);
+    color: var(--accent-bright, var(--accent));
+    font-size: 1rem;
+    font-weight: 800;
+    cursor: pointer;
+}
+.wt-picker-tip-btn:hover,
+.wt-picker-tip-btn:focus-visible
+{
+    border-color: color-mix(in srgb, var(--accent) 75%, transparent);
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    outline: none;
+}
+.wt-form-tip-backdrop
+{
+    position: fixed;
+    inset: 0;
+    z-index: 16000;
+    display: grid;
+    place-items: center;
+    padding: 1.25rem;
+    background: rgba(0, 0, 0, 0.62);
+}
+.wt-form-tip-dialog
+{
+    position: relative;
+    z-index: 16001;
+    width: min(100%, 24rem);
+    border-radius: 16px;
+    border: 1px solid var(--border-mid, #555);
+    background: var(--bg-elevated, #161616);
+    padding: 1.15rem 1.2rem 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+}
+.wt-form-tip-title
+{
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 800;
+}
+.wt-form-tip-body
+{
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.45;
+    color: var(--text-secondary, #ddd);
+}
+.wt-form-tip-close
+{
+    appearance: none;
+    margin-top: 0.25rem;
+    border: none;
+    border-radius: 10px;
+    padding: 0.7rem 1rem;
+    background: var(--accent);
+    color: var(--on-accent-text, #141414);
+    font-weight: 750;
+    cursor: pointer;
 }

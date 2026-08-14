@@ -19,21 +19,24 @@
     });
   }
 
-  var LB_MODES = ['exercises', 'streak', 'times'];
+  var LB_MODES = ['exercises', 'streak', 'times', 'xp'];
   var LB_BOARD_IDS = {
     exercises: 'lb-board-exercises',
     streak: 'lb-board-streak',
-    times: 'lb-board-times'
+    times: 'lb-board-times',
+    xp: 'lb-board-xp'
   };
   var LB_TBODY_IDS = {
     exercises: 'leaderboard-body-exercises',
     streak: 'leaderboard-body-streak',
-    times: 'leaderboard-body-times'
+    times: 'leaderboard-body-times',
+    xp: 'leaderboard-body-xp'
   };
   var LB_MESSAGE_IDS = {
     exercises: 'lb-message-exercises',
     streak: 'lb-message-streak',
-    times: 'lb-message-times'
+    times: 'lb-message-times',
+    xp: 'lb-message-xp'
   };
 
   var exerciseSearch = document.getElementById('lb-exercise-search');
@@ -45,7 +48,7 @@
 
   var state = {
     audience: 'global',
-    mode: 'exercises'
+    mode: 'streak'
   };
 
   var ADD_EXERCISE_SURVEY_URL = '/survey/exercises';
@@ -194,6 +197,7 @@
 
   function tableColspan(mode) {
     if (mode === 'exercises') return 5;
+    if (mode === 'xp') return 4;
     return 3;
   }
 
@@ -280,6 +284,8 @@
       ];
     } else if (mode === 'streak') {
       ids = ['lb-streak-rank', 'lb-streak-name', 'lb-streak-metric'];
+    } else if (mode === 'xp') {
+      ids = ['lb-xp-rank', 'lb-xp-name', 'lb-xp-metric'];
     } else {
       ids = ['lb-times-rank', 'lb-times-name', 'lb-times-metric'];
     }
@@ -389,21 +395,14 @@
     if (mode === 'times') {
       return user.timeSeconds != null && !isNaN(Number(user.timeSeconds)) && Number(user.timeSeconds) > 0;
     }
+    if (mode === 'xp') {
+      return user.totalXp != null && !isNaN(Number(user.totalXp)) && Number(user.totalXp) > 0;
+    }
     return false;
   }
 
   function filterRankedUsers(list, mode) {
-    if (mode === 'exercises') {
-      return list.filter(function (u) {
-        return userHasRankedEntry(u, mode);
-      });
-    }
-    if (mode === 'times') {
-      return list.filter(function (u) {
-        return userHasRankedEntry(u, mode);
-      });
-    }
-    if (mode === 'streak') {
+    if (mode === 'exercises' || mode === 'times' || mode === 'streak' || mode === 'xp') {
       return list.filter(function (u) {
         return userHasRankedEntry(u, mode);
       });
@@ -417,6 +416,25 @@
       return String(days) + (days === 1 ? ' day' : ' days');
     }
     return '—';
+  }
+
+  function xpMetric(user) {
+    var xp = user && user.totalXp != null ? Number(user.totalXp) : null;
+    if (xp == null || isNaN(xp) || xp <= 0) return '—';
+    if (window.StrongmanXp && typeof window.StrongmanXp.formatXp === 'function') {
+      return window.StrongmanXp.formatXp(xp) + ' XP';
+    }
+    return Math.round(xp) + ' XP';
+  }
+
+  function xpLevelLabel(user) {
+    var xp = user && user.totalXp != null ? Number(user.totalXp) : 0;
+    if (window.StrongmanXp && typeof window.StrongmanXp.levelFromXp === 'function') {
+      return 'Lv ' + window.StrongmanXp.levelFromXp(xp).level;
+    }
+    return 'Lv ' + (window.StrongmanXp && typeof window.StrongmanXp.levelFromXp === 'function'
+      ? window.StrongmanXp.levelFromXp(xp).level
+      : 1);
   }
 
   function buildRowCellsHtml(user, rank, mode) {
@@ -433,6 +451,13 @@
         '</td>';
     } else if (mode === 'streak') {
       html += '<td>' + escapeHtml(streakMetric(user)) + '</td>';
+    } else if (mode === 'xp') {
+      html +=
+        '<td>' +
+        escapeHtml(xpMetric(user)) +
+        '</td><td>' +
+        escapeHtml(xpLevelLabel(user)) +
+        '</td>';
     } else {
       html += '<td>' + escapeHtml(formatTimeDisplay(user)) + '</td>';
     }
@@ -480,6 +505,24 @@
         if (streakMetricEl) streakMetricEl.textContent = 'none recorded';
       } else {
         resetUserRankBar('streak');
+      }
+      return;
+    }
+
+    if (mode === 'xp') {
+      var xpRankEl = document.getElementById('lb-xp-rank');
+      var xpNameEl = document.getElementById('lb-xp-name');
+      var xpMetricEl = document.getElementById('lb-xp-metric');
+      if (currentUser && rowUser) {
+        if (xpRankEl) xpRankEl.textContent = String(rank);
+        if (xpNameEl) xpNameEl.textContent = rowUser.username || currentUser.username || '—';
+        if (xpMetricEl) xpMetricEl.textContent = xpMetric(rowUser) + ' · ' + xpLevelLabel(rowUser);
+      } else if (currentUser) {
+        if (xpRankEl) xpRankEl.textContent = '—';
+        if (xpNameEl) xpNameEl.textContent = currentUser.username || '—';
+        if (xpMetricEl) xpMetricEl.textContent = 'none recorded';
+      } else {
+        resetUserRankBar('xp');
       }
       return;
     }
@@ -588,6 +631,13 @@
         var sa = a.streak != null && !isNaN(Number(a.streak)) ? Number(a.streak) : -Infinity;
         var sb = b.streak != null && !isNaN(Number(b.streak)) ? Number(b.streak) : -Infinity;
         if (sb !== sa) return sb - sa;
+        return String(a.username || '').localeCompare(String(b.username || ''));
+      });
+    } else if (mode === 'xp') {
+      list.sort(function (a, b) {
+        var xa = a.totalXp != null && !isNaN(Number(a.totalXp)) ? Number(a.totalXp) : -Infinity;
+        var xb = b.totalXp != null && !isNaN(Number(b.totalXp)) ? Number(b.totalXp) : -Infinity;
+        if (xb !== xa) return xb - xa;
         return String(a.username || '').localeCompare(String(b.username || ''));
       });
     } else {
@@ -735,6 +785,12 @@
   function fetchLeaderboardRows() {
     if (state.mode === 'streak') {
       return window.apiGet('/leaderboard/streak').then(function (res) {
+        if (!res.ok) throw new Error('bad status');
+        return res.json();
+      });
+    }
+    if (state.mode === 'xp') {
+      return window.apiGet('/leaderboard/xp').then(function (res) {
         if (!res.ok) throw new Error('bad status');
         return res.json();
       });

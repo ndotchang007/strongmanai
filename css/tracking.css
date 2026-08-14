@@ -66,8 +66,8 @@
     font-family: var(--font, "DM Sans", system-ui, sans-serif);
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    color: #141414;
-    background-color: #d3752d;
+    color: var(--on-accent-text, #141414);
+    background-color: var(--accent);
     border: none;
     border-radius: 999px;
     cursor: pointer;
@@ -76,7 +76,7 @@
 
 .tracking-archive-open-btn:hover
 {
-    background-color: #e88a45;
+    background-color: var(--accent-hover);
 }
 
 .tracking-archive-open-btn:active
@@ -158,16 +158,22 @@
 
 .card
 {
-    background-color: #141414;
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    border-radius: 18px;
-    padding: 1.35rem;
+    background-color: var(--bg-elevated, #1a1a1a);
+    border: 1px solid var(--border-subtle, #333);
+    border-radius: 14px;
+    padding: 1.15rem 1.25rem;
     min-height: 220px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     align-items: center;
-    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.card.tracking-complication-card:hover
+{
+    border-color: var(--border-mid, #555);
+    background-color: var(--surface-hover-strong, rgba(255, 255, 255, 0.08));
 }
 
 /* --- transcript fragment --- */
@@ -187,8 +193,8 @@
 
 .card.complication-card:hover
 {
-    background-color: rgba(211, 117, 45, 0.16);
-    border-color: rgba(211, 117, 45, 0.5);
+    background-color: var(--surface-hover-strong, rgba(255, 255, 255, 0.08));
+    border-color: var(--border-mid, #555);
 }
 
 .grid-container > .card.complication-card[data-grid-card-id]
@@ -219,7 +225,7 @@
 
 .complication-heading .val
 {
-    color: #d3752d;
+    color: var(--accent);
 }
 
 .tracking-cta-footer a:hover
@@ -257,7 +263,7 @@
     padding: 1.25rem 0.5rem;
     text-align: center;
     font-size: 0.9rem;
-    color: rgba(255, 255, 255, 0.55);
+    color: var(--text-muted, rgba(255, 255, 255, 0.55));
     font-family: var(--font, "DM Sans", system-ui, sans-serif);
 }
 
@@ -268,7 +274,7 @@
 
 .tracking-grid-drag-handle:focus-visible
 {
-    outline: 2px solid rgba(211, 117, 45, 0.85);
+    outline: 2px solid color-mix(in srgb, var(--accent) 85%, transparent);
     outline-offset: -2px;
 }
 
@@ -303,7 +309,7 @@
 {
     margin: 0;
     font-size: clamp(1rem, 2.5vw, 1.15rem);
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--text-secondary, rgba(255, 255, 255, 0.85));
     line-height: 1.4;
 }
 
@@ -314,21 +320,7 @@
 
 .tracking-stats-accent
 {
-    color: #d3752d;
-}
-
-.tracking-pr-form
-{
-    display: flex;
-    flex-direction: column;
-    gap: 1.35rem;
-    padding: 1.5rem 1.35rem 1.65rem;
-    border: 1px solid rgba(100, 100, 100, 0.55);
-    border-radius: 12px;
-    background-color: var(--bg-elevated, #1b1b1b);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
-    font-family: var(--font, "DM Sans", system-ui, sans-serif);
-    text-align: left;
+    color: var(--accent);
 }
 
 .tracking-field
@@ -341,11 +333,11 @@
 
 .tracking-field label
 {
-    font-size: 0.7rem;
-    font-weight: bold;
-    letter-spacing: 0.1em;
+    font-size: 0.68rem;
+    font-weight: 750;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: #888;
+    color: var(--text-muted, #a1a1aa);
 }
 
 .tracking-field-row
@@ -371,7 +363,7 @@
     color: var(--text-primary, #fff);
     background-color: var(--bg-card, #2a2a2a);
     border: 1px solid var(--border-mid, #555);
-    border-radius: 8px;
+    border-radius: 10px;
     box-sizing: border-box;
     transition: border-color 0.2s, box-shadow 0.2s;
 }
@@ -386,7 +378,8 @@
 .tracking-input::placeholder,
 .tracking-textarea::placeholder
 {
-    color: rgba(255, 255, 255, 0.38);
+    color: var(--text-muted, #a1a1aa);
+    opacity: 0.75;
 }
 
 .tracking-input:focus,
@@ -399,14 +392,27 @@
 
 .tracking-input[type="datetime-local"]
 {
-    color-scheme: dark;
+    color-scheme: light dark;
     min-height: 2.75rem;
 }
 
 select.tracking-input
 {
+    -webkit-appearance: none;
+    appearance: none;
     cursor: pointer;
-    appearance: auto;
+    padding-right: 2.35rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1.5 1.75L6 6.25L10.5 1.75' stroke='%23a1a1aa' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.85rem center;
+    background-size: 12px 8px;
+    color-scheme: dark;
+}
+
+select.tracking-input option
+{
+    background-color: var(--bg-elevated, #1a1a1a);
+    color: var(--text-primary, #f4f4f5);
 }
 
 .tracking-optional
@@ -414,7 +420,7 @@ select.tracking-input
     font-weight: normal;
     text-transform: none;
     letter-spacing: normal;
-    color: rgba(255, 255, 255, 0.45);
+    color: var(--text-muted, rgba(255, 255, 255, 0.45));
     font-size: 0.65rem;
 }
 
@@ -520,8 +526,7 @@ select.tracking-input
     line-height: 1.4;
 }
 
-.tracking-submit,
-.tracking-pr-submit
+.tracking-submit
 {
     align-self: stretch;
     margin-top: 0.25rem;
@@ -531,42 +536,22 @@ select.tracking-input
     font-weight: bold;
     letter-spacing: 0.05em;
     text-transform: uppercase;
-    color: #1b1b1b;
+    color: var(--on-accent-text, #1b1b1b);
     background-color: var(--accent);
     border: none;
-    border-radius: 8px;
+    border-radius: 12px;
     cursor: pointer;
     transition: background-color 0.15s ease, transform 0.1s ease;
 }
 
-.tracking-submit:hover,
-.tracking-pr-submit:hover
+.tracking-submit:hover
 {
     background-color: var(--accent-hover);
 }
 
-.tracking-submit:active,
-.tracking-pr-submit:active
+.tracking-submit:active
 {
     transform: scale(0.99);
-}
-
-.tracking-pr-message
-{
-    margin: 0.75rem 0 0;
-    text-align: center;
-    font-size: 0.88rem;
-    color: rgba(255, 255, 255, 0.85);
-    font-family: var(--font, "DM Sans", system-ui, sans-serif);
-}
-
-.tracking-pr-message:not([hidden])
-{
-    padding: 0.65rem 0.9rem;
-    border-radius: 8px;
-    background-color: rgba(211, 117, 45, 0.14);
-    border: 1px solid rgba(211, 117, 45, 0.4);
-    color: var(--text-primary, #fff);
 }
 
 /* —— Dashboard (sticky filters + log + grid) —— */
@@ -599,7 +584,7 @@ select.tracking-input
 
 .edit-link:hover
 {
-    color: #d3752d;
+    color: var(--accent);
 }
 
 /* --- transcript fragment --- */
@@ -658,7 +643,7 @@ select.tracking-input
 {
     margin: 0 0 0.75rem;
     font-size: 0.85rem;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--text-muted, rgba(255, 255, 255, 0.5));
     font-family: var(--font, "DM Sans", system-ui, sans-serif);
     line-height: 1.45;
 }
@@ -744,14 +729,14 @@ select.tracking-input
 {
     margin: 0;
     font-size: clamp(1rem, 2.5vw, 1.15rem);
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--text-secondary, rgba(255, 255, 255, 0.85));
     line-height: 1.4;
 }
 
 .tracking-pr-welcome-line--section
 {
     font-size: 0.92rem;
-    color: rgba(255, 255, 255, 0.62);
+    color: var(--text-muted, rgba(255, 255, 255, 0.62));
     max-width: 36rem;
     margin-left: auto;
     margin-right: auto;
@@ -871,10 +856,8 @@ html:has(body.tracking-page)
     max-width: 1100px;
     margin: 0 auto 1.25rem;
     border-radius: var(--radius-md, 14px);
-    border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
-    background:
-        linear-gradient(145deg, color-mix(in srgb, var(--accent) 12%, transparent), transparent 55%),
-        rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-subtle, #333);
+    background: var(--bg-elevated, #1a1a1a);
     box-sizing: border-box;
 }
 
@@ -904,11 +887,11 @@ html:has(body.tracking-page)
 
 .tracking-strength-summary-kicker
 {
-    font-size: 0.68rem;
-    font-weight: 800;
+    font-size: 0.62rem;
+    font-weight: 750;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--accent-bright, var(--accent));
+    color: var(--text-muted, #a1a1aa);
 }
 
 .tracking-strength-summary-title
@@ -980,19 +963,493 @@ html:has(body.tracking-page)
 {
     display: grid;
     gap: 0.45rem;
-    font-size: 0.84rem;
+    font-size: 0.82rem;
     line-height: 1.45;
-    color: var(--text-secondary);
-}
-
-.tracking-strength-glossary p
-{
-    margin: 0;
+    color: var(--text-muted, #a1a1aa);
 }
 
 .tracking-strength-glossary strong
 {
-    color: var(--accent-bright, var(--accent));
+    color: var(--text-primary, #f4f4f5);
+    font-weight: 750;
+}
+
+.tracking-stats-grid--charts > .chart-card
+{
+    min-height: 0;
+}
+
+/* Apple Health–style compact stat cards */
+.tracking-stats-grid--charts
+{
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    max-width: 36rem;
+}
+
+.tracking-stats-grid--charts > .tracking-health-card.chart-card,
+.grid-container.tracking-stats-grid--charts > .tracking-health-card.chart-card
+{
+    min-height: 0 !important;
+    margin: 0;
+    border: none;
+    border-radius: 18px;
+    background: var(--bg-elevated, #1c1c1e);
+    box-shadow: none;
+    padding: 0.85rem 1rem 0.9rem !important;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.tracking-health-card-head
+{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.45rem;
+}
+
+.tracking-health-card-cat
+{
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--accent, #ff8c00);
+}
+
+.tracking-health-card-icon
+{
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+}
+
+.tracking-health-card[data-health-tone="volume"] .tracking-health-card-cat { color: #ff9f0a; }
+.tracking-health-card[data-health-tone="peak"] .tracking-health-card-cat { color: #30d158; }
+.tracking-health-card[data-health-tone="e1rm"] .tracking-health-card-cat { color: #64d2ff; }
+.tracking-health-card[data-health-tone="compare"] .tracking-health-card-cat { color: #bf5af2; }
+.tracking-health-card[data-health-tone="freq"] .tracking-health-card-cat { color: #ff453a; }
+.tracking-health-card[data-health-tone="intensity"] .tracking-health-card-cat { color: #ffd60a; }
+
+.tracking-health-card-meta
+{
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: var(--text-muted, #8e8e93);
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+
+.tracking-health-card-chevron
+{
+    opacity: 0.55;
+}
+
+.tracking-health-card-body
+{
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    min-height: 0;
+}
+
+.tracking-health-card-main
+{
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.12rem;
+}
+
+.tracking-health-card-viz
+{
+    display: none !important;
+}
+
+.tracking-health-card-facts
+{
+    display: none;
+    list-style: none;
+    margin: 0.65rem 0 0;
+    padding: 0.55rem 0 0;
+    border-top: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.08));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.45rem 0.75rem;
+}
+
+.tracking-health-card-fact
+{
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    min-width: 0;
+}
+
+.tracking-health-card-fact-label
+{
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-muted, #8e8e93);
+}
+
+.tracking-health-card-fact strong
+{
+    font-size: 0.88rem;
+    font-weight: 750;
+    color: var(--text-primary, #fff);
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+}
+
+.tracking-archive-stats
+{
+    display: none;
+}
+
+.tracking-health-card-value
+{
+    margin: 0;
+    font-size: clamp(1.55rem, 5vw, 1.9rem);
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1.05;
+    color: var(--text-primary, #fff);
+}
+
+.tracking-health-card-sub
+{
+    margin: 0;
+    font-size: 0.78rem;
+    font-weight: 550;
+    line-height: 1.3;
+    color: var(--text-muted, #8e8e93);
+}
+
+.tracking-health-select-label
+{
+    margin-top: 0.2rem;
+    max-width: 100%;
+}
+
+.tracking-health-select-label .tracking-chart-select
+{
+    max-width: 11rem;
+    min-height: 0;
+    border: none;
+    background-color: transparent;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1.5 1.75L6 6.25L10.5 1.75' stroke='%238e8e93' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.1rem center;
+    background-size: 10px 7px;
+    padding: 0 1.1rem 0 0;
+    box-shadow: none;
+    color: var(--text-muted, #8e8e93);
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+
+.tracking-health-card .tracking-chart-caption[hidden]
+{
+    display: none !important;
+}
+
+.tracking-stats-grid--charts > .tracking-health-card.chart-card
+{
+    padding: 0.75rem 0.95rem 0.8rem !important;
+}
+
+.tracking-health-card .tracking-grid-drag-handle
+{
+    display: none !important;
+}
+
+.tracking-grid--edit-active .tracking-health-card .tracking-grid-drag-handle
+{
+    display: block !important;
+}
+
+/* —— Mobile Stats revamp (phone) —— */
+@media (max-width: 900px)
+{
+    .tracking-panel--stats .tracking-stats-hero
+    {
+        margin: 0 0 0.75rem;
+        padding: 0;
+    }
+    .tracking-panel--stats .tracking-stats-toolbar
+    {
+        justify-content: flex-start;
+    }
+    .tracking-panel--stats .tracking-viewing-wrap
+    {
+        width: auto;
+        display: inline-flex;
+        padding: 0;
+        border-radius: 0;
+        background: transparent;
+        position: relative;
+    }
+    .tracking-panel--stats .tracking-stats-range-hint
+    {
+        display: none !important;
+    }
+
+    .tracking-panel--stats .tracking-strength-summary
+    {
+        margin: 0 0 0.85rem;
+        border: none;
+        border-radius: 18px;
+        background: var(--bg-elevated, #1c1c1e);
+        overflow: hidden;
+    }
+    .tracking-panel--stats .tracking-strength-summary-toggle
+    {
+        padding: 1.05rem 1.1rem 0.7rem;
+        gap: 0.2rem;
+    }
+    .tracking-panel--stats .tracking-strength-summary-kicker
+    {
+        font-size: 0.72rem;
+        font-weight: 650;
+        letter-spacing: -0.01em;
+        text-transform: none;
+        color: var(--accent);
+    }
+    .tracking-panel--stats .tracking-strength-summary-title
+    {
+        font-size: 1.45rem;
+        font-weight: 750;
+        letter-spacing: -0.035em;
+        line-height: 1.2;
+    }
+    .tracking-panel--stats .tracking-strength-summary-hint,
+    .tracking-panel--stats .tracking-strength-summary-lead,
+    .tracking-panel--stats .tracking-strength-glossary
+    {
+        display: none !important;
+    }
+    .tracking-panel--stats .tracking-strength-summary-body
+    {
+        padding: 0 0.85rem 1rem;
+    }
+    .tracking-panel--stats .tracking-strength-metrics
+    {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.5rem;
+    }
+    .tracking-panel--stats .tracking-strength-metric
+    {
+        min-height: 5.25rem;
+        padding: 0.9rem 0.85rem;
+        border: none;
+        border-radius: 14px;
+        background: color-mix(in srgb, var(--bg-page, #000) 55%, transparent);
+        justify-content: flex-end;
+    }
+    .tracking-panel--stats .tracking-strength-metric-label
+    {
+        order: 2;
+        font-size: 0.68rem;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        text-transform: none;
+        color: var(--text-muted, #8e8e93);
+    }
+    .tracking-panel--stats .tracking-strength-metric strong
+    {
+        order: 1;
+        font-size: 1.55rem;
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        line-height: 1;
+    }
+
+    .tracking-panel--stats .tracking-stats-grid--charts
+    {
+        display: flex;
+        flex-direction: column;
+        gap: 0.65rem;
+        max-width: none;
+    }
+    .tracking-panel--stats .tracking-physique-section
+    {
+        margin-top: 0.85rem;
+    }
+}
+
+/* —— Desktop Stats hub —— */
+@media (min-width: 901px)
+{
+    .tracking-panel--stats .tracking-stats-hero,
+    .tracking-panel--stats .tracking-strength-summary,
+    .tracking-panel--stats .tracking-stats-grid--charts,
+    .tracking-panel--stats .tracking-physique-section
+    {
+        max-width: none;
+        width: 100%;
+    }
+
+    .tracking-panel--stats .tracking-stats-range-hint
+    {
+        display: block;
+        margin: 0.35rem 0 0;
+    }
+
+    .tracking-panel--stats .tracking-strength-summary
+    {
+        margin-bottom: 1.15rem;
+    }
+
+    .tracking-panel--stats .tracking-strength-metrics
+    {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 0.65rem;
+    }
+
+    .tracking-panel--stats .tracking-strength-glossary
+    {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.55rem 1.25rem;
+    }
+
+    .tracking-panel--stats .tracking-stats-grid--charts
+    {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+    }
+
+    .tracking-panel--stats .tracking-stats-grid--charts > .tracking-health-card.chart-card,
+    .tracking-panel--stats .grid-container.tracking-stats-grid--charts > .tracking-health-card.chart-card
+    {
+        padding: 1.05rem 1.15rem 1.1rem !important;
+        border-radius: 20px;
+        min-height: 17.5rem;
+    }
+
+    .tracking-panel--stats .tracking-health-card-body
+    {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+        flex: 1 1 auto;
+    }
+
+    .tracking-panel--stats .tracking-health-card-value
+    {
+        font-size: clamp(1.85rem, 2.4vw, 2.35rem);
+    }
+
+    .tracking-panel--stats .tracking-health-card-viz
+    {
+        display: block !important;
+        width: 100%;
+        flex: 1 1 auto;
+        min-height: 7.5rem;
+    }
+
+    .tracking-panel--stats .tracking-health-spark.tracking-chart-canvas-wrap
+    {
+        height: 7.5rem;
+        max-height: none;
+        width: 100%;
+    }
+
+    .tracking-panel--stats .tracking-health-card-facts
+    {
+        display: grid;
+    }
+
+    .tracking-panel--stats .tracking-physique-gallery
+    {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 0.9rem;
+    }
+
+    /* Timeline matches Stats | Timeline | Split tab bar width */
+    .tracking-panel--archive,
+    .log-timeline-shell,
+    .dash-archive--timeline
+    {
+        max-width: none;
+        margin-inline: 0;
+        width: 100%;
+    }
+
+    .tracking-archive-stats
+    {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 0.65rem;
+        flex-shrink: 0;
+        margin: 0 0 0.15rem;
+    }
+
+    .tracking-archive-stat
+    {
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+        padding: 0.7rem 0.85rem;
+        border-radius: 12px;
+        border: 1px solid var(--border-subtle, #333);
+        background: var(--bg-elevated, #121212);
+        min-width: 0;
+    }
+
+    .tracking-archive-stat-label
+    {
+        font-size: 0.62rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-muted, #aaa);
+    }
+
+    .tracking-archive-stat strong
+    {
+        font-size: 1.15rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        color: var(--text-primary, #fff);
+        line-height: 1.1;
+    }
+
+    .log-tl-line
+    {
+        white-space: normal;
+        overflow: visible;
+        text-overflow: unset;
+    }
+}
+
+@media (min-width: 1200px)
+{
+    .tracking-panel--stats .tracking-stats-grid--charts
+    {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .tracking-panel--stats .tracking-strength-metrics
+    {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
 }
 
 .tracking-chart-card-head--row
@@ -1005,20 +1462,30 @@ html:has(body.tracking-page)
 
 .tracking-chart-select
 {
+    -webkit-appearance: none;
+    appearance: none;
     max-width: 11rem;
+    min-height: 2.1rem;
     font-family: var(--font, "DM Sans", system-ui, sans-serif);
     font-size: 0.78rem;
     font-weight: 600;
-    padding: 0.35rem 0.5rem;
-    border-radius: 8px;
+    padding: 0.35rem 1.85rem 0.35rem 0.55rem;
+    border-radius: 10px;
     border: 1px solid var(--border-mid);
-    background: var(--bg-card, #1e1e1e);
+    background-color: var(--bg-card, #1e1e1e);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1.5 1.75L6 6.25L10.5 1.75' stroke='%23a1a1aa' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.55rem center;
+    background-size: 11px 7px;
     color: var(--text-primary);
+    cursor: pointer;
+    color-scheme: dark;
 }
 
-.tracking-stats-grid--charts > .chart-card
+.tracking-chart-select option
 {
-    min-height: 16.5rem;
+    background-color: var(--bg-elevated, #1a1a1a);
+    color: var(--text-primary);
 }
 
 .tracking-summary-strip
@@ -1076,7 +1543,7 @@ html:has(body.tracking-page)
     font-family: var(--font, "DM Sans", system-ui, sans-serif);
     font-size: 0.68rem;
     line-height: 1.35;
-    color: rgba(255, 255, 255, 0.42);
+    color: var(--text-muted, rgba(255, 255, 255, 0.42));
 }
 
 .tracking-stats-range-hint
@@ -1110,19 +1577,19 @@ html:has(body.tracking-page)
 {
     margin: 0 0 0.15rem;
     font-family: var(--font, "DM Sans", system-ui, sans-serif);
-    font-size: 0.68rem;
-    font-weight: 700;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--text-muted, #a1a1aa);
+    font-size: 0.95rem;
+    font-weight: 750;
+    letter-spacing: -0.01em;
+    text-transform: none;
+    color: var(--text-primary, #f4f4f5);
 }
 
 .tracking-chart-card-sub
 {
     margin: 0;
     font-family: var(--font, "DM Sans", system-ui, sans-serif);
-    font-size: 0.75rem;
-    color: rgba(255, 255, 255, 0.48);
+    font-size: 0.78rem;
+    color: var(--text-muted, #a1a1aa);
 }
 
 .tracking-chart-canvas-wrap
@@ -1150,7 +1617,7 @@ html:has(body.tracking-page)
     font-family: var(--font, "DM Sans", system-ui, sans-serif);
     font-size: 0.72rem;
     line-height: 1.45;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--text-muted, #a1a1aa);
     padding: 0 0.25rem;
 }
 
@@ -1172,9 +1639,9 @@ html:has(body.tracking-page)
 {
     margin: 0 0 0.35rem;
     font-family: var(--font, "DM Sans", system-ui, sans-serif);
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.14em;
+    font-size: 0.68rem;
+    font-weight: 750;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--text-muted, #a1a1aa);
 }
@@ -1183,7 +1650,7 @@ html:has(body.tracking-page)
 {
     margin: 0;
     font-size: 0.82rem;
-    color: rgba(255, 255, 255, 0.52);
+    color: var(--text-muted, #a1a1aa);
     line-height: 1.45;
     max-width: 42rem;
 }
@@ -1224,7 +1691,7 @@ html:has(body.tracking-page)
 {
     margin: 0.75rem 0 0;
     font-size: 0.85rem;
-    color: rgba(255, 255, 255, 0.48);
+    color: var(--text-muted, rgba(255, 255, 255, 0.48));
 }
 
 .tracking-session-photo-row
@@ -1400,7 +1867,7 @@ html:has(body.tracking-page)
     gap: 0.2rem 0.35rem;
     font-family: var(--font, "DM Sans", system-ui, sans-serif);
     font-size: clamp(0.95rem, 2.2vw, 1.1rem);
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--text-secondary, rgba(255, 255, 255, 0.85));
 }
 
 .tracking-stats-range-btn
@@ -1430,7 +1897,7 @@ html:has(body.tracking-page)
 
 .tracking-stats-range-sep
 {
-    color: rgba(255, 255, 255, 0.35);
+    color: var(--text-muted, rgba(255, 255, 255, 0.35));
     user-select: none;
     font-size: 0.9em;
 }
@@ -1512,7 +1979,7 @@ html:has(body.tracking-page)
 {
     margin: 0;
     font-size: 0.78rem;
-    color: rgba(255, 255, 255, 0.52);
+    color: var(--text-muted, rgba(255, 255, 255, 0.52));
     line-height: 1.4;
 }
 
@@ -1540,7 +2007,7 @@ html:has(body.tracking-page)
     gap: 0.65rem 1rem;
     padding: 0.75rem 1rem;
     border-radius: 10px;
-    border: 1px solid rgba(100, 100, 100, 0.5);
+    border: 1px solid var(--border-subtle, rgba(100, 100, 100, 0.5));
     background-color: rgba(0, 0, 0, 0.28);
 }
 
@@ -1565,7 +2032,7 @@ html:has(body.tracking-page)
 {
     margin: 0;
     font-size: 0.72rem;
-    color: rgba(255, 255, 255, 0.45);
+    color: var(--text-muted, rgba(255, 255, 255, 0.45));
 }
 
 .tracking-video-archive-badges
@@ -1603,7 +2070,7 @@ html:has(body.tracking-page)
     padding: 0.4rem 0.7rem;
     border-radius: 6px;
     border: 1px solid rgba(255, 255, 255, 0.25);
-    background-color: rgba(255, 255, 255, 0.06);
+    background-color: var(--text-muted, rgba(255, 255, 255, 0.06));
     color: var(--text-primary, #fff);
     cursor: pointer;
     transition: border-color 0.15s, background 0.15s;
@@ -1625,7 +2092,7 @@ html:has(body.tracking-page)
 {
     margin: 0;
     font-size: 0.82rem;
-    color: rgba(255, 255, 255, 0.42);
+    color: var(--text-muted, rgba(255, 255, 255, 0.42));
 }
 
 .tracking-archive-video-backdrop
@@ -1663,7 +2130,7 @@ html:has(body.tracking-page)
     overflow: auto;
     padding: 1rem 1rem 1.25rem;
     border-radius: 12px;
-    border: 1px solid rgba(100, 100, 100, 0.55);
+    border: 1px solid var(--border-subtle, rgba(100, 100, 100, 0.55));
     background-color: var(--bg-elevated, #1b1b1b);
     box-shadow: 0 20px 48px rgba(0, 0, 0, 0.55);
 }
@@ -1689,7 +2156,7 @@ html:has(body.tracking-page)
 {
     border: none;
     background: none;
-    color: rgba(255, 255, 255, 0.65);
+    color: var(--text-muted, rgba(255, 255, 255, 0.65));
     font-size: 1.5rem;
     line-height: 1;
     cursor: pointer;
@@ -1784,13 +2251,13 @@ html:has(body.tracking-page)
 .tracking-pr-archive-notes
 {
     font-style: italic;
-    color: rgba(255, 255, 255, 0.65) !important;
+    color: var(--text-muted, rgba(255, 255, 255, 0.65)) !important;
 }
 
 .tracking-saved-item
 {
     background-color: var(--bg-elevated, #1b1b1b);
-    border: 1px solid rgba(100, 100, 100, 0.5);
+    border: 1px solid var(--border-subtle, rgba(100, 100, 100, 0.5));
     border-radius: 12px;
     padding: 1rem 1.1rem 1rem;
     box-sizing: border-box;
@@ -1807,7 +2274,7 @@ html:has(body.tracking-page)
 .tracking-saved-item-meta
 {
     font-size: 0.82rem;
-    color: rgba(255, 255, 255, 0.55);
+    color: var(--text-muted, rgba(255, 255, 255, 0.55));
     margin-bottom: 0.5rem;
 }
 
@@ -1817,7 +2284,7 @@ html:has(body.tracking-page)
     padding: 0;
     margin: 0.5rem 0 0;
     font-size: 0.82rem;
-    color: rgba(255, 255, 255, 0.88);
+    color: var(--text-secondary, rgba(255, 255, 255, 0.88));
 }
 
 .tracking-saved-exercises li
@@ -1852,7 +2319,7 @@ html:has(body.tracking-page)
 {
     margin: 0;
     font-size: 0.86rem;
-    color: rgba(255, 255, 255, 0.55);
+    color: var(--text-muted, rgba(255, 255, 255, 0.55));
     font-family: var(--font, "DM Sans", system-ui, sans-serif);
     line-height: 1.45;
     max-width: 28rem;
@@ -1885,7 +2352,7 @@ html:has(body.tracking-page)
     font-size: 0.72rem;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.45);
+    color: var(--text-muted, rgba(255, 255, 255, 0.45));
     font-family: var(--font, "DM Sans", system-ui, sans-serif);
 }
 
@@ -1899,9 +2366,9 @@ html:has(body.tracking-page)
 
 .tracking-archive-view-btn
 {
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    background: rgba(255, 255, 255, 0.04);
-    color: rgba(255, 255, 255, 0.75);
+    border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.18));
+    background: var(--surface-inset-mid, rgba(255, 255, 255, 0.04));
+    color: var(--text-secondary, #d4d4d8);
     font-family: var(--font, "DM Sans", system-ui, sans-serif);
     font-size: 0.72rem;
     letter-spacing: 0.06em;
@@ -1914,14 +2381,14 @@ html:has(body.tracking-page)
 
 .tracking-archive-view-btn:hover
 {
-    border-color: rgba(211, 117, 45, 0.55);
+    border-color: color-mix(in srgb, var(--accent) 55%, transparent);
     color: var(--text-primary, #fff);
 }
 
 .tracking-archive-view-btn.active
 {
-    background: rgba(211, 117, 45, 0.22);
-    border-color: #d3752d;
+    background: color-mix(in srgb, var(--accent) 22%, transparent);
+    border-color: var(--accent);
     color: var(--text-primary, #fff);
 }
 
@@ -1946,14 +2413,14 @@ html:has(body.tracking-page)
     padding: 1.5rem 0.75rem;
     text-align: center;
     font-size: 0.9rem;
-    color: rgba(255, 255, 255, 0.55);
+    color: var(--text-muted, rgba(255, 255, 255, 0.55));
     font-family: var(--font, "DM Sans", system-ui, sans-serif);
     line-height: 1.5;
 }
 
 .tracking-archive-inline-empty a
 {
-    color: #d3752d;
+    color: var(--accent);
     font-weight: bold;
     text-decoration: none;
 }
@@ -1986,7 +2453,7 @@ html:has(body.tracking-page)
     font-family: var(--font, "DM Sans", system-ui, sans-serif);
     font-size: 0.9rem;
     line-height: 1.5;
-    color: rgba(255, 255, 255, 0.88);
+    color: var(--text-secondary, rgba(255, 255, 255, 0.88));
 }
 
 .tracking-detail-body .tracking-detail-p
@@ -2055,17 +2522,20 @@ html:has(body.tracking-page)
 
     .tracking-page .tracking-mode-tabs
     {
-        gap: 0.35rem;
+        gap: 0.3rem;
+        flex-wrap: nowrap;
+        width: 100%;
     }
 
     .tracking-page .tracking-mode-tabs .create-mode-tab
     {
-        flex: 1 1 auto;
+        flex: 1 1 0;
         min-width: 0;
-        padding: 0.5rem 0.55rem;
+        padding: 0.48rem 0.25rem;
         font-size: 0.58rem;
-        letter-spacing: 0.07em;
+        letter-spacing: 0.06em;
         text-align: center;
+        white-space: nowrap;
     }
 }
 
@@ -2082,8 +2552,8 @@ html:has(body.tracking-page)
 
 .tracking-archive-block-card
 {
-    background: #1b1b1b;
-    border: 1px solid rgba(100, 100, 100, 0.5);
+    background: var(--bg-elevated, #1b1b1b);
+    border: 1px solid var(--border-subtle, rgba(100, 100, 100, 0.5));
     border-radius: 14px;
     padding: 0.95rem 1rem;
     cursor: pointer;
@@ -2096,7 +2566,7 @@ html:has(body.tracking-page)
 
 .tracking-archive-block-card:hover
 {
-    border-color: rgba(211, 117, 45, 0.45);
+    border-color: color-mix(in srgb, var(--accent) 45%, transparent);
     transform: translateY(-1px);
 }
 
@@ -2111,7 +2581,7 @@ html:has(body.tracking-page)
 .tracking-archive-block-meta
 {
     font-size: 0.78rem;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--text-muted, rgba(255, 255, 255, 0.5));
 }
 
 .tracking-archive-block-stats
@@ -2130,7 +2600,7 @@ html:has(body.tracking-page)
     padding: 0.22rem 0.5rem;
     border-radius: 999px;
     background: rgba(255, 255, 255, 0.08);
-    color: rgba(255, 255, 255, 0.75);
+    color: var(--text-secondary, rgba(255, 255, 255, 0.75));
 }
 
 .tracking-archive-block-pill--intensity
@@ -2169,7 +2639,7 @@ html:has(body.tracking-page)
 
 .tracking-archive-map-year-btn:hover
 {
-    border-color: #d3752d;
+    border-color: var(--accent);
 }
 
 .tracking-archive-map-year-label
@@ -2188,7 +2658,7 @@ html:has(body.tracking-page)
     justify-content: center;
     gap: 0.45rem;
     font-size: 0.72rem;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--text-muted, rgba(255, 255, 255, 0.5));
     font-family: var(--font, "DM Sans", system-ui, sans-serif);
 }
 
@@ -2206,10 +2676,10 @@ html:has(body.tracking-page)
     background: rgba(255, 255, 255, 0.08);
 }
 
-.tracking-archive-map-legend-cells span.level-1 { background: rgba(211, 117, 45, 0.35); }
-.tracking-archive-map-legend-cells span.level-2 { background: rgba(211, 117, 45, 0.55); }
-.tracking-archive-map-legend-cells span.level-3 { background: rgba(211, 117, 45, 0.78); }
-.tracking-archive-map-legend-cells span.level-4 { background: #d3752d; }
+.tracking-archive-map-legend-cells span.level-1 { background: color-mix(in srgb, var(--accent) 35%, transparent); }
+.tracking-archive-map-legend-cells span.level-2 { background: color-mix(in srgb, var(--accent) 55%, transparent); }
+.tracking-archive-map-legend-cells span.level-3 { background: color-mix(in srgb, var(--accent) 78%, transparent); }
+.tracking-archive-map-legend-cells span.level-4 { background: var(--accent); }
 
 .tracking-archive-map-months
 {
@@ -2232,7 +2702,7 @@ html:has(body.tracking-page)
     font-size: 0.72rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.55);
+    color: var(--text-muted, rgba(255, 255, 255, 0.55));
     text-align: center;
     font-family: var(--font, "DM Sans", system-ui, sans-serif);
 }
@@ -2249,7 +2719,7 @@ html:has(body.tracking-page)
 {
     font-size: 0.58rem;
     text-align: center;
-    color: rgba(255, 255, 255, 0.35);
+    color: var(--text-muted, rgba(255, 255, 255, 0.35));
 }
 
 .tracking-archive-map-days
@@ -2291,25 +2761,25 @@ html:has(body.tracking-page)
     outline-offset: 1px;
 }
 
-.tracking-archive-map-day.level-1 { background: rgba(211, 117, 45, 0.35); }
-.tracking-archive-map-day.level-2 { background: rgba(211, 117, 45, 0.55); }
-.tracking-archive-map-day.level-3 { background: rgba(211, 117, 45, 0.78); }
-.tracking-archive-map-day.level-4 { background: #d3752d; }
+.tracking-archive-map-day.level-1 { background: color-mix(in srgb, var(--accent) 35%, transparent); }
+.tracking-archive-map-day.level-2 { background: color-mix(in srgb, var(--accent) 55%, transparent); }
+.tracking-archive-map-day.level-3 { background: color-mix(in srgb, var(--accent) 78%, transparent); }
+.tracking-archive-map-day.level-4 { background: var(--accent); }
 
 .tracking-archive-map-day-pop
 {
     margin-top: 0.75rem;
     padding: 0.75rem 0.85rem;
     border-radius: 10px;
-    background: #1b1b1b;
-    border: 1px solid rgba(100, 100, 100, 0.5);
+    background: var(--bg-elevated, #1b1b1b);
+    border: 1px solid var(--border-subtle, rgba(100, 100, 100, 0.5));
 }
 
 .tracking-archive-map-day-pop-title
 {
     margin: 0 0 0.35rem;
     font-size: 0.82rem;
-    color: rgba(255, 255, 255, 0.55);
+    color: var(--text-muted, rgba(255, 255, 255, 0.55));
 }
 
 .tracking-archive-map-day-pop-list
@@ -2337,7 +2807,7 @@ html:has(body.tracking-page)
 
 .tracking-archive-map-day-pop-list button:hover
 {
-    border-color: rgba(211, 117, 45, 0.5);
+    border-color: color-mix(in srgb, var(--accent) 50%, transparent);
 }
 
 .tracking-archive-timeline
@@ -2356,7 +2826,7 @@ html:has(body.tracking-page)
     top: 0.25rem;
     bottom: 0.25rem;
     width: 2px;
-    background: linear-gradient(180deg, rgba(211, 117, 45, 0.15), rgba(211, 117, 45, 0.65), rgba(211, 117, 45, 0.15));
+    background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 15%, transparent), color-mix(in srgb, var(--accent) 65%, transparent), color-mix(in srgb, var(--accent) 15%, transparent));
     border-radius: 2px;
 }
 
@@ -2373,7 +2843,7 @@ html:has(body.tracking-page)
     font-size: 0.72rem;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: #d3752d;
+    color: var(--accent);
     font-family: var(--font, "DM Sans", system-ui, sans-serif);
 }
 
@@ -2393,14 +2863,14 @@ html:has(body.tracking-page)
     width: 10px;
     height: 10px;
     border-radius: 50%;
-    background: #d3752d;
-    box-shadow: 0 0 0 3px rgba(211, 117, 45, 0.25);
+    background: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
 }
 
 .tracking-archive-timeline-card
 {
-    background: #1b1b1b;
-    border: 1px solid rgba(100, 100, 100, 0.5);
+    background: var(--bg-elevated, #1b1b1b);
+    border: 1px solid var(--border-subtle, rgba(100, 100, 100, 0.5));
     border-radius: 12px;
     padding: 0.85rem 1rem;
     cursor: pointer;
@@ -2408,7 +2878,7 @@ html:has(body.tracking-page)
 
 .tracking-archive-timeline-card:hover
 {
-    border-color: rgba(211, 117, 45, 0.45);
+    border-color: color-mix(in srgb, var(--accent) 45%, transparent);
 }
 
 .tracking-archive-table-wrap
@@ -2433,9 +2903,9 @@ html:has(body.tracking-page)
     font-size: 0.68rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.45);
-    border-bottom: 1px solid rgba(100, 100, 100, 0.5);
-    background: rgba(255, 255, 255, 0.03);
+    color: var(--text-muted, #a1a1aa);
+    border-bottom: 1px solid var(--border-subtle, rgba(100, 100, 100, 0.5));
+    background: var(--surface-inset, rgba(255, 255, 255, 0.03));
     white-space: nowrap;
 }
 
@@ -2443,7 +2913,7 @@ html:has(body.tracking-page)
 {
     padding: 0.6rem 0.75rem;
     border-bottom: 1px solid rgba(100, 100, 100, 0.42);
-    color: rgba(255, 255, 255, 0.88);
+    color: var(--text-secondary, rgba(255, 255, 255, 0.88));
     vertical-align: middle;
 }
 
@@ -2459,7 +2929,7 @@ html:has(body.tracking-page)
 
 .tracking-archive-table-row:hover td
 {
-    background: rgba(211, 117, 45, 0.08);
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
 }
 
 .tracking-archive-table-actions
@@ -2471,9 +2941,9 @@ html:has(body.tracking-page)
 
 .tracking-archive-table-btn
 {
-    border: 1px solid rgba(255, 255, 255, 0.18);
+    border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.18));
     background: transparent;
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--text-secondary, #d4d4d8);
     font-size: 0.68rem;
     letter-spacing: 0.04em;
     text-transform: uppercase;
@@ -2484,7 +2954,7 @@ html:has(body.tracking-page)
 
 .tracking-archive-table-btn:hover
 {
-    border-color: #d3752d;
+    border-color: var(--accent);
     color: var(--text-primary, #fff);
 }
 
@@ -2498,8 +2968,8 @@ html:has(body.tracking-page)
 
 .tracking-session-detail-btn
 {
-    border: 1px solid rgba(211, 117, 45, 0.55);
-    background: rgba(211, 117, 45, 0.15);
+    border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent);
+    background: color-mix(in srgb, var(--accent) 15%, transparent);
     color: var(--text-primary, #fff);
     padding: 0.45rem 0.85rem;
     border-radius: 8px;
@@ -2509,7 +2979,7 @@ html:has(body.tracking-page)
 
 .tracking-session-detail-btn:hover
 {
-    background: rgba(211, 117, 45, 0.28);
+    background: color-mix(in srgb, var(--accent) 28%, transparent);
 }
 
 .tracking-session-delete-btn
@@ -2536,4 +3006,929 @@ html[data-theme="light"] .tracking-archive-block-title,
 html[data-theme="light"] .tracking-archive-map-year-label
 {
     color: #111;
+}
+
+/* —— Currently viewing period picker (plain text dropdown) —— */
+.tracking-viewing-wrap
+{
+    position: relative;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+}
+.tracking-viewing-btn
+{
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border: none;
+    background: transparent;
+    color: #fff;
+    border-radius: 0;
+    padding: 0.15rem 0;
+    font: inherit;
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    cursor: pointer;
+    box-shadow: none;
+}
+.tracking-viewing-btn:hover,
+.tracking-viewing-btn:focus-visible
+{
+    color: #fff;
+    outline: none;
+    opacity: 0.88;
+}
+.tracking-viewing-chevron
+{
+    flex-shrink: 0;
+    opacity: 0.85;
+    color: #fff;
+}
+.tracking-viewing-value
+{
+    color: #fff;
+}
+.tracking-viewing-menu
+{
+    position: absolute;
+    top: calc(100% + 0.4rem);
+    left: 0;
+    min-width: 10.5rem;
+    z-index: 40;
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    padding: 0.35rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-mid, #555);
+    background: var(--bg-elevated, #161616);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+}
+.tracking-viewing-menu[hidden]
+{
+    display: none !important;
+}
+.tracking-viewing-option
+{
+    appearance: none;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary, #ddd);
+    text-align: left;
+    padding: 0.55rem 0.7rem;
+    border-radius: 8px;
+    font: inherit;
+    font-size: 0.88rem;
+    font-weight: 650;
+    cursor: pointer;
+}
+.tracking-viewing-option:hover,
+.tracking-viewing-option.is-active
+{
+    background: color-mix(in srgb, var(--accent) 16%, transparent);
+    color: var(--text-primary, #fff);
+}
+
+/* —— Timeline vertical carousel —— */
+.dash-timeline-list
+{
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+.dash-timeline-item
+{
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.85rem;
+    align-items: start;
+}
+.dash-timeline-icon
+{
+    width: 2.35rem;
+    height: 2.35rem;
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+    color: var(--accent-bright, var(--accent));
+}
+.dash-timeline-icon svg
+{
+    width: 1.15rem;
+    height: 1.15rem;
+    display: block;
+}
+.dash-timeline-body
+{
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+.dash-timeline-meta
+{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem 0.55rem;
+    font-size: 0.75rem;
+    color: var(--text-muted, #aaa);
+}
+.dash-timeline-type
+{
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-size: 0.68rem;
+    color: var(--accent-bright, var(--accent));
+}
+.dash-timeline-title
+{
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 750;
+    color: var(--text-primary, #fff);
+}
+.dash-timeline-detail
+{
+    margin: 0;
+    font-size: 0.82rem;
+    line-height: 1.4;
+    color: var(--text-muted, #aaa);
+}
+.dash-timeline-actions
+{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.45rem;
+}
+.dash-timeline-action
+{
+    appearance: none;
+    border: 1px solid var(--border-mid, #555);
+    background: transparent;
+    color: var(--text-secondary, #ddd);
+    border-radius: 8px;
+    padding: 0.35rem 0.65rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+.dash-timeline-action--danger,
+.dash-timeline-action.tracking-session-delete-btn
+{
+    border-color: rgba(239, 68, 68, 0.45);
+    color: #fecaca;
+}
+
+/* Timeline: lock document scroll; only the carousel scrolls */
+body[data-current-page="log"]:has(#create-progress-shell:not([hidden]) .tracking-tab-layout[data-active-panel="archive"])
+{
+    height: 100vh;
+    height: 100dvh;
+    max-height: 100vh;
+    max-height: 100dvh;
+    overflow: hidden;
+    overscroll-behavior: none;
+}
+body[data-current-page="log"]:has(#create-progress-shell:not([hidden]) .tracking-tab-layout[data-active-panel="archive"]) .main-wrap
+{
+    height: 100%;
+    min-height: 0;
+    max-height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+body[data-current-page="log"]:has(#create-progress-shell:not([hidden]) .tracking-tab-layout[data-active-panel="archive"]) .site-footer
+{
+    display: none !important;
+}
+body[data-current-page="log"]:has(#create-progress-shell:not([hidden]) .tracking-tab-layout[data-active-panel="archive"]) .create-main,
+body[data-current-page="log"]:has(#create-progress-shell:not([hidden]) .tracking-tab-layout[data-active-panel="archive"]) #create-progress-shell,
+body[data-current-page="log"]:has(#create-progress-shell:not([hidden]) .tracking-tab-layout[data-active-panel="archive"]) #create-panel-tracking,
+body[data-current-page="log"]:has(#create-progress-shell:not([hidden]) .tracking-tab-layout[data-active-panel="archive"]) .tracking-tab-layout,
+body[data-current-page="log"]:has(#create-progress-shell:not([hidden]) .tracking-tab-layout[data-active-panel="archive"]) .tracking-panels-wrap,
+body[data-current-page="log"]:has(#create-progress-shell:not([hidden]) .tracking-tab-layout[data-active-panel="archive"]) .tracking-panel--archive,
+body[data-current-page="log"]:has(#create-progress-shell:not([hidden]) .tracking-tab-layout[data-active-panel="archive"]) .log-timeline-shell,
+body[data-current-page="log"]:has(#create-progress-shell:not([hidden]) .tracking-tab-layout[data-active-panel="archive"]) .dash-archive--timeline
+{
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+body[data-current-page="log"]:has(#create-progress-shell:not([hidden]) .tracking-tab-layout[data-active-panel="archive"]) .create-mode-header
+{
+    flex-shrink: 0;
+}
+body[data-current-page="log"]:has(#create-progress-shell:not([hidden]) .tracking-tab-layout[data-active-panel="archive"]) .create-main
+{
+    padding-bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
+}
+@media (max-width: 900px)
+{
+    body[data-current-page="log"]:has(#create-progress-shell:not([hidden]) .tracking-tab-layout[data-active-panel="archive"]) .create-main
+    {
+        padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
+    }
+}
+
+.log-timeline-shell
+{
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
+    max-width: none;
+    margin-inline: 0;
+    width: 100%;
+    overflow: hidden;
+}
+.log-timeline-top
+{
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+.log-timeline-head
+{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+.log-timeline-title
+{
+    margin: 0;
+    font-size: clamp(1.25rem, 4vw, 1.55rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+}
+.log-timeline-lede
+{
+    display: none;
+}
+.log-timeline-count
+{
+    font-size: 0.75rem;
+    color: var(--text-muted, #aaa);
+    white-space: nowrap;
+}
+.log-timeline-head-tools
+{
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+.log-tl-new-btn
+{
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.42rem 0.75rem;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    color: var(--accent-bright, var(--accent));
+    font-family: var(--font);
+    font-size: 0.75rem;
+    font-weight: 750;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+.log-tl-new-btn:hover
+{
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+.log-timeline-search .dash-archive-search-input
+{
+    width: 100%;
+}
+.log-tl-filters
+{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    padding-top: 0.1rem;
+}
+.log-tl-filter
+{
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.38rem 0.7rem;
+    border-radius: 999px;
+    border: 1px solid var(--border-subtle, #333);
+    background: transparent;
+    color: var(--text-muted, #aaa);
+    font-family: var(--font);
+    font-size: 0.72rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+.log-tl-filter:hover
+{
+    border-color: var(--border-mid, #555);
+    color: var(--text-primary, #fff);
+}
+.log-tl-filter.is-active
+{
+    border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+    color: var(--accent-bright, var(--accent));
+}
+.log-tl-filter-icon
+{
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 999px;
+    background: currentColor;
+}
+.log-tl-filter-icon--workout { background: #34d399; }
+.log-tl-filter-icon--pr { background: #facc15; }
+.log-tl-filter-icon--note { background: var(--accent); }
+/* The timeline is the only scroller on this view, so entries below the fold
+   stay reachable while the header and tab bar hold their place. Padding (not
+   negative margins) keeps card borders clear of the clipped shell edge. */
+.log-timeline-carousel
+{
+    flex: 1 1 auto;
+    min-height: min(62vh, 32rem);
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+    padding: 0.15rem 0.45rem 2.5rem 0.1rem;
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-mid, #444) transparent;
+}
+
+body[data-current-page="log"]:has(#create-progress-shell:not([hidden]) .tracking-tab-layout[data-active-panel="archive"]) .log-timeline-carousel
+{
+    min-height: 0;
+    flex: 1 1 auto;
+    padding-bottom: calc(2.75rem + env(safe-area-inset-bottom, 0px));
+}
+
+@media (max-width: 900px)
+{
+    body[data-current-page="log"]:has(#create-progress-shell:not([hidden]) .tracking-tab-layout[data-active-panel="archive"]) .log-timeline-carousel
+    {
+        padding-bottom: calc(1.75rem + env(safe-area-inset-bottom, 0px));
+    }
+}
+.log-timeline-carousel::-webkit-scrollbar
+{
+    width: 6px;
+}
+.log-timeline-carousel::-webkit-scrollbar-track
+{
+    background: transparent;
+}
+.log-timeline-carousel::-webkit-scrollbar-thumb
+{
+    border-radius: 999px;
+    background: var(--border-mid, #444);
+}
+
+.log-tl-list
+{
+    list-style: none;
+    margin: 0;
+    padding: 0.4rem 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    font-family: var(--font, "DM Sans", system-ui, sans-serif);
+}
+.log-tl-item
+{
+    position: relative;
+    display: grid;
+    grid-template-columns: 2.1rem 1fr;
+    gap: 0.65rem;
+    align-items: start;
+}
+/* Connector line running through the icon rail */
+.log-tl-item::before
+{
+    content: "";
+    position: absolute;
+    left: 1.05rem;
+    top: 2.1rem;
+    bottom: -0.65rem;
+    width: 1.5px;
+    background: var(--border-subtle, #333);
+}
+.log-tl-item:last-child::before
+{
+    display: none;
+}
+.log-tl-rail
+{
+    position: relative;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: 2.1rem;
+    height: 2.1rem;
+    border-radius: 11px;
+}
+.log-tl-icon
+{
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 100%;
+    border-radius: 11px;
+    border: 1px solid var(--border-subtle, #333);
+    background: var(--bg-elevated, #121212);
+}
+.log-tl-icon svg
+{
+    width: 16px;
+    height: 16px;
+}
+.log-tl-card
+{
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    padding: 0.85rem 0.95rem 0.9rem;
+    border-radius: 13px;
+    border: 1px solid var(--border-subtle, #333);
+    background: var(--bg-elevated, #121212);
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+.log-tl-item--clickable .log-tl-card
+{
+    cursor: pointer;
+}
+.log-tl-item--clickable:hover .log-tl-card,
+.log-tl-item--clickable:focus-within .log-tl-card
+{
+    border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+    background: var(--surface-hover-strong, #1a1a1a);
+}
+.log-tl-card-head
+{
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0.4rem 0.55rem;
+}
+.log-tl-day
+{
+    font-size: 0.74rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    color: var(--accent-bright, var(--accent));
+    white-space: nowrap;
+}
+.log-tl-kind
+{
+    font-size: 0.64rem;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--text-muted, #aaa);
+}
+.log-tl-title
+{
+    margin: 0;
+    font-size: 1.02rem;
+    font-weight: 780;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+    color: var(--text-primary, #fff);
+}
+.log-tl-value
+{
+    font-size: 1.3rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+    color: var(--text-primary, #fff);
+    font-variant-numeric: tabular-nums;
+}
+.log-tl-lines
+{
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    min-width: 0;
+}
+.log-tl-line
+{
+    font-size: 0.78rem;
+    line-height: 1.4;
+    color: var(--text-secondary, #ccc);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.log-tl-actions
+{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-top: 0.25rem;
+}
+.log-tl-action
+{
+    appearance: none;
+    padding: 0.35rem 0.7rem;
+    border-radius: 999px;
+    border: 1px solid var(--border-subtle, #333);
+    background: transparent;
+    color: var(--text-secondary, #ccc);
+    font-family: var(--font);
+    font-size: 0.72rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+.log-tl-action:hover
+{
+    border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+    color: var(--accent-bright, var(--accent));
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+.log-tl-action--danger:hover
+{
+    border-color: rgba(248, 113, 113, 0.55);
+    color: #f87171;
+    background: rgba(248, 113, 113, 0.1);
+}
+.log-timeline-carousel .dash-archive-search-input,
+.log-timeline-search .dash-archive-search-input
+{
+    border-radius: 12px;
+    border-color: var(--border-subtle, #333);
+    background: var(--bg-elevated, #121212);
+}
+.pr-card
+{
+    border: none;
+    border-radius: 14px;
+    background: var(--bg-elevated, #121212);
+}
+/* —— Personal records shell —— */
+.pr-shell
+{
+    max-width: 40rem;
+    gap: 0.85rem;
+}
+.pr-shell-head
+{
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+/* The page header owns the page title, so panel headings are quiet section
+   labels (matches .dash-agenda-label / .dash-more-label on the dashboard). */
+.pr-shell-title,
+.log-timeline-title
+{
+    margin: 0;
+    font-size: 0.68rem;
+    font-weight: 750;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted, #a1a1aa);
+}
+.pr-shell-lede
+{
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--text-muted, #aaa);
+}
+.pr-list
+{
+    gap: 0.7rem;
+}
+.pr-card
+{
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.2rem 0.75rem;
+    padding: 0.95rem 1.05rem;
+    border-radius: 14px;
+    border: 1px solid var(--border-subtle, #333);
+    background: var(--bg-elevated, #161616);
+}
+.pr-card-disc
+{
+    grid-column: 1 / -1;
+    font-size: 0.65rem;
+    font-weight: 750;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent-bright, var(--accent));
+}
+.pr-card-title
+{
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 750;
+}
+.pr-card-meta
+{
+    grid-column: 1;
+    margin: 0;
+    font-size: 0.75rem;
+}
+.pr-card-result
+{
+    grid-column: 2;
+    grid-row: 2 / span 2;
+    align-self: center;
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--text-primary, #fff);
+    text-align: right;
+}
+.pr-card-notes
+{
+    grid-column: 1 / -1;
+    margin-top: 0.35rem;
+    font-size: 0.8rem;
+}
+
+@media (max-width: 768px)
+{
+    .log-tl-item
+    {
+        grid-template-columns: 1.9rem 1fr;
+        gap: 0.55rem;
+    }
+    .log-tl-item::before
+    {
+        left: 0.95rem;
+        top: 1.9rem;
+    }
+    .log-tl-rail
+    {
+        width: 1.9rem;
+        height: 1.9rem;
+        border-radius: 10px;
+    }
+    .log-tl-icon
+    {
+        border-radius: 10px;
+    }
+    .log-tl-icon svg
+    {
+        width: 15px;
+        height: 15px;
+    }
+    .log-tl-card
+    {
+        padding: 0.75rem 0.85rem 0.8rem;
+    }
+    .tracking-stats-hero
+    {
+        padding-bottom: 0.35rem;
+    }
+}
+
+/* Colored timeline icons by event type */
+.log-tl-item--workout .log-tl-icon,
+.dash-timeline-item--workout .dash-timeline-icon
+{
+    border-color: rgba(52, 211, 153, 0.35);
+    background: rgba(52, 211, 153, 0.16);
+    color: #34d399;
+}
+.log-tl-item--injury .log-tl-icon,
+.dash-timeline-item--injury .dash-timeline-icon,
+.log-tl-item--problem .log-tl-icon,
+.dash-timeline-item--problem .dash-timeline-icon
+{
+    border-color: rgba(248, 113, 113, 0.35);
+    background: rgba(248, 113, 113, 0.16);
+    color: #f87171;
+}
+.log-tl-item--illness .log-tl-icon,
+.dash-timeline-item--illness .dash-timeline-icon
+{
+    border-color: rgba(251, 146, 60, 0.35);
+    background: rgba(251, 146, 60, 0.16);
+    color: #fb923c;
+}
+.log-tl-item--equipment .log-tl-icon,
+.dash-timeline-item--equipment .dash-timeline-icon
+{
+    border-color: rgba(96, 165, 250, 0.35);
+    background: rgba(96, 165, 250, 0.16);
+    color: #60a5fa;
+}
+.log-tl-item--schedule .log-tl-icon,
+.dash-timeline-item--schedule .dash-timeline-icon,
+.log-tl-item--season .log-tl-icon,
+.dash-timeline-item--season .dash-timeline-icon
+{
+    border-color: rgba(167, 139, 250, 0.35);
+    background: rgba(167, 139, 250, 0.16);
+    color: #a78bfa;
+}
+.log-tl-item--goal .log-tl-icon,
+.dash-timeline-item--goal .dash-timeline-icon,
+.log-tl-item--milestone .log-tl-icon,
+.dash-timeline-item--milestone .dash-timeline-icon,
+.log-tl-item--pr .log-tl-icon
+{
+    border-color: rgba(250, 204, 21, 0.35);
+    background: rgba(250, 204, 21, 0.16);
+    color: #facc15;
+}
+.log-tl-item--travel .log-tl-icon,
+.dash-timeline-item--travel .dash-timeline-icon
+{
+    border-color: rgba(34, 211, 238, 0.35);
+    background: rgba(34, 211, 238, 0.16);
+    color: #22d3ee;
+}
+.log-tl-item--deload .log-tl-icon,
+.dash-timeline-item--deload .dash-timeline-icon,
+.log-tl-item--fatigue .log-tl-icon,
+.dash-timeline-item--fatigue .dash-timeline-icon,
+.log-tl-item--sleep .log-tl-icon,
+.dash-timeline-item--sleep .dash-timeline-icon
+{
+    border-color: rgba(148, 163, 184, 0.35);
+    background: rgba(148, 163, 184, 0.18);
+    color: #94a3b8;
+}
+.log-tl-item--note .log-tl-icon,
+.dash-timeline-item--note .dash-timeline-icon,
+.log-tl-item--signal .log-tl-icon,
+.dash-timeline-item--signal .dash-timeline-icon
+{
+    border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+    background: color-mix(in srgb, var(--accent) 16%, transparent);
+    color: var(--accent-bright, var(--accent));
+}
+/* PR entries lead with their number, so the value gets the accent treatment */
+.log-tl-item--pr .log-tl-value
+{
+    color: #facc15;
+}
+.log-tl-item--pr .log-tl-day
+{
+    color: #facc15;
+}
+
+/* PR cards + edit dialog */
+.pr-card
+{
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+.pr-card:hover,
+.pr-card:focus-visible
+{
+    border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+    outline: none;
+}
+.pr-card-spark-wrap
+{
+    grid-column: 1 / -1;
+    margin-top: 0.35rem;
+    color: var(--accent-bright, var(--accent));
+}
+.pr-card-spark
+{
+    display: block;
+    width: 100%;
+    max-width: 10rem;
+    height: 2.25rem;
+}
+.pr-card-edit-hint
+{
+    grid-column: 1 / -1;
+    margin-top: 0.25rem;
+    font-size: 0.7rem;
+    font-weight: 650;
+    color: var(--text-muted, #aaa);
+}
+.pr-edit-backdrop
+{
+    position: fixed;
+    inset: 0;
+    z-index: 1300;
+    background: rgba(0, 0, 0, 0.55);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+}
+.pr-edit-backdrop.is-open
+{
+    opacity: 1;
+    pointer-events: auto;
+}
+.pr-edit-dialog
+{
+    position: fixed;
+    inset: 0;
+    z-index: 1301;
+    display: grid;
+    place-items: center;
+    padding: 1.25rem;
+    pointer-events: none;
+}
+.pr-edit-dialog.is-open
+{
+    pointer-events: auto;
+}
+.pr-edit-dialog[hidden]
+{
+    display: none !important;
+}
+.pr-edit-panel
+{
+    width: min(100%, 26rem);
+    max-height: min(88vh, 40rem);
+    overflow: auto;
+    border-radius: 16px;
+    border: 1px solid var(--border-mid, #555);
+    background: var(--bg-elevated, #161616);
+    padding: 1.1rem 1.15rem 1.2rem;
+    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.5);
+}
+.pr-edit-header
+{
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.45rem;
+}
+.pr-edit-kicker
+{
+    margin: 0 0 0.15rem;
+    font-size: 0.68rem;
+    font-weight: 750;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent-bright, var(--accent));
+}
+.pr-edit-title
+{
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 800;
+}
+.pr-edit-close
+{
+    border: none;
+    background: transparent;
+    color: var(--text-muted, #aaa);
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+}
+.pr-edit-lede
+{
+    margin: 0 0 0.85rem;
+    font-size: 0.82rem;
+    color: var(--text-muted, #aaa);
+    line-height: 1.4;
+}
+.pr-edit-form
+{
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+.pr-edit-save
+{
+    margin-top: 0.25rem;
 }

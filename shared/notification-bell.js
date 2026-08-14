@@ -263,7 +263,15 @@
       '<p class="notif-bell-empty" id="notif-bell-empty">No pending competition invites.</p>' +
       '<ul class="notif-bell-list" id="notif-bell-list"></ul>' +
       '</div>';
-    document.body.appendChild(root);
+
+    // Dock into the page header tools when the page has one, so the bell sits
+    // beside the settings button instead of floating over the content.
+    var tools = document.querySelector('.dash-plan-tools');
+    if (tools) {
+      tools.appendChild(root);
+    } else {
+      document.body.appendChild(root);
+    }
 
     btn = document.getElementById('notif-bell-btn');
     panel = document.getElementById('notif-bell-panel');

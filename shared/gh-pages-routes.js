@@ -13,17 +13,21 @@
     '/catchup': 'catchup.html',
     '/leaderboard': 'leaderboard.html',
     '/leaderboards': 'leaderboards.html',
-    '/tracking': 'create.html',
-    '/create': 'create.html',
+    '/tracking': 'log.html',
+    '/log': 'log.html',
+    '/create': 'log.html',
     '/customize': 'customize.html',
     '/user-settings': 'customize.html',
     '/info': 'info.html',
     '/learn': 'learn.html',
     '/timeline': 'timeline.html',
     '/versions': 'versions.html',
-    '/generate': 'generate.html',
+    '/blog': 'blog.html',
+    '/coach': 'coach.html',
+    '/generate': 'coach.html',
     '/explore': 'home.html',
     '/about': 'about.html',
+    '/download': 'download.html',
     '/legal': 'legal.html',
     '/surveys': 'surveys.html',
   };
@@ -57,6 +61,13 @@
       location.replace('/version.html' + location.search + location.hash);
       return true;
     }
+    if (/^\/blog\/[^/]+/.test(path)) {
+      try {
+        sessionStorage.setItem(STORAGE_KEY, path);
+      } catch (e) {}
+      location.replace('/post.html' + location.search + location.hash);
+      return true;
+    }
     if (/^\/survey\/[^/]+/.test(path)) {
       try {
         sessionStorage.setItem(STORAGE_KEY, path);
@@ -67,6 +78,9 @@
 
     var file = EXACT[path];
     if (file) {
+      try {
+        sessionStorage.setItem(STORAGE_KEY, path);
+      } catch (e) {}
       location.replace('/' + file + location.search + location.hash);
       return true;
     }

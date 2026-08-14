@@ -2,17 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="strongman-api-base" content="https://strongmanai-api-test.onrender.com/api/v1">
-    <link rel="stylesheet" href="/css/tester-gate.css">
-    <style id="tester-gate-boot">html.tester-gate-pending,html.tester-gate-pending body{background:#08080a!important;margin:0;min-height:100%;overflow:hidden!important}html.tester-gate-pending body>*:not(#tester-gate-overlay){visibility:hidden!important;pointer-events:none!important}html.tester-gate-pending #tester-gate-overlay{visibility:visible!important;pointer-events:auto!important}</style>
-    <script>document.documentElement.classList.add("tester-gate-pending");</script>
-    <script src="/shared/tester-gate.js"></script>
     <title>Strongman AI – Dashboard</title>
     <link rel="icon" type="image/png" href="/assets/logo.png">
     <link rel="apple-touch-icon" href="/assets/logo.png">
     <script src="/shared/theme.js"></script>
     <link rel="stylesheet" href="/css/home.css">
+    <link rel="stylesheet" href="/css/muscle-map.css">
     <link rel="stylesheet" href="/css/server-wake.css">
     <link rel="stylesheet" href="/css/app-nav.css">
     <link rel="stylesheet" href="/css/workout-dashboard.css">
@@ -42,7 +39,7 @@
         </div>
     </aside>
     <div class="main-wrap">
-    <main class="home-main dashboard-main">
+    <main class="home-main dashboard-main dash-home">
         <div class="dash-rocky-setup-alert" id="dash-rocky-setup-alert" data-rocky-setup-alert hidden role="alert">
             <span class="dash-rocky-setup-mark" aria-hidden="true">R</span>
             <div class="dash-rocky-setup-copy">
@@ -52,141 +49,180 @@
         </div>
         <div class="rocky-sport-alerts" data-rocky-sport-alerts hidden></div>
 
-        <header class="dash-header">
-            <div class="dash-header-text">
-                <p class="dash-eyebrow">Your dashboard</p>
-                <h1 class="dash-title" id="home-welcome-title">Welcome back.</h1>
-                <p class="dash-subtitle" id="dash-athlete-context" hidden></p>
-                <div class="dash-rocky-banner" id="dash-rocky-banner" hidden role="status" aria-live="polite"></div>
-                <div class="dash-countdowns" id="dash-countdowns" hidden aria-label="Upcoming events"></div>
-                <p class="dash-sport-tip" id="dash-sport-tip" hidden role="note"></p>
+        <div class="dash-home-stage">
+            <header class="dash-plan-header">
+                <div class="dash-plan-heading">
+                    <h1 class="dash-plan-title" id="home-welcome-title">Welcome back</h1>
+                    <p class="dash-plan-date" id="dash-plan-date">—</p>
+                </div>
+                <div class="dash-plan-tools">
+                    <button type="button" class="dash-tool-btn sidebar-settings-trigger" id="dash-settings-trigger" aria-label="Settings" aria-haspopup="dialog" aria-controls="home-settings-dialog" title="Settings">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <circle cx="12" cy="12" r="3"/>
+                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                        </svg>
+                    </button>
+                </div>
+            </header>
+
+            <div class="dash-rocky-banner" id="dash-rocky-banner" hidden role="status" aria-live="polite"></div>
+            <div class="dash-countdowns" id="dash-countdowns" hidden aria-label="Upcoming events"></div>
+            <p class="dash-sport-tip" id="dash-sport-tip" hidden role="note"></p>
+            <p id="dash-athlete-context" hidden></p>
+            <p id="dash-eyebrow" hidden></p>
+
+            <div class="dash-home-body">
+                <div class="dash-home-aside">
+                    <section class="dash-summary" aria-label="Weekly summary">
+                        <div class="dash-ring-wrap" id="dash-ring-wrap">
+                            <button type="button" class="dash-ring-btn" id="dash-ring-btn" aria-haspopup="dialog" aria-controls="dash-ring-dialog" aria-label="Weekly progress — change what this measures">
+                                <svg class="dash-ring" viewBox="0 0 80 80" id="dash-week-ring" aria-hidden="true">
+                                    <circle class="dash-ring-track" cx="40" cy="40" r="32" />
+                                    <circle class="dash-ring-fill" id="dash-week-ring-fill" cx="40" cy="40" r="32" />
+                                </svg>
+                                <div class="dash-ring-label">
+                                    <span class="dash-ring-pct" id="dash-week-ring-pct">0%</span>
+                                    <span class="dash-ring-tag" id="dash-ring-tag">Week</span>
+                                </div>
+                            </button>
+                        </div>
+                        <button type="button" class="dash-status-card" id="dash-status-card" aria-haspopup="dialog" aria-controls="dash-rank-dialog" aria-label="Training rank — view title ladder">
+                            <span class="dash-status-icon" aria-hidden="true">★</span>
+                            <div class="dash-status-copy">
+                                <p class="dash-status-title" id="dash-status-title">Kickoff</p>
+                                <p class="dash-status-sub" id="dash-status-sub">Level 1 · next title at 11</p>
+                            </div>
+                            <span class="dash-status-pill" id="dash-status-pill">Lv 1</span>
+                        </button>
+                    </section>
+
+                    <section class="dash-week" aria-label="This week" id="dash-week-strip"></section>
+                </div>
+
+                <section class="dash-badges-strip" id="dash-badges-strip" hidden aria-label="New badges">
+                    <div class="dash-badges-head">
+                        <h2 class="dash-badges-title">New badges</h2>
+                        <button type="button" class="dash-badges-dismiss" id="dash-badges-dismiss">Dismiss</button>
+                    </div>
+                    <div class="dash-badges-list" id="dash-badges-list"></div>
+                </section>
+
+                <section class="dash-agenda" aria-label="Today’s complications" id="dash-agenda">
+                    <div class="dash-agenda-group">
+                        <h2 class="dash-agenda-label">
+                            Train
+                        </h2>
+                        <button type="button" class="dash-comp" id="dash-start-workout">
+                            <span class="dash-comp-copy">
+                                <strong class="dash-comp-title" id="dash-comp-workout-title">Gym: Start workout</strong>
+                                <span class="dash-comp-desc" id="dash-start-hint">Today’s session</span>
+                            </span>
+                            <span class="dash-comp-meta" id="dash-hero-duration">~45 min</span>
+                            <span class="dash-comp-icon dash-comp-icon--lift" aria-hidden="true">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85"><path d="M6 7h12M6 17h12M9 7v10M15 7v10M4 10v4M20 10v4"/></svg>
+                            </span>
+                            <span class="dash-comp-chevron" aria-hidden="true">›</span>
+                        </button>
+                    </div>
+
+                    <div class="dash-agenda-group dash-agenda-group--xp" aria-label="Experience">
+                        <h2 class="dash-agenda-label">XP</h2>
+                        <div class="dash-xp-card" id="dash-xp-card">
+                            <div class="dash-xp-top">
+                                <span class="dash-xp-level" id="dash-xp-level">Level 1</span>
+                                <span class="dash-xp-total" id="dash-xp-total">0 XP</span>
+                            </div>
+                            <div class="dash-xp-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="dash-xp-track" aria-label="Progress to next level">
+                                <div class="dash-xp-fill" id="dash-xp-fill"></div>
+                            </div>
+                            <p class="dash-xp-meta" id="dash-xp-meta">0 / 100 XP to Level 2</p>
+                        </div>
+                    </div>
+
+                    <div class="dash-agenda-group" aria-label="Coach tips">
+                        <h2 class="dash-agenda-label">
+                            Coach
+                        </h2>
+                        <a href="/coach" class="dash-comp" id="dash-coach-tip-1">
+                            <span class="dash-comp-copy">
+                                <strong class="dash-comp-title" id="dash-coach-tip-1-title">Build the habit</strong>
+                                <span class="dash-comp-desc" id="dash-coach-tip-1-body">Ask Rocky for today’s coaching note.</span>
+                            </span>
+                            <span class="dash-comp-icon dash-comp-icon--rocky" aria-hidden="true">R</span>
+                            <span class="dash-comp-chevron" aria-hidden="true">›</span>
+                        </a>
+                        <a href="/coach" class="dash-comp" id="dash-coach-tip-2">
+                            <span class="dash-comp-copy">
+                                <strong class="dash-comp-title" id="dash-coach-tip-2-title">Stay honest</strong>
+                                <span class="dash-comp-desc" id="dash-coach-tip-2-body">Log lifts so tips get sharper every week.</span>
+                            </span>
+                            <span class="dash-comp-icon dash-comp-icon--rocky" aria-hidden="true">R</span>
+                            <span class="dash-comp-chevron" aria-hidden="true">›</span>
+                        </a>
+                    </div>
+                </section>
             </div>
-        </header>
 
-        <section class="dash-daily" id="dash-daily-root" aria-label="Today’s training plan" hidden></section>
+            <section class="dash-more" aria-label="More from your training">
+                <h2 class="dash-more-label">This week</h2>
+                <div class="dash-stats-grid" id="dash-stats-grid">
+                    <div class="dash-stat">
+                        <span class="dash-stat-value" id="dash-stat-week">0</span>
+                        <span class="dash-stat-label">Sessions</span>
+                    </div>
+                    <div class="dash-stat">
+                        <span class="dash-stat-value" id="dash-stat-streak">0</span>
+                        <span class="dash-stat-label">Streak</span>
+                    </div>
+                    <div class="dash-stat">
+                        <span class="dash-stat-value" id="dash-stat-volume">0</span>
+                        <span class="dash-stat-label">Sets</span>
+                    </div>
+                    <div class="dash-stat">
+                        <span class="dash-stat-value" id="dash-stat-total">0</span>
+                        <span class="dash-stat-label">All-time</span>
+                    </div>
+                </div>
 
-        <section class="dash-hero" aria-label="Start training">
-            <button type="button" class="dash-start-btn" id="dash-start-workout">
-                <span class="dash-start-icon" aria-hidden="true">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                </span>
-                <span class="dash-start-text">
-                    <strong>Start workout</strong>
-                    <span class="dash-start-hint" id="dash-start-hint">Log today's session</span>
-                </span>
-            </button>
-        </section>
+                <div class="dash-quick-wrap">
+                    <h2 class="dash-more-label">Quick access</h2>
+                    <div class="dash-quick-grid">
+                        <a href="/log" class="dash-quick-link">Muscle Summary</a>
+                        <a href="/coach" class="dash-quick-link">Coach</a>
+                        <a href="/log#stats" class="dash-quick-link">Progress</a>
+                        <a href="/profile" class="dash-quick-link">Profile</a>
+                        <a href="/customize" class="dash-quick-link">Settings</a>
+                        <a href="/learn" class="dash-quick-link">Learn</a>
+                    </div>
+                </div>
 
-        <section class="dash-stats" aria-label="Your stats">
-            <article class="dash-stat-card">
-                <span class="dash-stat-icon" aria-hidden="true">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-                </span>
-                <p class="dash-stat-value" id="dash-stat-week">0</p>
-                <p class="dash-stat-label">This week</p>
-            </article>
-            <article class="dash-stat-card">
-                <span class="dash-stat-icon" aria-hidden="true">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
-                </span>
-                <p class="dash-stat-value" id="dash-stat-streak">0</p>
-                <p class="dash-stat-label">Day streak</p>
-            </article>
-            <article class="dash-stat-card">
-                <span class="dash-stat-icon" aria-hidden="true">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg>
-                </span>
-                <p class="dash-stat-value" id="dash-stat-volume">0</p>
-                <p class="dash-stat-label">Sets logged</p>
-            </article>
-            <article class="dash-stat-card dash-stat-card--accent">
-                <span class="dash-stat-icon" aria-hidden="true">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M6 4h12v3a6 6 0 0 1-12 0V4z"/><path d="M9 17h6M12 13v4M8 21h8"/></svg>
-                </span>
-                <p class="dash-stat-value" id="dash-stat-total">0</p>
-                <p class="dash-stat-label">All-time sessions</p>
-            </article>
-        </section>
+                <div class="dash-rw-wrap">
+                    <div class="dash-rw-head">
+                        <h2 class="dash-more-label" id="dash-rw-label">Recent workouts</h2>
+                        <a class="dash-rw-all" href="/log#archive">View all</a>
+                    </div>
+                    <div class="dash-rw-list" id="dash-rw-rail" role="list" aria-labelledby="dash-rw-label"></div>
+                    <p class="dash-rw-empty" id="dash-rw-empty" hidden>Nothing logged yet. Finish a session and it will show up here.</p>
+                </div>
+            </section>
 
-        <section class="dash-roasts" aria-labelledby="dash-roasts-heading">
-            <div class="dash-section-head">
-                <h2 class="dash-section-title" id="dash-roasts-heading">Rocky noticed…</h2>
-                <p class="dash-section-lead">Honest coaching — with a little attitude.</p>
+            <!-- Compatibility hooks for existing JS -->
+            <span id="dash-hero-focus" hidden></span>
+            <span id="dash-hero-ready" hidden></span>
+            <span id="dash-week-progress-value" hidden>0 / 4</span>
+            <span id="dash-week-progress-label" hidden></span>
+            <div id="dash-roasts-list" hidden></div>
+            <div id="dash-recent" hidden>
+                <a href="/log" id="dash-recent-card"><span id="dash-recent-title"></span><span id="dash-recent-meta"></span><span id="dash-recent-action"></span></a>
             </div>
-            <div class="dash-roasts-list" id="dash-roasts-list" role="list"></div>
-        </section>
+        </div>
 
-        <section class="dash-quick" aria-labelledby="dash-quick-heading">
-            <h2 class="dash-section-title" id="dash-quick-heading">Quick access</h2>
-            <div class="dash-quick-grid">
-                <a href="/timeline" class="dash-quick-card">
-                    <span class="dash-quick-icon" aria-hidden="true">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 3v18"/><path d="M8 7h8M8 12h8M8 17h5" stroke-linecap="round"/></svg>
-                    </span>
-                    <span class="dash-quick-label">Timeline</span>
-                    <span class="dash-quick-desc">Workouts, injuries &amp; notes</span>
-                </a>
-                <a href="/generate" class="dash-quick-card">
-                    <span class="dash-quick-icon" aria-hidden="true">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3l1.2 3.6L17 8l-3.8 1.2L12 13l-1.2-3.8L7 8l3.8-1.4L12 3z"/><path d="M5 18l1 2.5 1-2.5 2.5-1L7 14.5 6 12l-1 2.5L2.5 16 5 17z"/></svg>
-                    </span>
-                    <span class="dash-quick-label">Coach</span>
-                    <span class="dash-quick-desc">Chat &amp; build workouts</span>
-                </a>
-                <a href="/customize" class="dash-quick-card">
-                    <span class="dash-quick-icon" aria-hidden="true">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c0-3.5 3.1-6 7-6s7 2.5 7 6"/><path d="M19 8v2M19 12h2M17 10h2" stroke-linecap="round"/></svg>
-                    </span>
-                    <span class="dash-quick-label">User settings</span>
-                    <span class="dash-quick-desc">Account, sport &amp; schedule</span>
-                </a>
-                <a href="/learn" class="dash-quick-card">
-                    <span class="dash-quick-icon" aria-hidden="true">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-                    </span>
-                    <span class="dash-quick-label">New to working out?</span>
-                    <span class="dash-quick-desc">Beginner gym basics</span>
-                </a>
-                <a href="/info" class="dash-quick-card">
-                    <span class="dash-quick-icon" aria-hidden="true">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="9"/><path d="M12 10v5M12 7h.01"/></svg>
-                    </span>
-                    <span class="dash-quick-label">How to use</span>
-                    <span class="dash-quick-desc">Guide &amp; tips</span>
-                </a>
-                <a href="/create" class="dash-quick-card">
-                    <span class="dash-quick-icon" aria-hidden="true">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M6.5 6.5h11v11H6.5z"/><path d="M9.5 12h5M12 9.5v5" stroke-linecap="round"/></svg>
-                    </span>
-                    <span class="dash-quick-label">Log workout</span>
-                    <span class="dash-quick-desc">Track sets, reps &amp; PRs</span>
-                </a>
-                <a href="/leaderboard" class="dash-quick-card">
-                    <span class="dash-quick-icon" aria-hidden="true">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M6 4h12v3a6 6 0 0 1-12 0V4z"/><path d="M9 17h6M12 13v4M8 21h8"/></svg>
-                    </span>
-                    <span class="dash-quick-label">Leaderboards</span>
-                    <span class="dash-quick-desc">See where you rank</span>
-                </a>
-                <a href="/profile" class="dash-quick-card">
-                    <span class="dash-quick-icon" aria-hidden="true">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c0-3.5 3.1-6 7-6s7 2.5 7 6"/></svg>
-                    </span>
-                    <span class="dash-quick-label">Your profile</span>
-                    <span class="dash-quick-desc">Badges, stats &amp; showcase</span>
-                </a>
-            </div>
-        </section>
-
+        <section class="dash-daily" id="dash-daily-root" hidden></section>
+        <section id="dash-insight" hidden><p id="dash-insight-text"></p></section>
     </main>
-    <footer class="site-footer site-footer--compact">
+    <footer class="site-footer site-footer--compact" hidden>
         <div class="footer-inner footer-inner--compact">
             <p class="footer-logo">STRONGMAN <span class="footer-logo-ai">AI</span></p>
-            <div class="footer-compact-links">
-                <a href="/legal#terms" class="footer-link">Terms</a>
-                <a href="/legal#privacy" class="footer-link">Privacy</a>
-                <button type="button" class="footer-link-button" data-email-kind="bug">Report issue</button>
-            </div>
         </div>
     </footer>
     </div>
@@ -210,14 +246,22 @@
     </div>
 
     <div class="home-settings-backdrop" id="home-settings-backdrop" aria-hidden="true"></div>
-    <div class="home-settings-dialog" id="home-settings-dialog" role="dialog" aria-modal="true" aria-labelledby="home-settings-title" aria-hidden="true">
+    <div class="home-settings-dialog settings-buddy settings-hub" id="home-settings-dialog" role="dialog" aria-modal="true" aria-labelledby="home-settings-title" aria-hidden="true">
         <div class="home-settings-panel">
             <header class="home-settings-header">
-                <h2 class="home-settings-title" id="home-settings-title">Settings</h2>
+                <div class="settings-hub-brand">
+                    <span class="settings-hub-mark" aria-hidden="true">SM</span>
+                    <div class="settings-hub-brand-text">
+                        <span class="settings-hub-eyebrow">Strongman AI</span>
+                        <span class="settings-hub-title-text">Settings</span>
+                    </div>
+                </div>
+                <h2 class="home-settings-title visually-hidden" id="home-settings-title">Settings</h2>
                 <button type="button" class="home-settings-close" id="home-settings-close" aria-label="Close settings">×</button>
             </header>
             <div class="home-settings-body">
-                <section class="home-settings-section" aria-labelledby="settings-appearance-heading">
+                <p class="settings-hub-intro">Theme, log view, notifications, and app preferences. Equipment, schedule, and goals live in User settings under You.</p>
+                <section class="home-settings-section settings-buddy-card" aria-labelledby="settings-appearance-heading">
                     <h3 class="home-settings-section-title" id="settings-appearance-heading">Appearance</h3>
                     <p class="home-settings-hint">Choose a named palette. Your pick saves across the app.</p>
                     <div class="home-settings-theme-row" role="group" aria-label="Color theme">
@@ -225,12 +269,20 @@
                         <label class="home-settings-radio-label"><input type="radio" name="home-theme" value="light" class="home-settings-radio"> Daylight</label>
                         <label class="home-settings-radio-label"><input type="radio" name="home-theme" value="system" class="home-settings-radio"> System</label>
                     </div>
+                    <label class="home-settings-field-label" for="settings-preferred-log-style">Preferred log view</label>
+                    <select id="settings-preferred-log-style" class="home-settings-select">
+                        <option value="coach">Coach</option>
+                        <option value="quick">Quick</option>
+                        <option value="guided">Guided</option>
+                        <option value="table">Table</option>
+                    </select>
+                    <p class="home-settings-hint home-settings-hint--tight">Default layout when you open the logbook. Change anytime.</p>
                 </section>
-                <section class="home-settings-section" aria-labelledby="settings-account-heading">
+                <section class="home-settings-section settings-hub-section--hidden-workout" aria-labelledby="settings-account-heading">
                     <h3 class="home-settings-section-title" id="settings-account-heading">Account &amp; setup</h3>
                     <a href="/profile" class="home-settings-link">Profile</a>
                 </section>
-                <section class="home-settings-section" aria-labelledby="settings-units-heading">
+                <section class="home-settings-section settings-buddy-card" aria-labelledby="settings-units-heading">
                     <h3 class="home-settings-section-title" id="settings-units-heading">Units &amp; region</h3>
                     <label class="home-settings-field-label" for="settings-units-select">Weight &amp; distance</label>
                     <select id="settings-units-select" class="home-settings-select">
@@ -245,13 +297,13 @@
                     </select>
                     <p class="home-settings-hint home-settings-hint--tight">Personal uses the plate/pin steps Rocky read from your equipment photos in Customize.</p>
                 </section>
-                <section class="home-settings-section" aria-labelledby="settings-coach-heading">
+                <section class="home-settings-section settings-hub-section--hidden-workout" aria-labelledby="settings-coach-heading">
                     <h3 class="home-settings-section-title" id="settings-coach-heading">AI coaching</h3>
                     <p class="home-settings-hint home-settings-hint--below-title">Favorite lifts (one per line or commas). Used for progressive overload on Create.</p>
                     <label class="home-settings-field-label" for="settings-favorite-movements">Favorite movements</label>
                     <textarea id="settings-favorite-movements" class="home-settings-textarea" rows="3" maxlength="2000" placeholder="e.g. axle clean &amp; press, sandbag load, deficit deadlift" spellcheck="true" aria-label="Favorite movements for AI coaching"></textarea>
                 </section>
-                <section class="home-settings-section" aria-labelledby="settings-anything-heading">
+                <section class="home-settings-section settings-hub-section--hidden-workout" aria-labelledby="settings-anything-heading">
                     <h3 class="home-settings-section-title" id="settings-anything-heading">Anything else?</h3>
                     <p class="home-settings-hint home-settings-hint--below-title">Context Rocky uses when coaching you.</p>
                     <div class="home-settings-notes-block">
@@ -264,7 +316,7 @@
                     <label class="home-settings-field-label" for="settings-anything-else">Anything else you want me to know</label>
                     <textarea id="settings-anything-else" class="home-settings-textarea" rows="4" maxlength="4000" spellcheck="true" aria-label="Anything else you want me to know"></textarea>
                 </section>
-                <section class="home-settings-section" aria-labelledby="settings-notifications-heading">
+                <section class="home-settings-section settings-buddy-card" aria-labelledby="settings-notifications-heading">
                     <h3 class="home-settings-section-title" id="settings-notifications-heading">Notifications</h3>
                     <p class="home-settings-hint home-settings-hint--below-title">Email nudges when you fall behind, competition invites, and browser alerts — including when the app is closed once you allow notifications.</p>
                     <label class="home-settings-toggle"><input type="checkbox" id="settings-notify-push" class="home-settings-checkbox"> Browser notifications</label>
@@ -296,14 +348,14 @@
                         </div>
                     </div>
                 </section>
-                <section class="home-settings-section" aria-labelledby="settings-privacy-heading">
+                <section class="home-settings-section settings-buddy-card" aria-labelledby="settings-privacy-heading">
                     <h3 class="home-settings-section-title" id="settings-privacy-heading">Privacy</h3>
                     <label class="home-settings-toggle"><input type="checkbox" id="settings-profile-public" class="home-settings-checkbox" checked> Public profile on leaderboards</label>
                     <label class="home-settings-toggle"><input type="checkbox" id="settings-show-activity" class="home-settings-checkbox" checked> Show activity to friends</label>
                 </section>
-                <section class="home-settings-section home-settings-section--footer" aria-labelledby="settings-about-heading">
+                <section class="home-settings-section home-settings-section--footer settings-buddy-card" aria-labelledby="settings-about-heading">
                     <h3 class="home-settings-section-title" id="settings-about-heading">About</h3>
-                    <p class="home-settings-meta">Strongman AI v1.2</p>
+                    <p class="home-settings-meta">Strongman AI v1.3</p>
                     <div class="home-settings-inline-links">
                         <a href="/legal#terms" class="home-settings-inline-link">Terms</a>
                         <span class="home-settings-sep" aria-hidden="true">·</span>
@@ -311,6 +363,61 @@
                     </div>
                 </section>
             </div>
+        </div>
+    </div>
+
+    <div class="dash-day-backdrop" id="dash-ring-backdrop" aria-hidden="true"></div>
+    <div class="dash-day-dialog" id="dash-ring-dialog" role="dialog" aria-modal="true" aria-labelledby="dash-ring-dialog-title" aria-hidden="true" hidden>
+        <div class="dash-day-panel">
+            <header class="dash-day-header">
+                <div>
+                    <p class="dash-day-kicker">Dashboard circle</p>
+                    <h2 class="dash-day-title" id="dash-ring-dialog-title">What should this measure?</h2>
+                </div>
+                <button type="button" class="dash-day-close" id="dash-ring-close" aria-label="Close">×</button>
+            </header>
+            <div class="dash-day-body" id="dash-ring-body">
+                <button type="button" class="dash-ring-option is-active" data-ring-metric="week_sessions">
+                    <strong>Workouts this week</strong>
+                    <span>Percent of your weekly session goal completed.</span>
+                </button>
+                <button type="button" class="dash-ring-option" data-ring-metric="goal_progress">
+                    <strong>Toward a goal</strong>
+                    <span>Increase or decrease toward a target like bodyweight or a lift PR.</span>
+                </button>
+                <button type="button" class="dash-ring-option" data-ring-metric="coming_soon" disabled>
+                    <strong>More options</strong>
+                    <span>Coming soon — you'll unlock these as "dashboard circle" features land.</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="dash-day-backdrop" id="dash-rank-backdrop" aria-hidden="true"></div>
+    <div class="dash-day-dialog" id="dash-rank-dialog" role="dialog" aria-modal="true" aria-labelledby="dash-rank-dialog-title" aria-hidden="true" hidden>
+        <div class="dash-day-panel">
+            <header class="dash-day-header">
+                <div>
+                    <p class="dash-day-kicker">Training ranks</p>
+                    <h2 class="dash-day-title" id="dash-rank-dialog-title">Title ladder</h2>
+                </div>
+                <button type="button" class="dash-day-close" id="dash-rank-close" aria-label="Close">×</button>
+            </header>
+            <div class="dash-day-body" id="dash-rank-body"></div>
+        </div>
+    </div>
+
+    <div class="dash-day-backdrop" id="dash-day-backdrop" aria-hidden="true"></div>
+    <div class="dash-day-dialog" id="dash-day-dialog" role="dialog" aria-modal="true" aria-labelledby="dash-day-title" aria-hidden="true" hidden>
+        <div class="dash-day-panel">
+            <header class="dash-day-header">
+                <div>
+                    <p class="dash-day-kicker">Training day</p>
+                    <h2 class="dash-day-title" id="dash-day-title">Day</h2>
+                </div>
+                <button type="button" class="dash-day-close" id="dash-day-close" aria-label="Close">×</button>
+            </header>
+            <div class="dash-day-body" id="dash-day-body"></div>
         </div>
     </div>
 
@@ -324,13 +431,16 @@
     <script src="/shared/auth-guard.js"></script>
     <script src="/shared/site-footer-email.js"></script>
     <script src="/shared/workout-log.js"></script>
+    <script src="/shared/pr-log.js"></script>
     <script src="/shared/workout-split.js"></script>
     <script src="/shared/training-sync.js"></script>
     <script src="/shared/rocky-coaching-insights.js"></script>
+    <script src="/shared/muscle-map.js"></script>
     <script src="/shared/coach-memory.js"></script>
     <script src="/shared/training-timeline.js"></script>
     <script src="/shared/daily-plan.js"></script>
     <script src="/shared/achievements.js"></script>
+    <script src="/shared/xp.js"></script>
     <script src="/shared/sport-database.js"></script>
     <script src="/shared/athlete-context.js"></script>
     <script src="/shared/rocky-setup-alert.js"></script>

@@ -2,6 +2,7 @@
   var STORAGE_KEY_BASE = 'strongmanai_workout_split_v1';
   var LEGACY_KEY = STORAGE_KEY_BASE;
   var DEFAULT_DAYS = ['PUSH', 'PULL', 'LEGS', 'REST', 'PUSH', 'PULL', 'REST'];
+  var BLANK_DAYS = ['REST', 'REST', 'REST', 'REST', 'REST', 'REST', 'REST'];
   var DAY_LETTERS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
   function ex(name, sets, reps) {
@@ -255,9 +256,134 @@
     var out = [];
     for (var i = 0; i < 7; i++) {
       var s = arr && arr[i] != null ? String(arr[i]).trim() : '';
-      out.push(s || '—');
+      if (!s || s === '—') {
+        out.push('—');
+        continue;
+      }
+      out.push(s.toUpperCase());
     }
     return out;
+  }
+
+  function encodeSharePayload(state) {
+    var days = normalizeDays(state && state.days);
+    var plans = normalizeDayPlans(state && state.dayPlans, days);
+    var payload = {
+      v: 1,
+      n: state && state.programName != null ? String(state.programName).trim() : '',
+      d: days,
+      p: plans.map(function (plan) {
+        if (!plan || !Array.isArray(plan.exercises) || !plan.exercises.length) return null;
+        return plan.exercises
+          .filter(function (ex) {
+            return ex && ex.name;
+          })
+          .map(function (ex) {
+            return [ex.name, ex.sets || '3', ex.reps || '8'];
+          });
+      }),
+    };
+    try {
+      var json = JSON.stringify(payload);
+      return btoa(unescape(encodeURIComponent(json)))
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=+$/g, '');
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function decodeSharePayload(code) {
+    if (!code) return null;
+    try {
+      var b64 = String(code)
+        .replace(/-/g, '+')
+        .replace(/_/g, '/');
+      while (b64.length % 4) b64 += '=';
+      var json = decodeURIComponent(escape(atob(b64)));
+      var raw = JSON.parse(json);
+      if (!raw || !Array.isArray(raw.d)) return null;
+      var days = normalizeDays(raw.d);
+      var dayPlans = (raw.p || []).map(function (row, i) {
+        if (!row || !Array.isArray(row) || !row.length) return null;
+        return {
+          title: days[i] || '',
+          exercises: row
+            .map(function (item) {
+              if (Array.isArray(item)) {
+                return templateExercise({ name: item[0], sets: item[1], reps: item[2] });
+              }
+              if (item && typeof item === 'object') return templateExercise(item);
+              return null;
+            })
+            .filter(Boolean),
+        };
+      });
+      while (dayPlans.length < 7) dayPlans.push(null);
+      dayPlans = dayPlans.slice(0, 7);
+      return {
+        programName: raw.n != null ? String(raw.n) : 'Shared split',
+        days: days,
+        dayPlans: dayPlans,
+      };
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function importSharedSplit(codeOrState, opts) {
+    opts = opts || {};
+    var parsed = typeof codeOrState === 'string' ? decodeSharePayload(codeOrState) : codeOrState;
+    if (!parsed) return null;
+    var name = parsed.programName || 'Shared split';
+    if (opts.suffix !== false && name.indexOf('(shared)') === -1) {
+      name = name + ' (shared)';
+    }
+    return createSplit(
+      name,
+      {
+        days: parsed.days,
+        dayPlans: parsed.dayPlans,
+        source: 'shared',
+      },
+      { activate: opts.activate !== false }
+    );
+  }
+
+  function buildShareUrl(state, baseUrl) {
+    var code = encodeSharePayload(state);
+    if (!code) return '';
+    var base = baseUrl || (typeof location !== 'undefined' ? location.origin + '/log' : '/log');
+    return base.replace(/#.*$/, '') + '#split=' + code;
+  }
+
+  function formatShareText(state) {
+    var s = state || load();
+    var name = (s.programName && String(s.programName).trim()) || 'Weekly split';
+    var lines = [name, ''];
+    var letters = DAY_LETTERS;
+    for (var i = 0; i < 7; i++) {
+      var day = s.days[i] || '—';
+      var plan = s.dayPlans && s.dayPlans[i];
+      var count = plan && Array.isArray(plan.exercises) ? plan.exercises.filter(function (ex) { return ex && ex.name; }).length : 0;
+      var bit = letters[i] + ' · ' + day;
+      if (count) bit += ' (' + count + (count === 1 ? ' exercise' : ' exercises') + ')';
+      lines.push(bit);
+      if (plan && Array.isArray(plan.exercises)) {
+        plan.exercises.forEach(function (ex) {
+          if (!ex || !ex.name) return;
+          lines.push('  - ' + ex.name + ' · ' + (ex.sets || '3') + '×' + (ex.reps || '8'));
+        });
+      }
+    }
+    var url = buildShareUrl(s);
+    if (url) {
+      lines.push('');
+      lines.push('Import in Strongman AI:');
+      lines.push(url);
+    }
+    return lines.join('\n');
   }
 
   function templateExercise(ex) {
@@ -293,12 +419,17 @@
   function normalizeSplit(raw, fallbackId) {
     if (!raw || typeof raw !== 'object') return defaultSplitState();
     var days = normalizeDays(raw.days);
+    var source = 'manual';
+    if (raw.source === 'ai' || raw.source === 'preset' || raw.source === 'shared') {
+      source = raw.source;
+    }
     return {
       id: raw.id != null ? String(raw.id) : fallbackId || newSplitId(),
       programName: raw.programName != null ? String(raw.programName) : '',
       days: days,
       dayPlans: normalizeDayPlans(raw.dayPlans, days),
-      source: raw.source === 'ai' ? 'ai' : raw.source === 'preset' ? 'preset' : 'manual',
+      source: source,
+      untouched: !!raw.untouched,
       createdAt: raw.createdAt || new Date().toISOString(),
       updatedAt: raw.updatedAt || raw.createdAt || new Date().toISOString(),
     };
@@ -557,6 +688,7 @@
         };
       }),
       source: split.source,
+      untouched: !!split.untouched,
     };
   }
 
@@ -619,6 +751,15 @@
     return splitToState(getActiveSplit());
   }
 
+  function loadById(id) {
+    var lib = loadLibrary();
+    if (!id) return splitToState(getActiveSplit(lib));
+    for (var i = 0; i < lib.splits.length; i++) {
+      if (lib.splits[i].id === id) return splitToState(lib.splits[i]);
+    }
+    return null;
+  }
+
   function updateSplitInLibrary(id, state, opts) {
     opts = opts || {};
     var lib = loadLibrary();
@@ -637,6 +778,7 @@
         days: days,
         dayPlans: normalizeDayPlans(state.dayPlans, days),
         source: opts.source || (idx >= 0 ? lib.splits[idx].source : 'manual'),
+        untouched: false,
         createdAt: idx >= 0 ? lib.splits[idx].createdAt : new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       },
@@ -655,21 +797,76 @@
     updateSplitInLibrary(activeId, state, { activate: true });
   }
 
-  function createSplit(name, initial) {
+  function saveById(id, state, opts) {
+    opts = opts || {};
     var lib = loadLibrary();
+    var targetId = id || lib.activeSplitId || (lib.splits[0] && lib.splits[0].id);
+    if (!targetId) return null;
+    return updateSplitInLibrary(targetId, state, {
+      activate: !!opts.activate,
+      source: opts.source,
+    });
+  }
+
+  function createSplit(name, initial, opts) {
+    opts = opts || {};
+    var lib = loadLibrary();
+    var blankDays = BLANK_DAYS.slice();
+    var days =
+      initial && initial.days ? normalizeDays(initial.days) : blankDays;
     var split = defaultSplitState({
-      programName: name || 'New split',
-      days: initial && initial.days ? normalizeDays(initial.days) : DEFAULT_DAYS.slice(),
+      programName: name || 'My Split',
+      days: days,
       dayPlans:
         initial && initial.dayPlans
-          ? normalizeDayPlans(initial.dayPlans, initial.days || DEFAULT_DAYS)
+          ? normalizeDayPlans(initial.dayPlans, days)
           : [null, null, null, null, null, null, null],
       source: initial && initial.source ? initial.source : 'manual',
     });
+    split.untouched = opts.untouched === true;
+    var hadValidActive =
+      !!lib.activeSplitId &&
+      lib.splits.some(function (s) {
+        return s.id === lib.activeSplitId;
+      });
     lib.splits.push(split);
-    lib.activeSplitId = split.id;
+    if (opts.activate === true || !hadValidActive) {
+      lib.activeSplitId = split.id;
+    }
     saveLibrary(lib);
     return split.id;
+  }
+
+  function isUntouched(id) {
+    if (!id) return false;
+    var lib = loadLibrary();
+    for (var i = 0; i < lib.splits.length; i++) {
+      if (lib.splits[i].id === id) return !!lib.splits[i].untouched;
+    }
+    return false;
+  }
+
+  function markTouched(id) {
+    if (!id) return;
+    var lib = loadLibrary();
+    var changed = false;
+    for (var i = 0; i < lib.splits.length; i++) {
+      if (lib.splits[i].id === id && lib.splits[i].untouched) {
+        lib.splits[i].untouched = false;
+        changed = true;
+        break;
+      }
+    }
+    if (changed) saveLibrary(lib);
+  }
+
+  function discardUntouched(id) {
+    if (!id || !isUntouched(id)) return false;
+    if (getActiveSplitId() === id) {
+      markTouched(id);
+      return false;
+    }
+    return deleteSplit(id);
   }
 
   function deleteSplit(id) {
@@ -691,12 +888,12 @@
         id: newSplitId(),
         programName: (src.programName || 'Split') + ' (copy)',
         source: 'manual',
+        untouched: false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       })
     );
     lib.splits.push(copy);
-    lib.activeSplitId = copy.id;
     saveLibrary(lib);
     return copy.id;
   }
@@ -843,14 +1040,24 @@
     createSplit: createSplit,
     deleteSplit: deleteSplit,
     duplicateSplit: duplicateSplit,
+    isUntouched: isUntouched,
+    markTouched: markTouched,
+    discardUntouched: discardUntouched,
     addAiSplit: addAiSplit,
     importAiWorkout: importAiWorkout,
+    encodeSharePayload: encodeSharePayload,
+    decodeSharePayload: decodeSharePayload,
+    importSharedSplit: importSharedSplit,
+    buildShareUrl: buildShareUrl,
+    formatShareText: formatShareText,
     markSplitSeen: markSplitSeen,
     markAllSplitsSeen: markAllSplitsSeen,
     getUnseenSplitCount: getUnseenSplitCount,
     hasUnseenAiSplits: hasUnseenAiSplits,
     load: load,
+    loadById: loadById,
     save: save,
+    saveById: saveById,
     saveRoutine: saveRoutine,
     mondayIndexFromDate: mondayIndexFromDate,
     splitFieldLineForDate: splitFieldLineForDate,
@@ -859,7 +1066,8 @@
     isRestDay: isRestDay,
     exercisesForDate: exercisesForDate,
     dayLetters: DAY_LETTERS,
-    defaultDays: DEFAULT_DAYS,
+    defaultDays: BLANK_DAYS,
+    blankDays: BLANK_DAYS,
     syncFromServerAsync: syncFromServerAsync,
     pushToServerAsync: pushToServerAsync,
     onUserChanged: onUserChanged,

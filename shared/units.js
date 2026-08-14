@@ -169,7 +169,7 @@
     var scope = root || document;
     var step = String(getWeightStep());
     var nodes = scope.querySelectorAll(
-      'input[data-weight-step], input.create-exercise-weight, input.create-superset-weight, input.wt-set-input--weight, #tracking-pr-wl-weight'
+      'input[data-weight-step], input.create-exercise-weight, input.create-superset-weight, input.wt-set-input--weight, #tl-pr-wl-weight'
     );
     nodes.forEach(function (inp) {
       try {

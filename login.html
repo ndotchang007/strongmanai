@@ -1,116 +1,85 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-marketing="1">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="strongman-api-base" content="https://strongmanai-api-test.onrender.com/api/v1">
-    <link rel="stylesheet" href="/css/tester-gate.css">
-    <style id="tester-gate-boot">html.tester-gate-pending,html.tester-gate-pending body{background:#08080a!important;margin:0;min-height:100%;overflow:hidden!important}html.tester-gate-pending body>*:not(#tester-gate-overlay){visibility:hidden!important;pointer-events:none!important}html.tester-gate-pending #tester-gate-overlay{visibility:visible!important;pointer-events:auto!important}</style>
-    <script>document.documentElement.classList.add("tester-gate-pending");</script>
-    <script src="/shared/tester-gate.js"></script>
     <title>Sign in – Strongman AI</title>
     <link rel="icon" type="image/png" href="/assets/logo.png">
     <link rel="apple-touch-icon" href="/assets/logo.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="/shared/theme.js"></script>
     <link rel="stylesheet" href="/css/login.css">
+    <link rel="stylesheet" href="/css/cookie-consent.css">
 </head>
 <body class="auth-page">
-    <div class="auth-ambient" aria-hidden="true">
-        <span class="auth-ambient-orb auth-ambient-orb--a"></span>
-        <span class="auth-ambient-orb auth-ambient-orb--b"></span>
-        <span class="auth-ambient-orb auth-ambient-orb--c"></span>
-    </div>
+    <main class="auth-center">
+        <a href="/" class="auth-home" aria-label="Strongman AI home">
+            <img src="/assets/logo.png" alt="" width="28" height="28" decoding="async">
+            Strongman AI
+        </a>
 
-    <div class="auth-shell">
-        <aside class="auth-hero" aria-hidden="true">
-            <div class="auth-hero-inner">
-                <div class="auth-hero-brand">
-                    <img src="/assets/logo.png" alt="" class="auth-hero-logo" width="72" height="72" decoding="async">
-                    <p class="auth-hero-wordmark">STRONGMAN <span class="login-logo-accent">AI</span></p>
-                </div>
-                <h2 class="auth-hero-headline">Built for becoming.</h2>
-                <p class="auth-hero-copy">Personalized workouts, progress tracking, and an AI coach for athletes who want more from every session.</p>
-                <ul class="auth-hero-points">
-                    <li>AI-generated training plans</li>
-                    <li>PR tracking and leaderboards</li>
-                    <li>Built for becoming</li>
-                </ul>
-            </div>
-        </aside>
+        <div class="auth-card">
+            <nav class="auth-tabs" role="tablist" aria-label="Account access">
+                <button type="button" class="auth-tab" role="tab" id="auth-tab-login" aria-selected="true" aria-controls="auth-panel-login">Sign in</button>
+                <button type="button" class="auth-tab" role="tab" id="auth-tab-signup" aria-selected="false" aria-controls="auth-panel-signup">Create account</button>
+            </nav>
 
-        <main class="auth-content">
-            <header class="auth-content-header">
-                <a href="/" class="auth-content-logo" aria-label="Strongman AI home">
-                    <img src="/assets/logo.png" alt="" width="32" height="32" decoding="async">
-                    <span>STRONGMAN <span class="login-logo-accent">AI</span></span>
-                </a>
-            </header>
+            <div class="auth-panels-viewport">
+                <div class="auth-panels-track" id="auth-panels-track" data-panel="login">
+                    <section class="auth-panel" id="auth-panel-login" role="tabpanel" aria-labelledby="auth-tab-login" aria-hidden="false">
+                        <h1 class="auth-panel-title">Welcome back</h1>
+                        <p class="auth-panel-desc">Sign in with your email, or switch to username below.</p>
+                        <form class="auth-form login-form" id="login-form" autocomplete="on">
+                            <div class="login-input-group">
+                                <input type="email" id="credential" class="login-input" required placeholder=" " autocomplete="email">
+                                <label for="credential" class="login-label" id="credential-label">Email</label>
+                            </div>
+                            <div class="login-input-group">
+                                <input type="password" id="login-password" class="login-input" required placeholder=" " autocomplete="current-password">
+                                <label for="login-password" class="login-label">Password</label>
+                            </div>
+                            <button type="button" class="login-toggle-btn" id="login-toggle-btn">Use username instead</button>
+                            <p class="login-error" id="login-error" role="alert" hidden></p>
+                            <button class="login-btn" type="submit">Sign in</button>
+                        </form>
+                    </section>
 
-            <div class="auth-content-body">
-                <div class="auth-card">
-                    <nav class="auth-tabs" role="tablist" aria-label="Account access">
-                        <button type="button" class="auth-tab" role="tab" id="auth-tab-login" aria-selected="true" aria-controls="auth-panel-login">Sign in</button>
-                        <button type="button" class="auth-tab" role="tab" id="auth-tab-signup" aria-selected="false" aria-controls="auth-panel-signup">Create account</button>
-                    </nav>
-
-                    <div class="auth-panels-viewport">
-                        <div class="auth-panels-track" id="auth-panels-track" data-panel="login">
-                            <section class="auth-panel" id="auth-panel-login" role="tabpanel" aria-labelledby="auth-tab-login" aria-hidden="false">
-                                <h1 class="auth-panel-title">Welcome back</h1>
-                                <p class="auth-panel-desc">Sign in with your email, or switch to username below.</p>
-                                <form class="auth-form login-form" id="login-form" autocomplete="on">
-                                    <div class="login-input-group">
-                                        <input type="email" id="credential" class="login-input" required placeholder=" " autocomplete="email">
-                                        <label for="credential" class="login-label" id="credential-label">Email</label>
-                                    </div>
-                                    <div class="login-input-group">
-                                        <input type="password" id="login-password" class="login-input" required placeholder=" " autocomplete="current-password">
-                                        <label for="login-password" class="login-label">Password</label>
-                                    </div>
-                                    <button type="button" class="login-toggle-btn" id="login-toggle-btn">Use username instead</button>
-                                    <p class="login-error" id="login-error" role="alert" hidden></p>
-                                    <button class="login-btn" type="submit">Sign in</button>
-                                </form>
-                            </section>
-
-                            <section class="auth-panel" id="auth-panel-signup" role="tabpanel" aria-labelledby="auth-tab-signup" aria-hidden="true">
-                                <h1 class="auth-panel-title">Create your account</h1>
-                                <p class="auth-panel-desc">Pick a username, then we’ll email you a confirmation link before you can sign in.</p>
-                                <form class="auth-form signup-form" id="signup-form" autocomplete="on">
-                                    <div class="login-input-group">
-                                        <input type="text" id="signup-username" class="login-input" required placeholder=" " autocomplete="username" minlength="2" maxlength="32" pattern="[A-Za-z0-9_]+">
-                                        <label for="signup-username" class="login-label">Username</label>
-                                    </div>
-                                    <p class="auth-field-hint" id="signup-username-hint">Letters, numbers, and underscores only.</p>
-                                    <div class="login-input-group">
-                                        <input type="email" id="signup-email" class="login-input" required placeholder=" " autocomplete="email">
-                                        <label for="signup-email" class="login-label">Email</label>
-                                    </div>
-                                    <div class="login-input-group">
-                                        <input type="email" id="signup-email-confirm" class="login-input" required placeholder=" " autocomplete="email">
-                                        <label for="signup-email-confirm" class="login-label">Confirm email</label>
-                                    </div>
-                                    <div class="login-input-group">
-                                        <input type="password" id="signup-password" class="login-input" required placeholder=" " autocomplete="new-password">
-                                        <label for="signup-password" class="login-label">Password</label>
-                                    </div>
-                                    <div class="login-input-group">
-                                        <input type="password" id="signup-confirm" class="login-input" required placeholder=" " autocomplete="new-password">
-                                        <label for="signup-confirm" class="login-label">Confirm password</label>
-                                    </div>
-                                    <p class="login-error" id="signup-error" role="alert" hidden></p>
-                                    <button class="login-btn login-btn--signup" type="submit">Create account</button>
-                                </form>
-                            </section>
-                        </div>
-                    </div>
+                    <section class="auth-panel" id="auth-panel-signup" role="tabpanel" aria-labelledby="auth-tab-signup" aria-hidden="true">
+                        <h1 class="auth-panel-title">Create your account</h1>
+                        <p class="auth-panel-desc">Pick a username, then we’ll email you a confirmation link before you can sign in.</p>
+                        <form class="auth-form signup-form" id="signup-form" autocomplete="on">
+                            <div class="login-input-group">
+                                <input type="text" id="signup-username" class="login-input" required placeholder=" " autocomplete="username" minlength="2" maxlength="32" pattern="[A-Za-z0-9_]+">
+                                <label for="signup-username" class="login-label">Username</label>
+                            </div>
+                            <p class="auth-field-hint" id="signup-username-hint">Letters, numbers, and underscores only.</p>
+                            <div class="login-input-group">
+                                <input type="email" id="signup-email" class="login-input" required placeholder=" " autocomplete="email">
+                                <label for="signup-email" class="login-label">Email</label>
+                            </div>
+                            <div class="login-input-group">
+                                <input type="email" id="signup-email-confirm" class="login-input" required placeholder=" " autocomplete="email">
+                                <label for="signup-email-confirm" class="login-label">Confirm email</label>
+                            </div>
+                            <div class="login-input-group">
+                                <input type="password" id="signup-password" class="login-input" required placeholder=" " autocomplete="new-password">
+                                <label for="signup-password" class="login-label">Password</label>
+                            </div>
+                            <div class="login-input-group">
+                                <input type="password" id="signup-confirm" class="login-input" required placeholder=" " autocomplete="new-password">
+                                <label for="signup-confirm" class="login-label">Confirm password</label>
+                            </div>
+                            <p class="login-error" id="signup-error" role="alert" hidden></p>
+                            <button class="login-btn login-btn--signup" type="submit">Create account</button>
+                        </form>
+                    </section>
                 </div>
             </div>
-        </main>
-    </div>
+        </div>
+    </main>
 
     <script src="/shared/name-policy.js"></script>
     <script src="/shared/api.js"></script>
@@ -118,5 +87,6 @@
     <script src="/shared/pr-log.js"></script>
     <script src="/shared/training-sync.js"></script>
     <script src="/js/login.js"></script>
+    <script src="/shared/cookie-consent.js"></script>
 </body>
 </html>

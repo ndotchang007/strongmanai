@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-marketing="1">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,30 +8,87 @@
     <link rel="apple-touch-icon" href="/assets/logo.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="/shared/theme.js"></script>
+    <link rel="stylesheet" href="/css/marketing-nav.css">
     <link rel="stylesheet" href="/css/about.css">
+    <link rel="stylesheet" href="/css/cookie-consent.css">
 </head>
 <body>
-    <header class="about-header">
-        <a href="/" class="about-header-logo">STRONGMAN <span class="about-header-logo-ai">AI</span></a>
-        <nav class="about-header-nav">
-            <a href="/" class="about-header-link">Home</a>
-            <a href="/login" class="about-header-link">Login</a>
-            <a href="/signup" class="about-header-link">Sign up</a>
-        </nav>
-    </header>
+    <header class="mkt-nav" id="mkt-nav">
+  <div class="mkt-nav-inner">
+    <a class="mkt-brand" href="/">
+      <img class="mkt-brand-logo" src="/assets/logo.png" alt="" width="22" height="22" decoding="async">
+      Strongman AI
+    </a>
+    <div class="mkt-nav-right">
+      <a href="/blog">Blog</a>
+      <a href="/leaderboards">Leaderboards</a>
+      <a href="/login">Login</a>
+      <a href="/#pricing">Pricing</a>
+      <a class="mkt-btn" href="/signup">Start free</a>
+    </div>
+    <button type="button" class="mkt-burger" id="mkt-burger" aria-label="Menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+<div class="mkt-panel" id="mkt-panel">
+  <a href="/blog">Blog</a>
+  <a href="/leaderboards">Leaderboards</a>
+  <a href="/login">Login</a>
+  <a href="/#pricing">Pricing</a>
+  <a class="mkt-btn" href="/signup">Start free</a>
+</div>
+<main class="about-main">
+        <p class="about-kicker">About us</p>
+        <h1 class="about-page-title">Built for becoming.</h1>
+        <p class="about-lead">Strongman AI is training intelligence for athletes who want progressive overload handled — so every session compounds into a stronger year.</p>
 
-    <main class="about-main">
-        <h1 class="about-page-title">About Strongman AI</h1>
-        <p class="about-lead">Training intelligence for athletes—built by a small team and shaped by the models below.</p>
-
-        <section class="about-section about-section--contact" aria-labelledby="about-contact-heading">
-            <h2 id="about-contact-heading" class="about-section-title">Contact</h2>
-            <p class="about-section-desc">Reach the team for partnerships, press, or general inquiries.</p>
-            <p class="about-contact-email">
-                <a href="mailto:strongmanaioutreach@gmail.com" class="about-email-link">strongmanaioutreach@gmail.com</a>
+        <section class="about-section" aria-labelledby="about-mission-heading">
+            <h2 id="about-mission-heading" class="about-section-title">Mission</h2>
+            <p class="about-section-desc about-section-desc--lg">
+                Most training stalls because the next load is a guess. We build software that turns last session, readiness, and fatigue into a clear prescription — so athletes stop negotiating with the bar and start executing.
             </p>
+            <ul class="about-pillars">
+                <li>
+                    <span class="about-pillar-label">Deterministic progression</span>
+                    <span class="about-pillar-text">A production overload engine — not vibes — decides tonight’s weight, reps, and action.</span>
+                </li>
+                <li>
+                    <span class="about-pillar-label">Coaching you can trust</span>
+                    <span class="about-pillar-text">EDDIE and Rocky explain the why, with safety-oriented guardrails when requests go sideways.</span>
+                </li>
+                <li>
+                    <span class="about-pillar-label">Athletes first</span>
+                    <span class="about-pillar-text">Logging, leaderboards, and plans tuned for real training weeks — free to start, no card required.</span>
+                </li>
+            </ul>
+        </section>
+
+        <section class="about-section" aria-labelledby="about-product-heading">
+            <h2 id="about-product-heading" class="about-section-title">Product</h2>
+            <p class="about-section-desc">
+                Strongman AI is a web training app: generate structured workouts, log sets, track PRs, and let progressive overload compute the next jump. Leaderboards keep the competitive pulse; the blog covers engineering and release notes.
+            </p>
+            <div class="about-product-grid">
+                <div class="about-product-item">
+                    <h3 class="about-product-name">Workout mode</h3>
+                    <p class="about-product-text">Session logging with load suggestions from the progression engine when history exists.</p>
+                </div>
+                <div class="about-product-item">
+                    <h3 class="about-product-name">AI coach</h3>
+                    <p class="about-product-text">Natural-language programming and conservative progress hints — complementary to the deterministic engine.</p>
+                </div>
+                <div class="about-product-item">
+                    <h3 class="about-product-name">Leaderboards</h3>
+                    <p class="about-product-text">Public ranks that reward consistency and strength, not just one big lift.</p>
+                </div>
+                <div class="about-product-item">
+                    <h3 class="about-product-name">Settings &amp; sync</h3>
+                    <p class="about-product-text">Athlete context, units, and preferences that feed readiness and recovery scoring.</p>
+                </div>
+            </div>
         </section>
 
         <section class="about-section" aria-labelledby="about-models-heading">
@@ -51,8 +108,8 @@
         </section>
 
         <section class="about-section" aria-labelledby="about-team-heading">
-            <h2 id="about-team-heading" class="about-section-title">Contributors</h2>
-            <p class="about-section-desc">The people who make Strongman AI.</p>
+            <h2 id="about-team-heading" class="about-section-title">Team</h2>
+            <p class="about-section-desc">A small crew shipping training software end to end.</p>
             <ul class="about-contributors">
                 <li class="about-contributor">
                     <span class="about-contributor-name">Noah Chang</span>
@@ -76,10 +133,51 @@
                 </li>
             </ul>
         </section>
+
+        <section class="about-section about-section--contact" aria-labelledby="about-contact-heading">
+            <h2 id="about-contact-heading" class="about-section-title">Contact</h2>
+            <p class="about-section-desc">Partnerships, press, feedback, or general inquiries — we read every note.</p>
+            <p class="about-contact-email">
+                <a href="mailto:strongmanaioutreach@gmail.com" class="about-email-link">strongmanaioutreach@gmail.com</a>
+            </p>
+            <div class="about-socials">
+                <a class="about-social-link" href="https://www.instagram.com/strongmanai/" target="_blank" rel="noopener noreferrer">Instagram</a>
+                <a class="about-social-link" href="/blog">Blog</a>
+                <a class="about-social-link" href="/leaderboards">Leaderboards</a>
+            </div>
+        </section>
     </main>
 
-    <footer class="about-footer">
-        <p class="about-footer-copy">&copy; Strongman AI · <a href="/legal">Terms &amp; Privacy</a> · <a href="/">Home</a></p>
+    <footer class="mkt-foot">
+        <div class="mkt-foot-inner">
+            <div class="mkt-foot-brand">
+                <a class="mkt-foot-logo" href="/">
+                    <img src="/assets/logo.png" alt="" width="22" height="22" decoding="async">
+                    Strongman AI
+                </a>
+                <p class="mkt-foot-tag">Built for becoming.</p>
+                <p class="mkt-foot-email"><a href="mailto:strongmanaioutreach@gmail.com">strongmanaioutreach@gmail.com</a></p>
+            </div>
+            <div class="mkt-foot-cols">
+                <div class="mkt-foot-col">
+                    <h3 class="mkt-foot-heading">Product</h3>
+                    <a href="/about">About</a>
+                    <a href="/blog">Blog</a>
+                    <a href="/leaderboards">Leaderboards</a>
+                </div>
+                <div class="mkt-foot-col">
+                    <h3 class="mkt-foot-heading">Legal</h3>
+                    <a href="/legal">Terms &amp; Privacy</a>
+                </div>
+                <div class="mkt-foot-col">
+                    <h3 class="mkt-foot-heading">Social</h3>
+                    <a href="https://www.instagram.com/strongmanai/" target="_blank" rel="noopener noreferrer">Instagram</a>
+                </div>
+            </div>
+        </div>
+        <p class="mkt-foot-copy">&copy; 2026 Strongman AI</p>
     </footer>
+    <script src="/shared/marketing-nav.js"></script>
+    <script src="/shared/cookie-consent.js"></script>
 </body>
 </html>

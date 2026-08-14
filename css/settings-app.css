@@ -24,10 +24,12 @@ button.sidebar-settings-trigger::-moz-focus-inner
     position: fixed;
     inset: 0;
     z-index: 2000;
-    background: rgba(0, 0, 0, 0.55);
+    background: color-mix(in srgb, var(--bg-deep, #050506) 72%, transparent);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.2s ease, visibility 0.2s ease;
+    transition: opacity 0.28s ease, visibility 0.28s ease;
 }
 .home-settings-backdrop.is-open
 {
@@ -46,7 +48,7 @@ button.sidebar-settings-trigger::-moz-focus-inner
     pointer-events: none;
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.2s ease, visibility 0.2s ease;
+    transition: opacity 0.28s ease, visibility 0.28s ease;
 }
 .home-settings-dialog.is-open
 {
@@ -57,22 +59,36 @@ button.sidebar-settings-trigger::-moz-focus-inner
 .home-settings-panel
 {
     width: 100%;
-    max-width: 420px;
-    max-height: min(85vh, 640px);
+    max-width: 460px;
+    max-height: min(88vh, 720px);
     display: flex;
     flex-direction: column;
-    border-radius: 14px;
-    border: 1px solid #5c5c5c;
-    background-color: #262626;
-    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45);
+    border-radius: 20px;
+    border: 1px solid var(--border-mid, rgba(255, 255, 255, 0.14));
+    background:
+        linear-gradient(165deg, color-mix(in srgb, var(--accent) 8%, transparent) 0%, transparent 42%),
+        var(--bg-card, var(--theme-surface, #16161c));
+    box-shadow:
+        var(--shadow-card, 0 20px 50px rgba(0, 0, 0, 0.55)),
+        0 0 0 1px color-mix(in srgb, var(--accent) 8%, transparent);
     overflow: hidden;
     pointer-events: auto;
+    transform: translateY(12px) scale(0.975);
+    opacity: 0.92;
+    transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.28s ease;
+}
+.home-settings-dialog.is-open .home-settings-panel
+{
+    transform: translateY(0) scale(1);
+    opacity: 1;
 }
 html[data-theme="light"] .home-settings-panel
 {
-    border-color: #b0b0b0;
-    background-color: #e8e8e8;
-    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.12);
+    border-color: var(--border-mid, #c8c8c8);
+    background:
+        linear-gradient(165deg, color-mix(in srgb, var(--accent) 10%, transparent) 0%, transparent 40%),
+        var(--bg-card, #ffffff);
+    box-shadow: 0 24px 56px rgba(0, 0, 0, 0.14);
 }
 .home-settings-header
 {
@@ -80,56 +96,62 @@ html[data-theme="light"] .home-settings-panel
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    padding: 1.25rem 1.35rem;
-    border-bottom: 1px solid #4a4a4a;
+    padding: 1.15rem 1.25rem 1.05rem;
+    border-bottom: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.09));
     flex-shrink: 0;
 }
 html[data-theme="light"] .home-settings-header
 {
-    border-bottom-color: #c8c8c8;
+    border-bottom-color: var(--border-subtle, #ddd);
 }
 .home-settings-title
 {
     margin: 0;
     font-family: var(--font, "DM Sans", system-ui, sans-serif);
-    font-size: 1.15rem;
-    font-weight: bold;
-    letter-spacing: 0.04em;
-    color: #fff;
+    font-size: 1.2rem;
+    font-weight: 750;
+    letter-spacing: -0.02em;
+    color: var(--text-primary, #fff);
 }
 html[data-theme="light"] .home-settings-title
 {
-    color: #1a1a1a;
+    color: var(--text-primary, #1a1a1a);
 }
 .home-settings-close
 {
-    width: 36px;
-    height: 36px;
+    width: 2.25rem;
+    height: 2.25rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: none;
-    border-radius: 8px;
-    background: transparent;
-    color: #ccc;
-    font-size: 1.5rem;
+    border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.1));
+    border-radius: 999px;
+    background: var(--surface-inset, rgba(255, 255, 255, 0.04));
+    color: var(--text-muted, #a1a1aa);
+    font-size: 1.25rem;
     line-height: 1;
     cursor: pointer;
-    transition: background-color 0.15s, color 0.15s;
+    transition: background-color 0.15s, color 0.15s, border-color 0.15s, transform 0.15s;
 }
 .home-settings-close:hover
 {
-    background-color: rgba(255, 255, 255, 0.08);
-    color: #fff;
+    background-color: var(--surface-hover, rgba(255, 255, 255, 0.08));
+    color: var(--text-primary, #fff);
+    border-color: var(--border-mid, rgba(255, 255, 255, 0.18));
+}
+.home-settings-close:active
+{
+    transform: scale(0.94);
 }
 html[data-theme="light"] .home-settings-close
 {
-    color: #555;
+    color: var(--text-muted, #555);
+    background: rgba(0, 0, 0, 0.04);
 }
 html[data-theme="light"] .home-settings-close:hover
 {
-    background-color: rgba(0, 0, 0, 0.06);
-    color: #111;
+    background-color: rgba(0, 0, 0, 0.07);
+    color: var(--text-primary, #111);
 }
 .home-settings-dialog,
 .home-settings-dialog *
@@ -140,14 +162,16 @@ html[data-theme="light"] .home-settings-close:hover
 .home-settings-body
 {
     overflow-y: auto;
-    padding: 1.35rem 1.5rem 1.75rem;
+    overscroll-behavior: contain;
+    padding: 1.2rem 1.25rem 1.6rem;
     flex: 1;
     min-height: 0;
+    scrollbar-gutter: stable;
 }
 .home-settings-section
 {
     padding: 1.05rem 0;
-    border-bottom: 1px solid #4a4a4a;
+    border-bottom: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.09));
 }
 .home-settings-section:last-child
 {
@@ -155,33 +179,33 @@ html[data-theme="light"] .home-settings-close:hover
 }
 html[data-theme="light"] .home-settings-section
 {
-    border-bottom-color: #d0d0d0;
+    border-bottom-color: var(--border-subtle, #ddd);
 }
 .home-settings-section-title
 {
-    margin: 0 0 0.65rem;
+    margin: 0 0 0.7rem;
     font-family: var(--font, "DM Sans", system-ui, sans-serif);
-    font-size: 0.72rem;
-    font-weight: bold;
-    letter-spacing: 0.1em;
+    font-size: 0.7rem;
+    font-weight: 750;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: #aaa;
+    color: var(--text-muted, #9a9aa2);
 }
 html[data-theme="light"] .home-settings-section-title
 {
-    color: #666;
+    color: var(--text-muted, #666);
 }
 .home-settings-hint
 {
     margin: 0 0 0.85rem;
     font-family: var(--font, "DM Sans", system-ui, sans-serif);
-    font-size: 0.78rem;
-    color: #888;
-    line-height: 1.45;
+    font-size: 0.8rem;
+    color: var(--text-muted, #9a9aa2);
+    line-height: 1.5;
 }
 html[data-theme="light"] .home-settings-hint
 {
-    color: #666;
+    color: var(--text-muted, #666);
 }
 .home-settings-hint--below-title
 {
@@ -214,17 +238,20 @@ html[data-theme="light"] .home-settings-notify-status
 }
 .home-settings-reminder-wrap
 {
-    margin-top: 0.35rem;
-    padding-top: 0.35rem;
-    border-top: 1px solid #3a3a3a;
+    margin-top: 0.55rem;
+    padding: 0.85rem 0.9rem 0.95rem;
+    border-radius: 14px;
+    border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.09));
+    background: var(--surface-inset, rgba(255, 255, 255, 0.03));
 }
 html[data-theme="light"] .home-settings-reminder-wrap
 {
-    border-top-color: #d0d0d0;
+    border-color: var(--border-subtle, #ddd);
+    background: rgba(0, 0, 0, 0.03);
 }
 .home-settings-reminder-fields
 {
-    margin-top: 0.65rem;
+    margin-top: 0.75rem;
 }
 .home-settings-reminder-fields[hidden]
 {
@@ -234,21 +261,28 @@ html[data-theme="light"] .home-settings-reminder-wrap
 {
     width: 100%;
     max-width: 12rem;
-    padding: 0.5rem 0.65rem;
-    margin-bottom: 0.65rem;
-    border-radius: 8px;
-    border: 1px solid #555;
-    background-color: #1e1e1e;
-    color: #fff;
+    padding: 0.65rem 0.8rem;
+    margin-bottom: 0.75rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-mid, rgba(255, 255, 255, 0.14));
+    background-color: var(--bg-elevated, #101014);
+    color: var(--text-primary, #fff);
     font-family: var(--font, "DM Sans", system-ui, sans-serif);
     font-size: 0.9rem;
     box-sizing: border-box;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.home-settings-time-input:focus
+{
+    outline: none;
+    border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
 }
 html[data-theme="light"] .home-settings-time-input
 {
-    border-color: #aaa;
-    background-color: #f5f5f5;
-    color: #111;
+    border-color: var(--border-mid, #ccc);
+    background-color: #fff;
+    color: var(--text-primary, #111);
 }
 .home-settings-text-input
 {
@@ -258,8 +292,8 @@ html[data-theme="light"] .home-settings-time-input
 {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.35rem 0.5rem;
-    margin-top: 0.5rem;
+    gap: 0.4rem;
+    margin-top: 0.55rem;
 }
 .home-settings-reminder-custom[hidden]
 {
@@ -267,30 +301,44 @@ html[data-theme="light"] .home-settings-time-input
 }
 .home-settings-day-chip
 {
+    position: relative;
     display: inline-flex;
     align-items: center;
-    gap: 0.25rem;
-    padding: 0.25rem 0.45rem;
-    border-radius: 8px;
-    border: 1px solid #555;
+    justify-content: center;
+    gap: 0.3rem;
+    min-width: 2.4rem;
+    padding: 0.45rem 0.55rem;
+    border-radius: 999px;
+    border: 1px solid var(--border-mid, rgba(255, 255, 255, 0.14));
+    background: var(--surface-inset, rgba(255, 255, 255, 0.03));
     font-family: var(--font, "DM Sans", system-ui, sans-serif);
     font-size: 0.72rem;
-    color: #ddd;
+    font-weight: 650;
+    color: var(--text-secondary, #c4c4cc);
     cursor: pointer;
     user-select: none;
+    transition: border-color 0.15s, background 0.15s, color 0.15s;
 }
 html[data-theme="light"] .home-settings-day-chip
 {
-    border-color: #aaa;
-    color: #222;
+    border-color: var(--border-mid, #ccc);
+    color: var(--text-primary, #222);
+    background: rgba(0, 0, 0, 0.03);
+}
+.home-settings-day-chip:has(input:checked)
+{
+    border-color: color-mix(in srgb, var(--accent) 50%, transparent);
+    background: var(--accent-muted, color-mix(in srgb, var(--accent) 18%, transparent));
+    color: var(--accent-bright, var(--accent));
 }
 .home-settings-day-chip input
 {
-    accent-color: var(--accent);
-    width: 0.95rem;
-    height: 0.95rem;
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
     margin: 0;
-    cursor: pointer;
+    pointer-events: none;
 }
 .home-settings-theme-row
 {
@@ -312,12 +360,12 @@ html[data-theme="light"] .home-settings-day-chip
     gap: 0.4rem;
     font-family: var(--font, "DM Sans", system-ui, sans-serif);
     font-size: 0.9rem;
-    color: #eee;
+    color: var(--text-primary, #eee);
     cursor: pointer;
 }
 html[data-theme="light"] .home-settings-radio-label
 {
-    color: #222;
+    color: var(--text-primary, #222);
 }
 .home-settings-radio
 {
@@ -327,99 +375,231 @@ html[data-theme="light"] .home-settings-radio-label
 }
 .home-settings-link
 {
-    display: block;
-    margin-top: 0.45rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 0.35rem;
+    padding: 0.85rem 0.95rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.09));
+    background: var(--surface-inset, rgba(255, 255, 255, 0.03));
     font-family: var(--font, "DM Sans", system-ui, sans-serif);
     font-size: 0.9rem;
-    color: var(--accent);
+    font-weight: 650;
+    color: var(--text-primary, #fff);
     text-decoration: none;
+    transition: border-color 0.15s, background 0.15s, transform 0.15s;
+}
+.home-settings-link::after
+{
+    content: "→";
+    color: var(--accent-bright, var(--accent));
+    font-weight: 700;
 }
 .home-settings-link:first-of-type
 {
-    margin-top: 0.25rem;
+    margin-top: 0.15rem;
 }
 .home-settings-link:hover
 {
-    text-decoration: underline;
+    text-decoration: none;
+    border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
+    transform: translateY(-1px);
 }
 .home-settings-field-label
 {
     display: block;
-    margin: 0 0 0.45rem;
+    margin: 0.85rem 0 0.4rem;
     font-family: var(--font, "DM Sans", system-ui, sans-serif);
-    font-size: 0.85rem;
-    color: #bbb;
+    font-size: 0.78rem;
+    font-weight: 650;
+    letter-spacing: 0.02em;
+    color: var(--text-secondary, #c4c4cc);
+}
+.home-settings-field-label:first-of-type
+{
+    margin-top: 0.15rem;
 }
 html[data-theme="light"] .home-settings-field-label
 {
-    color: #444;
+    color: var(--text-secondary, #444);
 }
 .home-settings-select
 {
+    -webkit-appearance: none;
+    appearance: none;
     width: 100%;
     max-width: 100%;
-    padding: 0.5rem 0.65rem;
-    border-radius: 8px;
-    border: 1px solid #555;
-    background-color: #1e1e1e;
-    color: #fff;
+    min-height: 2.85rem;
+    padding: 0.55rem 2.35rem 0.55rem 0.85rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-mid, rgba(255, 255, 255, 0.14));
+    background-color: var(--bg-elevated, #101014);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1.5 1.75L6 6.25L10.5 1.75' stroke='%23a1a1aa' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.85rem center;
+    background-size: 12px 8px;
+    color: var(--text-primary, #fff);
     font-family: var(--font, "DM Sans", system-ui, sans-serif);
     font-size: 0.9rem;
+    font-weight: 650;
     cursor: pointer;
+    color-scheme: dark;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.home-settings-select:focus
+{
+    outline: none;
+    border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+.home-settings-select option
+{
+    background-color: var(--bg-card, #1a1a1a);
+    color: var(--text-primary, #fff);
 }
 html[data-theme="light"] .home-settings-select
 {
-    border-color: #aaa;
-    background-color: #f5f5f5;
+    border-color: var(--border-mid, #ccc);
+    background-color: #fff;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1.5 1.75L6 6.25L10.5 1.75' stroke='%23555555' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    color: var(--text-primary, #111);
+    color-scheme: light;
+}
+html[data-theme="light"] .home-settings-select option
+{
+    background-color: #fff;
     color: #111;
 }
 .home-settings-toggle
 {
     display: flex;
     align-items: center;
-    gap: 0.65rem;
-    margin-top: 0.65rem;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 0.5rem;
+    padding: 0.8rem 0.9rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.09));
+    background: var(--surface-inset, rgba(255, 255, 255, 0.03));
     font-family: var(--font, "DM Sans", system-ui, sans-serif);
-    font-size: 0.9rem;
-    color: #eee;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-primary, #eee);
     cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
 }
 .home-settings-toggle:first-of-type
 {
-    margin-top: 0.35rem;
+    margin-top: 0.25rem;
+}
+.home-settings-toggle:hover
+{
+    border-color: var(--border-mid, rgba(255, 255, 255, 0.16));
+    background: var(--surface-hover, rgba(255, 255, 255, 0.05));
 }
 html[data-theme="light"] .home-settings-toggle
 {
-    color: #222;
+    color: var(--text-primary, #222);
+    background: rgba(0, 0, 0, 0.03);
+    border-color: var(--border-subtle, #ddd);
 }
 .home-settings-checkbox
 {
-    accent-color: var(--accent);
-    width: 1.05rem;
-    height: 1.05rem;
+    -webkit-appearance: none;
+    appearance: none;
+    position: relative;
+    width: 2.7rem;
+    height: 1.55rem;
     flex-shrink: 0;
+    margin: 0;
+    order: 2;
+    border-radius: 999px;
+    border: 1px solid var(--border-mid, rgba(255, 255, 255, 0.16));
+    background: rgba(255, 255, 255, 0.08);
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+.home-settings-checkbox::after
+{
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 1.15rem;
+    height: 1.15rem;
+    border-radius: 50%;
+    background: #e4e4e7;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.28);
+    transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.home-settings-checkbox:checked
+{
+    background: linear-gradient(135deg, var(--accent-bright, var(--accent)), var(--accent-deep, var(--accent)));
+    border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+}
+.home-settings-checkbox:checked::after
+{
+    transform: translateX(1.15rem);
+    background: #fff;
+}
+.home-settings-checkbox:focus-visible
+{
+    outline: 2px solid color-mix(in srgb, var(--accent) 55%, transparent);
+    outline-offset: 2px;
+}
+html[data-theme="light"] .home-settings-checkbox
+{
+    background: rgba(0, 0, 0, 0.1);
+    border-color: var(--border-mid, #bbb);
+}
+html[data-theme="light"] .home-settings-checkbox::after
+{
+    background: #fff;
+}
+/* Hub switch uses its own track — reset checkbox chrome */
+.settings-hub-switch .home-settings-checkbox,
+.settings-hub-switch .home-settings-checkbox::after
+{
+    appearance: none;
+    -webkit-appearance: none;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    order: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    transform: none;
+}
+.settings-hub-switch .home-settings-checkbox::after
+{
+    content: none;
+    display: none;
 }
 .home-settings-meta
 {
     margin: 0;
     font-family: var(--font, "DM Sans", system-ui, sans-serif);
     font-size: 0.85rem;
-    color: #888;
+    color: var(--text-muted, #9a9aa2);
 }
 html[data-theme="light"] .home-settings-meta
 {
-    color: #666;
+    color: var(--text-muted, #666);
 }
 .home-settings-inline-links
 {
-    margin-top: 0.5rem;
+    margin-top: 0.55rem;
     font-family: var(--font, "DM Sans", system-ui, sans-serif);
     font-size: 0.85rem;
 }
 .home-settings-inline-link
 {
-    color: var(--accent);
+    color: var(--accent-bright, var(--accent));
     text-decoration: none;
+    font-weight: 650;
 }
 .home-settings-inline-link:hover
 {
@@ -427,7 +607,7 @@ html[data-theme="light"] .home-settings-meta
 }
 .home-settings-sep
 {
-    color: #666;
+    color: var(--text-muted, #666);
     margin: 0 0.35rem;
 }
 .home-settings-section--footer
@@ -984,12 +1164,6 @@ html[data-theme="light"] .pr-card .pr-list li
 {
     color: #222;
 }
-html[data-theme="light"] .tracking-pr-form
-{
-    background-color: #fff;
-    border-color: #ccc;
-    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08);
-}
 html[data-theme="light"] .tracking-field label,
 html[data-theme="light"] .tracking-pr-discipline-legend
 {
@@ -1027,16 +1201,23 @@ html[data-theme="light"] .tracking-stats-range-btn.active
     width: 100%;
     box-sizing: border-box;
     margin-top: 0.35rem;
-    padding: 0.55rem 0.65rem;
+    padding: 0.75rem 0.85rem;
     font-family: var(--font, "DM Sans", system-ui, sans-serif);
     font-size: 0.88rem;
-    line-height: 1.4;
-    color: #e8e8e8;
-    background-color: #1a1a1a;
-    border: 1px solid #555;
-    border-radius: 8px;
+    line-height: 1.45;
+    color: var(--text-primary, #e8e8e8);
+    background-color: var(--bg-elevated, #101014);
+    border: 1px solid var(--border-mid, rgba(255, 255, 255, 0.14));
+    border-radius: 12px;
     resize: vertical;
     min-height: 4.5rem;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.home-settings-textarea:focus
+{
+    outline: none;
+    border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
 }
 
 .home-settings-notes-block
@@ -1158,18 +1339,21 @@ html[data-theme="light"] .home-settings-textarea
 .home-settings-danger-btn
 {
     margin-top: 0.75rem;
-    padding: 0.6rem 1rem;
-    border-radius: 10px;
+    padding: 0.7rem 1.05rem;
+    border-radius: 12px;
     border: 1px solid rgba(255, 120, 120, 0.45);
-    background: transparent;
+    background: rgba(127, 29, 29, 0.22);
     color: #ffb4b4;
     cursor: pointer;
     font-family: var(--font, "DM Sans", system-ui, sans-serif);
     font-size: 0.88rem;
+    font-weight: 650;
+    transition: background 0.15s, border-color 0.15s, transform 0.15s;
 }
 .home-settings-danger-btn:hover
 {
-    background: rgba(255, 80, 80, 0.12);
+    background: rgba(255, 80, 80, 0.16);
+    border-color: rgba(255, 140, 140, 0.6);
 }
 .home-settings-danger-btn--solid
 {
@@ -1399,15 +1583,22 @@ html[data-theme="light"] .home-settings-input
 {
     .home-settings-dialog
     {
-        padding: max(0.75rem, env(safe-area-inset-top, 0px)) max(0.65rem, env(safe-area-inset-right, 0px)) max(0.75rem, env(safe-area-inset-bottom, 0px)) max(0.65rem, env(safe-area-inset-left, 0px));
-        align-items: stretch;
+        padding: max(0.5rem, env(safe-area-inset-top, 0px)) max(0.5rem, env(safe-area-inset-right, 0px)) max(0.5rem, env(safe-area-inset-bottom, 0px)) max(0.5rem, env(safe-area-inset-left, 0px));
+        align-items: flex-end;
     }
 
     .home-settings-panel
     {
         max-width: none;
-        max-height: min(92dvh, 720px);
-        border-radius: 12px;
+        max-height: min(94dvh, 780px);
+        border-radius: 18px 18px 14px 14px;
+        align-self: flex-end;
+        transform: translateY(18px);
+    }
+
+    .home-settings-dialog.is-open .home-settings-panel
+    {
+        transform: translateY(0);
     }
 
     .home-settings-theme-row

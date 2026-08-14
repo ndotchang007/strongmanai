@@ -62,6 +62,17 @@
 
   function exerciseSets(ex) {
     var out = [];
+    if (!ex) return out;
+    if (Array.isArray(ex.sets) && ex.sets.length) {
+      ex.sets.forEach(function (s) {
+        if (!s) return;
+        out.push({
+          weight: parseNum(s.weight != null ? s.weight : s.lbs),
+          reps: parseNum(s.reps),
+        });
+      });
+      if (out.length) return out;
+    }
     var weights = Array.isArray(ex.setWeights) ? ex.setWeights : [];
     var reps = Array.isArray(ex.setReps) ? ex.setReps : [];
     var n = Math.max(weights.length, reps.length);
@@ -280,7 +291,9 @@
         lMax = Math.max(lMax, sessionPeakForName(s, opt.key));
       });
       if (eMax > 0 || lMax > 0) {
-        labels.push(opt.name.length > 18 ? opt.name.slice(0, 16) + '…' : opt.name);
+        var fullName = opt.name;
+        var shortName = fullName.length > 28 ? fullName.slice(0, 26) + '…' : fullName;
+        labels.push(shortName);
         early.push(eMax || 0);
         late.push(lMax || 0);
       }
@@ -395,6 +408,8 @@
 
   window.StrengthStats = {
     sessionVolume: sessionVolume,
+    sessionPeakForName: sessionPeakForName,
+    sessionBestE1rmForName: sessionBestE1rmForName,
     listExerciseOptions: listExerciseOptions,
     buildVolumeSeries: buildVolumeSeries,
     buildPeakSeries: buildPeakSeries,
@@ -404,5 +419,7 @@
     themeAccent: themeAccent,
     normalizeName: normalizeName,
     slope: slope,
+    epleyE1rm: epleyE1rm,
+    exerciseSets: exerciseSets,
   };
 })();

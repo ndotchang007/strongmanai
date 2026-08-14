@@ -1,8 +1,33 @@
 (function () {
   var VERSIONS = [
     {
-      slug: 'v1.2',
+      slug: 'v1.3',
       eyebrow: 'Current release',
+      title: 'Version 1.3',
+      date: 'August 14, 2026',
+      summary:
+        'A sharper public site and a cleaner in-app settings experience — progressive-overload docs, a trustworthy download page, modernized Settings, and marketing polish across About, footers, and the landing phone mockup.',
+      majorFeatures: [
+        'Full progressive-overload algorithm article on the blog — diagrams, formulas, decision trees, and end-to-end ProgressionEngine detail',
+        'Dedicated /download page with official branding, safety copy, and honest web-first CTAs (no shady install overlays)',
+        'Modernized Settings hub — theme tokens, card sections, switch-style toggles, smoother open motion, and a mobile bottom sheet',
+        'Expanded About page plus richer multi-column footers with About, Blog, Legal, Leaderboards, Instagram (@strongmanai), and contact',
+        'Landing phone mockup screenshot correctly fills the iPhone frame (aligned screen insets and framing)',
+      ],
+      minorFixes: [
+        'Phone screen insets match the transparent display hole in the device frame so the tab bar isn’t cropped',
+        'Settings theme picker no longer applies conflicting pill styles when theme cards are mounted',
+      ],
+      minorChanges: [
+        'Roomier login card with breathing room between sign-in and sign-up panels during the slide transition',
+        'Landing Download CTAs (nav, hero, CTA, footer) all route to /download',
+        'Removed the floating Start workout button from the bottom of the Home dashboard',
+        'App version bumped to v1.3 across Settings, Info, Download, and patch-note links',
+      ],
+    },
+    {
+      slug: 'v1.2',
+      eyebrow: 'Previous release',
       title: 'Version 1.2',
       date: 'July 10, 2026',
       summary:
@@ -97,6 +122,6 @@
   window.VERSION_CATALOG = {
     list: list,
     get: get,
-    current: 'v1.2',
+    current: 'v1.3',
   };
 })();

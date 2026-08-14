@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-marketing="1">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,21 +9,39 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="/shared/theme.js"></script>
+    <link rel="stylesheet" href="/css/marketing-nav.css">
     <link rel="stylesheet" href="/css/about.css">
+    <link rel="stylesheet" href="/css/cookie-consent.css">
 </head>
 <body>
-    <header class="about-header">
-        <a href="/" class="about-header-logo">STRONGMAN <span class="about-header-logo-ai">AI</span></a>
-        <nav class="about-header-nav">
-            <a href="/" class="about-header-link">Home</a>
-            <a href="/about" class="about-header-link">About</a>
-            <a href="/login" class="about-header-link">Login</a>
-            <a href="/signup" class="about-header-link">Sign up</a>
-        </nav>
-    </header>
-
-    <main class="about-main">
+    <header class="mkt-nav" id="mkt-nav">
+  <div class="mkt-nav-inner">
+    <a class="mkt-brand" href="/">
+      <img class="mkt-brand-logo" src="/assets/logo.png" alt="" width="22" height="22" decoding="async">
+      Strongman AI
+    </a>
+    <div class="mkt-nav-right">
+      <a href="/blog">Blog</a>
+      <a href="/leaderboards">Leaderboards</a>
+      <a href="/login">Login</a>
+      <a href="/#pricing">Pricing</a>
+      <a class="mkt-btn" href="/signup">Start free</a>
+    </div>
+    <button type="button" class="mkt-burger" id="mkt-burger" aria-label="Menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+<div class="mkt-panel" id="mkt-panel">
+  <a href="/blog">Blog</a>
+  <a href="/leaderboards">Leaderboards</a>
+  <a href="/login">Login</a>
+  <a href="/#pricing">Pricing</a>
+  <a class="mkt-btn" href="/signup">Start free</a>
+</div>
+<main class="about-main">
         <h1 class="about-page-title">Terms &amp; Privacy</h1>
         <p class="about-lead">Plain-language summaries for the Strongman AI web experience. This is not personalized legal advice. <strong style="color: var(--text-secondary); font-weight: 600;">Last updated: June 24, 2026.</strong></p>
 
@@ -108,8 +126,36 @@
         </section>
     </main>
 
-    <footer class="about-footer">
-        <p class="about-footer-copy">&copy; Strongman AI · <a href="/about">About</a> · <a href="/">Home</a></p>
+    <footer class="mkt-foot">
+        <div class="mkt-foot-inner">
+            <div class="mkt-foot-brand">
+                <a class="mkt-foot-logo" href="/">
+                    <img src="/assets/logo.png" alt="" width="22" height="22" decoding="async">
+                    Strongman AI
+                </a>
+                <p class="mkt-foot-tag">Built for becoming.</p>
+                <p class="mkt-foot-email"><a href="mailto:strongmanaioutreach@gmail.com">strongmanaioutreach@gmail.com</a></p>
+            </div>
+            <div class="mkt-foot-cols">
+                <div class="mkt-foot-col">
+                    <h3 class="mkt-foot-heading">Product</h3>
+                    <a href="/about">About</a>
+                    <a href="/blog">Blog</a>
+                    <a href="/leaderboards">Leaderboards</a>
+                </div>
+                <div class="mkt-foot-col">
+                    <h3 class="mkt-foot-heading">Legal</h3>
+                    <a href="/legal">Terms &amp; Privacy</a>
+                </div>
+                <div class="mkt-foot-col">
+                    <h3 class="mkt-foot-heading">Social</h3>
+                    <a href="https://www.instagram.com/strongmanai/" target="_blank" rel="noopener noreferrer">Instagram</a>
+                </div>
+            </div>
+        </div>
+        <p class="mkt-foot-copy">&copy; 2026 Strongman AI</p>
     </footer>
+    <script src="/shared/marketing-nav.js"></script>
+    <script src="/shared/cookie-consent.js"></script>
 </body>
 </html>

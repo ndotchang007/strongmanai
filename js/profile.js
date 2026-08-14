@@ -104,9 +104,19 @@
     }
   }
 
-  function buildTrophyCard(ach) {
+  function buildTrophyCard(ach, opts) {
+    opts = opts || {};
     var li = document.createElement('li');
     li.className = 'profile-chip-item';
+    if (opts.empty) {
+      var empty = document.createElement('div');
+      empty.className = 'pf-trophy pf-trophy--empty';
+      empty.innerHTML =
+        '<span class="pf-trophy-icon" aria-hidden="true">+</span>' +
+        '<span class="pf-trophy-label">Empty</span>';
+      li.appendChild(empty);
+      return li;
+    }
     var card = document.createElement('div');
     card.className =
       'pf-trophy pf-trophy--unlocked pf-trophy--tier-' + (ach.tier || 'bronze');
@@ -174,6 +184,25 @@
     return li;
   }
 
+  function renderProfileXp(u, viewingOther) {
+    if (!levelValueEl) return;
+    var XP = window.StrongmanXp;
+    var total = 0;
+    if (!viewingOther && XP && typeof XP.getSnapshot === 'function') {
+      total = XP.getSnapshot().totalXp;
+    } else if (u && u.totalXp != null) {
+      total = Math.max(0, Number(u.totalXp) || 0);
+    }
+    var level =
+      XP && typeof XP.levelFromXp === 'function' ? XP.levelFromXp(total).level : 1;
+    levelValueEl.textContent = String(level);
+    if (levelStatEl) {
+      var xpLabel =
+        XP && typeof XP.formatXp === 'function' ? XP.formatXp(total) : String(Math.round(total));
+      levelStatEl.title = 'Level ' + level + ' · ' + xpLabel + ' XP';
+    }
+  }
+
   function updateAchievementStats(state) {
     if (!state) return;
     if (badgeCountEl) {
@@ -181,11 +210,17 @@
     }
     var sub = document.getElementById('profile-badges-subtitle');
     if (sub) {
-      sub.textContent =
-        state.unlockedCount +
-        ' of ' +
-        state.totalCount +
-        ' achievements unlocked';
+      if (isViewingOtherProfile) {
+        sub.textContent =
+          state.unlockedCount + ' of ' + state.totalCount + ' unlocked';
+      } else {
+        sub.textContent = 'Tap to choose 3';
+      }
+    }
+    var hint = document.getElementById('profile-trophy-hint');
+    if (hint) {
+      hint.hidden = !!isViewingOtherProfile;
+      hint.textContent = 'Edit';
     }
   }
 
@@ -399,10 +434,7 @@
     if (!u) return '';
     if (u.bio != null && String(u.bio).trim()) return String(u.bio).trim();
     if (u.profileBio != null && String(u.profileBio).trim()) return String(u.profileBio).trim();
-    var parts = [];
-    if (u.experience) parts.push(String(u.experience));
-    if (u.reason) parts.push(String(u.reason));
-    return parts.join(' · ');
+    return '';
   }
 
   function compressImageFile(file, maxDim, quality) {
@@ -480,7 +512,11 @@
   var toolbarEl = document.querySelector('.profile-toolbar');
   var logoutWrap = document.getElementById('profile-logout-wrap');
   var logoutLink = document.getElementById('profile-logout');
-  var editToggle = document.getElementById('profile-edit-toggle');
+  var editToggle = null;
+  var shareBtn = document.getElementById('profile-share-btn');
+  var previewBtn = null;
+  var previewBanner = null;
+  var followBtn = document.getElementById('profile-follow-btn');
   var avatarChangeLabel = document.getElementById('profile-avatar-change-label');
   var avatarInput = document.getElementById('profile-avatar-input');
   var heroCard = document.querySelector('.profile-card');
@@ -494,16 +530,40 @@
   var canEditProfile = false;
   var editModeOpen = false;
   var isViewingOtherProfile = false;
+  var previewAsVisitor = false;
   var displayedProfileUserId = null;
   var highlightsList = document.getElementById('profile-highlights-list');
   var highlightsEmpty = document.getElementById('profile-highlights-empty');
   var highlightsWrap = document.getElementById('profile-highlights-wrap');
-  var viewBadgesBtn = document.getElementById('profile-view-badges-btn');
+  var showcaseOverlay = document.getElementById('profile-showcase-overlay');
+  var showcaseGrid = document.getElementById('profile-showcase-grid');
+  var showcaseCountEl = document.getElementById('profile-showcase-count');
+  var showcaseSubtitleEl = document.getElementById('profile-showcase-subtitle');
   var experienceTagEl = document.getElementById('profile-experience-tag');
   var experienceTextEl = document.getElementById('profile-experience-text');
   var badgeCountEl = document.getElementById('profile-badge-count');
+  var levelValueEl = document.getElementById('profile-level-value');
+  var levelStatEl = document.getElementById('profile-level-stat');
   var athleteWrap = document.getElementById('profile-athlete-wrap');
   var athleteGrid = document.getElementById('profile-athlete-grid');
+  var sportsWrap = document.getElementById('profile-sports-wrap');
+  var sportsChips = document.getElementById('profile-sports-chips');
+  var radarMount = document.getElementById('profile-radar-mount');
+  var radarEmpty = document.getElementById('profile-radar-empty');
+  var radarWrap = document.getElementById('profile-radar-wrap');
+  var hexOverlay = document.getElementById('profile-hex-overlay');
+  var hexDetailMount = document.getElementById('profile-hex-detail-mount');
+  var hexScoresEl = document.getElementById('profile-hex-scores');
+  var hexSubtitleEl = document.getElementById('profile-hex-subtitle');
+  var lastHexLifts = [];
+  var lastHexViewingOther = false;
+  var ownerTools = null;
+  var userSettingsCta = document.getElementById('profile-user-settings-cta');
+  var userSettingsBtn = userSettingsCta;
+  var metaRow = document.getElementById('profile-meta-row');
+  var SHOWCASE_SLOTS = 3;
+  var draftShowcaseIds = [];
+  var viewingShowcaseOwnerId = null;
 
   function setError(msg) {
     if (!errorBanner) return;
@@ -567,7 +627,7 @@
   }
 
   function setEditMode(open) {
-    if (isViewingOtherProfile || !canEditProfile) {
+    if (isViewingOtherProfile || !canEditProfile || previewAsVisitor) {
       editModeOpen = false;
       open = false;
     } else {
@@ -579,8 +639,8 @@
       bioEditWrap.hidden = !editModeOpen;
       bioEditWrap.setAttribute('aria-hidden', editModeOpen ? 'false' : 'true');
     }
-    if (avatarChangeLabel) avatarChangeLabel.hidden = !editModeOpen || !canEditProfile;
-    if (editToggle) editToggle.textContent = editModeOpen ? 'Done editing' : 'Edit profile';
+    // Camera control stays available for owners — not only while editing bio.
+    if (avatarChangeLabel) avatarChangeLabel.hidden = !canEditProfile || isViewingOtherProfile;
     if (editModeOpen && bioInput) {
       var vu = window.getCurrentUser();
       var raw =
@@ -596,11 +656,16 @@
 
   function syncProfileViewState(ownProfile) {
     isViewingOtherProfile = !ownProfile;
-    canEditProfile = !!ownProfile;
+    canEditProfile = !!ownProfile && !previewAsVisitor;
     document.body.classList.toggle('profile-is-owner', !!ownProfile);
     document.body.classList.toggle('profile-is-visitor', !ownProfile);
-    if (avatarInput) avatarInput.disabled = !ownProfile;
+    if (avatarInput) avatarInput.disabled = !ownProfile || previewAsVisitor;
+    if (avatarChangeLabel) avatarChangeLabel.hidden = !ownProfile || previewAsVisitor;
+    if (previewBtn) {
+      previewBtn.hidden = !ownProfile;
+    }
     if (!ownProfile) {
+      setVisitorPreview(false);
       setEditMode(false);
       if (saveStatusEl) {
         saveStatusEl.hidden = true;
@@ -614,6 +679,105 @@
     }
   }
 
+  function setVisitorPreview(on) {
+    if (!canEditProfile && !previewAsVisitor && on) return;
+    if (isViewingOtherProfile) on = false;
+    previewAsVisitor = !!on;
+    document.body.classList.toggle('profile-preview-visitor', previewAsVisitor);
+    if (previewBtn) {
+      previewBtn.setAttribute('aria-pressed', previewAsVisitor ? 'true' : 'false');
+      previewBtn.title = previewAsVisitor ? 'Exit visitor preview' : 'Preview as visitor';
+      previewBtn.setAttribute(
+        'aria-label',
+        previewAsVisitor
+          ? 'Exit visitor preview'
+          : 'Preview how your profile looks to others'
+      );
+      var eye = previewBtn.querySelector('.pf-preview-icon--eye');
+      var off = previewBtn.querySelector('.pf-preview-icon--off');
+      if (eye) eye.hidden = !!previewAsVisitor;
+      if (off) off.hidden = !previewAsVisitor;
+    }
+    if (previewBanner) previewBanner.hidden = !previewAsVisitor;
+    if (previewAsVisitor) {
+      setEditMode(false);
+      if (avatarChangeLabel) avatarChangeLabel.hidden = true;
+      if (userSettingsBtn) userSettingsBtn.hidden = true;
+      if (toolbarEl) toolbarEl.hidden = false;
+      if (followBtn) {
+        followBtn.hidden = false;
+        followBtn.disabled = true;
+        followBtn.textContent = 'Follow';
+        followBtn.classList.add('profile-btn--primary');
+        followBtn.classList.remove('profile-btn--ghost');
+        followBtn.onclick = null;
+      }
+      if (competeBtn) {
+        competeBtn.hidden = false;
+        competeBtn.disabled = true;
+      }
+      if (highlightsWrap) {
+        highlightsWrap.classList.remove('pf-card-trophies--editable');
+      }
+    } else {
+      if (avatarChangeLabel) avatarChangeLabel.hidden = !document.body.classList.contains('profile-is-owner');
+      if (userSettingsBtn) userSettingsBtn.hidden = !document.body.classList.contains('profile-is-owner');
+      if (toolbarEl) toolbarEl.hidden = true;
+      if (followBtn) {
+        followBtn.disabled = false;
+        followBtn.hidden = true;
+      }
+      if (competeBtn) {
+        competeBtn.disabled = false;
+        competeBtn.hidden = true;
+      }
+      if (highlightsWrap && document.body.classList.contains('profile-is-owner')) {
+        highlightsWrap.classList.add('pf-card-trophies--editable');
+      }
+      canEditProfile = document.body.classList.contains('profile-is-owner');
+      if (avatarChangeLabel) {
+        avatarChangeLabel.hidden = !canEditProfile;
+      }
+    }
+  }
+
+  function profileShareUrl() {
+    var id =
+      displayedProfileUserId != null
+        ? displayedProfileUserId
+        : window.getCurrentUser() && window.getCurrentUser().id;
+    if (id == null) return window.location.origin + '/profile';
+    return window.location.origin + '/profile?id=' + encodeURIComponent(String(id));
+  }
+
+  function shareProfileCard() {
+    var url = profileShareUrl();
+    var name =
+      (usernameEl && usernameEl.textContent) ||
+      displayNameFromUser(window.getCurrentUser()) ||
+      'Strongman AI';
+    var title = name + ' on Strongman AI';
+    var text = 'Check out ' + name + "'s athlete card on Strongman AI";
+    if (navigator.share) {
+      navigator
+        .share({ title: title, text: text, url: url })
+        .catch(function () {});
+      return;
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(
+        function () {
+          setSaveStatus('Profile link copied');
+        },
+        function () {
+          window.prompt('Copy profile link', url);
+        }
+      );
+      return;
+    }
+    window.prompt('Copy profile link', url);
+  }
+
   function configureProfileEditing(enabled, user) {
     var viewerUser = window.getCurrentUser();
     var targetId =
@@ -621,7 +785,8 @@
     var isOwn = !!enabled && isOwnProfileView(viewerUser, targetId);
     syncProfileViewState(isOwn);
     if (!isOwn) setEditMode(false);
-    if (avatarChangeLabel) avatarChangeLabel.hidden = !editModeOpen || !canEditProfile;
+    // Owner camera stays on the photo always — never gated on bio edit mode.
+    if (avatarChangeLabel) avatarChangeLabel.hidden = !isOwn;
     if (canEditProfile && user && bioInput && !editModeOpen) {
       var draft = bioFromUser(user);
       bioInput.value = draft === EMPTY_BIO_TEXT ? '' : draft;
@@ -798,139 +963,452 @@
     }
   }
 
-  function renderExperienceTag(u) {
-    if (!experienceTagEl || !experienceTextEl) return;
-    var exp = u && u.experience != null ? String(u.experience).trim() : '';
-    if (!exp) {
-      experienceTagEl.hidden = true;
-      return;
+  function renderExperienceTag() {
+    if (experienceTagEl) experienceTagEl.hidden = true;
+    if (metaRow && sportsChips) {
+      metaRow.hidden = !!sportsChips.hidden;
     }
-    experienceTagEl.hidden = false;
-    experienceTextEl.textContent = exp;
   }
 
-  function renderAthleteSnapshot(u) {
-    if (!athleteWrap || !athleteGrid) return;
-    var items = [];
+  function renderSportsChips(u) {
+    if (!sportsChips) return;
     var AC = window.AthleteContext;
     var ctx = AC && u ? AC.loadAthleteContext(u) : null;
+    var sports = ctx && AC.getSports ? AC.getSports(ctx) : [];
+    sportsChips.innerHTML = '';
+    var count = 0;
+    sports.forEach(function (entry) {
+      var name = (entry && entry.sport) || '';
+      if (!name) return;
+      var li = document.createElement('li');
+      li.className = 'pf-sport-chip';
+      li.textContent = name;
+      sportsChips.appendChild(li);
+      count += 1;
+    });
+    sportsChips.hidden = count === 0;
+    if (sportsWrap) sportsWrap.hidden = true;
+    if (experienceTagEl) experienceTagEl.hidden = true;
+    if (metaRow) metaRow.hidden = count === 0;
+  }
 
-    if (ctx) {
-      var sports = AC.getSports ? AC.getSports(ctx) : [];
-      if (sports.length) {
-        var sportsHtml = sports
-          .map(function (entry) {
-            var sp = AC.getSportRecordForEntry ? AC.getSportRecordForEntry(entry) : null;
-            var line = entry.sport;
-            if (entry.programType && AC.PROGRAM_LABELS && AC.PROGRAM_LABELS[entry.programType]) {
-              line += ' · ' + AC.PROGRAM_LABELS[entry.programType];
+  function collectRecentLifts() {
+    if (!window.WorkoutLog || typeof window.WorkoutLog.getSessions !== 'function') return [];
+    var recent = (window.WorkoutLog.getSessions() || []).slice().reverse().slice(0, 48);
+    var lifts = [];
+    recent.forEach(function (s) {
+      if (!s) return;
+      var list = s.exercises || s.lifts || [];
+      if (!Array.isArray(list)) return;
+      list.forEach(function (ex) {
+        if (ex) lifts.push(ex);
+      });
+    });
+    // Fold PR log into the same pool when available (often stronger than recent sets).
+    if (window.PRLog && typeof window.PRLog.getRecords === 'function') {
+      (window.PRLog.getRecords() || []).forEach(function (pr) {
+        if (!pr) return;
+        var name = pr.eventLabel || pr.exercise || pr.name;
+        if (!name) return;
+        var w = null;
+        var r = 1;
+        if (pr.discipline === 'weightlifting' || pr.weight != null) {
+          w = Number(pr.weight);
+          if (!Number.isFinite(w) || w <= 0) {
+            var vd = String(pr.valueDisplay || '');
+            var m = vd.match(/([\d.]+)\s*(lb|kg)?/i);
+            if (m) {
+              w = parseFloat(m[1]);
+              if (m[2] && m[2].toLowerCase() === 'kg') w *= 2.2046226218;
             }
-            if (entry.position) line += ' · ' + entry.position;
-            var meta = [];
-            var phase =
-              AC.resolveSeasonPhase && entry
-                ? AC.resolveSeasonPhase(entry)
-                : entry.seasonPhase;
-            if (phase && AC.SEASON_LABELS[phase]) {
-              meta.push(AC.SEASON_LABELS[phase]);
-            }
-            var practice = AC.formatWeekdays ? AC.formatWeekdays(entry.practiceDays) : '';
-            if (practice) meta.push('Practice ' + practice);
-            var comp = AC.competitionLabelForEntry
-              ? AC.competitionLabelForEntry(entry)
-              : 'Game';
-            var games = AC.formatWeekdays ? AC.formatWeekdays(entry.gameDays) : '';
-            if (games) meta.push(comp + ' ' + games);
-            if (entry.seasonStartDate) meta.push('Starts ' + entry.seasonStartDate);
-            if (entry.nextEventDate) {
-              meta.push(
-                (entry.nextEventLabel || comp) + ' ' + entry.nextEventDate
-              );
-            }
-            return (
-              '<div class="profile-sport-row">' +
-              '<div class="profile-sport-row-name">' +
-              line +
-              '</div>' +
-              (meta.length
-                ? '<div class="profile-sport-row-meta">' + meta.join(' · ') + '</div>'
-                : '') +
-              '</div>'
-            );
-          })
-          .join('');
-        items.push({
-          label: sports.length > 1 ? 'Sports' : 'Sport',
-          value: '<div class="profile-sports-list">' + sportsHtml + '</div>',
-          html: true,
+          } else if (pr.unit === 'kg') {
+            w *= 2.2046226218;
+          }
+          r = pr.reps != null ? Number(pr.reps) : 1;
+        }
+        if (w && w > 0) {
+          lifts.push({ name: name, weight: w, reps: r || 1, sets: [{ weight: w, reps: r || 1 }] });
+        }
+      });
+    }
+    return lifts;
+  }
+
+  function fallbackHexHtml() {
+    // Hardcoded baseline hex so the card never shows an empty muscle map.
+    var size = 340;
+    var cx = 170;
+    var cy = 170;
+    var r = 112;
+    var labels = ['Legs', 'Abs', 'Shoulders', 'Chest', 'Back', 'Arms'];
+    var n = 6;
+    var rings = [0.33, 0.66, 1]
+      .map(function (t) {
+        var pts = [];
+        for (var k = 0; k < n; k++) {
+          var a = (k * 2 * Math.PI) / n - Math.PI / 2;
+          pts.push((cx + r * t * Math.cos(a)).toFixed(1) + ',' + (cy + r * t * Math.sin(a)).toFixed(1));
+        }
+        return '<polygon fill="none" stroke="#ff4d0d" stroke-opacity="0.35" stroke-width="1.35" points="' + pts.join(' ') + '"/>';
+      })
+      .join('');
+    var spokes = '';
+    var labs = '';
+    var fill = [];
+    for (var i = 0; i < n; i++) {
+      var ang = (i * 2 * Math.PI) / n - Math.PI / 2;
+      var tx = cx + r * Math.cos(ang);
+      var ty = cy + r * Math.sin(ang);
+      var lx = cx + (r + 28) * Math.cos(ang);
+      var ly = cy + (r + 28) * Math.sin(ang);
+      var fx = cx + r * 0.1 * Math.cos(ang);
+      var fy = cy + r * 0.1 * Math.sin(ang);
+      spokes +=
+        '<line x1="' +
+        cx +
+        '" y1="' +
+        cy +
+        '" x2="' +
+        tx.toFixed(1) +
+        '" y2="' +
+        ty.toFixed(1) +
+        '" stroke="#ff4d0d" stroke-opacity="0.4" stroke-width="1.25"/>';
+      labs +=
+        '<text x="' +
+        lx.toFixed(1) +
+        '" y="' +
+        ly.toFixed(1) +
+        '" text-anchor="middle" dominant-baseline="middle" fill="#c8c8d0" font-size="11" font-weight="700" font-family="DM Sans,sans-serif">' +
+        labels[i] +
+        '</text>';
+      fill.push(fx.toFixed(1) + ',' + fy.toFixed(1));
+    }
+    return (
+      '<div class="mm-radar mm-radar--hex" role="img" aria-label="Muscle skills">' +
+      '<svg class="mm-radar-svg" viewBox="0 0 ' +
+      size +
+      ' ' +
+      size +
+      '" width="100%" style="color:#ff4d0d">' +
+      rings +
+      spokes +
+      '<polygon fill="#ff4d0d" fill-opacity="0.28" stroke="#ff4d0d" stroke-width="2.75" points="' +
+      fill.join(' ') +
+      '"/>' +
+      labs +
+      '</svg></div>'
+    );
+  }
+
+  function renderMuscleHex(viewingOther) {
+    if (!radarMount) return;
+    if (radarWrap) radarWrap.hidden = false;
+    if (radarEmpty) radarEmpty.hidden = true;
+
+    var lifts = [];
+    try {
+      lifts = viewingOther ? [] : collectRecentLifts();
+    } catch (e) {
+      lifts = [];
+    }
+    lastHexLifts = lifts;
+    lastHexViewingOther = !!viewingOther;
+
+    var html = '';
+    try {
+      if (window.MuscleMap && typeof window.MuscleMap.renderRadar === 'function') {
+        html = window.MuscleMap.renderRadar(lifts, {
+          hex: true,
+          title: '',
+          spectrum: false,
+          user: window.getCurrentUser && window.getCurrentUser(),
         });
       }
-      var primary = AC.getPrimarySport ? AC.getPrimarySport(ctx) : null;
-      var sp = primary && AC.getSportRecordForEntry
-        ? AC.getSportRecordForEntry(primary)
-        : AC.getSportRecord ? AC.getSportRecord(ctx) : null;
-      if (sp && sp.liftingFocus) {
-        items.push({ label: 'Lifting focus', labelTip: 'lifting_focus', value: sp.liftingFocus });
+    } catch (err) {
+      html = '';
+    }
+
+    radarMount.innerHTML = html && String(html).indexOf('mm-radar') !== -1 ? html : fallbackHexHtml();
+
+    if (radarEmpty) {
+      if (viewingOther) {
+        radarEmpty.hidden = false;
+        radarEmpty.textContent = 'Baseline map — lift data stays private for now.';
+      } else if (!lifts.length) {
+        radarEmpty.hidden = false;
+        radarEmpty.textContent = 'Log heavy lifts — map uses est. 1RM vs strong standards.';
+      } else {
+        radarEmpty.hidden = true;
       }
-      if (ctx.primaryGoal && AC.GOAL_LABELS[ctx.primaryGoal]) {
-        items.push({ label: 'Goal', labelTip: 'main_goal', value: AC.GOAL_LABELS[ctx.primaryGoal] });
-      }
-      if (ctx.schoolNightMaxMinutes) {
-        items.push({
-          label: 'Weeknight cap',
-          labelTip: 'weeknight_cap',
-          value: ctx.schoolNightMaxMinutes + ' min',
-        });
+    }
+  }
+
+  function formatLb(n) {
+    if (!n || !Number.isFinite(n) || n <= 0) return '—';
+    return Math.round(n) + ' lb';
+  }
+
+  function closeHexDetail() {
+    if (!hexOverlay) return;
+    hexOverlay.hidden = true;
+  }
+
+  function openHexDetail() {
+    if (!hexOverlay || !hexDetailMount || !hexScoresEl) return;
+    if (!window.MuscleMap) return;
+
+    var lifts = lastHexLifts || [];
+    var user = window.getCurrentUser && window.getCurrentUser();
+    var html = '';
+    try {
+      html = window.MuscleMap.renderRadar(lifts, {
+        hex: true,
+        title: '',
+        spectrum: false,
+        size: 380,
+        user: user,
+      });
+    } catch (e) {
+      html = '';
+    }
+    hexDetailMount.innerHTML =
+      html && String(html).indexOf('mm-radar') !== -1 ? html : fallbackHexHtml();
+
+    var scored =
+      typeof window.MuscleMap.collectHexE1rmScores === 'function'
+        ? window.MuscleMap.collectHexE1rmScores(lifts, { user: user })
+        : { best: {}, values: {} };
+    var axes = window.MuscleMap.HEX_AXES || [];
+    var targets = window.MuscleMap.HEX_E1RM_TARGETS_LB || {};
+    var bits = axes.map(function (axis) {
+      var e1 = scored.best[axis.id] || 0;
+      var fill = scored.values[axis.id] || 0;
+      var pct = Math.round(fill * 100);
+      var target = targets[axis.id] || 0;
+      var meta = e1
+        ? 'Est. 1RM ' + formatLb(e1) + ' · target ' + formatLb(target)
+        : lastHexViewingOther
+          ? 'No shared lift data'
+          : 'No matching lifts logged yet';
+      return (
+        '<li class="pf-hex-score">' +
+        '<span class="pf-hex-score-label">' +
+        String(axis.label || axis.id) +
+        '</span>' +
+        '<span class="pf-hex-score-pct">' +
+        pct +
+        '%</span>' +
+        '<span class="pf-hex-score-meta">' +
+        meta +
+        '</span></li>'
+      );
+    });
+    hexScoresEl.innerHTML = bits.join('');
+
+    if (hexSubtitleEl) {
+      if (lastHexViewingOther) {
+        hexSubtitleEl.textContent = 'Visitor view — detailed lift scores stay private';
+      } else if (!lifts.length) {
+        hexSubtitleEl.textContent = 'Log lifts to fill scores · targets are advanced standards';
+      } else {
+        hexSubtitleEl.textContent = 'Est. 1RM vs advanced standards';
       }
     }
 
-    if (u && u.equipment) items.push({ label: 'Equipment', value: String(u.equipment) });
-    if (u && u.weight != null && String(u.weight).trim()) {
-      var w = String(u.weight).trim();
-      var unit = u.measurement === 'metric' ? ' kg' : ' lb';
-      items.push({ label: 'Weight', value: w + (/\d/.test(w) && !/lb|kg/i.test(w) ? unit : '') });
+    hexOverlay.hidden = false;
+    var closeBtn = document.getElementById('profile-hex-close');
+    if (closeBtn) closeBtn.focus();
+  }
+
+  function renderAthleteSnapshot(u, viewingOther) {
+    renderSportsChips(u);
+    renderMuscleHex(!!viewingOther);
+    if (athleteWrap) athleteWrap.hidden = true;
+  }
+
+  function showcaseStorageKey(userId) {
+    return 'strongman_trophy_showcase_v1_' + String(userId || 'guest');
+  }
+
+  function loadShowcaseIds(userId) {
+    if (userId == null) return [];
+    try {
+      var raw = localStorage.getItem(showcaseStorageKey(userId));
+      if (!raw) return [];
+      var parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return [];
+      return parsed
+        .map(function (id) {
+          return String(id || '').trim();
+        })
+        .filter(Boolean)
+        .slice(0, SHOWCASE_SLOTS);
+    } catch (e) {
+      return [];
     }
-    if (u && u.height != null && String(u.height).trim()) {
-      items.push({ label: 'Height', value: String(u.height).trim() });
+  }
+
+  function saveShowcaseIds(userId, ids) {
+    if (userId == null) return;
+    try {
+      localStorage.setItem(
+        showcaseStorageKey(userId),
+        JSON.stringify((ids || []).slice(0, SHOWCASE_SLOTS))
+      );
+    } catch (e) {}
+  }
+
+  function resolveShowcaseAchievements(unlocked, userId) {
+    var list = Array.isArray(unlocked) ? unlocked.slice() : [];
+    var byId = {};
+    list.forEach(function (ach) {
+      if (ach && ach.id != null) byId[String(ach.id)] = ach;
+    });
+    var picked = [];
+    var seen = {};
+    loadShowcaseIds(userId).forEach(function (id) {
+      if (byId[id] && !seen[id]) {
+        picked.push(byId[id]);
+        seen[id] = true;
+      }
+    });
+    list.forEach(function (ach) {
+      if (picked.length >= SHOWCASE_SLOTS) return;
+      var id = ach && ach.id != null ? String(ach.id) : '';
+      if (!id || seen[id]) return;
+      picked.push(ach);
+      seen[id] = true;
+    });
+    return picked.slice(0, SHOWCASE_SLOTS);
+  }
+
+  function paintShowcaseSlots(featured) {
+    if (!highlightsList) return;
+    highlightsList.innerHTML = '';
+    for (var i = 0; i < SHOWCASE_SLOTS; i++) {
+      if (featured[i]) {
+        highlightsList.appendChild(buildTrophyCard(featured[i]));
+      } else {
+        highlightsList.appendChild(buildTrophyCard(null, { empty: true }));
+      }
     }
-    if (u && u.timeAvailable && !ctx) items.push({ label: 'Training time', value: String(u.timeAvailable) });
-    if (u && u.reason && !ctx) items.push({ label: 'Goal', value: String(u.reason) });
-    if (!items.length) {
-      athleteWrap.hidden = true;
-      athleteGrid.innerHTML = '';
+  }
+
+  function updateShowcaseCountUi() {
+    if (showcaseCountEl) {
+      showcaseCountEl.textContent =
+        draftShowcaseIds.length + ' / ' + SHOWCASE_SLOTS + ' selected';
+    }
+    if (showcaseSubtitleEl) {
+      showcaseSubtitleEl.textContent =
+        draftShowcaseIds.length >= SHOWCASE_SLOTS
+          ? 'Card is full — tap a trophy to swap'
+          : 'Pick up to ' + SHOWCASE_SLOTS + ' for your card';
+    }
+  }
+
+  function renderShowcasePicker() {
+    if (!showcaseGrid || !currentAchievementState) return;
+    var unlocked = currentAchievementState.unlocked || [];
+    showcaseGrid.innerHTML = '';
+    if (!unlocked.length) {
+      var empty = document.createElement('li');
+      empty.className = 'pf-showcase-empty';
+      empty.textContent = 'Unlock achievements to showcase them here.';
+      showcaseGrid.appendChild(empty);
+      updateShowcaseCountUi();
       return;
     }
-    athleteWrap.hidden = false;
-    athleteGrid.innerHTML = '';
-    items.forEach(function (item) {
-      var div = document.createElement('div');
-      div.className = 'pf-snap-item';
-      var lbl = document.createElement('span');
-      lbl.className = 'pf-snap-label';
-      if (item.labelTip && window.InfoTip) {
-        lbl.innerHTML = window.InfoTip.label(item.label, item.labelTip);
-      } else {
-        lbl.textContent = item.label;
-      }
-      var val = document.createElement('span');
-      val.className = 'pf-snap-value';
-      if (item.html) {
-        val.innerHTML = item.value;
-        div.classList.add('pf-snap-item--wide');
-      } else {
-        val.textContent = item.value;
-      }
-      div.appendChild(lbl);
-      div.appendChild(val);
-      athleteGrid.appendChild(div);
+    unlocked.forEach(function (ach) {
+      var id = String(ach.id);
+      var li = document.createElement('li');
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className =
+        'pf-showcase-pick' +
+        (draftShowcaseIds.indexOf(id) !== -1 ? ' pf-showcase-pick--on' : '') +
+        ' pf-showcase-pick--tier-' +
+        (ach.tier || 'bronze');
+      btn.setAttribute('aria-pressed', draftShowcaseIds.indexOf(id) !== -1 ? 'true' : 'false');
+      btn.innerHTML =
+        '<span class="pf-showcase-pick-icon">' +
+        badgeIconMarkup(ach.kind) +
+        '</span>' +
+        '<span class="pf-showcase-pick-text">' +
+        '<span class="pf-showcase-pick-title"></span>' +
+        '<span class="pf-showcase-pick-tier"></span>' +
+        '</span>' +
+        '<span class="pf-showcase-pick-check" aria-hidden="true">✓</span>';
+      btn.querySelector('.pf-showcase-pick-title').textContent = ach.title;
+      btn.querySelector('.pf-showcase-pick-tier').textContent = tierLabel(ach.tier);
+      btn.addEventListener('click', function () {
+        var idx = draftShowcaseIds.indexOf(id);
+        if (idx !== -1) {
+          draftShowcaseIds.splice(idx, 1);
+        } else if (draftShowcaseIds.length < SHOWCASE_SLOTS) {
+          draftShowcaseIds.push(id);
+        } else {
+          // Swap oldest selection for the new pick.
+          draftShowcaseIds.shift();
+          draftShowcaseIds.push(id);
+        }
+        renderShowcasePicker();
+      });
+      li.appendChild(btn);
+      showcaseGrid.appendChild(li);
     });
+    updateShowcaseCountUi();
+  }
+
+  function openShowcasePicker() {
+    if (!showcaseOverlay || !currentAchievementState) return;
+    var ownerId =
+      viewingShowcaseOwnerId != null
+        ? viewingShowcaseOwnerId
+        : displayedProfileUserId;
+    draftShowcaseIds = resolveShowcaseAchievements(
+      currentAchievementState.unlocked || [],
+      ownerId
+    ).map(function (ach) {
+      return String(ach.id);
+    });
+    renderShowcasePicker();
+    showcaseOverlay.hidden = false;
+    document.body.style.overflow = 'hidden';
+    var closeBtn = document.getElementById('profile-showcase-close');
+    if (closeBtn) closeBtn.focus();
+  }
+
+  function closeShowcasePicker() {
+    if (!showcaseOverlay) return;
+    showcaseOverlay.hidden = true;
+    if (
+      !document.getElementById('profile-ach-overlay') ||
+      document.getElementById('profile-ach-overlay').hidden
+    ) {
+      document.body.style.overflow = '';
+    }
+  }
+
+  function saveShowcasePicker() {
+    var ownerId =
+      viewingShowcaseOwnerId != null
+        ? viewingShowcaseOwnerId
+        : displayedProfileUserId;
+    saveShowcaseIds(ownerId, draftShowcaseIds.slice());
+    var featured = resolveShowcaseAchievements(
+      (currentAchievementState && currentAchievementState.unlocked) || [],
+      ownerId
+    );
+    paintShowcaseSlots(featured);
+    closeShowcasePicker();
   }
 
   function renderAchievements(user, viewingOther) {
     if (!highlightsList) return;
+    viewingShowcaseOwnerId = user && user.id != null ? Number(user.id) : null;
     if (!user || !user.id) {
       if (highlightsWrap) highlightsWrap.hidden = true;
-      if (viewBadgesBtn) viewBadgesBtn.hidden = true;
       currentAchievementState = evaluateAchievements(null);
       if (badgeCountEl) badgeCountEl.textContent = '0';
       return;
@@ -940,17 +1418,23 @@
     function paint() {
       currentAchievementState = evaluateAchievements(user, viewingOther);
       updateAchievementStats(currentAchievementState);
+      var unlocked = currentAchievementState.unlocked || [];
       if (highlightsEmpty) {
-        highlightsEmpty.hidden = currentAchievementState.unlockedCount > 0;
+        highlightsEmpty.hidden = unlocked.length > 0;
       }
-      highlightsList.innerHTML = '';
-      var featured = currentAchievementState.unlocked.slice(0, 8);
-      featured.forEach(function (ach) {
-        highlightsList.appendChild(buildTrophyCard(ach));
-      });
-      if (viewBadgesBtn) {
-        viewBadgesBtn.hidden = false;
-        viewBadgesBtn.textContent = viewingOther ? 'View badges' : 'View all badges';
+      if (unlocked.length > 0) {
+        paintShowcaseSlots(resolveShowcaseAchievements(unlocked, user.id));
+        highlightsList.hidden = false;
+      } else {
+        highlightsList.innerHTML = '';
+        highlightsList.hidden = true;
+      }
+      if (highlightsWrap) {
+        highlightsWrap.classList.toggle('pf-card-trophies--editable', !viewingOther);
+        highlightsWrap.setAttribute(
+          'aria-label',
+          viewingOther ? 'Trophy case' : 'Trophy case — tap to choose showcase'
+        );
       }
       if (
         !viewingOther &&
@@ -959,6 +1443,7 @@
       ) {
         window.Achievements.celebrateNewUnlocks(user);
       }
+      renderMuscleHex(!!viewingOther);
     }
 
     if (viewingOther) {
@@ -1015,13 +1500,6 @@
     });
   }
 
-  if (editToggle) {
-    editToggle.addEventListener('click', function () {
-      if (!canEditProfile || isViewingOtherProfile) return;
-      setEditMode(!editModeOpen);
-    });
-  }
-
   if (bioInput) {
     bioInput.addEventListener('input', updateBioCharcount);
   }
@@ -1066,9 +1544,59 @@
     });
   }
 
-  if (viewBadgesBtn) {
-    viewBadgesBtn.addEventListener('click', function () {
+  if (highlightsWrap) {
+    highlightsWrap.addEventListener('click', function () {
+      if (previewAsVisitor) {
+        openAchievementModal();
+        return;
+      }
+      if (isViewingOtherProfile || !canEditProfile) {
+        openAchievementModal();
+        return;
+      }
+      openShowcasePicker();
+    });
+    highlightsWrap.addEventListener('keydown', function (e) {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      e.preventDefault();
+      highlightsWrap.click();
+    });
+  }
+
+  if (previewBtn) {
+    previewBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      if (isViewingOtherProfile) return;
+      if (!document.body.classList.contains('profile-is-owner')) return;
+      setVisitorPreview(!previewAsVisitor);
+    });
+  }
+
+  if (shareBtn) {
+    shareBtn.addEventListener('click', function () {
+      if (previewAsVisitor) return;
+      shareProfileCard();
+    });
+  }
+
+  var showcaseClose = document.getElementById('profile-showcase-close');
+  var showcaseSave = document.getElementById('profile-showcase-save');
+  var showcaseViewAll = document.getElementById('profile-showcase-view-all');
+  if (showcaseClose) {
+    showcaseClose.addEventListener('click', closeShowcasePicker);
+  }
+  if (showcaseSave) {
+    showcaseSave.addEventListener('click', saveShowcasePicker);
+  }
+  if (showcaseViewAll) {
+    showcaseViewAll.addEventListener('click', function () {
+      closeShowcasePicker();
       openAchievementModal();
+    });
+  }
+  if (showcaseOverlay) {
+    showcaseOverlay.addEventListener('click', function (e) {
+      if (e.target === showcaseOverlay) closeShowcasePicker();
     });
   }
 
@@ -1082,8 +1610,39 @@
       if (e.target === achOverlay) closeAchievementModal();
     });
   }
+
+  var hexClose = document.getElementById('profile-hex-close');
+  if (hexClose) {
+    hexClose.addEventListener('click', closeHexDetail);
+  }
+  if (hexOverlay) {
+    hexOverlay.addEventListener('click', function (e) {
+      if (e.target === hexOverlay) closeHexDetail();
+    });
+  }
+  if (radarWrap) {
+    radarWrap.addEventListener('click', function () {
+      openHexDetail();
+    });
+    radarWrap.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openHexDetail();
+      }
+    });
+  }
+
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape' && achOverlay && !achOverlay.hidden) {
+    if (e.key !== 'Escape') return;
+    if (hexOverlay && !hexOverlay.hidden) {
+      closeHexDetail();
+      return;
+    }
+    if (showcaseOverlay && !showcaseOverlay.hidden) {
+      closeShowcasePicker();
+      return;
+    }
+    if (achOverlay && !achOverlay.hidden) {
       closeAchievementModal();
     }
   });
@@ -1097,7 +1656,7 @@
     document.title = displayName + ' · Profile — Strongman AI';
 
     if (eyebrowEl) {
-      eyebrowEl.textContent = opts.viewingOther ? 'Member profile' : 'Your profile';
+      eyebrowEl.textContent = opts.viewingOther ? 'Athlete card' : 'Your card';
     }
 
     var fc = u && u.followingCount != null ? u.followingCount : null;
@@ -1112,13 +1671,17 @@
     setBioDisplay(bioFromUser(u));
     var bioWrap = document.getElementById('profile-bio-wrap');
     if (bioWrap) {
-      var bioRaw = bioFromUser(u);
-      bioWrap.hidden = !!opts.viewingOther && (!bioRaw || !String(bioRaw).trim());
+      // Calling card: bio is hidden from the face of the card.
+      bioWrap.hidden = true;
     }
     renderExperienceTag(u);
-    renderAthleteSnapshot(u);
+    renderAthleteSnapshot(u, !!opts.viewingOther);
+    renderProfileXp(u, !!opts.viewingOther);
     var athleteEdit = document.getElementById('profile-athlete-edit');
     if (athleteEdit) athleteEdit.hidden = !!opts.viewingOther;
+    if (ownerTools) ownerTools.hidden = !!opts.viewingOther;
+    if (userSettingsCta) userSettingsCta.hidden = !!opts.viewingOther || previewAsVisitor;
+    if (previewBtn) previewBtn.hidden = !!opts.viewingOther;
 
     bindAvatar(avatarImg, displayName, u && u.avatarUrl);
     bindBanner();
@@ -1128,6 +1691,22 @@
     }
 
     renderAchievements(u, !!opts.viewingOther);
+  }
+
+  document.addEventListener('strongman:xp-updated', function () {
+    if (!isViewingOtherProfile) {
+      renderProfileXp(window.getCurrentUser && window.getCurrentUser(), false);
+    }
+  });
+
+  function bootstrapOwnXp() {
+    if (!window.StrongmanXp || typeof window.StrongmanXp.pullFromServer !== 'function') {
+      renderProfileXp(window.getCurrentUser && window.getCurrentUser(), false);
+      return;
+    }
+    window.StrongmanXp.pullFromServer().then(function () {
+      renderProfileXp(window.getCurrentUser && window.getCurrentUser(), false);
+    });
   }
 
   if (viewedId == null) {
@@ -1149,6 +1728,7 @@
 
     renderProfile(viewer, { viewingOther: false });
     applyFollowButtonState(viewer.id, viewer, false);
+    bootstrapOwnXp();
     loadPublicProfile(viewer.id).then(function (fresh) {
       if (!fresh) return;
       var merged = mergeViewerWithApi(viewer, fresh);
@@ -1161,6 +1741,7 @@
   if (viewer && Number(viewer.id) === Number(viewedId)) {
     renderProfile(viewer, { viewingOther: false });
     applyFollowButtonState(viewedId, viewer, false);
+    bootstrapOwnXp();
     loadPublicProfile(viewedId).then(function (fresh) {
       if (!fresh) return;
       var merged = mergeViewerWithApi(viewer, fresh);

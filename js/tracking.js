@@ -61,11 +61,11 @@
 
   function setActivePanel(panelKey) {
     if (!tabLayout) return;
+    if (panelKey === 'prs' || panelKey === 'pr') panelKey = 'archive';
     tabLayout.setAttribute('data-active-panel', panelKey);
     var panelMap = {
       stats: document.getElementById('tracking-panel-stats'),
-      archive: document.getElementById('tracking-panel-archive'),
-      prs: document.getElementById('tracking-panel-pr')
+      archive: document.getElementById('tracking-panel-archive')
     };
     trackingTabs.forEach(function (btn) {
       var k = btn.getAttribute('data-tracking-panel');
@@ -84,9 +84,6 @@
     }
     if (panelKey === 'archive') {
       renderArchiveInline();
-    }
-    if (panelKey === 'prs') {
-      renderPrArchiveList();
     }
     if (panelKey === 'stats' && typeof Chart !== 'undefined') {
       var cv = document.getElementById('statsChart');
@@ -113,7 +110,7 @@
       } else {
         setActivePanel(key);
       }
-      var hashMap = { stats: '#stats', archive: '#archive', prs: '#prs' };
+      var hashMap = { stats: '#stats', archive: '#archive' };
       if (hashMap[key] && history.replaceState) {
         history.replaceState(null, '', location.pathname + location.search + hashMap[key]);
       }
@@ -148,13 +145,28 @@
     return new Date(y, m, d);
   }
 
+  function rangeStartDate(range) {
+    var now = new Date();
+    now.setHours(0, 0, 0, 0);
+    if (range === 'all') return null;
+    var start = new Date(now);
+    if (range === 'year') {
+      start.setDate(start.getDate() - 364);
+      return start;
+    }
+    start.setDate(start.getDate() - 29);
+    return start;
+  }
+
   function dateMatchesRange(ymd, range) {
     if (range === 'all') return true;
     var dt = parseYmd(ymd);
     if (!dt) return false;
-    var now = new Date();
-    if (range === 'year') return dt.getFullYear() === now.getFullYear();
-    return dt.getFullYear() === now.getFullYear() && dt.getMonth() === now.getMonth();
+    dt.setHours(0, 0, 0, 0);
+    var start = rangeStartDate(range);
+    var end = new Date();
+    end.setHours(0, 0, 0, 0);
+    return dt >= start && dt <= end;
   }
 
   function filterSessionsByRange(sessions, range) {
@@ -211,21 +223,144 @@
   }
 
   function periodLabelForRange(range) {
-    var now = new Date();
-    if (range === 'month') {
-      return '(' + now.toLocaleString(undefined, { month: 'long', year: 'numeric' }) + ')';
-    }
-    if (range === 'year') {
-      return '(' + now.getFullYear() + ')';
-    }
+    if (range === 'month') return '(Past 30 days)';
+    if (range === 'year') return '(Past year)';
     return '(All time)';
+  }
+
+  function shortPeriodLabel(range) {
+    if (range === 'year') return 'Past year';
+    if (range === 'all') return 'All time';
+    return 'Past month';
+  }
+
+  function syncStatsWhenLabels(range) {
+    var label = shortPeriodLabel(range || getStatsRange());
+    document.querySelectorAll('[data-stats-when]').forEach(function (el) {
+      el.textContent = label;
+    });
+  }
+
+  function formatCompactLoad(n) {
+    if (n == null || isNaN(n)) return '—';
+    var v = Number(n);
+    if (v >= 10000) return (v / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+    if (v >= 1000) return Math.round(v).toLocaleString();
+    return String(Math.round(v));
+  }
+
+  function lastSeriesValue(arr, allowZero) {
+    if (!arr || !arr.length) return null;
+    var i;
+    for (i = arr.length - 1; i >= 0; i--) {
+      var v = arr[i];
+      if (v == null || isNaN(v)) continue;
+      if (!allowZero && v === 0) continue;
+      return v;
+    }
+    return null;
+  }
+
+  function sumSeries(arr) {
+    var t = 0;
+    var any = false;
+    (arr || []).forEach(function (v) {
+      if (v == null || isNaN(v)) return;
+      any = true;
+      t += Number(v);
+    });
+    return any ? t : null;
+  }
+
+  function maxSeries(arr) {
+    var best = null;
+    (arr || []).forEach(function (v) {
+      if (v == null || isNaN(v)) return;
+      if (best == null || v > best) best = v;
+    });
+    return best;
+  }
+
+  function setHealthValue(id, text) {
+    var el = document.getElementById(id);
+    if (el) el.textContent = text;
+  }
+
+  function isDesktopStatsHub() {
+    try {
+      return window.matchMedia('(min-width: 901px)').matches;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function setCardFacts(id, facts) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    var rows = (facts || []).filter(function (f) {
+      return f && f.label && f.value != null && f.value !== '';
+    });
+    if (!rows.length) {
+      el.innerHTML = '';
+      return;
+    }
+    el.innerHTML = rows
+      .map(function (f) {
+        return (
+          '<li class="tracking-health-card-fact"><span class="tracking-health-card-fact-label">' +
+          String(f.label)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;') +
+          '</span><strong>' +
+          String(f.value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;') +
+          '</strong></li>'
+        );
+      })
+      .join('');
+  }
+
+  function seriesFirstLast(arr) {
+    var first = null;
+    var last = null;
+    (arr || []).forEach(function (v) {
+      if (v == null || isNaN(v) || v === 0) return;
+      if (first == null) first = Number(v);
+      last = Number(v);
+    });
+    return { first: first, last: last };
+  }
+
+  function formatDeltaLb(from, to) {
+    if (from == null || to == null) return '—';
+    var d = Math.round(to - from);
+    if (d === 0) return '0 lb';
+    return (d > 0 ? '+' : '') + d + ' lb';
+  }
+
+  function resizeStatsCharts() {
+    [
+      statsChartInstance,
+      intensityChartInstance,
+      volumeChartInstance,
+      peakChartInstance,
+      e1rmChartInstance,
+      compareChartInstance,
+    ].forEach(function (chart) {
+      if (!chart) return;
+      try {
+        chart.resize();
+      } catch (e) {}
+    });
   }
 
   function updateRangeHint(range) {
     var el = document.getElementById('tracking-stats-range-hint');
     if (!el) return;
-    var label = range === 'year' ? 'this calendar year' : range === 'all' ? 'all time' : 'this month';
+    var label = range === 'year' ? 'the past year' : range === 'all' ? 'all time' : 'the past 30 days';
     el.innerHTML = 'Showing <strong>' + label + '</strong> — tap a tile for details.';
+    syncStatsWhenLabels(range);
   }
 
   function updateSummaryStrip() {
@@ -269,8 +404,9 @@
             borderWidth: 2,
             pointBackgroundColor: theme.accent,
             pointBorderColor: theme.page || '#141414',
-            pointBorderWidth: 2,
-            pointRadius: 3,
+            pointBorderWidth: 0,
+            pointRadius: 0,
+            pointHoverRadius: 3,
             tension: 0.35,
             spanGaps: true,
             fill: true,
@@ -281,24 +417,10 @@
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
+        plugins: { legend: { display: false }, tooltip: { enabled: false } },
         scales: {
-          x: {
-            grid: { display: false, drawBorder: false },
-            ticks: {
-              color: theme.muted,
-              maxTicksLimit: 12,
-              font: { family: '"DM Sans", system-ui, sans-serif', size: 10 },
-            },
-          },
-          y: {
-            beginAtZero: true,
-            grid: { color: theme.grid, drawBorder: false },
-            ticks: {
-              color: theme.muted,
-              font: { family: '"DM Sans", system-ui, sans-serif', size: 10 },
-            },
-          },
+          x: { display: false },
+          y: { display: false, beginAtZero: true },
         },
       },
     });
@@ -374,9 +496,36 @@
     var insight = SS.buildInsight(sessions, vols, peaks, peakOpt ? peakOpt.name : '');
     var verdictEl = document.getElementById('tracking-strength-verdict');
     if (verdictEl) verdictEl.textContent = insight.verdict;
+    var metrics = (insight.metrics || []).slice();
+    metrics.push({ label: 'Sets', value: String(countSetsInSessions(sessions)) });
+    var avgI = avgIntensityForSessions(sessions);
+    if (avgI != null) metrics.push({ label: 'Avg intensity', value: String(avgI) });
+    var cardio = sumCardioMinutesInSessions(sessions);
+    if (cardio > 0) metrics.push({ label: 'Cardio', value: cardio + ' min' });
+    var prCount = countPrsInRange(PR && typeof PR.getRecords === 'function' ? PR.getRecords() : [], range);
+    metrics.push({ label: 'PRs logged', value: String(prCount) });
+    if (peaks.length && typeof SS.slope === 'function') {
+      var ps = SS.slope(peaks);
+      metrics.push({
+        label: 'Peak trend',
+        value: ps > 0.5 ? 'rising' : ps < -0.5 ? 'falling' : 'steady',
+      });
+    }
+    if (vols.length && typeof SS.slope === 'function') {
+      var vs = SS.slope(vols);
+      var hasVolTrend = metrics.some(function (m) {
+        return m.label === 'Volume trend';
+      });
+      if (!hasVolTrend) {
+        metrics.push({
+          label: 'Volume trend',
+          value: vs > 5 ? 'rising' : vs < -5 ? 'falling' : 'steady',
+        });
+      }
+    }
     var metricsEl = document.getElementById('tracking-strength-metrics');
     if (metricsEl) {
-      metricsEl.innerHTML = (insight.metrics || [])
+      metricsEl.innerHTML = metrics
         .map(function (m) {
           return (
             '<li class="tracking-strength-metric"><span class="tracking-strength-metric-label">' +
@@ -399,84 +548,164 @@
   }
 
   function updateVolumeChartFromSessions(sessions, range) {
-    if (!volumeChartInstance || !window.StrengthStats) return;
+    if (!window.StrengthStats) return;
     var r = range || getStatsRange();
+    var total = 0;
+    (sessions || []).forEach(function (s) {
+      total += window.StrengthStats.sessionVolume(s) || 0;
+    });
     var hist = buildChartData(sessions, r);
     var vols = window.StrengthStats.buildVolumeSeries(sessions, hist.labels, r);
-    applySeriesToChart(volumeChartInstance, hist.labels, vols, r);
-    var sub = document.getElementById('tracking-volume-chart-sub');
-    if (sub) sub.textContent = getChartSubline(r);
-    var cap = document.getElementById('tracking-volume-chart-caption');
-    if (cap) {
-      var any = vols.some(function (v) {
-        return v > 0;
-      });
-      cap.textContent = any
-        ? 'Total weight × reps per ' +
-          (r === 'month' ? 'day' : r === 'year' ? 'month' : 'year') +
-          '. Rising bars/points usually mean more strength capacity.'
-        : 'Log sets with weight & reps to see volume. Bodyweight-only work won’t add load here.';
+    if (volumeChartInstance) {
+      applySeriesToChart(volumeChartInstance, hist.labels, vols, r);
     }
+    setHealthValue(
+      'tracking-volume-chart-value',
+      total > 0 ? formatCompactLoad(total) + ' lb' : '—'
+    );
+    var sub = document.getElementById('tracking-volume-chart-sub');
+    if (sub) {
+      sub.textContent = total > 0 ? 'Total weight × reps · ' + shortPeriodLabel(r) : 'Log weighted sets to track volume';
+    }
+    var n = (sessions || []).length;
+    var avg = n && total > 0 ? total / n : null;
+    var ends = seriesFirstLast(vols);
+    setCardFacts('tracking-volume-chart-facts', [
+      { label: 'Sessions', value: String(n) },
+      { label: 'Sets', value: String(countSetsInSessions(sessions)) },
+      { label: 'Avg / session', value: avg != null ? formatCompactLoad(avg) + ' lb' : '—' },
+      { label: 'Trend Δ', value: formatDeltaLb(ends.first, ends.last) },
+    ]);
   }
 
   function updatePeakChartFromSessions(sessions, range) {
-    if (!peakChartInstance || !window.StrengthStats) return;
+    if (!window.StrengthStats) return;
     var r = range || getStatsRange();
-    var hist = buildChartData(sessions, r);
     var opt = syncPeakExerciseSelect(sessions);
-    var peaks = opt
-      ? window.StrengthStats.buildPeakSeries(sessions, hist.labels, r, opt.key)
-      : new Array(hist.labels.length).fill(null);
-    applySeriesToChart(peakChartInstance, hist.labels, peaks, r);
-    var sub = document.getElementById('tracking-peak-chart-sub');
-    if (sub) sub.textContent = opt ? opt.name : 'Pick a lift';
-    var cap = document.getElementById('tracking-peak-chart-caption');
-    if (cap) {
-      cap.textContent = opt
-        ? 'Heaviest logged set each ' +
-          (r === 'month' ? 'day' : r === 'year' ? 'month' : 'year') +
-          '. Climbing points = getting stronger on this lift.'
-        : 'No weighted lifts in this range yet.';
+    var best = null;
+    var peaks = [];
+    var withLift = 0;
+    if (opt) {
+      (sessions || []).forEach(function (s) {
+        var p = window.StrengthStats.sessionPeakForName
+          ? window.StrengthStats.sessionPeakForName(s, opt.key)
+          : null;
+        if (p != null && p > 0) {
+          withLift += 1;
+          if (best == null || p > best) best = p;
+        }
+      });
+      if (peakChartInstance) {
+        var hist = buildChartData(sessions, r);
+        peaks = window.StrengthStats.buildPeakSeries(sessions, hist.labels, r, opt.key);
+        applySeriesToChart(peakChartInstance, hist.labels, peaks, r);
+        if (best == null) best = maxSeries(peaks);
+      }
     }
+    setHealthValue(
+      'tracking-peak-chart-value',
+      best != null && best > 0 ? formatCompactLoad(best) + ' lb' : '—'
+    );
+    var sub = document.getElementById('tracking-peak-chart-sub');
+    if (sub) sub.textContent = opt ? 'Best ' + opt.name + ' in view' : 'Pick a lift';
+    var ends = seriesFirstLast(peaks);
+    setCardFacts('tracking-peak-chart-facts', [
+      { label: 'Lift', value: opt ? opt.name : '—' },
+      { label: 'Sessions logged', value: String(withLift) },
+      { label: 'Best set', value: best != null && best > 0 ? formatCompactLoad(best) + ' lb' : '—' },
+      { label: 'Change in view', value: formatDeltaLb(ends.first, ends.last) },
+    ]);
   }
 
   function updateE1rmChartFromSessions(sessions, range) {
-    if (!e1rmChartInstance || !window.StrengthStats) return;
+    if (!window.StrengthStats) return;
     var r = range || getStatsRange();
-    var hist = buildChartData(sessions, r);
     var opt = syncPeakExerciseSelect(sessions);
-    var series = opt
-      ? window.StrengthStats.buildE1rmSeries(sessions, hist.labels, r, opt.key)
-      : new Array(hist.labels.length).fill(null);
-    applySeriesToChart(e1rmChartInstance, hist.labels, series, r);
+    var best = null;
+    var series = [];
+    if (opt && window.StrengthStats.sessionBestE1rmForName) {
+      (sessions || []).forEach(function (s) {
+        var e = window.StrengthStats.sessionBestE1rmForName(s, opt.key);
+        if (e != null && e > 0 && (best == null || e > best)) best = Math.round(e);
+      });
+    }
+    if (e1rmChartInstance && opt) {
+      var hist = buildChartData(sessions, r);
+      series = window.StrengthStats.buildE1rmSeries(sessions, hist.labels, r, opt.key);
+      applySeriesToChart(e1rmChartInstance, hist.labels, series, r);
+      if (best == null) best = maxSeries(series);
+    }
+    setHealthValue(
+      'tracking-e1rm-chart-value',
+      best != null ? formatCompactLoad(best) + ' lb' : '—'
+    );
     var sub = document.getElementById('tracking-e1rm-chart-sub');
     if (sub) sub.textContent = opt ? opt.name + ' · Epley estimate' : 'Est. 1RM';
-    var cap = document.getElementById('tracking-e1rm-chart-caption');
-    if (cap) {
-      cap.textContent = opt
-        ? 'Estimated max from your best set (weight × (1 + reps/30)). Great for tracking strength without singles.'
-        : 'Needs weighted sets with reps to estimate a max.';
-    }
+    var ends = seriesFirstLast(series);
+    setCardFacts('tracking-e1rm-chart-facts', [
+      { label: 'Lift', value: opt ? opt.name : '—' },
+      { label: 'Best est.', value: best != null ? formatCompactLoad(best) + ' lb' : '—' },
+      { label: 'Change in view', value: formatDeltaLb(ends.first, ends.last) },
+      { label: 'Formula', value: 'w × (1 + r/30)' },
+    ]);
   }
 
   function updateCompareChartFromSessions(sessions, range) {
-    if (!compareChartInstance || !window.StrengthStats) return;
+    if (!window.StrengthStats) return;
     var pack = window.StrengthStats.compareLiftPeaks(sessions);
-    var theme = chartTheme();
-    compareChartInstance.data.labels = pack.labels;
-    compareChartInstance.data.datasets[0].data = pack.early;
-    compareChartInstance.data.datasets[1].data = pack.late;
-    compareChartInstance.data.datasets[0].backgroundColor = 'rgba(160,160,160,0.45)';
-    compareChartInstance.data.datasets[1].backgroundColor = theme.accent;
-    compareChartInstance.update();
-    var sub = document.getElementById('tracking-compare-chart-sub');
-    if (sub) sub.textContent = 'First half vs second half of ' + (range || getStatsRange());
-    var cap = document.getElementById('tracking-compare-chart-caption');
-    if (cap) {
-      cap.textContent = pack.labels.length
-        ? 'Gray = earlier peaks in this range; accent = later peaks. Taller accent bars mean that lift got stronger.'
-        : 'Need at least two sessions with the same lifts to compare early vs late peaks.';
+    if (compareChartInstance) {
+      var theme = chartTheme();
+      compareChartInstance.data.labels = pack.labels;
+      compareChartInstance.data.datasets[0].data = pack.early;
+      compareChartInstance.data.datasets[1].data = pack.late;
+      compareChartInstance.data.datasets[0].backgroundColor = 'rgba(160,160,160,0.45)';
+      compareChartInstance.data.datasets[1].backgroundColor = theme.accent;
+      compareChartInstance.update();
     }
+    var improved = 0;
+    var compared = 0;
+    var flat = 0;
+    var regressed = 0;
+    var factRows = [];
+    (pack.labels || []).forEach(function (name, i) {
+      var early = pack.early[i];
+      var late = pack.late[i];
+      if (early == null || late == null) return;
+      compared += 1;
+      if (late > early) improved += 1;
+      else if (late < early) regressed += 1;
+      else flat += 1;
+      if (factRows.length < 4) {
+        factRows.push({
+          label: name,
+          value: formatCompactLoad(early) + ' → ' + formatCompactLoad(late) + ' lb',
+        });
+      }
+    });
+    if (!compared) {
+      setHealthValue('tracking-compare-chart-value', '—');
+    } else if (improved === compared) {
+      setHealthValue('tracking-compare-chart-value', 'All up');
+    } else if (improved === 0) {
+      setHealthValue('tracking-compare-chart-value', 'Holding');
+    } else {
+      setHealthValue('tracking-compare-chart-value', improved + ' of ' + compared + ' up');
+    }
+    var sub = document.getElementById('tracking-compare-chart-sub');
+    if (sub) {
+      sub.textContent = compared
+        ? 'Early vs late peaks · ' + shortPeriodLabel(range || getStatsRange())
+        : 'Need repeat lifts to compare';
+    }
+    if (!factRows.length) {
+      factRows = [
+        { label: 'Compared', value: '0 lifts' },
+        { label: 'Tip', value: 'Log the same lifts twice' },
+      ];
+    } else {
+      factRows.push({ label: 'Up / flat / down', value: improved + ' / ' + flat + ' / ' + regressed });
+    }
+    setCardFacts('tracking-compare-chart-facts', factRows);
   }
 
   function buildChartData(sessions, range) {
@@ -557,43 +786,64 @@
   }
 
   function getChartSubline(range) {
-    var now = new Date();
-    if (range === 'month') {
-      return 'By day · ' + now.toLocaleString(undefined, { month: 'long', year: 'numeric' });
-    }
-    if (range === 'year') return 'By month · ' + now.getFullYear();
-    return 'By calendar year';
+    if (range === 'month') return 'Past 30 days';
+    if (range === 'year') return 'Past 365 days';
+    return 'All time';
   }
 
   function updateChartMeta(hist, range) {
-    var subEl = document.getElementById('tracking-chart-card-sub');
-    if (subEl) subEl.textContent = getChartSubline(range);
-    var capEl = document.getElementById('tracking-chart-caption');
-    if (!capEl) return;
     var total = 0;
-    var peak = 0;
-    var peakIdx = -1;
-    hist.counts.forEach(function (n, i) {
-      total += n;
-      if (n > peak) {
-        peak = n;
-        peakIdx = i;
-      }
+    if (hist && hist.counts) {
+      hist.counts.forEach(function (n) {
+        total += n;
+      });
+    }
+    setHealthValue(
+      'tracking-chart-card-value',
+      total > 0 ? String(total) + (total === 1 ? ' workout' : ' workouts') : '—'
+    );
+    var subEl = document.getElementById('tracking-chart-card-sub');
+    if (subEl) {
+      subEl.textContent =
+        total > 0 ? shortPeriodLabel(range) : 'No sessions in this view yet';
+    }
+  }
+
+  function updateSessionCardFromSessions(sessions, range) {
+    var r = range || getStatsRange();
+    var total = (sessions || []).length;
+    setHealthValue(
+      'tracking-chart-card-value',
+      total > 0 ? String(total) + (total === 1 ? ' workout' : ' workouts') : '—'
+    );
+    var subEl = document.getElementById('tracking-chart-card-sub');
+    if (subEl) {
+      subEl.textContent = total > 0 ? shortPeriodLabel(r) : 'No sessions in this view yet';
+    }
+    var hist = buildChartData(sessions, r);
+    if (statsChartInstance) {
+      statsChartInstance.data.labels = hist.labels;
+      statsChartInstance.data.datasets[0].data = hist.counts;
+      statsChartInstance.update();
+      updateChartMeta(hist, r);
+    }
+    var daySet = {};
+    (sessions || []).forEach(function (s) {
+      if (s && s.date) daySet[String(s.date).slice(0, 10)] = true;
     });
-    if (total === 0) {
-      capEl.textContent = 'No sessions in this view yet. Log a workout from Create.';
-      return;
-    }
-    var peakLabel = peakIdx >= 0 ? hist.labels[peakIdx] : '';
-    var peakPart = '';
-    if (range === 'month') {
-      peakPart = peak > 0 ? 'Busiest day: ' + peakLabel + ' (' + peak + ').' : '';
-    } else if (range === 'year') {
-      peakPart = peak > 0 ? 'Busiest month: ' + peakLabel + ' (' + peak + ').' : '';
-    } else {
-      peakPart = peak > 0 ? 'Peak year: ' + peakLabel + ' (' + peak + ' sessions).' : '';
-    }
-    capEl.textContent = (peakPart ? peakPart + ' ' : '') + 'Total: ' + total + ' workout' + (total === 1 ? '' : 's') + ' in view.';
+    var days = Object.keys(daySet).length;
+    var weeks = r === 'month' ? 4.3 : r === 'year' ? 52 : Math.max(1, days / 7);
+    var perWeek = total > 0 ? (total / weeks).toFixed(1) : '—';
+    var peakBucket = 0;
+    (hist.counts || []).forEach(function (n) {
+      if (n > peakBucket) peakBucket = n;
+    });
+    setCardFacts('tracking-chart-card-facts', [
+      { label: 'Training days', value: String(days) },
+      { label: 'Per week', value: perWeek === '—' ? '—' : perWeek + '×' },
+      { label: 'Busiest bucket', value: peakBucket ? String(peakBucket) : '—' },
+      { label: 'Sets logged', value: String(countSetsInSessions(sessions)) },
+    ]);
   }
 
   function buildYearHistogram(sessions) {
@@ -624,75 +874,43 @@
   }
 
   function updateTrainingChartFromSessions(sessions, range) {
-    if (!statsChartInstance) return;
-    var r = range || getStatsRange();
-    var hist = buildChartData(sessions, r);
-    statsChartInstance.data.labels = hist.labels;
-    statsChartInstance.data.datasets[0].data = hist.counts;
-    var maxC = 0;
-    hist.counts.forEach(function (n) {
-      if (n > maxC) maxC = n;
-    });
-    var suggested = Math.max(5, Math.ceil(maxC * 1.15));
-    if (statsChartInstance.options.scales && statsChartInstance.options.scales.y) {
-      statsChartInstance.options.scales.y.max = suggested;
-      statsChartInstance.options.scales.y.ticks.stepSize = suggested <= 10 ? 1 : Math.ceil(suggested / 5);
-    }
-    if (statsChartInstance.options.scales && statsChartInstance.options.scales.x) {
-      if (!statsChartInstance.options.scales.x.ticks) {
-        statsChartInstance.options.scales.x.ticks = {};
-      }
-      statsChartInstance.options.scales.x.ticks.maxTicksLimit = r === 'month' ? 12 : r === 'year' ? 12 : 16;
-    }
-    statsChartInstance.update();
-    updateChartMeta(hist, r);
-  }
-
-  function updateIntensityChartCaption(pack, range) {
-    var cap = document.getElementById('tracking-intensity-chart-caption');
-    if (!cap) return;
-    var any = false;
-    (pack.data || []).forEach(function (x) {
-      if (x != null) any = true;
-    });
-    if (!any) {
-      cap.textContent =
-        'No self-reported session intensity in this view. Set 0–100 on Create when you log a workout.';
-      return;
-    }
-    var unit = range === 'month' ? 'day' : range === 'year' ? 'month' : 'year';
-    cap.textContent =
-      'Average of your session intensity scores per ' + unit + ' (buckets with at least one scored workout).';
+    updateSessionCardFromSessions(sessions, range);
   }
 
   function updateIntensityChartFromSessions(sessions, range) {
-    if (!intensityChartInstance) return;
     var r = range || getStatsRange();
-    var pack = buildIntensityChartData(sessions, r);
-    intensityChartInstance.data.labels = pack.labels;
-    intensityChartInstance.data.datasets[0].data = pack.data;
+    var avg = avgIntensityForSessions(sessions);
+    setHealthValue(
+      'tracking-intensity-chart-value',
+      avg != null ? String(avg) : '—'
+    );
     var sub = document.getElementById('tracking-intensity-chart-sub');
-    if (sub) sub.textContent = getChartSubline(r);
-    var maxY = 5;
-    var has = false;
-    (pack.data || []).forEach(function (v) {
-      if (v != null) {
-        has = true;
-        if (v > maxY) maxY = v;
-      }
+    if (sub) {
+      sub.textContent =
+        avg != null ? 'Avg felt effort · ' + shortPeriodLabel(r) : 'Rate sessions 0–100 when you log';
+    }
+    if (intensityChartInstance) {
+      var pack = buildIntensityChartData(sessions, r);
+      intensityChartInstance.data.labels = pack.labels;
+      intensityChartInstance.data.datasets[0].data = pack.data;
+      intensityChartInstance.update();
+    }
+    var rated = 0;
+    var minI = null;
+    var maxI = null;
+    (sessions || []).forEach(function (s) {
+      if (s.totalIntensity == null || isNaN(s.totalIntensity)) return;
+      rated += 1;
+      var v = Number(s.totalIntensity);
+      if (minI == null || v < minI) minI = v;
+      if (maxI == null || v > maxI) maxI = v;
     });
-    if (has) maxY = Math.min(100, Math.max(5, Math.ceil(maxY * 1.1)));
-    if (intensityChartInstance.options.scales && intensityChartInstance.options.scales.y) {
-      intensityChartInstance.options.scales.y.max = maxY;
-    }
-    if (intensityChartInstance.options.scales && intensityChartInstance.options.scales.x) {
-      if (!intensityChartInstance.options.scales.x.ticks) {
-        intensityChartInstance.options.scales.x.ticks = {};
-      }
-      intensityChartInstance.options.scales.x.ticks.maxTicksLimit = r === 'month' ? 12 : r === 'year' ? 12 : 16;
-    }
-    intensityChartInstance.update();
-    updateIntensityChartCaption(pack, r);
+    setCardFacts('tracking-intensity-chart-facts', [
+      { label: 'Rated sessions', value: String(rated) },
+      { label: 'Low', value: minI != null ? String(Math.round(minI)) : '—' },
+      { label: 'High', value: maxI != null ? String(Math.round(maxI)) : '—' },
+      { label: 'Cardio minutes', value: String(sumCardioMinutesInSessions(sessions)) },
+    ]);
   }
 
   function updateStatTilesFromSessions(sessions, records, range) {
@@ -708,6 +926,7 @@
 
   var canvas = document.getElementById('statsChart');
   if (canvas && typeof Chart !== 'undefined') {
+    try {
     var ctx = canvas.getContext('2d');
     var freqTheme = chartTheme();
     var fillGradient = chartFillGradient(ctx, freqTheme);
@@ -730,8 +949,9 @@
             borderWidth: 2,
             pointBackgroundColor: freqTheme.accent,
             pointBorderColor: freqTheme.page || '#141414',
-            pointBorderWidth: 2,
-            pointRadius: 4,
+            pointBorderWidth: 0,
+            pointRadius: 0,
+            pointHoverRadius: 3,
             tension: 0.35,
             fill: true,
             backgroundColor: fillGradient
@@ -741,34 +961,22 @@
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
+        plugins: { legend: { display: false }, tooltip: { enabled: false } },
         scales: {
-          x: {
-            grid: { display: false, drawBorder: false },
-            ticks: {
-              color: freqTheme.muted,
-              maxTicksLimit: 12,
-              font: { family: '"DM Sans", system-ui, sans-serif', size: 10 }
-            }
-          },
-          y: {
-            min: 0,
-            max: yMax,
-            grid: { color: freqTheme.grid, drawBorder: false },
-            ticks: {
-              stepSize: yMax <= 10 ? 1 : Math.ceil(yMax / 5),
-              color: freqTheme.muted,
-              font: { family: '"DM Sans", system-ui, sans-serif', size: 10 }
-            }
-          }
+          x: { display: false },
+          y: { display: false, min: 0, max: yMax }
         }
       }
     });
     updateChartMeta(hist0, 'month');
+    } catch (eFreq) {
+      statsChartInstance = null;
+    }
   }
 
   var intensityCanvas = document.getElementById('trackingIntensityChart');
   if (intensityCanvas && typeof Chart !== 'undefined') {
+    try {
     var iPack = buildIntensityChartData(filterSessionsByRange(WL ? WL.getSessions() : [], 'month'), 'month');
     var iCtx = intensityCanvas.getContext('2d');
     var iTheme = chartTheme();
@@ -793,8 +1001,9 @@
             borderWidth: 2,
             pointBackgroundColor: iTheme.accent,
             pointBorderColor: iTheme.page || '#141414',
-            pointBorderWidth: 2,
-            pointRadius: 3,
+            pointBorderWidth: 0,
+            pointRadius: 0,
+            pointHoverRadius: 3,
             tension: 0.35,
             spanGaps: true,
             fill: true,
@@ -805,32 +1014,16 @@
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
+        plugins: { legend: { display: false }, tooltip: { enabled: false } },
         scales: {
-          x: {
-            grid: { display: false, drawBorder: false },
-            ticks: {
-              color: iTheme.muted,
-              maxTicksLimit: 12,
-              font: { family: '"DM Sans", system-ui, sans-serif', size: 10 }
-            }
-          },
-          y: {
-            min: 0,
-            max: iMax,
-            grid: { color: iTheme.grid, drawBorder: false },
-            ticks: {
-              stepSize: iMax <= 10 ? 1 : Math.ceil(iMax / 5),
-              color: iTheme.muted,
-              font: { family: '"DM Sans", system-ui, sans-serif', size: 10 }
-            }
-          }
+          x: { display: false },
+          y: { display: false, min: 0, max: iMax }
         }
       }
     });
-    var iSub = document.getElementById('tracking-intensity-chart-sub');
-    if (iSub) iSub.textContent = getChartSubline('month');
-    updateIntensityChartCaption(iPack, 'month');
+    } catch (eIntensity) {
+      intensityChartInstance = null;
+    }
   }
   var GRID_ORDER_KEY = 'tracking_grid_card_order_v1';
   var DEFAULT_CARD_ORDER = [
@@ -843,44 +1036,42 @@
   ];
   var DEPRECATED_GRID_CARD_IDS = ['calories', 'hours', 'wins', 'calendar', 'sets', 'pr'];
 
-  volumeChartInstance = makeLineChart(document.getElementById('trackingVolumeChart'), 'Volume');
-  peakChartInstance = makeLineChart(document.getElementById('trackingPeakChart'), 'Peak');
-  e1rmChartInstance = makeLineChart(document.getElementById('trackingE1rmChart'), 'Est 1RM');
+  try {
+    volumeChartInstance = makeLineChart(document.getElementById('trackingVolumeChart'), 'Volume');
+    peakChartInstance = makeLineChart(document.getElementById('trackingPeakChart'), 'Peak');
+    e1rmChartInstance = makeLineChart(document.getElementById('trackingE1rmChart'), 'Est 1RM');
+  } catch (eChartInit) {
+    volumeChartInstance = volumeChartInstance || null;
+    peakChartInstance = peakChartInstance || null;
+    e1rmChartInstance = e1rmChartInstance || null;
+  }
 
   var compareCanvas = document.getElementById('trackingCompareChart');
   if (compareCanvas && typeof Chart !== 'undefined') {
-    var cTheme = chartTheme();
-    compareChartInstance = new Chart(compareCanvas.getContext('2d'), {
-      type: 'bar',
-      data: {
-        labels: [],
-        datasets: [
-          { label: 'Earlier', data: [], backgroundColor: 'rgba(160,160,160,0.45)' },
-          { label: 'Later', data: [], backgroundColor: cTheme.accent },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            display: true,
-            labels: { color: cTheme.muted, boxWidth: 12, font: { size: 11 } },
+    try {
+      var cTheme = chartTheme();
+      compareChartInstance = new Chart(compareCanvas.getContext('2d'), {
+        type: 'bar',
+        data: {
+          labels: [],
+          datasets: [
+            { label: 'Earlier', data: [], backgroundColor: 'rgba(160,160,160,0.45)' },
+            { label: 'Later', data: [], backgroundColor: cTheme.accent },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false }, tooltip: { enabled: false } },
+          scales: {
+            x: { display: false },
+            y: { display: false, beginAtZero: true },
           },
         },
-        scales: {
-          x: {
-            grid: { display: false },
-            ticks: { color: cTheme.muted, font: { size: 10 } },
-          },
-          y: {
-            beginAtZero: true,
-            grid: { color: cTheme.grid },
-            ticks: { color: cTheme.muted, font: { size: 10 } },
-          },
-        },
-      },
-    });
+      });
+    } catch (eCompare) {
+      compareChartInstance = null;
+    }
   }
 
   var peakSelect = document.getElementById('tracking-peak-exercise');
@@ -918,7 +1109,9 @@
   var archiveViewBtns = document.querySelectorAll('[data-archive-view]');
   var ARCHIVE_VIEW_KEY = 'strongman-archive-view-v1';
   var archiveSearchQuery = '';
+  var archiveTypeFilter = 'all';
   var prArchiveList = document.getElementById('tracking-pr-archive-list');
+  var archiveFilterRoot = document.getElementById('log-timeline-filters');
   var prArchiveEmpty = document.getElementById('tracking-pr-archive-empty');
 
   var detailBackdrop = document.getElementById('tracking-detail-backdrop');
@@ -927,18 +1120,10 @@
   var detailBodyEl = document.getElementById('tracking-detail-body');
   var detailCloseBtn = document.getElementById('tracking-detail-close');
 
-  var prForm = document.getElementById('tracking-pr-form');
-  var prDatetime = document.getElementById('tracking-pr-datetime');
-  var prMessage = document.getElementById('tracking-pr-message');
-  var prError = document.getElementById('tracking-pr-error');
   var prListMain = document.getElementById('tracking-pr-list-main');
   var prListMore = document.getElementById('tracking-pr-list-more');
   var prCardEmpty = document.getElementById('tracking-pr-card-empty');
   var prCardEl = document.querySelector('.card[data-grid-card-id="pr"]');
-
-  var panelRunning = document.getElementById('tracking-pr-panel-running');
-  var panelSwimming = document.getElementById('tracking-pr-panel-swimming');
-  var panelWl = document.getElementById('tracking-pr-panel-weightlifting');
 
   function defaultDatetimeLocal() {
     var d = new Date();
@@ -953,34 +1138,6 @@
       ':' +
       pad(d.getMinutes())
     );
-  }
-
-  if (prDatetime && !prDatetime.value) {
-    prDatetime.value = defaultDatetimeLocal();
-  }
-
-  function syncPrDisciplinePanels() {
-    var d = document.querySelector('input[name="tracking-pr-discipline"]:checked');
-    var v = d ? d.value : 'running';
-    if (panelRunning) panelRunning.hidden = v !== 'running';
-    if (panelSwimming) panelSwimming.hidden = v !== 'swimming';
-    if (panelWl) panelWl.hidden = v !== 'weightlifting';
-  }
-
-  document.querySelectorAll('input[name="tracking-pr-discipline"]').forEach(function (r) {
-    r.addEventListener('change', syncPrDisciplinePanels);
-  });
-  syncPrDisciplinePanels();
-
-  function setPrFormMessage(msg, isError) {
-    if (prMessage) {
-      prMessage.textContent = msg;
-      prMessage.hidden = !msg || !!isError;
-    }
-    if (prError) {
-      prError.textContent = isError ? msg : '';
-      prError.hidden = !isError;
-    }
   }
 
   function renderPrCard() {
@@ -1033,127 +1190,201 @@
     }
   }
 
-  if (prForm && PR) {
-    prForm.addEventListener('submit', function (e) {
-      e.preventDefault();
-      setPrFormMessage('', false);
-      var dt = prDatetime && prDatetime.value;
-      if (!dt) {
-        setPrFormMessage('Pick a date and time.', true);
-        return;
-      }
-      var parts = dt.split('T');
-      var datePart = parts[0] || '';
-      var timePart = parts[1] || '';
-      var disc = document.querySelector('input[name="tracking-pr-discipline"]:checked');
-      var discipline = disc ? disc.value : 'running';
-      var notes = (document.getElementById('tracking-pr-notes') || {}).value;
-      notes = (notes || '').trim();
+  var TL_PR_IDS = {
+    datetime: 'tl-pr-datetime',
+    disciplineName: 'tl-pr-discipline',
+    notes: 'tl-pr-notes',
+    runEvent: 'tl-pr-run-event',
+    runMin: 'tl-pr-run-min',
+    runSec: 'tl-pr-run-sec',
+    swimEvent: 'tl-pr-swim-event',
+    swimCourse: 'tl-pr-swim-course',
+    swimMin: 'tl-pr-swim-min',
+    swimSec: 'tl-pr-swim-sec',
+    wlLift: 'tl-pr-wl-lift',
+    wlWeight: 'tl-pr-wl-weight',
+    wlUnit: 'tl-pr-wl-unit',
+    wlReps: 'tl-pr-wl-reps',
+  };
 
-      var eventLabel = '';
-      var valueDisplay = '';
+  function buildPrRecordFrom(ids) {
+    function val(id) {
+      var el = document.getElementById(id);
+      return el ? el.value : '';
+    }
+    var dt = val(ids.datetime);
+    if (!dt) return { error: 'Pick a date and time.' };
+    var parts = dt.split('T');
+    var checked = document.querySelector('input[name="' + ids.disciplineName + '"]:checked');
+    var discipline = checked ? checked.value : 'running';
 
-      if (discipline === 'running') {
-        eventLabel = (document.getElementById('tracking-pr-run-event') || {}).value.trim();
-        var rm = (document.getElementById('tracking-pr-run-min') || {}).value;
-        var rs = (document.getElementById('tracking-pr-run-sec') || {}).value;
-        if (!eventLabel) {
-          setPrFormMessage('Enter an event or distance for running.', true);
-          return;
-        }
-        valueDisplay = formatDurationParts(rm, rs);
-        if (!valueDisplay || valueDisplay === '0s') {
-          setPrFormMessage('Enter a time greater than zero.', true);
-          return;
-        }
-      } else if (discipline === 'swimming') {
-        var swimEv = (document.getElementById('tracking-pr-swim-event') || {}).value.trim();
-        var course = (document.getElementById('tracking-pr-swim-course') || {}).value;
-        var sm = (document.getElementById('tracking-pr-swim-min') || {}).value;
-        var ss = (document.getElementById('tracking-pr-swim-sec') || {}).value;
-        if (!swimEv) {
-          setPrFormMessage('Enter a swimming event.', true);
-          return;
-        }
-        valueDisplay = formatDurationParts(sm, ss);
-        if (!valueDisplay || valueDisplay === '0s') {
-          setPrFormMessage('Enter a time greater than zero.', true);
-          return;
-        }
-        eventLabel = swimEv + (course ? ' (' + course + ')' : '');
-      } else {
-        var lift = (document.getElementById('tracking-pr-wl-lift') || {}).value.trim();
-        var w = parseFloat((document.getElementById('tracking-pr-wl-weight') || {}).value);
-        var unit = (document.getElementById('tracking-pr-wl-unit') || {}).value || 'lb';
-        var repsVal = (document.getElementById('tracking-pr-wl-reps') || {}).value;
-        var reps = parseInt(repsVal, 10);
-        if (!lift) {
-          setPrFormMessage('Enter the lift name.', true);
-          return;
-        }
-        if (isNaN(w) || w <= 0) {
-          setPrFormMessage('Enter a valid weight.', true);
-          return;
-        }
-        eventLabel = lift;
-        valueDisplay = w + ' ' + unit;
-        if (!isNaN(reps) && reps > 1) valueDisplay += ' × ' + reps;
-      }
+    var eventLabel = '';
+    var valueDisplay = '';
+    var weight;
+    var unit;
+    var reps;
 
-      var record = {
-        discipline: discipline,
-        sport: discipline,
-        eventLabel: eventLabel,
-        valueDisplay: valueDisplay,
-        notes: notes,
-        date: datePart,
-        time: timePart
-      };
+    if (discipline === 'running') {
+      eventLabel = (val(ids.runEvent) || '').trim();
+      if (!eventLabel) return { error: 'Enter an event or distance for running.' };
+      valueDisplay = formatDurationParts(val(ids.runMin), val(ids.runSec));
+      if (!valueDisplay || valueDisplay === '0s') return { error: 'Enter a time greater than zero.' };
+    } else if (discipline === 'swimming') {
+      var swimEv = (val(ids.swimEvent) || '').trim();
+      if (!swimEv) return { error: 'Enter a swimming event.' };
+      valueDisplay = formatDurationParts(val(ids.swimMin), val(ids.swimSec));
+      if (!valueDisplay || valueDisplay === '0s') return { error: 'Enter a time greater than zero.' };
+      var course = val(ids.swimCourse);
+      eventLabel = swimEv + (course ? ' (' + course + ')' : '');
+    } else {
+      var lift = (val(ids.wlLift) || '').trim();
+      weight = parseFloat(val(ids.wlWeight));
+      unit = val(ids.wlUnit) || 'lb';
+      reps = parseInt(val(ids.wlReps), 10);
+      if (!lift) return { error: 'Enter the lift name.' };
+      if (isNaN(weight) || weight <= 0) return { error: 'Enter a valid weight.' };
+      eventLabel = lift;
+      valueDisplay = weight + ' ' + unit;
+      if (!isNaN(reps) && reps > 1) valueDisplay += ' × ' + reps;
+    }
 
-      if (discipline === 'running') {
-        var runParts =
-          window.TimedEventFields && window.TimedEventFields.parseRunningEvent
-            ? window.TimedEventFields.parseRunningEvent(eventLabel)
-            : { distance: eventLabel, event: eventLabel };
-        record.distance = runParts.distance;
-        record.event = runParts.event;
-      } else if (discipline === 'swimming') {
-        var swimParts =
-          window.TimedEventFields && window.TimedEventFields.parseSwimmingEvent
-            ? window.TimedEventFields.parseSwimmingEvent(
-                (document.getElementById('tracking-pr-swim-event') || {}).value.trim()
-              )
-            : { distance: '', event: '' };
-        record.distance = swimParts.distance;
-        record.event = swimParts.event;
-        var courseVal = (document.getElementById('tracking-pr-swim-course') || {}).value;
-        if (courseVal) record.course = courseVal;
-      }
+    var record = {
+      discipline: discipline,
+      sport: discipline,
+      eventLabel: eventLabel,
+      valueDisplay: valueDisplay,
+      notes: (val(ids.notes) || '').trim(),
+      date: parts[0] || '',
+      time: parts[1] || '',
+      history: []
+    };
 
-      if (
-        window.TimedEventFields &&
-        typeof window.TimedEventFields.parseTimeDisplaySeconds === 'function'
-      ) {
-        var valueSeconds = window.TimedEventFields.parseTimeDisplaySeconds(valueDisplay);
-        if (valueSeconds != null) record.valueSeconds = valueSeconds;
-      }
+    if (discipline === 'weightlifting') {
+      record.weight = weight;
+      record.unit = unit;
+      record.reps = !isNaN(reps) && reps > 0 ? reps : 1;
+    } else if (discipline === 'running') {
+      var runParts =
+        window.TimedEventFields && window.TimedEventFields.parseRunningEvent
+          ? window.TimedEventFields.parseRunningEvent(eventLabel)
+          : { distance: eventLabel, event: eventLabel };
+      record.distance = runParts.distance;
+      record.event = runParts.event;
+    } else {
+      var swimParts =
+        window.TimedEventFields && window.TimedEventFields.parseSwimmingEvent
+          ? window.TimedEventFields.parseSwimmingEvent((val(ids.swimEvent) || '').trim())
+          : { distance: '', event: '' };
+      record.distance = swimParts.distance;
+      record.event = swimParts.event;
+      var courseVal = val(ids.swimCourse);
+      if (courseVal) record.course = courseVal;
+    }
 
-      PR.addRecord(record);
-      setPrFormMessage('Personal record saved.', false);
-      prForm.reset();
-      document.getElementById('tracking-pr-disc-running').checked = true;
-      syncPrDisciplinePanels();
-      if (prDatetime) prDatetime.value = defaultDatetimeLocal();
-      renderPrCard();
-      renderPrArchiveList();
-      refreshTrackingUi();
+    if (
+      window.TimedEventFields &&
+      typeof window.TimedEventFields.parseTimeDisplaySeconds === 'function'
+    ) {
+      var valueSeconds = window.TimedEventFields.parseTimeDisplaySeconds(valueDisplay);
+      if (valueSeconds != null) record.valueSeconds = valueSeconds;
+    }
 
-      lastSharePr = JSON.parse(JSON.stringify(record));
-      openPrShareModal();
-    });
+    return { record: record };
   }
 
   var lastSharePr = null;
+
+  function afterPrSaved(record) {
+    renderPrCard();
+    renderPrArchiveList();
+    refreshTrackingUi();
+    lastSharePr = JSON.parse(JSON.stringify(record));
+    openPrShareModal();
+  }
+
+  /* —— Timeline "New PR" dialog: the only place PRs are created —— */
+  var tlPrDialog = document.getElementById('tl-pr-dialog');
+  var tlPrBackdrop = document.getElementById('tl-pr-backdrop');
+  var tlPrForm = document.getElementById('tl-pr-form');
+  var tlPrError = document.getElementById('tl-pr-error');
+  var tlPrOpenBtn = document.getElementById('log-timeline-new-pr');
+
+  function setTlPrError(msg) {
+    if (!tlPrError) return;
+    tlPrError.textContent = msg || '';
+    tlPrError.hidden = !msg;
+  }
+
+  function syncTlPrPanels() {
+    var checked = document.querySelector('input[name="tl-pr-discipline"]:checked');
+    var v = checked ? checked.value : 'running';
+    ['running', 'swimming', 'weightlifting'].forEach(function (key) {
+      var panel = document.getElementById('tl-pr-panel-' + key);
+      if (panel) panel.hidden = key !== v;
+    });
+  }
+
+  function closeTlPrDialog() {
+    if (tlPrBackdrop) {
+      tlPrBackdrop.classList.remove('is-open');
+      tlPrBackdrop.setAttribute('aria-hidden', 'true');
+    }
+    if (tlPrDialog) {
+      tlPrDialog.hidden = true;
+      tlPrDialog.classList.remove('is-open');
+      tlPrDialog.setAttribute('aria-hidden', 'true');
+    }
+    document.body.style.overflow = '';
+  }
+
+  function openTlPrDialog() {
+    if (!tlPrDialog) return;
+    setTlPrError('');
+    if (tlPrForm) tlPrForm.reset();
+    var runningRadio = document.getElementById('tl-pr-disc-running');
+    if (runningRadio) runningRadio.checked = true;
+    syncTlPrPanels();
+    var dt = document.getElementById('tl-pr-datetime');
+    if (dt) dt.value = defaultDatetimeLocal();
+    if (tlPrBackdrop) {
+      tlPrBackdrop.classList.add('is-open');
+      tlPrBackdrop.setAttribute('aria-hidden', 'false');
+    }
+    tlPrDialog.hidden = false;
+    tlPrDialog.classList.add('is-open');
+    tlPrDialog.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    var firstField = document.getElementById('tl-pr-run-event');
+    if (firstField) firstField.focus();
+  }
+
+  document.querySelectorAll('input[name="tl-pr-discipline"]').forEach(function (r) {
+    r.addEventListener('change', syncTlPrPanels);
+  });
+
+  if (tlPrOpenBtn) tlPrOpenBtn.addEventListener('click', openTlPrDialog);
+  var tlPrCloseBtn = document.getElementById('tl-pr-close');
+  if (tlPrCloseBtn) tlPrCloseBtn.addEventListener('click', closeTlPrDialog);
+  if (tlPrBackdrop) tlPrBackdrop.addEventListener('click', closeTlPrDialog);
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && tlPrDialog && !tlPrDialog.hidden) closeTlPrDialog();
+  });
+
+  if (tlPrForm && PR) {
+    tlPrForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      setTlPrError('');
+      var out = buildPrRecordFrom(TL_PR_IDS);
+      if (out.error) {
+        setTlPrError(out.error);
+        return;
+      }
+      PR.addRecord(out.record);
+      closeTlPrDialog();
+      afterPrSaved(out.record);
+    });
+  }
+
   var prShareBackdrop = document.getElementById('tracking-pr-share-backdrop');
   var prShareModal = document.getElementById('tracking-pr-share-modal');
   var prShareClose = document.getElementById('tracking-pr-share-modal-close');
@@ -1861,6 +2092,103 @@
     });
   }
 
+  function getArchiveTimelineEvents() {
+    var sessions = WL ? WL.getSessions() : [];
+    var events =
+      window.TrainingTimeline && typeof window.TrainingTimeline.collectEvents === 'function'
+        ? window.TrainingTimeline.collectEvents(sessions)
+        : sessions.map(function (s) {
+            var day = s.date || '';
+            var ts = s.createdAt ? Date.parse(s.createdAt) : Date.parse(day) || 0;
+            return {
+              id: 'workout_' + (s.id || day),
+              source: 'workout',
+              type: 'workout',
+              editable: false,
+              date: day,
+              at: ts,
+              title: sessionDisplayTitle(s),
+              detail: '',
+              session: s,
+            };
+          });
+    events.forEach(function (ev) {
+      if (ev.source === 'workout' && !ev.session) {
+        var sid = String(ev.id || '').replace(/^workout_/, '');
+        ev.session = sessions.find(function (s) {
+          return String(s.id || '') === sid || String(s.clientId || '') === sid;
+        }) || null;
+      }
+    });
+    prTimelineEvents().forEach(function (ev) {
+      events.push(ev);
+    });
+    events.sort(function (a, b) {
+      return (b.at || 0) - (a.at || 0);
+    });
+    if (!archiveSearchQuery && archiveTypeFilter === 'all') return events;
+    var q = String(archiveSearchQuery).toLowerCase().trim();
+    return events.filter(function (ev) {
+      if (archiveTypeFilter === 'workout' && ev.type !== 'workout') return false;
+      if (archiveTypeFilter === 'pr' && ev.type !== 'pr') return false;
+      if (archiveTypeFilter === 'note' && (ev.type === 'workout' || ev.type === 'pr')) return false;
+      if (!q) return true;
+      if (ev.session && sessionMatchesSearch(ev.session, archiveSearchQuery)) return true;
+      var blob = [ev.title, ev.detail, ev.type, ev.date];
+      if (ev.pr) blob.push(ev.pr.valueDisplay, ev.pr.discipline, ev.pr.notes);
+      return blob.join(' ').toLowerCase().indexOf(q) !== -1;
+    });
+  }
+
+  function prEventTimestamp(rec) {
+    var day = String((rec && rec.date) || '').slice(0, 10);
+    if (day) {
+      var t = Date.parse(day + 'T' + String((rec.time || '12:00')).slice(0, 5));
+      if (!isNaN(t)) return t;
+      var dayOnly = Date.parse(day);
+      if (!isNaN(dayOnly)) return dayOnly;
+    }
+    if (rec && rec.createdAt) {
+      var c = Date.parse(rec.createdAt);
+      if (!isNaN(c)) return c;
+    }
+    return 0;
+  }
+
+  function prTimelineEvents() {
+    if (!PR || typeof PR.getRecords !== 'function') return [];
+    return PR.getRecords().map(function (rec) {
+      var day = String(rec.date || '').slice(0, 10);
+      return {
+        id: 'pr_' + (rec.id || rec.clientId || day),
+        source: 'pr',
+        type: 'pr',
+        editable: true,
+        date: day,
+        at: prEventTimestamp(rec),
+        title: rec.eventLabel || 'Personal record',
+        detail: rec.valueDisplay || '',
+        pr: rec,
+      };
+    });
+  }
+
+  function timelineTypeLabel(type) {
+    if (type === 'workout') return 'Workout';
+    if (window.TrainingTimeline && typeof window.TrainingTimeline.typeMeta === 'function') {
+      var meta = window.TrainingTimeline.typeMeta(type);
+      if (meta && meta.label) return meta.label;
+    }
+    return type ? String(type).replace(/_/g, ' ') : 'Note';
+  }
+
+  function timelineIconHtml(type) {
+    if (window.TrainingTimeline && typeof window.TrainingTimeline.iconForType === 'function') {
+      return window.TrainingTimeline.iconForType(type || 'note');
+    }
+    return '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6.5 9.5v5M17.5 9.5v5M4 11v2M20 11v2M8 8h8v8H8z"/></svg>';
+  }
+
   function updateArchiveSummary(allSessions, shownSessions) {
     if (archiveCountEl) {
       archiveCountEl.textContent =
@@ -1892,6 +2220,21 @@
   if (archiveSearchInput) {
     archiveSearchInput.addEventListener('input', function () {
       archiveSearchQuery = archiveSearchInput.value || '';
+      renderArchiveInline();
+    });
+  }
+
+  if (archiveFilterRoot) {
+    archiveFilterRoot.addEventListener('click', function (e) {
+      var btn = e.target.closest && e.target.closest('[data-tl-filter]');
+      if (!btn) return;
+      var next = btn.getAttribute('data-tl-filter') || 'all';
+      archiveTypeFilter = next;
+      archiveFilterRoot.querySelectorAll('[data-tl-filter]').forEach(function (el) {
+        var on = el.getAttribute('data-tl-filter') === next;
+        el.classList.toggle('is-active', on);
+        el.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
       renderArchiveInline();
     });
   }
@@ -2271,86 +2614,175 @@
     }
   }
 
-  function buildArchiveTimeline(sessions) {
-    var wrap = document.createElement('ol');
-    wrap.className = 'dash-timeline-list archive-workout-timeline';
-    wrap.setAttribute('role', 'list');
-    sessions.forEach(function (s) {
-      var n = countSessionExercises(s);
-      if (!n && s.trackerData && Array.isArray(s.trackerData.exercises)) {
-        n = s.trackerData.exercises.filter(function (ex) {
-          return ex && ex.name;
-        }).length;
+  function formatArchiveDayShort(dateStr) {
+    if (!dateStr) return '';
+    try {
+      var p = String(dateStr).split('-');
+      if (p.length !== 3) return dateStr;
+      var d = new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10));
+      var letters = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+      return letters[d.getDay()] + ' · ' + d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    } catch (e) {
+      return dateStr;
+    }
+  }
+
+  function formatClockTime(t) {
+    var hm = formatTimeDisplay(t);
+    var parts = hm.split(':');
+    var h = parseInt(parts[0], 10);
+    if (isNaN(h)) return hm;
+    var suffix = h >= 12 ? 'PM' : 'AM';
+    var h12 = h % 12 === 0 ? 12 : h % 12;
+    return h12 + ':' + (parts[1] || '00') + ' ' + suffix;
+  }
+
+  function timelineEventKindLabel(ev) {
+    if (ev.type === 'pr') {
+      return PR && typeof PR.disciplineLabel === 'function'
+        ? PR.disciplineLabel(ev.pr && ev.pr.discipline) + ' PR'
+        : 'Personal record';
+    }
+    return timelineTypeLabel(ev.type);
+  }
+
+  function timelineDetailLines(ev) {
+    var out = [];
+    var session = ev.session;
+    var nameCap = isDesktopStatsHub() ? 16 : 5;
+    if (session) {
+      var names = sessionExerciseNames(session);
+      names.slice(0, nameCap).forEach(function (name) {
+        out.push(name);
+      });
+      if (names.length > nameCap) out.push('+' + (names.length - nameCap) + ' more');
+      if (!names.length) {
+        var n = countSessionExercises(session);
+        if (n) out.push(n + ' exercise' + (n === 1 ? '' : 's'));
       }
-      var names = sessionExerciseNames(s).slice(0, 3);
-      var detail =
-        (n ? n + ' exercise' + (n === 1 ? '' : 's') : 'Session logged') +
-        (s.totalIntensity != null ? ' · intensity ' + s.totalIntensity : '');
-      if (names.length) detail += ' · ' + names.join(', ');
+      if (session.cardio && session.cardio.minutes) {
+        var cm = parseFloat(session.cardio.minutes);
+        if (!isNaN(cm) && cm > 0) out.push('Cardio · ' + Math.round(cm) + ' min');
+      }
+      if (session.totalIntensity != null && !isNaN(session.totalIntensity)) {
+        out.push('Intensity ' + session.totalIntensity);
+      }
+      if (session.notes && (!names.length || isDesktopStatsHub())) {
+        var notes = String(session.notes).trim();
+        if (notes) out.push(notes);
+      }
+      return out;
+    }
+    if (ev.pr) {
+      var bits = [];
+      if (ev.pr.time) bits.push(formatClockTime(ev.pr.time));
+      var hist = Array.isArray(ev.pr.history) ? ev.pr.history.length : 0;
+      if (hist) bits.push(hist + ' earlier attempt' + (hist === 1 ? '' : 's'));
+      if (bits.length) out.push(bits.join(' · '));
+      var prNotes = (ev.pr.notes || '').trim();
+      if (prNotes) out.push(prNotes);
+      return out;
+    }
+    if (ev.detail) out.push(ev.detail);
+    return out;
+  }
+
+  function timelineActionBtn(label, variant) {
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'log-tl-action' + (variant ? ' log-tl-action--' + variant : '');
+    btn.textContent = label;
+    return btn;
+  }
+
+  function buildArchiveTimeline(events) {
+    var wrap = document.createElement('ol');
+    wrap.className = 'log-tl-list';
+    wrap.setAttribute('role', 'list');
+
+    (events || []).forEach(function (ev) {
+      var type = ev.type || (ev.source === 'workout' ? 'workout' : 'note');
+      var session = ev.session;
+      var pr = ev.pr;
 
       var li = document.createElement('li');
-      li.className = 'dash-timeline-item dash-timeline-item--workout';
-      li.setAttribute('data-session-open', s.id || '');
+      li.className = 'log-tl-item log-tl-item--' + type;
 
+      var rail = document.createElement('span');
+      rail.className = 'log-tl-rail';
+      rail.setAttribute('aria-hidden', 'true');
       var icon = document.createElement('span');
-      icon.className = 'dash-timeline-icon';
-      icon.setAttribute('aria-hidden', 'true');
-      icon.innerHTML =
-        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 9.5v5M17.5 9.5v5M4 11v2M20 11v2M8 8h8v8H8z"/></svg>';
+      icon.className = 'log-tl-icon';
+      icon.innerHTML = timelineIconHtml(type === 'pr' ? 'milestone' : type);
+      rail.appendChild(icon);
 
-      var body = document.createElement('div');
-      body.className = 'dash-timeline-body';
+      var card = document.createElement('div');
+      card.className = 'log-tl-card';
 
-      var meta = document.createElement('div');
-      meta.className = 'dash-timeline-meta';
-      var time = document.createElement('time');
-      time.dateTime = s.date || '';
-      time.textContent = formatArchiveDay(s.date) + (s.time ? ' · ' + formatTimeDisplay(s.time) : '');
-      var type = document.createElement('span');
-      type.className = 'dash-timeline-type';
-      type.textContent = 'Workout';
-      meta.appendChild(time);
-      meta.appendChild(type);
+      var head = document.createElement('div');
+      head.className = 'log-tl-card-head';
+      var day = document.createElement('span');
+      day.className = 'log-tl-day';
+      day.textContent = formatArchiveDayShort(ev.date || (session && session.date) || '');
+      var kind = document.createElement('span');
+      kind.className = 'log-tl-kind';
+      kind.textContent = timelineEventKindLabel(ev);
+      head.appendChild(day);
+      head.appendChild(kind);
 
-      var title = document.createElement('p');
-      title.className = 'dash-timeline-title';
-      title.textContent = sessionDisplayTitle(s);
+      var title = document.createElement('h3');
+      title.className = 'log-tl-title';
+      title.textContent = ev.title || (session ? sessionDisplayTitle(session) : 'Entry');
 
-      var detailP = document.createElement('p');
-      detailP.className = 'dash-timeline-detail';
-      detailP.textContent = detail;
+      card.appendChild(head);
+      card.appendChild(title);
+
+      if (pr) {
+        var value = document.createElement('div');
+        value.className = 'log-tl-value';
+        value.textContent = pr.valueDisplay || '—';
+        card.appendChild(value);
+      }
+
+      var lines = document.createElement('div');
+      lines.className = 'log-tl-lines';
+      timelineDetailLines(ev).forEach(function (text) {
+        var line = document.createElement('div');
+        line.className = 'log-tl-line';
+        line.textContent = text;
+        lines.appendChild(line);
+      });
+      if (lines.childNodes.length) card.appendChild(lines);
 
       var actions = document.createElement('div');
-      actions.className = 'dash-timeline-actions';
-      var openBtn = document.createElement('button');
-      openBtn.type = 'button';
-      openBtn.className = 'dash-timeline-action';
-      openBtn.textContent = 'Open';
-      openBtn.setAttribute('data-session-open', s.id || '');
-      var editBtn = document.createElement('button');
-      editBtn.type = 'button';
-      editBtn.className = 'dash-timeline-action tracking-session-edit-btn';
-      editBtn.textContent = 'Edit';
-      editBtn.setAttribute('data-session-edit-for', s.id || '');
-      var deleteBtn = document.createElement('button');
-      deleteBtn.type = 'button';
-      deleteBtn.className = 'dash-timeline-action tracking-session-delete-btn';
-      deleteBtn.textContent = 'Delete';
-      deleteBtn.setAttribute('data-session-delete-for', s.id || '');
-      actions.appendChild(openBtn);
-      actions.appendChild(editBtn);
-      actions.appendChild(deleteBtn);
+      actions.className = 'log-tl-actions';
 
-      body.appendChild(meta);
-      body.appendChild(title);
-      body.appendChild(detailP);
-      body.appendChild(actions);
-      li.appendChild(icon);
-      li.appendChild(body);
-      li.addEventListener('click', function (e) {
-        if (e.target.closest && e.target.closest('button')) return;
-        openSessionDetail(s);
-      });
+      if (session) {
+        li.classList.add('log-tl-item--clickable');
+        li.setAttribute('data-session-open', session.id || '');
+        var openBtn = timelineActionBtn('Open');
+        openBtn.setAttribute('data-session-open', session.id || '');
+        var editBtn = timelineActionBtn('Edit');
+        editBtn.classList.add('tracking-session-edit-btn');
+        editBtn.setAttribute('data-session-edit-for', session.id || '');
+        var deleteBtn = timelineActionBtn('Delete', 'danger');
+        deleteBtn.classList.add('tracking-session-delete-btn');
+        deleteBtn.setAttribute('data-session-delete-for', session.id || '');
+        actions.appendChild(openBtn);
+        actions.appendChild(editBtn);
+        actions.appendChild(deleteBtn);
+      } else if (pr) {
+        li.classList.add('log-tl-item--clickable');
+        li.setAttribute('data-pr-open', pr.id || pr.clientId || '');
+        var updateBtn = timelineActionBtn('Update');
+        updateBtn.setAttribute('data-pr-open', pr.id || pr.clientId || '');
+        actions.appendChild(updateBtn);
+      }
+
+      if (actions.childNodes.length) card.appendChild(actions);
+
+      li.appendChild(rail);
+      li.appendChild(card);
       wrap.appendChild(li);
     });
     return wrap;
@@ -2408,60 +2840,320 @@
   }
 
   function renderArchiveInline() {
-    if (!archiveViewRoot || !WL) return;
-    var allSessions = WL.getSessions();
-    var sessions = getArchiveSessions();
+    if (!archiveViewRoot) return;
+    var allSessions = WL ? WL.getSessions() : [];
+    var events = getArchiveTimelineEvents();
+    var allEvents = (
+      window.TrainingTimeline && typeof window.TrainingTimeline.collectEvents === 'function'
+        ? window.TrainingTimeline.collectEvents(allSessions)
+        : allSessions.map(function () {
+            return {};
+          })
+    ).concat(prTimelineEvents());
     archiveViewRoot.innerHTML = '';
-    updateArchiveSummary(allSessions, sessions);
+    // updateArchiveSummary also writes into archiveCountEl, so the entry count
+    // has to land after it.
+    updateArchiveSummary(allSessions, getArchiveSessions());
+    if (archiveCountEl) {
+      archiveCountEl.textContent =
+        events.length +
+        ' of ' +
+        allEvents.length +
+        ' entr' +
+        (allEvents.length === 1 ? 'y' : 'ies');
+    }
     if (archiveScroll) archiveScroll.setAttribute('data-archive-view', 'timeline');
-    var hasAny = allSessions.length > 0;
-    var hasMatches = sessions.length > 0;
+    var hasAny = allEvents.length > 0;
+    var hasMatches = events.length > 0;
     if (archiveInlineEmpty) {
       archiveInlineEmpty.hidden = hasAny;
+      archiveInlineEmpty.textContent = 'No timeline entries yet.';
     }
     if (archiveSearchEmpty) {
-      archiveSearchEmpty.hidden = !hasAny || hasMatches || !archiveSearchQuery;
+      var filteredOut = hasAny && !hasMatches && (!!archiveSearchQuery || archiveTypeFilter !== 'all');
+      archiveSearchEmpty.hidden = !filteredOut;
+      archiveSearchEmpty.textContent = archiveSearchQuery
+        ? 'No entries match your search.'
+        : 'No entries for this filter.';
     }
     if (!hasMatches) return;
-    archiveViewRoot.appendChild(buildArchiveTimeline(sessions));
+    archiveViewRoot.appendChild(buildArchiveTimeline(events));
+  }
+
+  function parseLiftValueDisplay(display) {
+    var out = { weight: null, unit: 'lb', reps: null };
+    if (!display) return out;
+    var m = String(display).match(/([\d.]+)\s*(lb|kg)/i);
+    if (m) {
+      out.weight = parseFloat(m[1]);
+      out.unit = m[2].toLowerCase();
+    }
+    var r = String(display).match(/[×x]\s*(\d+)/i);
+    if (r) out.reps = parseInt(r[1], 10);
+    return out;
+  }
+
+  function parseTimePartsFromSeconds(sec) {
+    var s = Math.max(0, Number(sec) || 0);
+    var mins = Math.floor(s / 60);
+    var rem = Math.round((s - mins * 60) * 100) / 100;
+    return { min: mins, sec: rem };
+  }
+
+  function buildPrSparkline(rec) {
+    var series =
+      PR && typeof PR.progressSeries === 'function' ? PR.progressSeries(rec) : [];
+    if (series.length < 2) return null;
+    var timed = rec.discipline === 'running' || rec.discipline === 'swimming';
+    var values = series
+      .map(function (p) {
+        if (timed) return p.valueSeconds != null ? Number(p.valueSeconds) : null;
+        return p.weight != null ? Number(p.weight) : null;
+      })
+      .filter(function (v) {
+        return v != null && !isNaN(v);
+      });
+    if (values.length < 2) return null;
+    var min = Math.min.apply(null, values);
+    var max = Math.max.apply(null, values);
+    var span = max - min || 1;
+    var w = 120;
+    var h = 36;
+    var pad = 3;
+    var pts = values.map(function (v, i) {
+      var x = pad + (i / (values.length - 1)) * (w - pad * 2);
+      var yNorm = timed ? (v - min) / span : (v - min) / span;
+      // Timed: lower is better — flip so improvement trends up
+      if (timed) yNorm = 1 - yNorm;
+      var y = pad + (1 - yNorm) * (h - pad * 2);
+      return x.toFixed(1) + ',' + y.toFixed(1);
+    });
+    var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('class', 'pr-card-spark');
+    svg.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
+    svg.setAttribute('width', '120');
+    svg.setAttribute('height', '36');
+    svg.setAttribute('aria-hidden', 'true');
+    var poly = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+    poly.setAttribute('fill', 'none');
+    poly.setAttribute('stroke', 'currentColor');
+    poly.setAttribute('stroke-width', '2');
+    poly.setAttribute('stroke-linecap', 'round');
+    poly.setAttribute('stroke-linejoin', 'round');
+    poly.setAttribute('points', pts.join(' '));
+    svg.appendChild(poly);
+    return svg;
   }
 
   function buildPrArchiveLi(rec) {
     var li = document.createElement('li');
-    li.className = 'tracking-saved-item tracking-pr-archive-item';
+    li.className = 'tracking-saved-item tracking-pr-archive-item pr-card';
+    li.setAttribute('data-pr-id', rec.id || rec.clientId || '');
+    li.setAttribute('role', 'button');
+    li.tabIndex = 0;
+    li.setAttribute('aria-label', 'Update ' + (rec.eventLabel || 'personal record'));
+
+    var disc = document.createElement('span');
+    disc.className = 'pr-card-disc';
+    disc.textContent = PR ? PR.disciplineLabel(rec.discipline) : rec.discipline || 'PR';
     var head = document.createElement('div');
-    head.className = 'tracking-saved-item-head';
+    head.className = 'tracking-saved-item-head pr-card-title';
     head.textContent = rec.eventLabel || 'Personal best';
     var meta = document.createElement('div');
-    meta.className = 'tracking-saved-item-meta';
+    meta.className = 'tracking-saved-item-meta pr-card-meta';
     var bits = [];
     if (rec.date) bits.push(rec.date);
     if (rec.time) bits.push(formatTimeDisplay(rec.time));
-    if (PR) bits.push(PR.disciplineLabel(rec.discipline));
+    var histLen = Array.isArray(rec.history) ? rec.history.length : 0;
+    if (histLen) bits.push(histLen + ' past');
     meta.textContent = bits.join(' · ');
     var result = document.createElement('div');
-    result.className = 'tracking-pr-archive-result';
+    result.className = 'tracking-pr-archive-result pr-card-result';
     result.textContent = rec.valueDisplay || '—';
-    var notes = (rec.notes || '').trim();
+    var hint = document.createElement('span');
+    hint.className = 'pr-card-edit-hint';
+    hint.textContent = 'Tap to update';
+
+    li.appendChild(disc);
     li.appendChild(head);
     if (meta.textContent) li.appendChild(meta);
     li.appendChild(result);
+    var spark = buildPrSparkline(rec);
+    if (spark) {
+      var sparkWrap = document.createElement('div');
+      sparkWrap.className = 'pr-card-spark-wrap';
+      sparkWrap.appendChild(spark);
+      li.appendChild(sparkWrap);
+    }
+    var notes = (rec.notes || '').trim();
     if (notes) {
       var foot = document.createElement('div');
-      foot.className = 'tracking-saved-item-foot tracking-pr-archive-notes';
+      foot.className = 'tracking-saved-item-foot tracking-pr-archive-notes pr-card-notes';
       foot.textContent = notes;
       li.appendChild(foot);
     }
+    li.appendChild(hint);
+    li.addEventListener('click', function () {
+      openPrEditDialog(rec);
+    });
+    li.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openPrEditDialog(rec);
+      }
+    });
     return li;
   }
 
   function renderPrArchiveList() {
-    if (!prArchiveList || !PR) return;
-    var records = PR.getRecords();
-    prArchiveList.innerHTML = '';
-    if (prArchiveEmpty) prArchiveEmpty.hidden = records.length > 0;
-    records.forEach(function (rec) {
-      prArchiveList.appendChild(buildPrArchiveLi(rec));
+    /* PRs tab removed — records live on the timeline. */
+  }
+
+  var prEditBackdrop = document.getElementById('pr-edit-backdrop');
+  var prEditDialog = document.getElementById('pr-edit-dialog');
+  var prEditForm = document.getElementById('pr-edit-form');
+  var prEditClose = document.getElementById('pr-edit-close');
+  var editingPrId = null;
+
+  function setPrEditError(msg) {
+    var el = document.getElementById('pr-edit-error');
+    if (!el) return;
+    if (!msg) {
+      el.hidden = true;
+      el.textContent = '';
+      return;
+    }
+    el.hidden = false;
+    el.textContent = msg;
+  }
+
+  function closePrEditDialog() {
+    editingPrId = null;
+    if (prEditBackdrop) {
+      prEditBackdrop.classList.remove('is-open');
+      prEditBackdrop.setAttribute('aria-hidden', 'true');
+    }
+    if (prEditDialog) {
+      prEditDialog.hidden = true;
+      prEditDialog.classList.remove('is-open');
+      prEditDialog.setAttribute('aria-hidden', 'true');
+    }
+    document.body.style.overflow = '';
+  }
+
+  function openPrEditDialog(rec) {
+    if (!prEditDialog || !rec) return;
+    editingPrId = rec.id || rec.clientId;
+    setPrEditError('');
+    var discEl = document.getElementById('pr-edit-disc');
+    var titleEl = document.getElementById('pr-edit-title');
+    var idEl = document.getElementById('pr-edit-id');
+    var dtEl = document.getElementById('pr-edit-datetime');
+    var notesEl = document.getElementById('pr-edit-notes');
+    var liftFields = document.getElementById('pr-edit-fields-lift');
+    var timeFields = document.getElementById('pr-edit-fields-time');
+    if (idEl) idEl.value = editingPrId || '';
+    if (discEl) discEl.textContent = PR ? PR.disciplineLabel(rec.discipline) : rec.discipline || 'PR';
+    if (titleEl) titleEl.textContent = rec.eventLabel || 'Update personal record';
+    if (notesEl) notesEl.value = rec.notes || '';
+    if (dtEl) {
+      var d = rec.date || '';
+      var t = (rec.time || '12:00').slice(0, 5);
+      dtEl.value = d ? d + 'T' + t : defaultDatetimeLocal();
+    }
+    var isLift = rec.discipline === 'weightlifting';
+    if (liftFields) liftFields.hidden = !isLift;
+    if (timeFields) timeFields.hidden = isLift;
+    if (isLift) {
+      var parsed = parseLiftValueDisplay(rec.valueDisplay);
+      var wEl = document.getElementById('pr-edit-weight');
+      var uEl = document.getElementById('pr-edit-unit');
+      var rEl = document.getElementById('pr-edit-reps');
+      if (wEl) wEl.value = rec.weight != null ? rec.weight : parsed.weight != null ? parsed.weight : '';
+      if (uEl) uEl.value = rec.unit || parsed.unit || 'lb';
+      if (rEl) rEl.value = rec.reps != null ? rec.reps : parsed.reps != null ? parsed.reps : '';
+    } else {
+      var parts =
+        rec.valueSeconds != null
+          ? parseTimePartsFromSeconds(rec.valueSeconds)
+          : { min: 0, sec: 0 };
+      if (rec.valueSeconds == null && rec.valueDisplay && window.TimedEventFields) {
+        var secs = window.TimedEventFields.parseTimeDisplaySeconds(rec.valueDisplay);
+        if (secs != null) parts = parseTimePartsFromSeconds(secs);
+      }
+      var minEl = document.getElementById('pr-edit-min');
+      var secEl = document.getElementById('pr-edit-sec');
+      if (minEl) minEl.value = parts.min;
+      if (secEl) secEl.value = parts.sec;
+    }
+    if (prEditBackdrop) {
+      prEditBackdrop.classList.add('is-open');
+      prEditBackdrop.setAttribute('aria-hidden', 'false');
+    }
+    prEditDialog.hidden = false;
+    prEditDialog.classList.add('is-open');
+    prEditDialog.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  }
+
+  if (prEditClose) prEditClose.addEventListener('click', closePrEditDialog);
+  if (prEditBackdrop) prEditBackdrop.addEventListener('click', closePrEditDialog);
+  if (prEditForm && PR) {
+    prEditForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      setPrEditError('');
+      var id = editingPrId || (document.getElementById('pr-edit-id') || {}).value;
+      var existing = PR.getRecordById ? PR.getRecordById(id) : null;
+      if (!existing) {
+        setPrEditError('Could not find that PR.');
+        return;
+      }
+      var dt = (document.getElementById('pr-edit-datetime') || {}).value;
+      if (!dt) {
+        setPrEditError('Pick a date and time.');
+        return;
+      }
+      var parts = dt.split('T');
+      var patch = {
+        date: parts[0] || '',
+        time: parts[1] || '',
+        notes: ((document.getElementById('pr-edit-notes') || {}).value || '').trim(),
+      };
+      if (existing.discipline === 'weightlifting') {
+        var w = parseFloat((document.getElementById('pr-edit-weight') || {}).value);
+        var unit = (document.getElementById('pr-edit-unit') || {}).value || 'lb';
+        var reps = parseInt((document.getElementById('pr-edit-reps') || {}).value, 10);
+        if (isNaN(w) || w <= 0) {
+          setPrEditError('Enter a valid weight.');
+          return;
+        }
+        patch.weight = w;
+        patch.unit = unit;
+        patch.reps = !isNaN(reps) && reps > 0 ? reps : 1;
+        patch.valueDisplay = w + ' ' + unit;
+        if (patch.reps > 1) patch.valueDisplay += ' × ' + patch.reps;
+        patch.valueSeconds = null;
+      } else {
+        var rm = (document.getElementById('pr-edit-min') || {}).value;
+        var rs = (document.getElementById('pr-edit-sec') || {}).value;
+        var valueDisplay = formatDurationParts(rm, rs);
+        if (!valueDisplay || valueDisplay === '0s') {
+          setPrEditError('Enter a time greater than zero.');
+          return;
+        }
+        patch.valueDisplay = valueDisplay;
+        if (
+          window.TimedEventFields &&
+          typeof window.TimedEventFields.parseTimeDisplaySeconds === 'function'
+        ) {
+          patch.valueSeconds = window.TimedEventFields.parseTimeDisplaySeconds(valueDisplay);
+        }
+      }
+      PR.updateRecord(id, patch);
+      closePrEditDialog();
+      renderPrCard();
+      renderPrArchiveList();
+      refreshTrackingUi();
     });
   }
 
@@ -2653,6 +3345,11 @@
 
   document.addEventListener('keydown', function (e) {
     if (e.key !== 'Escape') return;
+    if (prEditDialog && prEditDialog.classList.contains('is-open')) {
+      closePrEditDialog();
+      e.preventDefault();
+      return;
+    }
     if (woShareModal && woShareModal.classList.contains('is-open')) {
       closeWorkoutShareModal();
       e.preventDefault();
@@ -2669,12 +3366,17 @@
     }
   });
 
+  window.addEventListener('strongman:timeline-updated', function () {
+    renderArchiveInline();
+  });
+
   if (statsGrid) {
     statsGrid.addEventListener('click', function (e) {
       if (!tabLayout || tabLayout.getAttribute('data-active-panel') !== 'stats') return;
       if (statsGrid.classList.contains('tracking-grid--edit-active')) return;
       if (e.target.closest('.tracking-grid-drag-handle')) return;
       if (e.target.closest('.more-btn')) return;
+      if (e.target.closest('select, label, .tracking-chart-select-label')) return;
       var card = e.target.closest('[data-complication-detail]');
       if (!card) return;
       e.preventDefault();
@@ -2687,11 +3389,41 @@
       var r = btn.getAttribute('data-stats-range');
       document.querySelectorAll('[data-stats-range]').forEach(function (b) {
         b.classList.toggle('active', b.getAttribute('data-stats-range') === r);
+        b.classList.toggle('is-active', b.getAttribute('data-stats-range') === r);
+        if (b.getAttribute('role') === 'option') {
+          b.setAttribute('aria-selected', b.getAttribute('data-stats-range') === r ? 'true' : 'false');
+        }
       });
       if (tabLayout) tabLayout.setAttribute('data-stats-range', r || 'month');
+      var viewingValue = document.getElementById('tracking-viewing-value');
+      if (viewingValue) viewingValue.textContent = shortPeriodLabel(r);
+      syncStatsWhenLabels(r);
+      var viewingMenu = document.getElementById('tracking-viewing-menu');
+      var viewingBtn = document.getElementById('tracking-viewing-btn');
+      if (viewingMenu) viewingMenu.hidden = true;
+      if (viewingBtn) viewingBtn.setAttribute('aria-expanded', 'false');
       refreshTrackingUi();
     });
   });
+
+  (function initViewingMenu() {
+    var btn = document.getElementById('tracking-viewing-btn');
+    var menu = document.getElementById('tracking-viewing-menu');
+    if (!btn || !menu) return;
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var open = menu.hidden;
+      menu.hidden = !open;
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+    menu.addEventListener('click', function (e) {
+      e.stopPropagation();
+    });
+    document.addEventListener('click', function () {
+      menu.hidden = true;
+      btn.setAttribute('aria-expanded', 'false');
+    });
+  })();
 
   applySavedGridOrder();
   initGridDragDrop();
@@ -2805,6 +3537,15 @@
       if (sessOpen) openSessionDetail(sessOpen);
       return;
     }
+    var prOpenEl = e.target.closest && e.target.closest('[data-pr-open]');
+    if (prOpenEl && PR && typeof PR.getRecordById === 'function') {
+      var pidOpen = prOpenEl.getAttribute('data-pr-open');
+      if (!pidOpen) return;
+      e.preventDefault();
+      var recOpen = PR.getRecordById(pidOpen);
+      if (recOpen) openPrEditDialog(recOpen);
+      return;
+    }
     var rmPhotoBtn = e.target.closest && e.target.closest('.tracking-session-photo-remove');
     if (rmPhotoBtn && WL && typeof WL.updateSession === 'function') {
       var sidRm = rmPhotoBtn.getAttribute('data-session-photo-remove-for');
@@ -2863,6 +3604,9 @@
         label +
         '</strong> — charts use logged sets, reps &amp; weight.';
     }
+    requestAnimationFrame(function () {
+      resizeStatsCharts();
+    });
     renderArchiveInline();
     renderPhysiqueGallery();
     if (typeof renderPrCard === 'function') {
@@ -2874,6 +3618,9 @@
   }
 
   refreshTrackingUi();
+  window.addEventListener('resize', function () {
+    resizeStatsCharts();
+  });
   if (window.TrainingSync && typeof window.TrainingSync.syncAll === 'function') {
     window.TrainingSync.syncAll({ callback: function () { refreshTrackingUi(); } });
   } else {

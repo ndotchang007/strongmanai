@@ -91,13 +91,18 @@
     };
   }
 
+  function detailOrEmpty(value) {
+    var s = typeof value === 'string' ? value.trim() : '';
+    return s || '';
+  }
+
   function createWarningEl(point) {
     return expandCard({
       variant: 'warning',
       text: point.text || point,
-      medicalOverview: point.medicalOverview || '',
-      citation: point.citation || '',
-      forceExpand: true,
+      medicalOverview: detailOrEmpty(point.medicalOverview),
+      citation: detailOrEmpty(point.citation),
+      forceExpand: false,
     });
   }
 
@@ -105,9 +110,9 @@
     return expandCard({
       variant: point.style || 'action',
       text: point.text,
-      medicalOverview: point.medicalOverview || '',
-      citation: point.citation || '',
-      forceExpand: true,
+      medicalOverview: detailOrEmpty(point.medicalOverview),
+      citation: detailOrEmpty(point.citation),
+      forceExpand: false,
     });
   }
 
@@ -124,13 +129,18 @@
     }
 
     if (data.summary) {
+      var summaryDetail = detailOrEmpty(data.summaryMedicalOverview);
+      // Don't expand when overview is just a copy of the summary text.
+      if (summaryDetail && summaryDetail === String(data.summary).trim()) {
+        summaryDetail = '';
+      }
       wrap.appendChild(
         expandCard({
           variant: 'summary',
           text: data.summary,
-          medicalOverview: data.summaryMedicalOverview || data.summary,
-          citation: data.summaryCitation || '',
-          forceExpand: true,
+          medicalOverview: summaryDetail,
+          citation: detailOrEmpty(data.summaryCitation),
+          forceExpand: false,
         })
       );
     }

@@ -8,7 +8,27 @@ body.generate-page
 body.coach-fullpage.generate-page
 {
     background-color: var(--bg-page, #121212);
-    background-image: none;
+    background-image:
+        radial-gradient(ellipse 120% 80% at 50% -30%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 55%),
+        radial-gradient(ellipse 70% 50% at 100% 20%, color-mix(in srgb, var(--accent-bright, var(--accent)) 8%, transparent), transparent 50%);
+}
+
+html[data-theme="signal"] body.coach-fullpage.generate-page
+{
+    background-color: #000;
+    background-image:
+        radial-gradient(ellipse 110% 85% at 20% -12%, color-mix(in srgb, var(--accent) 32%, transparent), transparent 58%),
+        radial-gradient(ellipse 80% 55% at 100% 6%, color-mix(in srgb, var(--accent-bright) 16%, transparent), transparent 52%),
+        radial-gradient(ellipse 60% 40% at 50% 100%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 55%);
+}
+
+html[data-theme="mono-light"] body.coach-fullpage.generate-page,
+html[data-theme="mono-dark"] body.coach-fullpage.generate-page
+{
+    background-color: var(--bg-page);
+    background-image:
+        radial-gradient(ellipse 120% 80% at 50% -30%, color-mix(in srgb, #2f6bff 12%, transparent), transparent 55%),
+        radial-gradient(ellipse 70% 50% at 100% 20%, color-mix(in srgb, #5b8cff 7%, transparent), transparent 50%);
 }
 
 body.coach-fullpage .generate-main

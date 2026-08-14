@@ -234,15 +234,44 @@
     overlay.innerHTML =
       '<div class="home-gym-live-stage">' +
       '<video class="home-gym-live-video" playsinline autoplay muted></video>' +
-      '<div class="home-gym-live-reticle" aria-hidden="true"></div>' +
+      '<canvas class="home-gym-live-canvas" aria-hidden="true"></canvas>' +
+      '<div class="home-gym-live-hud" aria-hidden="true">' +
+      '<div class="home-gym-live-compass">' +
+      '<div class="home-gym-live-compass-ring" data-compass-ring>' +
+      '<span class="home-gym-live-compass-tick home-gym-live-compass-tick--n">N</span>' +
+      '<span class="home-gym-live-compass-tick home-gym-live-compass-tick--e">E</span>' +
+      '<span class="home-gym-live-compass-tick home-gym-live-compass-tick--s">S</span>' +
+      '<span class="home-gym-live-compass-tick home-gym-live-compass-tick--w">W</span>' +
+      '<span class="home-gym-live-compass-needle" data-compass-needle></span>' +
+      '</div>' +
+      '<p class="home-gym-live-heading" data-live-heading>—°</p>' +
+      '</div>' +
+      '<div class="home-gym-live-edge home-gym-live-edge--left" data-edge="left" hidden></div>' +
+      '<div class="home-gym-live-edge home-gym-live-edge--right" data-edge="right" hidden></div>' +
+      '<div class="home-gym-live-edge home-gym-live-edge--top" data-edge="top" hidden></div>' +
+      '<div class="home-gym-live-edge home-gym-live-edge--bottom" data-edge="bottom" hidden></div>' +
+      '<div class="home-gym-live-dir-arrow" data-dir-arrow hidden>' +
+      '<span class="home-gym-live-dir-chevron"></span>' +
+      '<span class="home-gym-live-dir-label" data-dir-label></span>' +
+      '</div>' +
+      '<div class="home-gym-live-target" data-live-target>' +
+      '<span class="home-gym-live-target-corner home-gym-live-target-corner--tl"></span>' +
+      '<span class="home-gym-live-target-corner home-gym-live-target-corner--tr"></span>' +
+      '<span class="home-gym-live-target-corner home-gym-live-target-corner--bl"></span>' +
+      '<span class="home-gym-live-target-corner home-gym-live-target-corner--br"></span>' +
+      '</div>' +
+      '<div class="home-gym-live-lock" data-live-lock hidden>LOCKED</div>' +
+      '<div class="home-gym-live-radar" data-live-radar></div>' +
+      '</div>' +
       '<div class="home-gym-live-top">' +
-      '<p class="home-gym-live-hint">Walk around · center gear in the ring · tap Recognize</p>' +
+      '<p class="home-gym-live-hint">Point at gear · follow the HUD · tap Add when locked</p>' +
       '<button type="button" class="home-gym-live-close" data-live-close aria-label="Close camera">×</button>' +
       '</div>' +
       '<div class="home-gym-live-toast" data-live-toast hidden></div>' +
       '<div class="home-gym-live-dock">' +
+      '<p class="home-gym-live-detect-status" data-live-detect>Starting detector…</p>' +
       '<p class="home-gym-live-count" data-live-count>0 items found</p>' +
-      '<button type="button" class="home-gym-live-recognize" data-live-recognize>Recognize</button>' +
+      '<button type="button" class="home-gym-live-recognize" data-live-recognize>Add detection</button>' +
       '<button type="button" class="home-gym-live-done" data-live-done>Done</button>' +
       '</div>' +
       '</div>';
@@ -250,21 +279,51 @@
     document.body.appendChild(overlay);
     document.body.classList.add('home-gym-live-open');
 
+    var stage = overlay.querySelector('.home-gym-live-stage');
     var video = overlay.querySelector('.home-gym-live-video');
+    var canvas = overlay.querySelector('.home-gym-live-canvas');
     var toastEl = overlay.querySelector('[data-live-toast]');
     var countEl = overlay.querySelector('[data-live-count]');
+    var detectStatusEl = overlay.querySelector('[data-live-detect]');
     var recognizeBtn = overlay.querySelector('[data-live-recognize]');
     var doneBtn = overlay.querySelector('[data-live-done]');
     var closeBtn = overlay.querySelector('[data-live-close]');
+    var compassRing = overlay.querySelector('[data-compass-ring]');
+    var headingEl = overlay.querySelector('[data-live-heading]');
+    var dirArrow = overlay.querySelector('[data-dir-arrow]');
+    var dirLabel = overlay.querySelector('[data-dir-label]');
+    var lockEl = overlay.querySelector('[data-live-lock]');
+    var targetEl = overlay.querySelector('[data-live-target]');
+    var radarEl = overlay.querySelector('[data-live-radar]');
+    var edgeEls = {
+      left: overlay.querySelector('[data-edge="left"]'),
+      right: overlay.querySelector('[data-edge="right"]'),
+      top: overlay.querySelector('[data-edge="top"]'),
+      bottom: overlay.querySelector('[data-edge="bottom"]'),
+    };
+
     var stream = null;
     var busy = false;
+    var closed = false;
+    var detectConfigured = false;
+    var detectLoopTimer = null;
+    var detectInFlight = false;
+    var lastPredictions = [];
+    var lastImageSize = null;
+    var headingDeg = null;
+    var orientationHandler = null;
     var inventory = opts.initial ? JSON.parse(JSON.stringify(opts.initial)) : null;
+    var ED = window.EquipmentDetect;
 
     function toast(msg, isError) {
       if (!toastEl) return;
       toastEl.textContent = msg || '';
       toastEl.hidden = !msg;
       toastEl.classList.toggle('home-gym-live-toast--error', !!isError);
+    }
+
+    function setDetectStatus(msg) {
+      if (detectStatusEl) detectStatusEl.textContent = msg || '';
     }
 
     function updateCount() {
@@ -274,7 +333,26 @@
       }
     }
 
+    function stopDetectLoop() {
+      if (detectLoopTimer) {
+        clearTimeout(detectLoopTimer);
+        detectLoopTimer = null;
+      }
+      detectInFlight = false;
+    }
+
+    function stopOrientation() {
+      if (orientationHandler) {
+        window.removeEventListener('deviceorientation', orientationHandler);
+        orientationHandler = null;
+      }
+    }
+
     function closeLive(finalInventory) {
+      if (closed) return;
+      closed = true;
+      stopDetectLoop();
+      stopOrientation();
       stopStream(stream);
       stream = null;
       document.body.classList.remove('home-gym-live-open');
@@ -286,9 +364,261 @@
       busy = !!on;
       if (recognizeBtn) {
         recognizeBtn.disabled = !!on;
-        recognizeBtn.textContent = on ? 'Recognizing…' : 'Recognize';
+        recognizeBtn.textContent = on ? 'Adding…' : 'Add detection';
       }
       if (doneBtn) doneBtn.disabled = !!on;
+    }
+
+    function bestPrediction() {
+      if (!lastPredictions.length || !ED || !video || !lastImageSize) return null;
+      var stageW = stage ? stage.clientWidth : 0;
+      var stageH = stage ? stage.clientHeight : 0;
+      var best = null;
+      lastPredictions.forEach(function (pred) {
+        var mapped = ED.mapPredictionToViewport(pred, lastImageSize, video);
+        if (!mapped) return;
+        var dir = ED.directionFromCenter(mapped, stageW, stageH);
+        var score = (pred.confidence || 0) * 2 - dir.dist / Math.max(stageW, 1);
+        if (!best || score > best.score) {
+          best = { pred: pred, mapped: mapped, dir: dir, score: score };
+        }
+      });
+      return best;
+    }
+
+    function drawHud() {
+      if (!canvas || !video || !stage) return;
+      var w = stage.clientWidth;
+      var h = stage.clientHeight;
+      if (!w || !h) return;
+      if (canvas.width !== w || canvas.height !== h) {
+        canvas.width = w;
+        canvas.height = h;
+      }
+      var ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, w, h);
+
+      var accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#e8b84a';
+      var mappedList = [];
+      if (ED && lastImageSize) {
+        lastPredictions.forEach(function (pred) {
+          var mapped = ED.mapPredictionToViewport(pred, lastImageSize, video);
+          if (mapped) mappedList.push({ pred: pred, mapped: mapped });
+        });
+      }
+
+      mappedList.forEach(function (item) {
+        var m = item.mapped;
+        var conf = Math.round((item.pred.confidence || 0) * 100);
+        var label =
+          (ED ? ED.titleCaseClass(item.pred.class) : item.pred.class) + '  ' + conf + '%';
+        ctx.strokeStyle = accent;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(m.left, m.top, m.width, m.height);
+        ctx.fillStyle = 'rgba(0,0,0,0.62)';
+        var tw = ctx.measureText(label).width + 12;
+        ctx.fillRect(m.left, Math.max(0, m.top - 22), Math.min(tw, m.width + 40), 20);
+        ctx.fillStyle = '#fff';
+        ctx.font = '600 12px DM Sans, system-ui, sans-serif';
+        ctx.fillText(label, m.left + 6, Math.max(14, m.top - 7));
+      });
+
+      var focus = bestPrediction();
+      ['left', 'right', 'top', 'bottom'].forEach(function (side) {
+        if (edgeEls[side]) edgeEls[side].hidden = true;
+      });
+      if (radarEl) radarEl.innerHTML = '';
+
+      if (focus && focus.mapped) {
+        var dir = focus.dir;
+        var labelName = ED ? ED.titleCaseClass(focus.pred.class) : focus.pred.class;
+        if (targetEl) {
+          targetEl.classList.toggle('is-locked', !!dir.locked);
+        }
+        if (lockEl) {
+          lockEl.hidden = !dir.locked;
+          if (dir.locked) lockEl.textContent = 'LOCKED · ' + labelName;
+        }
+        if (dirArrow && dirLabel) {
+          if (!dir.locked && dir.dist > 36) {
+            dirArrow.hidden = false;
+            dirArrow.style.transform =
+              'translate(-50%, -50%) rotate(' + (dir.angle + 90) + 'deg)';
+            dirLabel.textContent = labelName;
+            dirLabel.style.transform = 'rotate(' + -(dir.angle + 90) + 'deg)';
+          } else {
+            dirArrow.hidden = true;
+          }
+        }
+        var edgeThresh = 0.55;
+        if (dir.nx < -edgeThresh && edgeEls.left) {
+          edgeEls.left.hidden = false;
+          edgeEls.left.textContent = '◀ ' + labelName;
+        } else if (dir.nx > edgeThresh && edgeEls.right) {
+          edgeEls.right.hidden = false;
+          edgeEls.right.textContent = labelName + ' ▶';
+        }
+        if (dir.ny < -edgeThresh && edgeEls.top) {
+          edgeEls.top.hidden = false;
+          edgeEls.top.textContent = '▲ ' + labelName;
+        } else if (dir.ny > edgeThresh && edgeEls.bottom) {
+          edgeEls.bottom.hidden = false;
+          edgeEls.bottom.textContent = '▼ ' + labelName;
+        }
+        if (radarEl) {
+          mappedList.forEach(function (item) {
+            var d = ED.directionFromCenter(item.mapped, w, h);
+            var blip = document.createElement('span');
+            blip.className = 'home-gym-live-radar-blip';
+            var rx = 50 + Math.max(-42, Math.min(42, d.nx * 42));
+            var ry = 50 + Math.max(-42, Math.min(42, d.ny * 42));
+            blip.style.left = rx + '%';
+            blip.style.top = ry + '%';
+            radarEl.appendChild(blip);
+          });
+        }
+      } else {
+        if (targetEl) targetEl.classList.remove('is-locked');
+        if (lockEl) lockEl.hidden = true;
+        if (dirArrow) dirArrow.hidden = true;
+      }
+    }
+
+    function scheduleDetectLoop() {
+      stopDetectLoop();
+      if (closed || !detectConfigured || !ED) return;
+      var interval = ED.DEFAULT_INTERVAL_MS || 1500;
+      detectLoopTimer = setTimeout(runDetectOnce, interval);
+    }
+
+    function runDetectOnce() {
+      if (closed || detectInFlight || !video || !ED) return;
+      if (!video.videoWidth) {
+        scheduleDetectLoop();
+        return;
+      }
+      detectInFlight = true;
+      ED.captureDetectFrame(video)
+        .then(function (frame) {
+          lastImageSize = { width: frame.width, height: frame.height };
+          return ED.detectFrame(frame);
+        })
+        .then(function (result) {
+          lastPredictions = (result && result.predictions) || [];
+          var n = lastPredictions.length;
+          setDetectStatus(
+            n
+              ? n + ' detection' + (n === 1 ? '' : 's') + ' · live'
+              : 'Scanning… point at equipment'
+          );
+          drawHud();
+        })
+        .catch(function (err) {
+          if (err && err.code === 'ROBOFLOW_NOT_CONFIGURED') {
+            detectConfigured = false;
+            setDetectStatus('Detector offline — set ROBOFLOW_API_KEY');
+            return;
+          }
+          setDetectStatus((err && err.message) || 'Detection paused');
+        })
+        .finally(function () {
+          detectInFlight = false;
+          if (!closed && detectConfigured) scheduleDetectLoop();
+        });
+    }
+
+    function startOrientationHud() {
+      orientationHandler = function (event) {
+        var alpha = typeof event.alpha === 'number' ? event.alpha : null;
+        var webkitHeading =
+          typeof event.webkitCompassHeading === 'number' ? event.webkitCompassHeading : null;
+        if (webkitHeading != null) {
+          headingDeg = webkitHeading;
+        } else if (alpha != null) {
+          headingDeg = (360 - alpha + 360) % 360;
+        }
+        if (headingDeg == null) return;
+        if (compassRing) {
+          compassRing.style.transform = 'rotate(' + -headingDeg + 'deg)';
+        }
+        if (headingEl) {
+          headingEl.textContent = Math.round(headingDeg) + '°';
+        }
+      };
+
+      function attach() {
+        window.addEventListener('deviceorientation', orientationHandler, true);
+      }
+
+      if (
+        typeof DeviceOrientationEvent !== 'undefined' &&
+        typeof DeviceOrientationEvent.requestPermission === 'function'
+      ) {
+        DeviceOrientationEvent.requestPermission()
+          .then(function (state) {
+            if (state === 'granted') attach();
+            else if (headingEl) headingEl.textContent = 'compass off';
+          })
+          .catch(function () {
+            if (headingEl) headingEl.textContent = 'compass off';
+          });
+      } else if (typeof DeviceOrientationEvent !== 'undefined') {
+        attach();
+      } else if (headingEl) {
+        headingEl.textContent = 'compass n/a';
+      }
+    }
+
+    function addCurrentDetections() {
+      if (busy) return;
+      var focus = bestPrediction();
+      var preds = focus ? [focus.pred] : lastPredictions.slice(0, 3);
+      if (!preds.length) {
+        toast('No equipment in view yet — keep scanning.', true);
+        return;
+      }
+      if (!ED) {
+        toast('Detector not loaded.', true);
+        return;
+      }
+      setBusy(true);
+      var found = ED.predictionsToHomeGym(preds);
+      inventory = mergeHomeGym(inventory, found);
+      updateCount();
+      var names = (found.equipment || [])
+        .map(function (e) {
+          return e.name;
+        })
+        .slice(0, 2)
+        .join(', ');
+      toast(names ? 'Added: ' + names : 'Added to your gym list.');
+      if (typeof opts.onUpdate === 'function') opts.onUpdate(inventory);
+      setBusy(false);
+
+      // Optional Claude enrichment for weight calibration when configured
+      if (typeof apiPost === 'function' && focus && focus.dir && focus.dir.locked) {
+        captureFrameFromVideo(video)
+          .then(function (frame) {
+            return apiPost('/coach/gym-scan', {
+              images: [frame],
+              notes:
+                'LIVE ENRICHMENT: Confirm the centered equipment "' +
+                (focus.pred.class || '') +
+                '". Prefer brand + weightCalibration for numbered stacks if visible. Keep list to 1 primary item.',
+            }).then(function (res) {
+              return res.json().then(function (body) {
+                return { res: res, body: body };
+              });
+            });
+          })
+          .then(function (x) {
+            if (!x.res.ok || !x.body.homeGym) return;
+            inventory = mergeHomeGym(inventory, x.body.homeGym);
+            updateCount();
+            if (typeof opts.onUpdate === 'function') opts.onUpdate(inventory);
+          })
+          .catch(function () {});
+      }
     }
 
     updateCount();
@@ -310,66 +640,44 @@
           if (play && typeof play.catch === 'function') play.catch(function () {});
         }
 
-        function onRecognize() {
-          if (busy) return;
-          if (typeof apiPost !== 'function') {
-            toast('Could not reach the API.', true);
-            return;
-          }
-          setBusy(true);
-          toast('Rocky is looking…');
-          captureFrameFromVideo(video)
-            .then(function (frame) {
-              return apiPost('/coach/gym-scan', {
-                images: [frame],
-                notes:
-                  'LIVE POINT-AND-SCAN: The athlete is walking around their gym pointing the camera. Identify the equipment centered in the viewfinder (primary focus). Include brand if visible and weightCalibration for numbered stacks (e.g. pin 1=10 lb). Keep the list short — usually 1 primary item, plus any clearly attached accessories.',
-              }).then(function (res) {
-                return res.json().then(function (body) {
-                  return { res: res, body: body };
-                });
-              });
-            })
-            .then(function (x) {
-              if (!x.res.ok) {
-                throw new Error((x.body && x.body.error) || 'Could not recognize that.');
-              }
-              var found = x.body.homeGym;
-              inventory = mergeHomeGym(inventory, found);
-              updateCount();
-              var names = (found.equipment || [])
-                .map(function (e) {
-                  return e.name;
-                })
-                .slice(0, 2)
-                .join(', ');
-              toast(names ? 'Added: ' + names : 'Added to your gym list.');
-              if (typeof opts.onUpdate === 'function') opts.onUpdate(inventory);
-            })
-            .catch(function (err) {
-              toast((err && err.message) || 'Recognition failed.', true);
-            })
-            .finally(function () {
-              setBusy(false);
-            });
-        }
+        startOrientationHud();
+        window.addEventListener('resize', drawHud);
 
-        if (recognizeBtn) recognizeBtn.addEventListener('click', onRecognize);
+        var statusPromise =
+          ED && typeof ED.getStatus === 'function'
+            ? ED.getStatus()
+            : Promise.resolve({ configured: false });
+
+        statusPromise.then(function (status) {
+          detectConfigured = !!(status && status.configured);
+          if (detectConfigured) {
+            setDetectStatus('Detector ready · scanning');
+            scheduleDetectLoop();
+          } else {
+            setDetectStatus('Set ROBOFLOW_API_KEY to enable live detection');
+            toast('Live detector needs ROBOFLOW_API_KEY on the server.', true);
+          }
+        });
+
+        if (recognizeBtn) recognizeBtn.addEventListener('click', addCurrentDetections);
         if (doneBtn) {
           doneBtn.addEventListener('click', function () {
             if (busy) return;
+            window.removeEventListener('resize', drawHud);
             closeLive(inventory);
           });
         }
         if (closeBtn) {
           closeBtn.addEventListener('click', function () {
             if (busy) return;
+            window.removeEventListener('resize', drawHud);
             closeLive(inventory);
           });
         }
 
         return {
           close: function () {
+            window.removeEventListener('resize', drawHud);
             closeLive(inventory);
           },
         };
@@ -458,7 +766,7 @@
     container.innerHTML =
       '<div class="home-gym-scan-head">' +
       '<p class="home-gym-scan-title">Identify your equipment</p>' +
-      '<p class="home-gym-scan-desc">Take a photo or walk the room with live camera. Rocky names the gear and reads weight increments (e.g. pin 1–4 = 10 lb steps), then saves them to your profile.</p>' +
+      '<p class="home-gym-scan-desc">Walk the room with live camera detection (Roboflow) and a directional HUD, or upload photos. Rocky can enrich brands and weight increments once gear is locked in view.</p>' +
       '</div>' +
       '<div class="home-gym-scan-actions">' +
       '<button type="button" class="home-gym-scan-btn home-gym-scan-btn--primary" data-gym-action="live">Walk &amp; scan</button>' +

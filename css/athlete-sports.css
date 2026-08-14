@@ -185,6 +185,14 @@
   gap: 0.75rem;
 }
 
+.sport-modal-hint {
+  margin: 0.35rem 0 0;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  color: var(--text-muted, #888);
+  font-weight: 500;
+}
+
 .sport-modal-advanced {
   margin-top: 0.35rem;
   border-top: 1px solid rgba(100, 100, 100, 0.28);
@@ -329,6 +337,20 @@
   color: #fff;
   font-family: var(--font, "DM Sans", system-ui, sans-serif);
   font-size: 0.95rem;
+}
+
+select.buddy-field {
+  -webkit-appearance: none;
+  appearance: none;
+  min-height: 2.75rem;
+  padding-right: 2.35rem;
+  background-color: rgba(0, 0, 0, 0.28);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1.5 1.75L6 6.25L10.5 1.75' stroke='%23a1a1aa' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.85rem center;
+  background-size: 12px 8px;
+  cursor: pointer;
+  color-scheme: dark;
 }
 
 .buddy-field:focus {
@@ -513,7 +535,7 @@
   gap: 0.65rem;
 }
 
-/* Split cards: theme-aligned; layout owned by create.css */
+/* Split cards: theme-aligned; layout owned by log.css */
 .split-library-card--highlight {
   border-color: color-mix(in srgb, var(--accent) 42%, var(--border-mid, rgba(255, 255, 255, 0.12)));
   background:

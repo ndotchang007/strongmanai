@@ -61,7 +61,12 @@
 
   function loadSplitEditorForm() {
     mountSplitEditor();
-    if (window.WorkoutSplitEditor) window.WorkoutSplitEditor.loadActiveSplit();
+    if (window.WorkoutSplitEditor) {
+      window.WorkoutSplitEditor.loadActiveSplit();
+      if (window.WorkoutSplitEditor.syncSetCurrentButton) {
+        window.WorkoutSplitEditor.syncSetCurrentButton();
+      }
+    }
   }
 
   function dateFromDatetimeLocal(val) {
@@ -214,8 +219,10 @@
     if (!workoutTracker) return Promise.resolve();
     var WS = window.WorkoutSplit;
 
+    // Always start from a clean session for a new workout.
+    workoutTracker.reset();
+
     if (choice.mode === 'freestyle') {
-      workoutTracker.reset();
       if (typeof workoutTracker.openExercisePicker === 'function') {
         workoutTracker.openExercisePicker();
       }
@@ -236,8 +243,7 @@
 
   function trackingSubPanelFromHash() {
     var h = (location.hash || '').replace(/^#/, '');
-    if (h === 'archive' || h === 'history') return 'archive';
-    if (h === 'prs' || h === 'pr') return 'prs';
+    if (h === 'archive' || h === 'history' || h === 'prs' || h === 'pr') return 'archive';
     if (h === 'stats' || h === 'progress' || h === 'tracking') return 'stats';
     return 'stats';
   }
@@ -268,6 +274,14 @@
     var isTracking = mode === 'tracking' || isWorkout;
     var isSplit = mode === 'split';
     var trackingPanel = opts.trackingPanel || trackingSubPanelFromHash() || 'stats';
+    var leavingSplit = panelSplit && !panelSplit.hidden && !isSplit;
+    if (
+      leavingSplit &&
+      window.WorkoutSplitEditor &&
+      typeof window.WorkoutSplitEditor.leaveEditor === 'function'
+    ) {
+      window.WorkoutSplitEditor.leaveEditor();
+    }
 
     if (progressShell) progressShell.hidden = isSplit;
 
@@ -360,7 +374,14 @@
     showLiveWorkout: function () {
       setMode('workout');
       var shell = document.getElementById('create-workout-shell');
-      if (shell) shell.setAttribute('data-log-style', 'coach');
+      if (shell) {
+        var style =
+          window.strongmanPreferredLogStyle &&
+          typeof window.strongmanPreferredLogStyle.get === 'function'
+            ? window.strongmanPreferredLogStyle.get()
+            : 'coach';
+        shell.setAttribute('data-log-style', style || 'coach');
+      }
     },
   };
 
@@ -368,7 +389,14 @@
   applyHashToMode();
 
   var workoutShell = document.getElementById('create-workout-shell');
-  if (workoutShell) workoutShell.setAttribute('data-log-style', 'coach');
+  if (workoutShell) {
+    var preferredStyle =
+      window.strongmanPreferredLogStyle &&
+      typeof window.strongmanPreferredLogStyle.get === 'function'
+        ? window.strongmanPreferredLogStyle.get()
+        : 'coach';
+    workoutShell.setAttribute('data-log-style', preferredStyle || 'coach');
+  }
 
   var exerciseList = document.getElementById('create-exercise-list');
   var template = document.getElementById('create-exercise-row-template');
@@ -481,14 +509,18 @@
   }
   applySplitAutofillFromPicker();
   try {
-    if (sessionStorage.getItem('strongman-apply-today-routine') === '1') {
+    // New workout entry (?workout=1) waits for the picker — don't preload a draft/routine.
+    var startingWorkoutFlow = window.location.search.indexOf('workout=1') >= 0;
+    if (!startingWorkoutFlow && sessionStorage.getItem('strongman-apply-today-routine') === '1') {
       sessionStorage.removeItem('strongman-apply-today-routine');
       applyTodayRoutineIfEmpty(true, true);
-    } else {
+    } else if (!startingWorkoutFlow) {
       applyTodayRoutineIfEmpty(false, false);
     }
   } catch (eApply) {
-    applyTodayRoutineIfEmpty(false, false);
+    if (window.location.search.indexOf('workout=1') < 0) {
+      applyTodayRoutineIfEmpty(false, false);
+    }
   }
 
   renderSplitPickerSelect();
@@ -501,22 +533,134 @@
   var splitFormEl = document.getElementById('create-split-form');
   var splitMessageEl = document.getElementById('create-split-message');
   var splitErrorEl = document.getElementById('create-split-error');
+  var splitShareBtn = document.getElementById('create-split-share');
+  var splitSaveCurrentBtn = document.getElementById('create-split-save-current');
+
+  function showSplitMessage(text, isError) {
+    if (isError) {
+      if (splitMessageEl) {
+        splitMessageEl.textContent = '';
+        splitMessageEl.hidden = true;
+      }
+      if (splitErrorEl) {
+        splitErrorEl.textContent = text || '';
+        splitErrorEl.hidden = !text;
+      }
+      return;
+    }
+    if (splitErrorEl) {
+      splitErrorEl.textContent = '';
+      splitErrorEl.hidden = true;
+    }
+    if (splitMessageEl) {
+      splitMessageEl.textContent = text || '';
+      splitMessageEl.hidden = !text;
+    }
+  }
+
+  function switchToSplitTab() {
+    var tab = document.getElementById('create-tab-split');
+    if (tab) tab.click();
+  }
+
+  function tryImportSharedSplitFromHash() {
+    var WS = window.WorkoutSplit;
+    if (!WS || typeof WS.importSharedSplit !== 'function') return false;
+    var hash = String(location.hash || '').replace(/^#/, '');
+    if (!hash) return false;
+    var params = new URLSearchParams(hash.indexOf('=') !== -1 ? hash : '');
+    var code = params.get('split');
+    if (!code) {
+      var m = hash.match(/(?:^|&)split=([^&]+)/);
+      code = m ? decodeURIComponent(m[1]) : '';
+    }
+    if (!code) return false;
+    try {
+      var id = WS.importSharedSplit(code, { suffix: true });
+      if (!id) throw new Error('invalid');
+      history.replaceState(null, '', location.pathname + location.search);
+      mountSplitEditor();
+      loadSplitEditorForm();
+      renderSplitPickerSelect();
+      switchToSplitTab();
+      showSplitMessage('Shared split imported and set as active. Review the days, then Save.');
+      return true;
+    } catch (eImp) {
+      showSplitMessage('Could not import that shared split link.', true);
+      return false;
+    }
+  }
+
   if (splitFormEl && window.WorkoutSplitEditor) {
     splitFormEl.addEventListener('submit', function (e) {
       e.preventDefault();
-      if (splitErrorEl) {
-        splitErrorEl.textContent = '';
-        splitErrorEl.hidden = true;
-      }
-      window.WorkoutSplitEditor.saveActiveSplit();
+      showSplitMessage('');
+      window.WorkoutSplitEditor.saveActiveSplit({ activate: false });
       renderSplitPickerSelect();
-      if (splitMessageEl) {
-        splitMessageEl.textContent = 'Split saved. Start workout from Home uses this routine for today.';
-        splitMessageEl.hidden = false;
+      if (
+        window.WorkoutSplitEditor.isEditingCurrentSplit &&
+        window.WorkoutSplitEditor.isEditingCurrentSplit()
+      ) {
+        showSplitMessage('Split saved. Home / Start workout uses this routine.');
+        applySplitAutofillFromPicker();
+      } else {
+        showSplitMessage('Split saved. Use “Save & set to current” to make it your active routine.');
       }
-      applySplitAutofillFromPicker();
+      if (window.WorkoutSplitEditor.syncSetCurrentButton) {
+        window.WorkoutSplitEditor.syncSetCurrentButton();
+      }
     });
   }
+
+  if (splitSaveCurrentBtn && window.WorkoutSplitEditor) {
+    splitSaveCurrentBtn.addEventListener('click', function () {
+      showSplitMessage('');
+      var label = (splitSaveCurrentBtn.textContent || '').toLowerCase();
+      if (label.indexOf('save') !== -1 && typeof window.WorkoutSplitEditor.saveAndSetCurrent === 'function') {
+        window.WorkoutSplitEditor.saveAndSetCurrent();
+        showSplitMessage('Split saved and set as your current routine.');
+      } else if (typeof window.WorkoutSplitEditor.setToCurrent === 'function') {
+        window.WorkoutSplitEditor.setToCurrent();
+        showSplitMessage('Split set as your current routine.');
+      } else if (typeof window.WorkoutSplitEditor.saveAndSetCurrent === 'function') {
+        window.WorkoutSplitEditor.saveAndSetCurrent();
+        showSplitMessage('Split saved and set as your current routine.');
+      }
+      renderSplitPickerSelect();
+      applySplitAutofillFromPicker();
+      if (window.WorkoutSplitEditor.syncSetCurrentButton) {
+        window.WorkoutSplitEditor.syncSetCurrentButton();
+      }
+    });
+  }
+
+  if (splitShareBtn && window.WorkoutSplitEditor) {
+    splitShareBtn.addEventListener('click', function () {
+      if (typeof window.WorkoutSplitEditor.shareActiveSplit !== 'function') return;
+      splitShareBtn.disabled = true;
+      window.WorkoutSplitEditor
+        .shareActiveSplit()
+        .then(function (result) {
+          if (!result || result.method === 'cancelled') return;
+          if (result.method === 'share') {
+            showSplitMessage('Split shared.');
+          } else {
+            showSplitMessage('Share link copied. Send it to a friend — they can open it to import your split.');
+          }
+        })
+        .catch(function () {
+          showSplitMessage('Could not share this split. Try again.', true);
+        })
+        .finally(function () {
+          splitShareBtn.disabled = false;
+        });
+    });
+  }
+
+  tryImportSharedSplitFromHash();
+  window.addEventListener('hashchange', function () {
+    tryImportSharedSplitFromHash();
+  });
 
   function getSessionType() {
     var r = document.querySelector('input[name="create-session-type"]:checked');
@@ -2393,6 +2537,7 @@
       exitEditMode();
       resetWorkoutFormFields();
       setMessage('', false);
+      window.location.href = '/home';
     });
   }
 
@@ -2488,6 +2633,13 @@
     return payload;
   }
 
+  function notifyWorkoutLogged() {
+    try {
+      window.dispatchEvent(new CustomEvent('strongman:workout-saved'));
+    } catch (e) {}
+    if (typeof renderLogTrainBanner === 'function') renderLogTrainBanner();
+  }
+
   function saveWorkoutForDashboard(meta) {
     meta = meta || {};
     return new Promise(function (resolve, reject) {
@@ -2498,8 +2650,14 @@
           return;
         }
         var saved = WL.addSession(payload);
+        if (window.StrongmanXp && typeof window.StrongmanXp.awardSession === 'function') {
+          try {
+            window.StrongmanXp.awardSession(saved || payload);
+          } catch (xpErr) {}
+        }
         if (workoutTracker) workoutTracker.reset();
         updateLiftsCount();
+        notifyWorkoutLogged();
         resolve(saved || payload);
       } catch (err) {
         reject(err);
@@ -2526,6 +2684,36 @@
       applyRoutine: function () {
         return applyTodayRoutineIfEmpty(true, true);
       },
+      prepareQuickLog: function (choice) {
+        choice = choice || {};
+        if (!workoutTracker) return Promise.resolve();
+        if (typeof workoutTracker.reset === 'function') workoutTracker.reset();
+        if (typeof workoutTracker.setLoggingMode === 'function') {
+          workoutTracker.setLoggingMode('quick');
+        }
+        var WS = window.WorkoutSplit;
+        if (choice.splitId && WS && typeof WS.setActiveSplit === 'function') {
+          WS.setActiveSplit(choice.splitId);
+        }
+        // Autofill prescribed day + guess loads from recent sessions.
+        if (choice.autofillSplit === false) {
+          applySplitAutofillFromPicker();
+          updateLiftsCount();
+          return Promise.resolve();
+        }
+        return applyTodayRoutineIfEmpty(true, true).then(function () {
+          if (
+            !workoutTracker.hasExercises() &&
+            typeof workoutTracker.openExercisePicker === 'function'
+          ) {
+            // Keep suggestions available if split day is empty / rest.
+            if (window.WorkoutPredict && typeof workoutTracker.render === 'function') {
+              workoutTracker.render();
+            }
+          }
+          updateLiftsCount();
+        });
+      },
       refreshCoach: refreshOverloadCoachUi,
       onFinish: function (meta) {
         return saveWorkoutForDashboard(meta);
@@ -2536,6 +2724,129 @@
       },
     });
   }
+
+  function logSessionDateKey(s) {
+    if (s && s.date) return String(s.date).slice(0, 10);
+    if (s && s.createdAt) {
+      var d = new Date(s.createdAt);
+      if (!isNaN(d.getTime())) {
+        return (
+          d.getFullYear() +
+          '-' +
+          String(d.getMonth() + 1).padStart(2, '0') +
+          '-' +
+          String(d.getDate()).padStart(2, '0')
+        );
+      }
+    }
+    return '';
+  }
+
+  function todayKeyLocal() {
+    var d = new Date();
+    return (
+      d.getFullYear() +
+      '-' +
+      String(d.getMonth() + 1).padStart(2, '0') +
+      '-' +
+      String(d.getDate()).padStart(2, '0')
+    );
+  }
+
+  function renderLogTrainBanner() {
+    var banner = document.getElementById('log-train-banner');
+    if (!banner) return;
+    var titleEl = document.getElementById('log-train-banner-title');
+    var subEl = document.getElementById('log-train-banner-sub');
+    var live =
+      window.WorkoutDashboard &&
+      typeof window.WorkoutDashboard.isLiveWorkoutActive === 'function' &&
+      window.WorkoutDashboard.isLiveWorkoutActive();
+    var sessions =
+      window.WorkoutLog && typeof window.WorkoutLog.getSessions === 'function'
+        ? window.WorkoutLog.getSessions() || []
+        : [];
+    var todayKey = todayKeyLocal();
+    var trainedToday = sessions.some(function (s) {
+      return logSessionDateKey(s) === todayKey;
+    });
+
+    if (live || trainedToday) {
+      banner.hidden = true;
+      return;
+    }
+
+    var focus = '';
+    var sub = 'Log a session or jump into a live workout.';
+    var WS = window.WorkoutSplit;
+    if (window.DailyPlan && typeof window.DailyPlan.buildPlan === 'function') {
+      try {
+        var plan = window.DailyPlan.buildPlan();
+        if (plan) {
+          if (plan.restDay) {
+            banner.hidden = true;
+            return;
+          }
+          focus = plan.headline || plan.focus || '';
+          if (plan.exercises && plan.exercises.length) {
+            sub =
+              plan.exercises.length +
+              ' lift' +
+              (plan.exercises.length === 1 ? '' : 's') +
+              ' on today’s split · weights guessed from recent sessions';
+          } else if (plan.primaryAction && plan.primaryAction.hint) {
+            sub = plan.primaryAction.hint;
+          }
+        }
+      } catch (e) {}
+    } else if (WS) {
+      if (typeof WS.isRestDay === 'function' && WS.isRestDay(null, new Date())) {
+        banner.hidden = true;
+        return;
+      }
+      if (typeof WS.defaultSessionTitle === 'function') {
+        focus = WS.defaultSessionTitle(null, new Date()) || '';
+      }
+      var ex =
+        typeof WS.exercisesForDate === 'function' ? WS.exercisesForDate(null, new Date()) : [];
+      if (ex && ex.length) {
+        sub =
+          ex.length +
+          ' lift' +
+          (ex.length === 1 ? '' : 's') +
+          ' prescribed · autofill from your split';
+      }
+    }
+
+    if (titleEl) {
+      titleEl.textContent = focus && focus !== 'Rest day' ? focus : 'Start today’s workout';
+    }
+    if (subEl) subEl.textContent = sub;
+    banner.hidden = false;
+  }
+
+  (function bindLogTrainBanner() {
+    var startBtn = document.getElementById('log-train-start');
+    var quickBtn = document.getElementById('log-train-quick');
+    if (startBtn) {
+      startBtn.addEventListener('click', function () {
+        if (window.WorkoutDashboard && typeof window.WorkoutDashboard.open === 'function') {
+          window.WorkoutDashboard.open();
+        }
+      });
+    }
+    if (quickBtn) {
+      quickBtn.addEventListener('click', function () {
+        if (window.WorkoutDashboard && typeof window.WorkoutDashboard.openQuickLog === 'function') {
+          window.WorkoutDashboard.openQuickLog({ autofillSplit: true });
+        }
+      });
+    }
+    renderLogTrainBanner();
+    document.addEventListener('strongman:training-synced', renderLogTrainBanner);
+    window.addEventListener('strongman:workout-saved', renderLogTrainBanner);
+    document.addEventListener('strongman:xp-updated', renderLogTrainBanner);
+  })();
 
   if (form && WL) {
     form.addEventListener('submit', function (e) {
@@ -2623,6 +2934,12 @@
       }
 
       WL.addSession(payload);
+      if (window.StrongmanXp && typeof window.StrongmanXp.awardSession === 'function') {
+        try {
+          window.StrongmanXp.awardSession(payload);
+        } catch (xpErr) {}
+      }
+      notifyWorkoutLogged();
       lastShareSession = JSON.parse(JSON.stringify(payload));
       try {
         var cu2 = window.getCurrentUser && window.getCurrentUser();

@@ -1,0 +1,1074 @@
+/* Calling-card profile — shareable athlete card */
+
+.profile-scroll
+{
+    max-width: 28rem;
+}
+
+@media (min-width: 901px)
+{
+    .profile-scroll
+    {
+        max-width: 34rem;
+    }
+}
+
+.pf-calling-card
+{
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    padding: 1.35rem 1.25rem 1.15rem;
+    margin-top: 1.35rem;
+    border-radius: 22px;
+    border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.1));
+    background: var(--bg-elevated, #121212);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
+    overflow: visible;
+    animation: pf-fade-in 0.5s ease both;
+}
+
+.pf-calling-card::before
+{
+    content: none;
+}
+
+html[data-theme="mono-light"] .pf-calling-card,
+html[data-theme="mono-dark"] .pf-calling-card
+{
+    background: var(--bg-elevated, #e6e6e6);
+    box-shadow: none;
+}
+
+.pf-card-brand
+{
+    position: relative;
+    z-index: 1;
+    margin: 0 0 0.15rem;
+    font-family: var(--font, "DM Sans", sans-serif);
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--text-primary, #fff);
+    text-align: center;
+}
+
+.pf-card-brand span
+{
+    letter-spacing: 0.28em;
+    color: var(--accent, #ff4d0d);
+}
+
+.pf-card-tools,
+.pf-gear-btn,
+.pf-preview-btn,
+.pf-preview-banner
+{
+    display: none !important;
+}
+
+.pf-card-identity
+{
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.75rem;
+    padding-top: 0.35rem;
+}
+
+.pf-avatar-wrap
+{
+    position: relative;
+    width: 9.75rem;
+    height: 9.75rem;
+    flex-shrink: 0;
+}
+
+.pf-calling-card .pf-avatar-ring
+{
+    width: 9.75rem;
+    height: 9.75rem;
+    position: relative;
+    display: block;
+    padding: 0;
+    border-radius: 20px;
+    background: transparent;
+    box-shadow: none;
+    overflow: visible;
+    isolation: auto;
+}
+
+.pf-calling-card .profile-avatar-img
+{
+    width: 9.75rem;
+    height: 9.75rem;
+    border-radius: 20px;
+    object-fit: cover;
+    border: 2.5px solid color-mix(in srgb, var(--accent) 60%, transparent);
+    background: var(--bg-deep, #111);
+    display: block;
+    position: relative;
+    z-index: 1;
+}
+
+.pf-calling-card .pf-avatar-glow
+{
+    display: none !important;
+}
+
+/* Camera sits on the wrap — never overlays the photo face */
+.pf-calling-card .pf-avatar-edit,
+.pf-calling-card .pf-avatar-wrap:hover .pf-avatar-edit,
+.pf-calling-card.profile-card--editing .pf-avatar-edit,
+.profile-is-editing .pf-calling-card .pf-avatar-edit
+{
+    position: absolute !important;
+    top: auto !important;
+    left: auto !important;
+    inset: unset !important;
+    right: -0.35rem !important;
+    bottom: -0.35rem !important;
+    z-index: 6;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 2.05rem !important;
+    height: 2.05rem !important;
+    max-width: 2.05rem;
+    max-height: 2.05rem;
+    margin: 0;
+    padding: 0;
+    border-radius: 50% !important;
+    border: 2px solid var(--bg-elevated, #121212);
+    background: var(--accent) !important;
+    color: var(--on-accent-text, #111) !important;
+    opacity: 1 !important;
+    backdrop-filter: none !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+    cursor: pointer;
+}
+
+.pf-calling-card .pf-avatar-edit[hidden]
+{
+    display: none !important;
+}
+
+.pf-calling-card .pf-avatar-edit:hover,
+.pf-calling-card .pf-avatar-edit:focus-within
+{
+    filter: brightness(1.08);
+}
+
+.pf-calling-card .profile-eyebrow
+{
+    display: none;
+}
+
+.pf-calling-card .profile-display-name
+{
+    margin: 0;
+    font-size: clamp(2.15rem, 6vw, 2.7rem);
+    font-weight: 800;
+    letter-spacing: -0.05em;
+    line-height: 1.02;
+    color: var(--text-primary, #fff);
+}
+
+.pf-calling-card .pf-level-pill
+{
+    display: none !important;
+}
+
+.pf-calling-card .profile-bio,
+.pf-calling-card .pf-bio-block,
+.pf-calling-card #profile-bio-wrap
+{
+    display: none !important;
+}
+
+.pf-card-kicker
+{
+    display: none;
+}
+
+.pf-meta-row
+{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem 0.55rem;
+    margin: 0.45rem 0 0;
+    max-width: 24rem;
+}
+
+.pf-calling-card .pf-sport-chips
+{
+    display: inline-flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.35rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.pf-calling-card .pf-sport-chip
+{
+    padding: 0;
+    font-size: 1rem;
+    font-weight: 550;
+    border-radius: 0;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary, #bbb);
+}
+
+.pf-calling-card .pf-sport-chip + .pf-sport-chip::before
+{
+    content: "·";
+    margin-right: 0.35rem;
+    color: var(--text-muted, #666);
+}
+
+.pf-card-sports
+{
+    display: none !important;
+}
+
+.pf-card-radar
+{
+    text-align: center;
+    min-height: 0;
+    margin-top: -0.35rem;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    cursor: pointer;
+}
+
+.pf-card-radar:focus-visible
+{
+    outline: 2px solid color-mix(in srgb, var(--accent, #ff4d0d) 70%, transparent);
+    outline-offset: 4px;
+    border-radius: 12px;
+}
+
+.pf-radar-hint
+{
+    margin: 0.15rem 0 0;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-muted, #888);
+    opacity: 0.85;
+}
+
+.pf-radar-mount
+{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto;
+    min-height: 15.5rem;
+    width: 100%;
+    overflow: visible;
+    transition: transform 0.18s ease;
+}
+
+.pf-card-radar:hover .pf-radar-mount,
+.pf-card-radar:focus-visible .pf-radar-mount
+{
+    transform: scale(1.02);
+}
+
+.pf-radar-mount .mm-radar,
+.pf-radar-mount .mm-radar--hex
+{
+    width: min(100%, 22rem);
+    margin: 0 auto;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0;
+    color: var(--accent, #ff4d0d);
+}
+
+.pf-radar-mount .mm-radar-title
+{
+    display: none;
+}
+
+.pf-radar-mount .mm-radar-svg
+{
+    width: 100%;
+    max-width: min(100%, 20rem);
+    height: auto;
+    aspect-ratio: 1;
+    display: block;
+    margin: 0 auto;
+    overflow: visible;
+}
+
+.pf-radar-mount .mm-radar-fill
+{
+    fill: color-mix(in srgb, var(--accent, #ff4d0d) 32%, transparent) !important;
+    stroke: var(--accent, #ff4d0d) !important;
+    stroke-width: 2.75 !important;
+    opacity: 1 !important;
+}
+
+.pf-radar-mount .mm-radar-ring
+{
+    fill: none !important;
+    stroke: color-mix(in srgb, var(--accent, #ff4d0d) 40%, transparent) !important;
+    stroke-width: 1.35 !important;
+}
+
+.pf-radar-mount .mm-radar-spoke
+{
+    stroke: color-mix(in srgb, var(--accent, #ff4d0d) 42%, transparent) !important;
+    stroke-width: 1.25 !important;
+}
+
+.pf-radar-mount .mm-radar-label
+{
+    fill: var(--text-secondary, #c8c8d0) !important;
+    font-size: 12.5px !important;
+    font-weight: 700 !important;
+}
+
+.pf-radar-empty
+{
+    display: none;
+}
+
+.pf-card-trophies .pf-section-head
+{
+    display: none;
+}
+
+.pf-card-trophies .pf-section-sub
+{
+    display: none;
+}
+
+.pf-card-footer
+{
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    padding-top: 0.15rem;
+    border-top: none;
+}
+
+.pf-calling-card .pf-stats
+{
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0;
+    padding: 0.35rem 0;
+    border: none;
+}
+
+.pf-calling-card .pf-stat
+{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.1rem;
+    padding: 0.2rem 0.35rem;
+    border-radius: 0;
+    border: none;
+    background: transparent;
+}
+
+.pf-calling-card .pf-stat + .pf-stat
+{
+    border-left: none;
+}
+
+.pf-calling-card .pf-stat--accent
+{
+    border-color: transparent;
+    background: transparent;
+}
+
+.pf-calling-card .pf-stat--level .pf-stat-num
+{
+    color: var(--accent, #ff4d0d);
+}
+
+.pf-calling-card .pf-stat-num
+{
+    font-size: 1.35rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--text-primary, #fff);
+}
+
+.pf-calling-card .pf-stat-label
+{
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-muted, #888);
+}
+
+.pf-calling-card .pf-actions
+{
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+}
+
+.pf-calling-card .profile-toolbar,
+.pf-calling-card .profile-hero-actions
+{
+    display: none;
+    width: 100%;
+    flex-wrap: nowrap;
+    justify-content: stretch;
+    gap: 0.55rem;
+}
+
+.profile-is-owner:not(.profile-preview-visitor) .pf-calling-card .profile-hero-actions
+{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+
+.profile-is-visitor .pf-calling-card .profile-toolbar,
+.profile-preview-visitor .pf-calling-card .profile-toolbar
+{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+
+.profile-is-owner .pf-calling-card .profile-toolbar
+{
+    display: none;
+}
+
+.profile-preview-visitor.profile-is-owner .pf-calling-card .profile-toolbar
+{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+
+.profile-preview-visitor.profile-is-owner .pf-calling-card .profile-hero-actions
+{
+    display: none !important;
+}
+
+.pf-calling-card .profile-hero-actions .profile-btn,
+.pf-calling-card .profile-toolbar .profile-btn
+{
+    width: 100%;
+    justify-content: center;
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+/* Visitor preview: hide owner-only chrome */
+.profile-preview-visitor .pf-calling-card .pf-avatar-edit
+{
+    display: none !important;
+}
+
+.profile-preview-visitor .pf-calling-card .pf-card-trophies--editable
+{
+    cursor: default;
+}
+
+.profile-preview-visitor #profile-user-settings-cta
+{
+    display: none !important;
+}
+
+.profile-preview-visitor .pf-preview-btn
+{
+    display: inline-flex !important;
+}
+
+.pf-card-cta
+{
+    display: none;
+}
+
+.pf-brand-seal
+{
+    margin: 0.15rem 0 0;
+    text-align: center;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-muted, #777);
+}
+
+.pf-brand-seal span
+{
+    color: var(--accent);
+}
+
+/* Hide legacy snapshot block used only as JS hook */
+.pf-calling-card .pf-snapshot
+{
+    display: none !important;
+}
+
+.profile-user-settings-banner
+{
+    display: none !important;
+}
+
+/* Trophy showcase — exactly 3 slots, flat */
+.pf-calling-card .pf-card-trophies
+{
+    cursor: pointer;
+    border-radius: 0;
+    padding: 0;
+    border: none;
+    background: transparent;
+    transition: opacity 0.15s ease;
+}
+
+.pf-calling-card .pf-card-trophies--editable:hover,
+.pf-calling-card .pf-card-trophies--editable:focus-visible
+{
+    opacity: 0.92;
+    outline: none;
+}
+
+.pf-trophy-hint
+{
+    display: none;
+}
+
+.pf-calling-card .pf-badge-grid--showcase
+{
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.35rem;
+}
+
+.pf-calling-card .pf-trophy
+{
+    padding: 0.4rem 0.2rem;
+    gap: 0.22rem;
+    border-radius: 0;
+    border: none;
+    background: transparent;
+    min-height: 0;
+}
+
+.pf-calling-card .pf-trophy:hover
+{
+    transform: none;
+    box-shadow: none;
+}
+
+.pf-calling-card .pf-trophy-icon
+{
+    width: 2.65rem;
+    height: 2.65rem;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    color: var(--accent);
+}
+
+.pf-calling-card .pf-trophy-icon svg
+{
+    width: 20px;
+    height: 20px;
+}
+
+.pf-calling-card .pf-trophy-tier
+{
+    display: none;
+}
+
+.pf-calling-card .pf-trophy-label
+{
+    font-size: 0.8rem;
+    line-height: 1.2;
+    font-weight: 650;
+    color: var(--text-secondary, #bbb);
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.pf-calling-card .pf-trophy--empty
+{
+    opacity: 0.35;
+}
+
+.pf-calling-card .pf-trophy--empty .pf-trophy-icon
+{
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-muted, #888);
+    background: transparent;
+    border: 1px dashed var(--border-subtle, #444);
+}
+
+/* Showcase picker sheet */
+.pf-showcase-count
+{
+    margin: 0 1rem 0.55rem;
+    font-size: 0.78rem;
+    font-weight: 650;
+    color: var(--accent);
+}
+
+.pf-showcase-body
+{
+    max-height: min(52vh, 24rem);
+}
+
+.pf-showcase-grid
+{
+    list-style: none;
+    margin: 0;
+    padding: 0 0.85rem 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+}
+
+.pf-showcase-empty
+{
+    padding: 1.25rem 0.75rem;
+    text-align: center;
+    color: var(--text-muted, #888);
+    font-size: 0.88rem;
+}
+
+.pf-showcase-pick
+{
+    appearance: none;
+    width: 100%;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.7rem 0.8rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-subtle, #333);
+    background: color-mix(in srgb, var(--bg-page, #000) 35%, transparent);
+    color: var(--text-primary, #fff);
+    text-align: left;
+    cursor: pointer;
+}
+
+.pf-showcase-pick--on
+{
+    border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.pf-showcase-pick-icon
+{
+    display: inline-flex;
+    width: 2rem;
+    height: 2rem;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent);
+}
+
+.pf-showcase-pick-text
+{
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    min-width: 0;
+}
+
+.pf-showcase-pick-title
+{
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+.pf-showcase-pick-tier
+{
+    font-size: 0.68rem;
+    color: var(--text-muted, #888);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.pf-showcase-pick-check
+{
+    width: 1.35rem;
+    height: 1.35rem;
+    border-radius: 50%;
+    border: 1px solid var(--border-mid, #555);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    opacity: 0;
+}
+
+.pf-showcase-pick--on .pf-showcase-pick-check
+{
+    opacity: 1;
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--on-accent-text, #111);
+}
+
+.pf-showcase-footer
+{
+    display: flex;
+    gap: 0.55rem;
+    justify-content: flex-end;
+    padding: 0.75rem 1rem 1rem;
+    border-top: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.08));
+}
+
+/* Strength map detail modal */
+.pf-hex-dialog
+{
+    max-width: 26rem;
+}
+
+.pf-hex-detail-mount
+{
+    display: flex;
+    justify-content: center;
+    padding: 0.35rem 0.75rem 0.15rem;
+}
+
+.pf-hex-detail-mount .mm-radar,
+.pf-hex-detail-mount .mm-radar--hex
+{
+    width: min(100%, 22rem);
+    margin: 0 auto;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0;
+    color: var(--accent, #ff4d0d);
+}
+
+.pf-hex-detail-mount .mm-radar-svg
+{
+    width: 100%;
+    max-width: 20rem;
+    height: auto;
+    aspect-ratio: 1;
+    display: block;
+    margin: 0 auto;
+    overflow: visible;
+}
+
+.pf-hex-detail-mount .mm-radar-fill
+{
+    fill: color-mix(in srgb, var(--accent, #ff4d0d) 32%, transparent) !important;
+    stroke: var(--accent, #ff4d0d) !important;
+    stroke-width: 2.75 !important;
+}
+
+.pf-hex-detail-mount .mm-radar-ring
+{
+    fill: none !important;
+    stroke: color-mix(in srgb, var(--accent, #ff4d0d) 40%, transparent) !important;
+}
+
+.pf-hex-detail-mount .mm-radar-spoke
+{
+    stroke: color-mix(in srgb, var(--accent, #ff4d0d) 42%, transparent) !important;
+}
+
+.pf-hex-detail-mount .mm-radar-label
+{
+    fill: var(--text-secondary, #c8c8d0) !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+}
+
+.pf-hex-scores
+{
+    list-style: none;
+    margin: 0;
+    padding: 0.35rem 1.15rem 0.85rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    overflow: auto;
+}
+
+.pf-hex-score
+{
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.15rem 0.75rem;
+    align-items: baseline;
+    padding: 0.55rem 0.65rem;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--bg-deep, #0c0c0c) 55%, transparent);
+}
+
+.pf-hex-score-label
+{
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--text-primary, #fff);
+}
+
+.pf-hex-score-pct
+{
+    font-size: 0.92rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--accent, #ff4d0d);
+    font-variant-numeric: tabular-nums;
+}
+
+.pf-hex-score-meta
+{
+    grid-column: 1 / -1;
+    font-size: 0.78rem;
+    color: var(--text-muted, #888);
+}
+
+.pf-hex-note
+{
+    margin: 0;
+    padding: 0 1.15rem 1.1rem;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    color: var(--text-muted, #888);
+}
+
+/* Mobile: fit one screen, strip remaining labels */
+@media (max-width: 900px)
+{
+    body.profile-page .site-footer,
+    body.profile-page .profile-logout
+    {
+        display: none !important;
+    }
+
+    body.profile-page .profile-mainContent
+    {
+        padding-top: 1.25rem;
+        padding-bottom: 0;
+    }
+
+    body.profile-page .profile-scroll
+    {
+        max-width: none;
+        padding-top: 0.35rem;
+        padding-left: 0.85rem;
+        padding-right: 0.85rem;
+    }
+
+    body.profile-page .profile-inner
+    {
+        gap: 0;
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .pf-calling-card
+    {
+        gap: 0.65rem;
+        padding: 1.35rem 0.95rem 1rem;
+        margin-top: 0.65rem;
+        border-radius: 20px;
+        border-color: transparent;
+        box-shadow: none;
+        min-height: calc(100svh - 5.5rem - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+        max-height: calc(100svh - 5.5rem - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+        overflow: hidden;
+        justify-content: flex-start;
+    }
+
+    .pf-card-top,
+    .pf-brand-mark,
+    .pf-card-tools
+    {
+        display: none !important;
+    }
+
+    .pf-card-brand
+    {
+        font-size: 0.7rem;
+        letter-spacing: 0.24em;
+        margin-bottom: 0;
+    }
+
+    .pf-card-identity
+    {
+        gap: 0.55rem;
+        padding-top: 0.15rem;
+    }
+
+    .pf-avatar-wrap,
+    .pf-calling-card .pf-avatar-ring,
+    .pf-calling-card .profile-avatar-img
+    {
+        width: 8.25rem;
+        height: 8.25rem;
+    }
+
+    .pf-calling-card .profile-avatar-img,
+    .pf-calling-card .pf-avatar-ring
+    {
+        border-radius: 18px;
+    }
+
+    .pf-calling-card .profile-avatar-img
+    {
+        border-width: 2.5px;
+    }
+
+    .pf-calling-card .pf-avatar-edit,
+    .pf-calling-card .pf-avatar-wrap:hover .pf-avatar-edit,
+    .pf-calling-card.profile-card--editing .pf-avatar-edit,
+    .profile-is-editing .pf-calling-card .pf-avatar-edit
+    {
+        width: 2.05rem !important;
+        height: 2.05rem !important;
+        max-width: 2.05rem;
+        max-height: 2.05rem;
+        right: -0.25rem !important;
+        bottom: -0.25rem !important;
+    }
+
+    .pf-calling-card .profile-eyebrow,
+    .pf-card-kicker,
+    .pf-card-trophies .pf-section-head,
+    .pf-card-trophies .pf-section-sub,
+    .pf-trophy-hint,
+    .pf-radar-empty,
+    .pf-card-cta,
+    .pf-calling-card .pf-level-pill
+    {
+        display: none !important;
+    }
+
+    .pf-calling-card .profile-display-name
+    {
+        font-size: 2.05rem;
+    }
+
+    .pf-calling-card .pf-sport-chip
+    {
+        font-size: 0.95rem;
+    }
+
+    .pf-calling-card .profile-bio
+    {
+        margin-top: 0.35rem;
+        font-size: 0.95rem;
+        -webkit-line-clamp: 2;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .pf-card-radar
+    {
+        flex: 1 1 auto;
+        min-height: 0;
+        margin-top: -0.2rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .pf-radar-hint
+    {
+        font-size: 0.62rem;
+        margin-top: 0;
+    }
+
+    .pf-radar-mount
+    {
+        min-height: 0;
+    }
+
+    .pf-radar-mount .mm-radar-svg
+    {
+        max-width: min(100%, 17.5rem);
+    }
+
+    .pf-radar-mount .mm-radar-label
+    {
+        font-size: 11px !important;
+        fill: var(--text-secondary, #c4c4cc) !important;
+    }
+
+    .pf-calling-card .pf-trophy
+    {
+        padding: 0.55rem 0.25rem;
+    }
+
+    .pf-calling-card .pf-trophy-icon
+    {
+        width: 2.55rem;
+        height: 2.55rem;
+    }
+
+    .pf-calling-card .pf-trophy-label
+    {
+        font-size: 0.74rem;
+    }
+
+    .pf-badges-empty
+    {
+        margin: 0;
+        padding: 0.35rem 0;
+        border: none;
+        background: transparent;
+        font-size: 0.8rem;
+    }
+
+    .pf-card-footer
+    {
+        gap: 0.7rem;
+        margin-top: auto;
+    }
+
+    .pf-calling-card .pf-stats
+    {
+        padding: 0.55rem 0;
+    }
+
+    .pf-calling-card .pf-stat-num
+    {
+        font-size: 1.2rem;
+    }
+
+    .pf-calling-card .pf-stat-label
+    {
+        font-size: 0.64rem;
+    }
+
+    .pf-calling-card .profile-btn--lg
+    {
+        width: 100%;
+        padding: 0.8rem 0.75rem;
+        font-size: 0.88rem;
+        border-radius: 13px;
+    }
+}

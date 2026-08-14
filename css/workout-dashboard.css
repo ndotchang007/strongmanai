@@ -1482,6 +1482,22 @@ body.wd-finish-open
     border-color: color-mix(in srgb, var(--accent) 40%, transparent);
 }
 
+.wd-routine-option--quick
+{
+    border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+    background: color-mix(in srgb, var(--accent) 12%, rgba(30, 30, 30, 0.95));
+}
+
+.wd-routine-section-label
+{
+    margin: 0.55rem 0 0.15rem;
+    font-size: 0.68rem;
+    font-weight: 750;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.45);
+}
+
 .wd-routine-option-title
 {
     display: block;

@@ -18,7 +18,7 @@
 
   function isPublicPath(p) {
     if (p === '' || p === '/') return true;
-    var exact = ['/leaderboards', '/about', '/login', '/signup', '/verify-email', '/legal', '/surveys'];
+    var exact = ['/leaderboards', '/about', '/download', '/login', '/signup', '/verify-email', '/legal', '/surveys'];
     for (var i = 0; i < exact.length; i++) {
       if (p === exact[i]) return true;
     }

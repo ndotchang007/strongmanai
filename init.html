@@ -4,10 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="strongman-api-base" content="https://strongmanai-api-test.onrender.com/api/v1">
-    <link rel="stylesheet" href="/css/tester-gate.css">
-    <style id="tester-gate-boot">html.tester-gate-pending,html.tester-gate-pending body{background:#08080a!important;margin:0;min-height:100%;overflow:hidden!important}html.tester-gate-pending body>*:not(#tester-gate-overlay){visibility:hidden!important;pointer-events:none!important}html.tester-gate-pending #tester-gate-overlay{visibility:visible!important;pointer-events:auto!important}</style>
-    <script>document.documentElement.classList.add("tester-gate-pending");</script>
-    <script src="/shared/tester-gate.js"></script>
   <title>Set up your profile – Strongman AI</title>
   <link rel="icon" type="image/png" href="/assets/logo.png">
   <link rel="apple-touch-icon" href="/assets/logo.png">
@@ -122,12 +118,12 @@
             <span class="init-check-text">I confirm I am at least 16 years old and eligible to use strength-training software.</span>
           </label>
           <p class="init-error" id="form-dob-error" role="alert" hidden></p>
-          <button type="submit" class="init-btn init-btn--primary init-btn--full">Continue</button>
+          <button type="submit" class="init-btn init-btn--primary init-btn--full" id="btn-identity-finish">Finish setup</button>
         </form>
       </div>
     </section>
 
-    <!-- Goals: small -->
+    <!-- Goals: small (refine / customize questionnaire only) -->
     <section class="init-slide init-slide--question" data-slide="small-goals" data-seg="goals" data-seg-step="1" aria-labelledby="small-goals-heading">
       <div class="init-card init-card--question">
         <p class="init-seg-kicker">Goals · 1 of 2</p>
@@ -321,6 +317,7 @@
   <script src="/shared/server-wake.js"></script>
   <script src="/shared/sport-database.js"></script>
   <script src="/shared/athlete-context.js"></script>
+  <script src="/shared/equipment-detect.js"></script>
   <script src="/shared/home-gym-scan.js"></script>
   <script src="/js/init.js"></script>
 </body>

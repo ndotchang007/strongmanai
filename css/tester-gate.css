@@ -66,7 +66,7 @@ html.tester-gate-lock #tester-gate-overlay
     font-size: 1.15rem;
     font-weight: 800;
     color: var(--accent-bright, #ffb347);
-    background: linear-gradient(145deg, rgba(255, 140, 0, 0.22), rgba(180, 60, 0, 0.32));
+    background: color-mix(in srgb, var(--accent) 22%, transparent);
     border: 1px solid rgba(255, 140, 0, 0.45);
 }
 
@@ -136,7 +136,7 @@ html.tester-gate-lock #tester-gate-overlay
     font-size: 0.95rem;
     cursor: pointer;
     color: #1a1208;
-    background: linear-gradient(135deg, #ffb347, #ff8c00);
+    background: var(--accent, #ff8c00);
 }
 
 .tester-gate-btn:disabled

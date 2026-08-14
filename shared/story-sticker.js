@@ -212,7 +212,7 @@
         blocks.push({ kind: 'brand', text: item.text, y: y });
         y += 42;
       } else if (item.kind === 'title') {
-        measure.font = '800 64px "Space Grotesk", "DM Sans", system-ui, sans-serif';
+        measure.font = '800 64px Geist, "DM Sans", system-ui, sans-serif';
         var titleLines = wrapLines(measure, item.text, maxTextW);
         blocks.push({ kind: 'title', lines: titleLines, y: y });
         y += titleLines.length * 68 + 8;
@@ -270,7 +270,7 @@
         ctx.letterSpacing = '0.08em';
         ctx.fillText(b.text, x, b.y);
       } else if (b.kind === 'title') {
-        ctx.font = '800 64px "Space Grotesk", "DM Sans", system-ui, sans-serif';
+        ctx.font = '800 64px Geist, "DM Sans", system-ui, sans-serif';
         ctx.fillStyle = '#ffffff';
         b.lines.forEach(function (ln, i) {
           ctx.fillText(ln, x, b.y + i * 68);
@@ -283,7 +283,7 @@
         var colW = (maxTextW - 24) / 3;
         b.stats.forEach(function (st, i) {
           var cx = x + i * (colW + 12);
-          ctx.font = '800 56px "Space Grotesk", "DM Sans", system-ui, sans-serif';
+          ctx.font = '800 56px Geist, "DM Sans", system-ui, sans-serif';
           ctx.fillStyle = '#ffffff';
           ctx.fillText(st.value, cx, b.y);
           var vw = ctx.measureText(st.value).width;

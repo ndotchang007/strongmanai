@@ -997,6 +997,16 @@
               return a.id;
             })
           );
+          if (quiet.length && window.StrongmanXp && typeof window.StrongmanXp.awardBadge === 'function') {
+            quiet.forEach(function (ach) {
+              try {
+                window.StrongmanXp.awardBadge(ach.id, { silent: true });
+              } catch (e) {}
+            });
+            if (typeof window.StrongmanXp.syncToServer === 'function') {
+              window.StrongmanXp.syncToServer();
+            }
+          }
           return quiet;
         }
       } catch (e) {}
@@ -1004,6 +1014,19 @@
     var fresh = findNewUnlocks(user, opts);
     if (!fresh.length) return [];
     syncUnlockedAchievements(fresh);
+    if (window.StrongmanXp && typeof window.StrongmanXp.awardBadge === 'function') {
+      fresh.forEach(function (ach) {
+        try {
+          window.StrongmanXp.awardBadge(ach.id, { silent: true });
+        } catch (e) {}
+      });
+      if (typeof window.StrongmanXp.syncToServer === 'function') {
+        window.StrongmanXp.syncToServer();
+      }
+      try {
+        document.dispatchEvent(new CustomEvent('strongman:xp-updated'));
+      } catch (e2) {}
+    }
     // Prefer lift unlocks in celebration order (newest/highest tier first already).
     unlockQueue = unlockQueue.concat(fresh);
     showNextUnlock();
@@ -1021,6 +1044,7 @@
     celebrateNewUnlocks: celebrateNewUnlocks,
     markSeen: markSeen,
     pullFromServerAsync: pullFromServerAsync,
-    syncUnlockedAchievements: syncUnlockedAchievements
+    syncUnlockedAchievements: syncUnlockedAchievements,
+    iconSvgForKind: iconSvgForKind
   };
 })();
