@@ -16,6 +16,7 @@
   var deferredInstallPrompt = null;
   var swRegistration = null;
   var updatePollTimer = null;
+  var installSheetBound = false;
 
   function normalizePath(path) {
     var p = path || '/';
@@ -33,6 +34,16 @@
       if (window.navigator && window.navigator.standalone) return true;
     } catch (e) {}
     return false;
+  }
+
+  function isIOS() {
+    var ua = navigator.userAgent || '';
+    if (/iPad|iPhone|iPod/.test(ua)) return true;
+    return navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
+  }
+
+  function isAndroid() {
+    return /Android/i.test(navigator.userAgent || '');
   }
 
   function isLandingPath(path) {
@@ -63,6 +74,212 @@
     meta.name = 'theme-color';
     meta.content = '#ff4d0d';
     document.head.appendChild(meta);
+  }
+
+  function ensureApplePwaMeta() {
+    if (!document.querySelector('meta[name="apple-mobile-web-app-capable"]')) {
+      var capable = document.createElement('meta');
+      capable.name = 'apple-mobile-web-app-capable';
+      capable.content = 'yes';
+      document.head.appendChild(capable);
+    }
+    if (!document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]')) {
+      var status = document.createElement('meta');
+      status.name = 'apple-mobile-web-app-status-bar-style';
+      status.content = 'black-translucent';
+      document.head.appendChild(status);
+    }
+    if (!document.querySelector('meta[name="apple-mobile-web-app-title"]')) {
+      var title = document.createElement('meta');
+      title.name = 'apple-mobile-web-app-title';
+      title.content = 'Strongman';
+      document.head.appendChild(title);
+    }
+  }
+
+  function ensureInstallSheetStyles() {
+    if (document.querySelector('link[data-pwa-install-css]')) return;
+    var link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = '/css/pwa-install-sheet.css';
+    link.setAttribute('data-pwa-install-css', '1');
+    document.head.appendChild(link);
+  }
+
+  function ensureInstallSheet() {
+    ensureInstallSheetStyles();
+    var sheet = document.getElementById('pwa-install-sheet');
+    if (sheet) return sheet;
+
+    sheet = document.createElement('div');
+    sheet.id = 'pwa-install-sheet';
+    sheet.className = 'pwa-install-sheet';
+    sheet.hidden = true;
+    sheet.setAttribute('aria-hidden', 'true');
+    sheet.innerHTML =
+      '<div class="pwa-install-sheet__backdrop" data-pwa-install-close></div>' +
+      '<div class="pwa-install-sheet__panel" role="dialog" aria-modal="true" aria-labelledby="pwa-install-title">' +
+      '<button type="button" class="pwa-install-sheet__close" data-pwa-install-close aria-label="Close">×</button>' +
+      '<div class="pwa-install-sheet__icon"><img src="/assets/logo.png" alt="" width="56" height="56" decoding="async"></div>' +
+      '<h2 id="pwa-install-title" class="pwa-install-sheet__title">Install Strongman AI</h2>' +
+      '<p id="pwa-install-desc" class="pwa-install-sheet__desc"></p>' +
+      '<ol id="pwa-install-steps" class="pwa-install-sheet__steps" hidden></ol>' +
+      '<div class="pwa-install-sheet__actions">' +
+      '<button type="button" id="pwa-install-primary" class="pwa-install-sheet__btn pwa-install-sheet__btn--primary">Install app</button>' +
+      '<button type="button" class="pwa-install-sheet__btn pwa-install-sheet__btn--ghost" data-pwa-install-close>Not now</button>' +
+      '</div>' +
+      '<p id="pwa-install-note" class="pwa-install-sheet__note" hidden></p>' +
+      '</div>';
+    document.body.appendChild(sheet);
+
+    if (!installSheetBound) {
+      installSheetBound = true;
+      sheet.addEventListener('click', function (e) {
+        if (e.target.closest('[data-pwa-install-close]')) hideInstallSheet();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') hideInstallSheet();
+      });
+      var primary = document.getElementById('pwa-install-primary');
+      if (primary) {
+        primary.addEventListener('click', function () {
+          if (primary.dataset.mode === 'installed') {
+            hideInstallSheet();
+            window.location.href = '/home';
+            return;
+          }
+          if (deferredInstallPrompt) {
+            promptInstall().then(function (accepted) {
+              if (accepted) hideInstallSheet();
+            });
+            return;
+          }
+          hideInstallSheet();
+        });
+      }
+      document.addEventListener('click', function (e) {
+        var trigger = e.target.closest('[data-pwa-install]');
+        if (!trigger) return;
+        e.preventDefault();
+        handleDownloadAction();
+      });
+    }
+
+    return sheet;
+  }
+
+  function hideInstallSheet() {
+    var sheet = document.getElementById('pwa-install-sheet');
+    if (!sheet) return;
+    sheet.hidden = true;
+    sheet.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+
+  function manualInstallMode() {
+    if (isIOS()) return 'ios';
+    if (isAndroid()) return 'android';
+    return 'desktop';
+  }
+
+  function manualInstallCopy(mode) {
+    if (mode === 'ios') {
+      return {
+        title: 'Add to Home Screen',
+        desc: 'Install Strongman AI on your iPhone or iPad from Safari.',
+        steps: [
+          'Open this site in Safari (not an in-app browser).',
+          'Tap the Share button in the toolbar.',
+          'Scroll and tap Add to Home Screen.',
+          'Tap Add in the top right corner.',
+        ],
+        primary: 'Got it',
+        note: 'After installing, open Strongman AI from your home screen to sign in.',
+      };
+    }
+    if (mode === 'android') {
+      return {
+        title: 'Install the app',
+        desc: 'Add Strongman AI to your home screen from Chrome.',
+        steps: [
+          'Tap the menu (⋮) in the top right of Chrome.',
+          'Tap Install app or Add to Home screen.',
+          'Confirm the install prompt.',
+        ],
+        primary: 'Got it',
+        note: 'If you do not see Install app, try Add to Home screen in the menu.',
+      };
+    }
+    return {
+      title: 'Install in your browser',
+      desc: 'Add Strongman AI as an app on desktop Chrome or Edge.',
+      steps: [
+        'Look for the install icon in the address bar.',
+        'Or open the browser menu and choose Install Strongman AI.',
+        'Click Install in the dialog.',
+      ],
+      primary: 'Got it',
+      note: 'Safari on Mac: File → Add to Dock after opening the site.',
+    };
+  }
+
+  function showInstallSheet(mode) {
+    ensureInstallSheet();
+    var sheet = document.getElementById('pwa-install-sheet');
+    var title = document.getElementById('pwa-install-title');
+    var desc = document.getElementById('pwa-install-desc');
+    var steps = document.getElementById('pwa-install-steps');
+    var primary = document.getElementById('pwa-install-primary');
+    var note = document.getElementById('pwa-install-note');
+    if (!sheet || !title || !desc || !steps || !primary) return;
+
+    steps.innerHTML = '';
+    steps.hidden = true;
+    if (note) {
+      note.hidden = true;
+      note.textContent = '';
+    }
+
+    if (mode === 'installed') {
+      title.textContent = 'Already installed';
+      desc.textContent = 'You are using Strongman AI from your home screen or installed app.';
+      primary.textContent = 'Open dashboard';
+      primary.dataset.mode = 'installed';
+      primary.hidden = false;
+    } else if (mode === 'prompt' || deferredInstallPrompt) {
+      title.textContent = 'Install Strongman AI';
+      desc.textContent =
+        'Add Strongman AI to this device for faster access, offline workout logging, and push reminders.';
+      primary.textContent = 'Install now';
+      primary.dataset.mode = 'prompt';
+      primary.hidden = false;
+      if (note) {
+        note.hidden = false;
+        note.textContent = 'Free · official build from Strongman AI only.';
+      }
+    } else {
+      var copy = manualInstallCopy(mode || manualInstallMode());
+      title.textContent = copy.title;
+      desc.textContent = copy.desc;
+      primary.textContent = copy.primary;
+      primary.dataset.mode = 'manual';
+      primary.hidden = false;
+      copy.steps.forEach(function (text) {
+        var li = document.createElement('li');
+        li.textContent = text;
+        steps.appendChild(li);
+      });
+      steps.hidden = false;
+      if (note) {
+        note.hidden = false;
+        note.textContent = copy.note;
+      }
+    }
+
+    sheet.hidden = false;
+    sheet.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    primary.focus();
   }
 
   function enforceStandaloneEntry() {
@@ -209,16 +426,18 @@
   }
 
   function handleDownloadAction() {
-    return promptInstall().then(function (accepted) {
-      if (!accepted) {
-        try {
-          window.location.href = '/download';
-        } catch (e) {
-          window.location.assign('/download');
-        }
-      }
-      return accepted;
-    });
+    if (isStandalone()) {
+      showInstallSheet('installed');
+      return Promise.resolve(false);
+    }
+    if (deferredInstallPrompt) {
+      return promptInstall().then(function (accepted) {
+        if (!accepted) showInstallSheet('prompt');
+        return accepted;
+      });
+    }
+    showInstallSheet(manualInstallMode());
+    return Promise.resolve(false);
   }
 
   function hideInstallBanner() {
@@ -233,6 +452,14 @@
     banner.hidden = false;
   }
 
+  function bindBeforeInstallPrompt() {
+    window.addEventListener('beforeinstallprompt', function (event) {
+      event.preventDefault();
+      deferredInstallPrompt = event;
+      showInstallBanner();
+    });
+  }
+
   function bindInstallBanner() {
     var banner = document.getElementById('pwa-install-banner');
     if (!banner) return;
@@ -242,22 +469,11 @@
 
     if (installBtn) {
       installBtn.addEventListener('click', function () {
-        if (!deferredInstallPrompt) return;
-        deferredInstallPrompt.prompt();
-        deferredInstallPrompt.userChoice.then(function (choice) {
-          if (choice && choice.outcome === 'accepted') hideInstallBanner();
-          deferredInstallPrompt = null;
-        });
+        handleDownloadAction();
       });
     }
     if (dismissBtn) dismissBtn.addEventListener('click', dismissInstallBanner);
     if (closeBtn) closeBtn.addEventListener('click', hideInstallBanner);
-
-    window.addEventListener('beforeinstallprompt', function (event) {
-      event.preventDefault();
-      deferredInstallPrompt = event;
-      showInstallBanner();
-    });
 
     showInstallBanner();
   }
@@ -275,6 +491,8 @@
   function boot() {
     ensureManifestLink();
     ensureThemeMeta();
+    ensureApplePwaMeta();
+    bindBeforeInstallPrompt();
     enforceStandaloneEntry();
     polishStandaloneLogin();
     bindAutoSync();
@@ -295,6 +513,7 @@
     syncWhenOnline: syncWhenOnline,
     promptInstall: promptInstall,
     handleDownloadAction: handleDownloadAction,
+    showInstallSheet: showInstallSheet,
     showInstallBanner: showInstallBanner,
     dismissInstallBanner: dismissInstallBanner,
   };

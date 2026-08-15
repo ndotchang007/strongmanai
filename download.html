@@ -2,17 +2,22 @@
 <html lang="en" data-marketing="1">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Official Strongman AI download — the training app for progressive overload. Use the web app today; mobile install is coming from this site only.">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#ff4d0d">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="description" content="Official Strongman AI download — install the progressive overload training app on your phone or desktop.">
     <title>Download – Strongman AI</title>
     <link rel="icon" type="image/png" href="/assets/logo.png">
     <link rel="apple-touch-icon" href="/assets/logo.png">
+    <link rel="manifest" href="/manifest.webmanifest">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="/shared/theme.js"></script>
     <link rel="stylesheet" href="/css/marketing-nav.css">
     <link rel="stylesheet" href="/css/download.css">
+    <link rel="stylesheet" href="/css/pwa-install-sheet.css">
     <link rel="stylesheet" href="/css/cookie-consent.css">
 </head>
 <body>
@@ -48,8 +53,13 @@
     <p class="dl-kicker">Official download</p>
     <h1 class="dl-title">Download Strongman AI</h1>
     <p class="dl-lead">
-        This is the official Strongman AI download page. You’re getting our training app — progressive overload, session logging, and coaching — from us, not a third-party mirror.
+        Install Strongman AI on your phone or computer — progressive overload, session logging, and Rocky coaching. Official builds only from this site.
     </p>
+
+    <div class="dl-install-hero">
+        <button type="button" class="dl-btn dl-btn--primary dl-btn--install" id="dl-install-btn" data-pwa-install>Install app</button>
+        <p class="dl-install-hint">Works on iPhone (Safari), Android (Chrome), and desktop Chrome or Edge.</p>
+    </div>
 
     <div class="dl-trust" role="list">
         <div class="dl-trust-item" role="listitem">
@@ -58,7 +68,7 @@
         </div>
         <div class="dl-trust-item" role="listitem">
             <span class="dl-trust-label">Current build</span>
-            <span class="dl-trust-value">Web app · Version 1.3</span>
+            <span class="dl-trust-value">Installable web app · v1.3</span>
         </div>
         <div class="dl-trust-item" role="listitem">
             <span class="dl-trust-label">Distribution</span>
@@ -73,7 +83,7 @@
     <section class="dl-section" aria-labelledby="dl-available-heading">
         <h2 id="dl-available-heading" class="dl-section-title">Available now</h2>
         <p class="dl-section-desc">
-            Strongman AI ships as a secure web application. Create a free account and train in your browser — no installer, no APK, no unknown file.
+            Strongman AI installs as a secure web app. Create a free account, then add it to your home screen or desktop for the full app experience.
         </p>
         <article class="dl-card dl-card--primary">
             <div class="dl-card-top">
@@ -90,7 +100,8 @@
                 <li>No credit card required to start</li>
             </ul>
             <div class="dl-card-actions">
-                <a class="dl-btn dl-btn--primary" href="/signup">Start free <span aria-hidden="true">→</span></a>
+                <button type="button" class="dl-btn dl-btn--primary" data-pwa-install>Install app <span aria-hidden="true">→</span></button>
+                <a class="dl-btn dl-btn--ghost" href="/signup">Start free</a>
                 <a class="dl-btn dl-btn--ghost" href="/login">Log in</a>
             </div>
         </article>
@@ -99,30 +110,30 @@
     <section class="dl-section" aria-labelledby="dl-mobile-heading">
         <h2 id="dl-mobile-heading" class="dl-section-title">Mobile</h2>
         <p class="dl-section-desc">
-            Native App Store / Play Store builds are not released yet. When mobile install ships, it will appear on this page first — we will never ask you to sideload an APK or IPA from email or chat.
+            Native App Store / Play Store listings are coming later. Today you can install the official web app on your home screen — no APK, no sideloading.
         </p>
         <div class="dl-platforms">
             <article class="dl-card">
                 <div class="dl-card-top">
                     <p class="dl-card-platform">iOS</p>
-                    <p class="dl-card-badge dl-card-badge--muted">Coming soon</p>
+                    <p class="dl-card-badge">Available</p>
                 </div>
                 <h3 class="dl-card-name">iPhone &amp; iPad</h3>
                 <p class="dl-card-text">
-                    Home-screen install / App Store listing is in progress. Until then, open Strongman AI in Safari and use the web app.
+                    Open in Safari, tap Install app above, then Add to Home Screen. Opens full-screen like a native app.
                 </p>
-                <a class="dl-btn dl-btn--secondary" href="/signup">Use web app on iOS</a>
+                <button type="button" class="dl-btn dl-btn--secondary" data-pwa-install>Install on iOS</button>
             </article>
             <article class="dl-card">
                 <div class="dl-card-top">
                     <p class="dl-card-platform">Android</p>
-                    <p class="dl-card-badge dl-card-badge--muted">Coming soon</p>
+                    <p class="dl-card-badge">Available</p>
                 </div>
                 <h3 class="dl-card-name">Android phones &amp; tablets</h3>
                 <p class="dl-card-text">
-                    Play Store / installable web app is in progress. Until then, open Strongman AI in Chrome and use the web app — no APK download.
+                    Open in Chrome and tap Install app — Chrome will offer a one-tap install or Add to Home screen.
                 </p>
-                <a class="dl-btn dl-btn--secondary" href="/signup">Use web app on Android</a>
+                <button type="button" class="dl-btn dl-btn--secondary" data-pwa-install>Install on Android</button>
             </article>
         </div>
     </section>
@@ -198,6 +209,7 @@
     </div>
     <p class="mkt-foot-copy">&copy; 2026 Strongman AI</p>
 </footer>
+<script src="/shared/pwa-client.js"></script>
 <script src="/shared/marketing-nav.js"></script>
 <script src="/shared/cookie-consent.js"></script>
 </body>
