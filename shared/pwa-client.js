@@ -17,6 +17,9 @@
   var swRegistration = null;
   var updatePollTimer = null;
   var installSheetBound = false;
+  var updateUiBound = false;
+  var updateAvailable = false;
+  var UPDATE_DISMISS_KEY = 'strongman_pwa_update_dismissed';
 
   function normalizePath(path) {
     var p = path || '/';
@@ -337,40 +340,107 @@
   }
 
   function applyWaitingUpdate() {
-    if (!swRegistration || !swRegistration.waiting) return;
+    if (!swRegistration || !swRegistration.waiting) return false;
     swRegistration.waiting.postMessage({ type: 'SKIP_WAITING' });
+    return true;
+  }
+
+  function notifyUpdateAvailable() {
+    if (!swRegistration || !swRegistration.waiting) return;
+    updateAvailable = true;
+    try {
+      window.dispatchEvent(new CustomEvent('strongman:pwa-update-available'));
+    } catch (e) {}
+    syncUpdateUi();
+  }
+
+  function syncUpdateUi() {
+    var dismissed = false;
+    try {
+      dismissed = sessionStorage.getItem(UPDATE_DISMISS_KEY) === '1';
+    } catch (e) {}
+
+    var show = updateAvailable && !dismissed;
+    var banner = document.getElementById('pwa-update-banner');
+    if (banner) banner.hidden = !show;
+
+    document.querySelectorAll('[data-footer-update]').forEach(function (btn) {
+      btn.hidden = !updateAvailable;
+    });
+    document.querySelectorAll('.footer-app-sep--update').forEach(function (sep) {
+      sep.hidden = !updateAvailable;
+    });
+
+    if (banner && isWorkoutActive()) {
+      var copy = banner.querySelector('.pwa-update-banner__copy');
+      if (copy) {
+        copy.innerHTML =
+          '<strong>Update available.</strong> Finish or save your workout, then tap Update now.';
+      }
+    }
+  }
+
+  function bindUpdateUi() {
+    if (updateUiBound) return;
+    updateUiBound = true;
+
+    document.addEventListener('click', function (e) {
+      var applyBtn = e.target.closest('#pwa-update-apply, [data-footer-update]');
+      if (applyBtn) {
+        e.preventDefault();
+        applyUserUpdate();
+        return;
+      }
+      var dismissBtn = e.target.closest('#pwa-update-dismiss');
+      if (dismissBtn) {
+        e.preventDefault();
+        try {
+          sessionStorage.setItem(UPDATE_DISMISS_KEY, '1');
+        } catch (err) {}
+        syncUpdateUi();
+      }
+    });
+
+    window.addEventListener('strongman:pwa-update-available', syncUpdateUi);
+  }
+
+  function applyUserUpdate() {
+    if (!swRegistration) return Promise.resolve(false);
+    if (!swRegistration.waiting) {
+      if (typeof swRegistration.update === 'function') swRegistration.update();
+      return Promise.resolve(false);
+    }
+    if (isWorkoutActive()) {
+      syncUpdateUi();
+      return Promise.resolve(false);
+    }
+    try {
+      sessionStorage.removeItem(UPDATE_DISMISS_KEY);
+    } catch (e) {}
+    sessionStorage.setItem('strongman_pwa_reload_pending', '1');
+    applyWaitingUpdate();
+    return Promise.resolve(true);
   }
 
   function listenForWaitingWorker(reg) {
     if (!reg) return;
-    if (reg.waiting) maybeApplyUpdate(reg);
+    if (reg.waiting) notifyUpdateAvailable();
     reg.addEventListener('updatefound', function () {
       var installing = reg.installing;
       if (!installing) return;
       installing.addEventListener('statechange', function () {
         if (installing.state === 'installed' && navigator.serviceWorker.controller) {
-          maybeApplyUpdate(reg);
+          notifyUpdateAvailable();
         }
       });
     });
     navigator.serviceWorker.addEventListener('controllerchange', function () {
       if (sessionStorage.getItem('strongman_pwa_reload_pending') === '1') {
         sessionStorage.removeItem('strongman_pwa_reload_pending');
+        updateAvailable = false;
         window.location.reload();
       }
     });
-  }
-
-  function maybeApplyUpdate(reg) {
-    if (!reg || !reg.waiting) return;
-    if (isWorkoutActive()) {
-      window.setTimeout(function () {
-        maybeApplyUpdate(reg);
-      }, 15000);
-      return;
-    }
-    sessionStorage.setItem('strongman_pwa_reload_pending', '1');
-    applyWaitingUpdate();
   }
 
   function scheduleUpdateCheck(reg) {
@@ -503,11 +573,13 @@
     ensureApplePwaMeta();
     bindBeforeInstallPrompt();
     bindInstallTriggers();
+    bindUpdateUi();
     enforceStandaloneEntry();
     polishStandaloneLogin();
     bindAutoSync();
     registerServiceWorker().then(function () {
       syncWhenOnline();
+      syncUpdateUi();
     });
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', bindInstallBanner);
@@ -526,6 +598,11 @@
     showInstallSheet: showInstallSheet,
     showInstallBanner: showInstallBanner,
     dismissInstallBanner: dismissInstallBanner,
+    hasUpdateAvailable: function () {
+      return updateAvailable;
+    },
+    applyUpdate: applyUserUpdate,
+    syncUpdateUi: syncUpdateUi,
   };
 
   boot();

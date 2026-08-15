@@ -19,6 +19,7 @@
     <link rel="stylesheet" href="/css/workout-dashboard.css">
     <link rel="stylesheet" href="/css/settings-app.css">
     <link rel="stylesheet" href="/css/notification-bell.css">
+    <link rel="stylesheet" href="/css/pwa-update-banner.css">
 </head>
 <body data-current-page="home">
     <aside class="site-sidebar" id="site-sidebar" aria-label="Main navigation">
@@ -67,6 +68,14 @@
                     </button>
                 </div>
             </header>
+
+            <div class="pwa-update-banner" id="pwa-update-banner" hidden role="status" aria-live="polite">
+                <p class="pwa-update-banner__copy"><strong>Update available.</strong> A new version of Strongman AI is ready.</p>
+                <div class="pwa-update-banner__actions">
+                    <button type="button" class="pwa-update-banner__btn pwa-update-banner__btn--primary" id="pwa-update-apply">Update now</button>
+                    <button type="button" class="pwa-update-banner__btn pwa-update-banner__btn--ghost" id="pwa-update-dismiss">Later</button>
+                </div>
+            </div>
 
             <div class="dash-rocky-banner" id="dash-rocky-banner" hidden role="status" aria-live="polite"></div>
             <div class="dash-countdowns" id="dash-countdowns" hidden aria-label="Upcoming events"></div>

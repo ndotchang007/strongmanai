@@ -1,5 +1,5 @@
 /* Strongman AI — app-shell service worker (logged-in routes only; no marketing pages) */
-var CACHE_VERSION = 'strongman-app-shell-v5';
+var CACHE_VERSION = 'strongman-app-shell-v6';
 
 var APP_SHELL = [
   '/manifest.webmanifest',
@@ -13,6 +13,7 @@ var APP_SHELL = [
   '/shared/offline-db.js',
   '/shared/pwa-client.js',
   '/css/pwa-install-sheet.css',
+  '/css/pwa-update-banner.css',
   '/css/site-fonts.css',
   '/css/theme.css',
   '/css/login.css',

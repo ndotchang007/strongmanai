@@ -15,6 +15,8 @@
       '<button type="button" class="footer-app-link footer-link-button" data-email-kind="bug">Report</button>' +
       '<span class="footer-app-sep" aria-hidden="true">·</span>' +
       '<button type="button" class="footer-app-link footer-link-button" data-footer-download="1">Download</button>' +
+      '<span class="footer-app-sep footer-app-sep--update" aria-hidden="true" hidden>·</span>' +
+      '<button type="button" class="footer-app-link footer-link-button" data-footer-update="1" hidden>Update</button>' +
       '<span class="footer-app-sep footer-app-sep--logout" aria-hidden="true">·</span>' +
       '<button type="button" class="footer-app-link footer-link-button" data-footer-logout="1">Log out</button>' +
       '</nav>'
@@ -51,6 +53,18 @@
     var showLogout = !!viewer;
     if (logoutBtn) logoutBtn.hidden = !showLogout;
     if (logoutSep) logoutSep.hidden = !showLogout;
+    syncFooterUpdateState(footer);
+  }
+
+  function syncFooterUpdateState(footer) {
+    var updateBtn = footer.querySelector('[data-footer-update]');
+    var updateSep = footer.querySelector('.footer-app-sep--update');
+    var showUpdate =
+      window.StrongmanPWA &&
+      typeof window.StrongmanPWA.hasUpdateAvailable === 'function' &&
+      window.StrongmanPWA.hasUpdateAvailable();
+    if (updateBtn) updateBtn.hidden = !showUpdate;
+    if (updateSep) updateSep.hidden = !showUpdate;
   }
 
   function bindFooterActions(footer) {
@@ -104,6 +118,10 @@
 
   window.addEventListener('strongman:user-updated', function () {
     document.querySelectorAll('.site-footer--app').forEach(syncFooterAuthState);
+  });
+
+  window.addEventListener('strongman:pwa-update-available', function () {
+    document.querySelectorAll('.site-footer--app').forEach(syncFooterUpdateState);
   });
 
   var footerEmailOverlay = document.getElementById('footer-email-overlay');
