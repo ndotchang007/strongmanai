@@ -456,7 +456,7 @@ body[data-current-page="home"] #dash-insight
     max-width: 36rem;
     margin: 0 auto;
     padding:
-        calc(1.85rem + env(safe-area-inset-top, 0px))
+        calc(2.25rem + env(safe-area-inset-top, 0px))
         1.5rem
         calc(1.25rem + env(safe-area-inset-bottom, 0px));
     box-sizing: border-box;
@@ -1446,6 +1446,7 @@ html[data-theme="mono-dark"] #dash-start-workout.dash-comp--live
     .dash-home
     {
         max-width: 36rem;
+        padding-top: calc(2.75rem + env(safe-area-inset-top, 0px));
         padding-bottom: calc(5.75rem + env(safe-area-inset-bottom, 0px));
     }
     .dash-stats-grid
