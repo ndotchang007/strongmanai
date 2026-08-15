@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#ff4d0d">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="description" content="Official Strongman AI download — install the progressive overload training app on your phone or desktop.">
+    <meta name="description" content="Install Strongman AI on iPhone or Android — official progressive overload training app.">
     <title>Download – Strongman AI</title>
     <link rel="icon" type="image/png" href="/assets/logo.png">
     <link rel="apple-touch-icon" href="/assets/logo.png">
@@ -17,7 +17,6 @@
     <script src="/shared/theme.js"></script>
     <link rel="stylesheet" href="/css/marketing-nav.css">
     <link rel="stylesheet" href="/css/download.css">
-    <link rel="stylesheet" href="/css/pwa-install-sheet.css">
     <link rel="stylesheet" href="/css/cookie-consent.css">
 </head>
 <body>
@@ -51,103 +50,57 @@
 
 <main class="dl-main">
     <p class="dl-kicker">Official download</p>
-    <h1 class="dl-title">Download Strongman AI</h1>
+    <h1 class="dl-title">Install Strongman AI</h1>
     <p class="dl-lead">
-        Install Strongman AI on your phone or computer — progressive overload, session logging, and Rocky coaching. Official builds only from this site.
+        Add Strongman AI to your home screen. Official builds from this site only — no APK, no sideloading, no third-party mirrors.
     </p>
 
-    <div class="dl-install-hero">
-        <button type="button" class="dl-btn dl-btn--primary dl-btn--install" id="dl-install-btn" data-pwa-install>Install app</button>
-        <p class="dl-install-hint">Works on iPhone (Safari), Android (Chrome), and desktop Chrome or Edge.</p>
-    </div>
+    <p class="dl-status" id="dl-status" role="status" aria-live="polite" hidden></p>
 
-    <div class="dl-trust" role="list">
-        <div class="dl-trust-item" role="listitem">
-            <span class="dl-trust-label">Publisher</span>
-            <span class="dl-trust-value">Strongman AI</span>
-        </div>
-        <div class="dl-trust-item" role="listitem">
-            <span class="dl-trust-label">Current build</span>
-            <span class="dl-trust-value">Installable web app · v1.3</span>
-        </div>
-        <div class="dl-trust-item" role="listitem">
-            <span class="dl-trust-label">Distribution</span>
-            <span class="dl-trust-value">Official site only</span>
-        </div>
-        <div class="dl-trust-item" role="listitem">
-            <span class="dl-trust-label">Contact</span>
-            <span class="dl-trust-value"><a href="mailto:strongmanaioutreach@gmail.com">strongmanaioutreach@gmail.com</a></span>
-        </div>
-    </div>
-
-    <section class="dl-section" aria-labelledby="dl-available-heading">
-        <h2 id="dl-available-heading" class="dl-section-title">Available now</h2>
-        <p class="dl-section-desc">
-            Strongman AI installs as a secure web app. Create a free account, then add it to your home screen or desktop for the full app experience.
-        </p>
-        <article class="dl-card dl-card--primary">
+    <div class="dl-platforms">
+        <article class="dl-card" id="dl-ios-card">
             <div class="dl-card-top">
-                <p class="dl-card-platform">Web app</p>
-                <p class="dl-card-badge">Official · free</p>
+                <p class="dl-card-platform">iOS</p>
+                <p class="dl-card-badge">Safari required</p>
             </div>
-            <h3 class="dl-card-name">Train in the browser</h3>
-            <p class="dl-card-text">
-                Full product: workout generation, logging, progressive overload, Rocky coaching, and leaderboards. Works on desktop and mobile browsers.
-            </p>
-            <ul class="dl-card-reqs">
-                <li>Modern browser (Chrome, Safari, Edge, Firefox)</li>
-                <li>Internet connection for sign-in and sync</li>
-                <li>No credit card required to start</li>
-            </ul>
-            <div class="dl-card-actions">
-                <button type="button" class="dl-btn dl-btn--primary" data-pwa-install>Install app <span aria-hidden="true">→</span></button>
-                <a class="dl-btn dl-btn--ghost" href="/signup">Start free</a>
-                <a class="dl-btn dl-btn--ghost" href="/login">Log in</a>
-            </div>
+            <h2 class="dl-card-name">iPhone &amp; iPad</h2>
+            <p class="dl-card-text">Open this page in <strong>Safari</strong>, then add Strongman AI to your home screen.</p>
+            <ol class="dl-steps">
+                <li>Tap the <strong>Share</strong> button in Safari&apos;s toolbar (square with an arrow).</li>
+                <li>Scroll down and tap <strong>Add to Home Screen</strong>.</li>
+                <li>Tap <strong>Add</strong> in the top right corner.</li>
+                <li>Open <strong>Strongman AI</strong> from your home screen and sign in.</li>
+            </ol>
+            <p class="dl-card-warn">In-app browsers (Instagram, TikTok, etc.) cannot install apps. Copy the link and open it in Safari if needed.</p>
         </article>
-    </section>
 
-    <section class="dl-section" aria-labelledby="dl-mobile-heading">
-        <h2 id="dl-mobile-heading" class="dl-section-title">Mobile</h2>
-        <p class="dl-section-desc">
-            Native App Store / Play Store listings are coming later. Today you can install the official web app on your home screen — no APK, no sideloading.
-        </p>
-        <div class="dl-platforms">
-            <article class="dl-card">
-                <div class="dl-card-top">
-                    <p class="dl-card-platform">iOS</p>
-                    <p class="dl-card-badge">Available</p>
-                </div>
-                <h3 class="dl-card-name">iPhone &amp; iPad</h3>
-                <p class="dl-card-text">
-                    Open in Safari, tap Install app above, then Add to Home Screen. Opens full-screen like a native app.
-                </p>
-                <button type="button" class="dl-btn dl-btn--secondary" data-pwa-install>Install on iOS</button>
-            </article>
-            <article class="dl-card">
-                <div class="dl-card-top">
-                    <p class="dl-card-platform">Android</p>
-                    <p class="dl-card-badge">Available</p>
-                </div>
-                <h3 class="dl-card-name">Android phones &amp; tablets</h3>
-                <p class="dl-card-text">
-                    Open in Chrome and tap Install app — Chrome will offer a one-tap install or Add to Home screen.
-                </p>
-                <button type="button" class="dl-btn dl-btn--secondary" data-pwa-install>Install on Android</button>
-            </article>
-        </div>
-    </section>
+        <article class="dl-card" id="dl-android-card">
+            <div class="dl-card-top">
+                <p class="dl-card-platform">Android</p>
+                <p class="dl-card-badge">Chrome</p>
+            </div>
+            <h2 class="dl-card-name">Android phones &amp; tablets</h2>
+            <p class="dl-card-text">Open this page in <strong>Chrome</strong>, then install the app to your home screen.</p>
+            <ol class="dl-steps" id="dl-android-steps">
+                <li>Tap <strong>Install app</strong> below — Chrome will show a confirmation.</li>
+                <li>Or tap the menu <strong>(⋮)</strong> → <strong>Install app</strong> or <strong>Add to Home screen</strong>.</li>
+                <li>Confirm the install, then open Strongman AI from your home screen.</li>
+            </ol>
+            <button type="button" class="dl-btn dl-btn--primary" id="dl-android-install">Install app</button>
+            <p class="dl-card-warn">Desktop Chrome and Edge can install the same way using the install icon in the address bar.</p>
+        </article>
+    </div>
 
     <section class="dl-section" aria-labelledby="dl-safety-heading">
         <h2 id="dl-safety-heading" class="dl-section-title">Safety &amp; authenticity</h2>
         <ul class="dl-safety">
             <li>
                 <span class="dl-safety-label">Only download from this site</span>
-                <span class="dl-safety-text">Bookmarks and links should point to Strongman AI’s own domain. We do not distribute builds through random file hosts.</span>
+                <span class="dl-safety-text">Bookmarks and links should point to Strongman AI&apos;s own domain. We do not distribute builds through random file hosts.</span>
             </li>
             <li>
                 <span class="dl-safety-label">No urgency tactics</span>
-                <span class="dl-safety-text">There are no countdown timers, fake “limited seats,” or pressure to install unknown software.</span>
+                <span class="dl-safety-text">There are no countdown timers, fake &ldquo;limited seats,&rdquo; or pressure to install unknown software.</span>
             </li>
             <li>
                 <span class="dl-safety-label">What the app does</span>
@@ -155,26 +108,9 @@
             </li>
             <li>
                 <span class="dl-safety-label">Questions</span>
-                <span class="dl-safety-text">Email <a href="mailto:strongmanaioutreach@gmail.com">strongmanaioutreach@gmail.com</a> or read <a href="/about">About</a>, <a href="/legal">Terms &amp; Privacy</a>, and the <a href="/blog">Blog</a>.</span>
+                <span class="dl-safety-text">Email <a href="mailto:strongmanaioutreach@gmail.com">strongmanaioutreach@gmail.com</a> or read <a href="/legal">Terms &amp; Privacy</a>.</span>
             </li>
         </ul>
-    </section>
-
-    <section class="dl-section dl-section--contact" aria-labelledby="dl-help-heading">
-        <h2 id="dl-help-heading" class="dl-section-title">Need help?</h2>
-        <p class="dl-section-desc">
-            Partnerships, press, feedback, or download questions — we read every note.
-        </p>
-        <p class="dl-contact-email">
-            <a href="mailto:strongmanaioutreach@gmail.com" class="dl-email-link">strongmanaioutreach@gmail.com</a>
-        </p>
-        <div class="dl-socials">
-            <a class="dl-social-link" href="https://www.instagram.com/strongmanai/" target="_blank" rel="noopener noreferrer">Instagram</a>
-            <a class="dl-social-link" href="/about">About</a>
-            <a class="dl-social-link" href="/blog">Blog</a>
-            <a class="dl-social-link" href="/legal">Legal</a>
-            <a class="dl-social-link" href="/versions">Version history</a>
-        </div>
     </section>
 </main>
 
@@ -210,6 +146,7 @@
     <p class="mkt-foot-copy">&copy; 2026 Strongman AI</p>
 </footer>
 <script src="/shared/pwa-client.js"></script>
+<script src="/js/download.js"></script>
 <script src="/shared/marketing-nav.js"></script>
 <script src="/shared/cookie-consent.js"></script>
 </body>

@@ -106,6 +106,17 @@
     document.head.appendChild(link);
   }
 
+  function bindInstallTriggers() {
+    document.addEventListener('click', function (e) {
+      var trigger = e.target.closest('[data-pwa-install]');
+      if (!trigger) return;
+      e.preventDefault();
+      var mode = trigger.getAttribute('data-pwa-install');
+      if (!mode || mode === 'true') mode = null;
+      handleDownloadAction(mode);
+    });
+  }
+
   function ensureInstallSheet() {
     ensureInstallSheetStyles();
     var sheet = document.getElementById('pwa-install-sheet');
@@ -148,21 +159,17 @@
             window.location.href = '/home';
             return;
           }
-          if (deferredInstallPrompt) {
+          if (primary.dataset.mode === 'prompt' && deferredInstallPrompt) {
             promptInstall().then(function (accepted) {
-              if (accepted) hideInstallSheet();
+              if (accepted) {
+                hideInstallSheet();
+              }
             });
             return;
           }
           hideInstallSheet();
         });
       }
-      document.addEventListener('click', function (e) {
-        var trigger = e.target.closest('[data-pwa-install]');
-        if (!trigger) return;
-        e.preventDefault();
-        handleDownloadAction();
-      });
     }
 
     return sheet;
@@ -425,16 +432,18 @@
     return Promise.resolve(false);
   }
 
-  function handleDownloadAction() {
+  function handleDownloadAction(forcedMode) {
     if (isStandalone()) {
       showInstallSheet('installed');
       return Promise.resolve(false);
     }
+    if (forcedMode === 'ios' || forcedMode === 'android' || forcedMode === 'desktop') {
+      showInstallSheet(forcedMode);
+      return Promise.resolve(false);
+    }
     if (deferredInstallPrompt) {
-      return promptInstall().then(function (accepted) {
-        if (!accepted) showInstallSheet('prompt');
-        return accepted;
-      });
+      showInstallSheet('prompt');
+      return Promise.resolve(false);
     }
     showInstallSheet(manualInstallMode());
     return Promise.resolve(false);
@@ -493,6 +502,7 @@
     ensureThemeMeta();
     ensureApplePwaMeta();
     bindBeforeInstallPrompt();
+    bindInstallTriggers();
     enforceStandaloneEntry();
     polishStandaloneLogin();
     bindAutoSync();
