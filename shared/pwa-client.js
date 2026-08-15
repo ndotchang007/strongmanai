@@ -245,6 +245,32 @@
     }
   }
 
+  function maybePromptForNotifications() {
+    if (!isStandalone()) return;
+    if (!window.isLoggedIn || !window.isLoggedIn()) return;
+    if (!('Notification' in window)) return;
+    if (Notification.permission !== 'default') return;
+    if (localStorage.getItem('strongman_pwa_notify_prompted') === '1') return;
+    try {
+      localStorage.setItem('strongman_pwa_notify_prompted', '1');
+    } catch (e) {}
+    window.setTimeout(function () {
+      Notification.requestPermission().then(function (perm) {
+        if (perm !== 'granted') return;
+        try {
+          localStorage.setItem('strongman-home-notify-push', '1');
+        } catch (e2) {}
+        if (window.StrongmanPush && typeof window.StrongmanPush.subscribe === 'function') {
+          window.StrongmanPush.subscribe();
+        }
+        var u = typeof window.getCurrentUser === 'function' ? window.getCurrentUser() : null;
+        if (u && u.id && typeof window.apiPut === 'function') {
+          window.apiPut('/users/' + u.id, { notifyPush: true }).catch(function () {});
+        }
+      });
+    }, 1200);
+  }
+
   function boot() {
     ensureManifestLink();
     ensureThemeMeta();
@@ -253,6 +279,7 @@
     bindAutoSync();
     registerServiceWorker().then(function () {
       syncWhenOnline();
+      maybePromptForNotifications();
     });
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', bindInstallBanner);

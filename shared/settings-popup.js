@@ -175,8 +175,13 @@
     return localStorage.getItem(NOTIFY_PUSH_KEY) === '1' && Notification.permission === 'granted';
   }
 
+  function serverPushHandlesNotifications() {
+    return localStorage.getItem(NOTIFY_PUSH_KEY) === '1' && Notification.permission === 'granted';
+  }
+
   function maybeFireScheduledReminder() {
     if (!browserNotificationsReady()) return;
+    if (serverPushHandlesNotifications()) return;
     var s = loadReminderSchedule();
     if (!s.enabled) return;
     var now = new Date();
@@ -555,8 +560,9 @@
       } catch (eLs) {}
     }
     syncNotifyEmailFromUser();
+    syncNotifyPushFromUser();
+    syncReminderScheduleFromUser();
     syncWeightIncrementFromUser();
-    if (notifyPush) notifyPush.checked = localStorage.getItem(NOTIFY_PUSH_KEY) === '1';
     if (profilePublic) profilePublic.checked = localStorage.getItem(PRIVACY_PUBLIC_KEY) !== '0';
     if (showActivity) showActivity.checked = localStorage.getItem(PRIVACY_ACTIVITY_KEY) !== '0';
     reconcileBrowserNotificationsUI();
@@ -839,6 +845,42 @@
       return;
     }
     if (notifyEmail) notifyEmail.checked = localStorage.getItem(NOTIFY_EMAIL_KEY) === '1';
+  }
+
+  function syncNotifyPushFromUser() {
+    var u = typeof window.getCurrentUser === 'function' ? window.getCurrentUser() : null;
+    if (u && typeof u.notifyPush === 'boolean') {
+      localStorage.setItem(NOTIFY_PUSH_KEY, u.notifyPush ? '1' : '0');
+      if (notifyPush) notifyPush.checked = u.notifyPush;
+      if (u.notifyPush && window.StrongmanPush && typeof window.StrongmanPush.ensureRegisteredIfEnabled === 'function') {
+        window.StrongmanPush.ensureRegisteredIfEnabled();
+      }
+      return;
+    }
+    if (notifyPush) notifyPush.checked = localStorage.getItem(NOTIFY_PUSH_KEY) === '1';
+  }
+
+  function syncReminderScheduleFromUser() {
+    var u = typeof window.getCurrentUser === 'function' ? window.getCurrentUser() : null;
+    if (!u || !u.reminderSchedule || typeof u.reminderSchedule !== 'object') return;
+    var sched = u.reminderSchedule;
+    var freq = sched.frequency;
+    if (['daily', 'weekdays', 'weekends', 'custom'].indexOf(freq) === -1) freq = 'weekdays';
+    var cd = Array.isArray(sched.customDays)
+      ? sched.customDays
+          .map(function (d) {
+            return parseInt(d, 10);
+          })
+          .filter(function (d) {
+            return !isNaN(d) && d >= 0 && d <= 6;
+          })
+      : [1, 2, 3, 4, 5];
+    saveReminderSchedule({
+      enabled: !!sched.enabled,
+      time: normalizeTime(typeof sched.time === 'string' ? sched.time : '09:00'),
+      frequency: freq,
+      customDays: cd.length ? cd : [1, 2, 3, 4, 5],
+    });
   }
 
   function persistNotifyEmailToServer(enabled) {
@@ -1340,6 +1382,13 @@
   })();
   document.addEventListener('visibilitychange', function () {
     if (!document.hidden) maybeFireScheduledReminder();
+  });
+  window.addEventListener('strongman:user-updated', function () {
+    syncNotifyEmailFromUser();
+    syncNotifyPushFromUser();
+    syncReminderScheduleFromUser();
+    reconcileBrowserNotificationsUI();
+    loadReminderScheduleIntoForm();
   });
   maybeFireScheduledReminder();
 })();

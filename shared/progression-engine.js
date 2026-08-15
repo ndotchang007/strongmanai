@@ -33,6 +33,15 @@
 
   function lastSessionForExercise(name) {
     if (
+      window.WorkoutSession &&
+      typeof window.WorkoutSession.getExercisePerformanceDetail === 'function'
+    ) {
+      var detail = window.WorkoutSession.getExercisePerformanceDetail(name);
+      if (detail && detail.weight != null) {
+        return detail;
+      }
+    }
+    if (
       !window.WorkoutSession ||
       typeof window.WorkoutSession.getPreviousPerformance !== 'function'
     ) {
@@ -54,7 +63,39 @@
       unit: best.unit || 'lb',
       sets: parsed.length,
       lines: prev,
+      momentum: 0.5,
+      daysSince: null,
+      thirdSetDrop: false,
     };
+  }
+
+  function experienceFromUser() {
+    var user = typeof window.getCurrentUser === 'function' ? window.getCurrentUser() : null;
+    var level = (user && user.experience) || 'beginner';
+    if (['beginner', 'intermediate', 'advanced'].indexOf(level) === -1) level = 'beginner';
+    var ctx = (user && user.athleteContext) || {};
+    var trainingAgeYears = null;
+    if (ctx.trainingAgeYears != null) trainingAgeYears = Number(ctx.trainingAgeYears);
+    else if (ctx.trainingAge != null) trainingAgeYears = Number(ctx.trainingAge);
+    else if (ctx.yearsTraining != null) trainingAgeYears = Number(ctx.yearsTraining);
+    if (trainingAgeYears != null && (isNaN(trainingAgeYears) || trainingAgeYears < 0)) {
+      trainingAgeYears = null;
+    }
+    return { level: level, trainingAgeYears: trainingAgeYears };
+  }
+
+  function experienceMultiplier(exp) {
+    exp = exp || experienceFromUser();
+    if (exp.level === 'advanced') return 1.15;
+    if (exp.level === 'intermediate') return 1.0;
+    return 0.85;
+  }
+
+  function overloadThreshold(exp) {
+    exp = exp || experienceFromUser();
+    if (exp.level === 'beginner') return 65;
+    if (exp.level === 'advanced') return 72;
+    return 70;
   }
 
   function readinessFromUser() {
@@ -106,12 +147,27 @@
 
   function fatigueHints(last, readiness) {
     var hints = [];
-    if (last && last.sets >= 3) {
+    if (last && (last.sets >= 3 || last.thirdSetDrop)) {
       hints.push({
-        label: '3rd set fatigue',
+        label: last.thirdSetDrop ? 'set-to-set drop-off' : '3rd set fatigue',
         lbs: -2.5,
         reps: -1,
         code: 'SET_FATIGUE',
+      });
+    }
+    if (last && last.daysSince != null && last.daysSince >= 10) {
+      hints.push({
+        label: last.daysSince + ' days since last ' + (last.historyCount > 1 ? 'progress' : 'session'),
+        lbs: -5,
+        reps: -1,
+        code: 'LONG_BREAK',
+      });
+    } else if (last && last.daysSince != null && last.daysSince >= 5) {
+      hints.push({
+        label: last.daysSince + ' days since last session',
+        lbs: -2.5,
+        reps: 0,
+        code: 'BREAK',
       });
     }
     if (readiness.sleepHours != null && readiness.sleepHours < 6) {
@@ -149,11 +205,15 @@
     return hints;
   }
 
-  function stepSize(e1rm, metric, momentum) {
+  function stepSize(e1rm, metric, momentum, exp) {
     var basePct = 0.02;
     var m = momentum != null ? momentum : 0.5;
-    var raw = (e1rm || 100) * basePct * (0.5 + m);
+    exp = exp || experienceFromUser();
+    var expMult = experienceMultiplier(exp);
+    if (exp.trainingAgeYears != null && exp.trainingAgeYears >= 3) expMult += 0.05;
+    var raw = (e1rm || 100) * basePct * (0.5 + m) * expMult;
     var minInc = metric ? 2.5 : 5;
+    if (exp.level === 'beginner') minInc = metric ? 2.5 : 2.5;
     return Math.max(minInc, roundTo(raw, minInc));
   }
 
@@ -168,6 +228,7 @@
     var unit = metric ? 'kg' : 'lb';
     var last = lastSessionForExercise(name);
     var readiness = readinessFromUser();
+    var exp = experienceFromUser();
     var reasons = [];
     var repLo = opts.repLow != null ? opts.repLow : 6;
     var repHi = opts.repHigh != null ? opts.repHigh : 10;
@@ -193,9 +254,10 @@
     var oldW = last.weight;
     var oldR = last.reps || 8;
     var e1 = epleyE1rm(oldW, oldR, 2) || oldW * 1.25;
-    var momentum = 0.55;
+    var momentum = last.momentum != null ? last.momentum : 0.55;
     var F_hat = readiness.soreness != null ? clamp(readiness.soreness * 18, 20, 90) : 45;
-    var P = 0.15;
+    var P = exp.level === 'beginner' ? 0.22 : exp.level === 'advanced' ? 0.1 : 0.15;
+    if (last.allSetsCompleted === false) P -= 0.05;
     var C = 0.5 * readiness.R + 0.3 * (100 - F_hat) + 0.2 * 70;
     var D =
       100 *
@@ -210,10 +272,11 @@
     var nextR = oldR;
     var growthW = oldW;
     var growthR = oldR;
+    var overloadAt = overloadThreshold(exp);
 
     // Double progression estimate for growth (before readiness/fatigue gates).
     if (oldR >= repHi) {
-      growthW = oldW + stepSize(e1, metric, momentum);
+      growthW = oldW + stepSize(e1, metric, momentum, exp);
       growthR = repLo;
     } else {
       growthW = oldW;
@@ -221,8 +284,17 @@
     }
 
     reasons.push('old weight: ' + oldW + ' × ' + oldR);
+    if (last.daysSince != null) {
+      reasons.push('Last logged ' + last.daysSince + ' day' + (last.daysSince === 1 ? '' : 's') + ' ago.');
+    }
+    reasons.push(
+      'Training level: ' +
+        exp.level +
+        (exp.trainingAgeYears != null ? ' · ~' + exp.trainingAgeYears + ' yr lifting' : '') +
+        '.'
+    );
 
-    if (D >= 70) {
+    if (D >= overloadAt) {
       action = 'OVERLOAD';
       nextW = growthW;
       nextR = growthR;
@@ -302,13 +374,16 @@
     }
     var delta = target - start;
     var weeklyRate;
+    var exp = experienceFromUser();
 
     if (type === 'bodyweight') {
       // Conservative fat-loss / gain rates (lb/week).
       weeklyRate = delta < 0 ? -1.0 : 0.35;
     } else {
-      // Strength: ~0.5–1.5% e1RM / week for intermediates; use 0.75% of current.
-      weeklyRate = Math.max(1.25, start * 0.0075);
+      var pct =
+        exp.level === 'beginner' ? 0.01 : exp.level === 'advanced' ? 0.006 : 0.0075;
+      if (exp.trainingAgeYears != null && exp.trainingAgeYears >= 5) pct *= 0.85;
+      weeklyRate = Math.max(1.25, start * pct);
       if (delta < 0) weeklyRate = -weeklyRate;
     }
 

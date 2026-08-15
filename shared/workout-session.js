@@ -146,51 +146,196 @@
     return w + ' × ' + r;
   }
 
-  function getPreviousPerformance(exerciseName) {
-    var WL = window.WorkoutLog;
-    if (!WL || !exerciseName) return null;
-    var sessions = WL.getSessions() || [];
-    var target = exerciseName.trim().toLowerCase();
-    if (!target) return null;
+  function normalizeExerciseName(name) {
+    return String(name || '')
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
 
-    for (var i = 0; i < sessions.length; i++) {
-      var session = sessions[i];
-      if (!session || !Array.isArray(session.exercises)) continue;
-      for (var j = 0; j < session.exercises.length; j++) {
-        var ex = session.exercises[j];
-        if (!ex || !ex.name) continue;
-        if (ex.name.trim().toLowerCase() !== target) continue;
+  function eachExerciseInSession(session, fn) {
+    if (!session || typeof fn !== 'function') return;
+    (session.exercises || []).forEach(fn);
+    (session.blocks || []).forEach(function (blk) {
+      (blk.exercises || []).forEach(fn);
+    });
+  }
 
-        var lines = [];
-        if (ex.setWeights && ex.setWeights.length) {
-          var setCount = parseInt(ex.sets, 10) || ex.setWeights.length;
-          var repsVal = ex.reps || '';
-          for (var s = 0; s < setCount; s++) {
-            var w = ex.setWeights[s] != null ? ex.setWeights[s] : ex.weight;
-            lines.push(formatSetLine(w, repsVal));
-          }
-        } else if (session.trackerData && session.trackerData.exercises) {
-          var tracked = session.trackerData.exercises.find(function (te) {
-            return te.name && te.name.trim().toLowerCase() === target;
-          });
-          if (tracked && tracked.sets) {
-            tracked.sets.forEach(function (set) {
-              if (set.completed || set.weight || set.reps) {
-                lines.push(formatSetLine(set.weight, set.reps));
-              }
-            });
-          }
-        }
-        if (!lines.length && (ex.weight || ex.reps || ex.sets)) {
-          var count = parseInt(ex.sets, 10) || 1;
-          for (var c = 0; c < count; c++) {
-            lines.push(formatSetLine(ex.weight, ex.reps));
-          }
-        }
-        if (lines.length) return lines;
+  function sessionTimestamp(session) {
+    if (session && session.createdAt) {
+      var t = Date.parse(session.createdAt);
+      if (!isNaN(t)) return t;
+    }
+    if (session && session.date) {
+      var p = String(session.date).slice(0, 10).split('-');
+      var d = new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10));
+      if (!isNaN(d.getTime())) return d.getTime();
+    }
+    return 0;
+  }
+
+  function parseSetWeightReps(weight, reps) {
+    var w = parseNum(weight);
+    var r = parseNum(reps);
+    if (w == null && r == null) return null;
+    return { weight: w, reps: r };
+  }
+
+  function collectExerciseSets(ex, session) {
+    var sets = [];
+    var target = ex && ex.name ? normalizeExerciseName(ex.name) : '';
+    if (!target) return sets;
+
+    if (session && session.trackerData && Array.isArray(session.trackerData.exercises)) {
+      var tracked = session.trackerData.exercises.find(function (te) {
+        return te && te.name && normalizeExerciseName(te.name) === target;
+      });
+      if (tracked && Array.isArray(tracked.sets)) {
+        tracked.sets.forEach(function (set) {
+          if (!set) return;
+          if (!set.completed && set.weight == null && set.reps == null) return;
+          var parsed = parseSetWeightReps(set.weight, set.reps);
+          if (parsed) sets.push(Object.assign({ completed: !!set.completed }, parsed));
+        });
+        if (sets.length) return sets;
       }
     }
-    return null;
+
+    if (ex && Array.isArray(ex.sets) && ex.sets.length) {
+      ex.sets.forEach(function (set) {
+        if (!set) return;
+        if (!set.completed && set.weight == null && set.reps == null) return;
+        var parsed = parseSetWeightReps(set.weight, set.reps);
+        if (parsed) sets.push(Object.assign({ completed: !!set.completed }, parsed));
+      });
+      if (sets.length) return sets;
+    }
+
+    var weights = Array.isArray(ex.setWeights) ? ex.setWeights : [];
+    var repsArr = Array.isArray(ex.setReps) ? ex.setReps : [];
+    var count = Math.max(weights.length, repsArr.length, parseInt(ex.sets, 10) || 0, 1);
+    var i;
+    for (i = 0; i < count; i++) {
+      var w = weights[i] != null ? weights[i] : ex.weight;
+      var r = repsArr[i] != null ? repsArr[i] : ex.reps;
+      var parsedLegacy = parseSetWeightReps(w, r);
+      if (parsedLegacy) sets.push(Object.assign({ completed: true }, parsedLegacy));
+    }
+    return sets;
+  }
+
+  function getExerciseHistory(exerciseName, limit) {
+    var WL = window.WorkoutLog;
+    if (!WL || !exerciseName) return [];
+    var target = normalizeExerciseName(exerciseName);
+    if (!target) return [];
+    var sessions = WL.getSessions() || [];
+    var out = [];
+    var i;
+    for (i = 0; i < sessions.length; i++) {
+      var session = sessions[i];
+      if (!session) continue;
+      var match = null;
+      eachExerciseInSession(session, function (ex) {
+        if (match || !ex || !ex.name) return;
+        if (normalizeExerciseName(ex.name) !== target) return;
+        var sets = collectExerciseSets(ex, session);
+        if (!sets.length) return;
+        match = {
+          sessionDate: session.date || session.createdAt || null,
+          daysSince: null,
+          sets: sets,
+          setCount: sets.length,
+          lines: sets.map(function (s) {
+            return formatSetLine(s.weight, s.reps);
+          }),
+        };
+      });
+      if (match) {
+        var ts = sessionTimestamp(session);
+        if (ts) {
+          match.daysSince = Math.max(0, Math.floor((Date.now() - ts) / 86400000));
+        }
+        out.push(match);
+        if (limit && out.length >= limit) break;
+      }
+    }
+    return out;
+  }
+
+  function getExercisePerformanceDetail(exerciseName) {
+    var history = getExerciseHistory(exerciseName, 4);
+    if (!history.length) return null;
+    var latest = history[0];
+    var sets = latest.sets || [];
+    var parsed = sets.filter(function (s) {
+      return s.weight != null && s.reps != null;
+    });
+    if (!parsed.length) return null;
+
+    var best = parsed[0];
+    parsed.forEach(function (p) {
+      if (p.weight > best.weight || (p.weight === best.weight && p.reps > best.reps)) best = p;
+    });
+
+    var completedCount = parsed.filter(function (s) {
+      return s.completed !== false;
+    }).length;
+    var thirdSetDrop = false;
+    if (parsed.length >= 3 && parsed[0].weight != null && parsed[2].weight != null) {
+      thirdSetDrop = parsed[2].weight < parsed[0].weight * 0.92;
+    }
+
+    var momentum = 0.5;
+    if (history.length >= 2) {
+      var recent = history.slice(0, Math.min(4, history.length));
+      var scores = recent
+        .map(function (h) {
+          var top = (h.sets || []).reduce(function (acc, s) {
+            if (s.weight == null) return acc;
+            var score = s.weight * (s.reps || 1);
+            return score > acc ? score : acc;
+          }, 0);
+          return top;
+        })
+        .filter(function (n) {
+          return n > 0;
+        });
+      if (scores.length >= 2) {
+        var first = scores[scores.length - 1];
+        var lastScore = scores[0];
+        if (first > 0) {
+          var change = (lastScore - first) / first;
+          momentum = clamp(change > 0.04 ? 0.75 : change < -0.03 ? 0.25 : 0.55, 0.2, 0.85);
+        }
+      }
+    }
+
+    return {
+      weight: best.weight,
+      reps: best.reps,
+      unit: 'lb',
+      sets: parsed.length,
+      lines: latest.lines,
+      sessionDate: latest.sessionDate,
+      daysSince: latest.daysSince,
+      completedSets: completedCount,
+      allSetsCompleted: completedCount === parsed.length,
+      thirdSetDrop: thirdSetDrop,
+      momentum: momentum,
+      historyCount: history.length,
+    };
+  }
+
+  function clamp(n, lo, hi) {
+    return Math.max(lo, Math.min(hi, n));
+  }
+
+  function getPreviousPerformance(exerciseName) {
+    var detail = getExercisePerformanceDetail(exerciseName);
+    if (!detail || !detail.lines || !detail.lines.length) return null;
+    return detail.lines;
   }
 
   function representativeReps(sets) {
@@ -459,6 +604,8 @@
     formatTime: formatTime,
     formatRest: formatRest,
     exerciseHasContent: exerciseHasContent,
-    clone: clone
+    clone: clone,
+    getExerciseHistory: getExerciseHistory,
+    getExercisePerformanceDetail: getExercisePerformanceDetail,
   };
 })();

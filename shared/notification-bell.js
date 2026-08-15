@@ -119,6 +119,14 @@
     if (!fresh.length) return;
     if (!('Notification' in window) || Notification.permission !== 'granted') return;
     if (localStorage.getItem('strongman-home-notify-push') !== '1') return;
+    if (
+      'serviceWorker' in navigator &&
+      window.StrongmanPush &&
+      typeof window.StrongmanPush.canUsePush === 'function' &&
+      window.StrongmanPush.canUsePush()
+    ) {
+      return;
+    }
     fresh.slice(0, 3).forEach(function (inv) {
       try {
         var n = new Notification('New competition invite', {
