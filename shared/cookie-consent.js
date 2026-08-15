@@ -21,6 +21,8 @@
   function mountBanner() {
     if (hasConsent()) return;
     if (document.getElementById('cookie-consent-bar')) return;
+    if (document.body && document.body.classList.contains('auth-page')) return;
+    if (document.documentElement.classList.contains('pwa-standalone')) return;
 
     var bar = document.createElement('div');
     bar.id = 'cookie-consent-bar';

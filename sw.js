@@ -1,8 +1,11 @@
 /* Strongman AI — app-shell service worker (logged-in routes only; no marketing pages) */
-var CACHE_VERSION = 'strongman-app-shell-v4';
+var CACHE_VERSION = 'strongman-app-shell-v5';
 
 var APP_SHELL = [
   '/manifest.webmanifest',
+  '/assets/app-icon.png',
+  '/assets/app-icon-192.png',
+  '/assets/app-icon-180.png',
   '/assets/logo.png',
   '/login.html',
   '/shared/theme.js',
@@ -195,8 +198,8 @@ self.addEventListener('push', function (event) {
       body: payload.body,
       tag: payload.tag,
       data: { url: payload.url },
-      icon: '/assets/logo.png',
-      badge: '/assets/logo.png',
+      icon: '/assets/app-icon-192.png',
+      badge: '/assets/app-icon-192.png',
     })
   );
 });

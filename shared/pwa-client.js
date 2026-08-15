@@ -131,7 +131,7 @@
       '<div class="pwa-install-sheet__backdrop" data-pwa-install-close></div>' +
       '<div class="pwa-install-sheet__panel" role="dialog" aria-modal="true" aria-labelledby="pwa-install-title">' +
       '<button type="button" class="pwa-install-sheet__close" data-pwa-install-close aria-label="Close">×</button>' +
-      '<div class="pwa-install-sheet__icon"><img src="/assets/logo.png" alt="" width="56" height="56" decoding="async"></div>' +
+      '<div class="pwa-install-sheet__icon"><img src="/assets/app-icon-192.png" alt="" width="56" height="56" decoding="async"></div>' +
       '<h2 id="pwa-install-title" class="pwa-install-sheet__title">Install Strongman AI</h2>' +
       '<p id="pwa-install-desc" class="pwa-install-sheet__desc"></p>' +
       '<ol id="pwa-install-steps" class="pwa-install-sheet__steps" hidden></ol>' +
