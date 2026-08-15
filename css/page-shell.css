@@ -41,10 +41,49 @@ body[data-current-page]:not([data-current-page="home"]) .profile-mainContent
     padding-top: max(clamp(1.25rem, 3vw, 2rem), calc(0.35rem + env(safe-area-inset-top, 0px)));
 }
 
-/* Log timeline + split: page scroll instead of clipped inner panels */
+/* Log page — natural document scroll (no 100vh flex traps) */
+html:has(body[data-current-page="log"])
+{
+    scroll-snap-type: none;
+}
+
+body[data-current-page="log"]
+{
+    height: auto;
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+body[data-current-page="log"] .main-wrap,
+body[data-current-page="log"] .create-main
+{
+    flex: 0 0 auto;
+    height: auto;
+    max-height: none;
+    overflow: visible;
+}
+
+body[data-current-page="log"] #create-progress-shell,
+body[data-current-page="log"] #create-panel-tracking,
+body[data-current-page="log"] #create-panel-split,
+body[data-current-page="log"] .tracking-tab-layout,
+body[data-current-page="log"] .tracking-panels-wrap,
+body[data-current-page="log"] .tracking-panel,
+body[data-current-page="log"] .tracking-panel-fill,
+body[data-current-page="log"] .tracking-panel-scroll,
 body[data-current-page="log"] .log-timeline-shell,
 body[data-current-page="log"] .log-timeline-carousel,
-body[data-current-page="log"] .dash-archive--timeline
+body[data-current-page="log"] .dash-archive--timeline,
+body[data-current-page="log"] #create-panel-split.create-panel--active,
+body[data-current-page="log"] #create-panel-split .create-form--split,
+body[data-current-page="log"] .split-editor-mount,
+body[data-current-page="log"] .split-week-mount,
+body[data-current-page="log"] .split-week-panel,
+body[data-current-page="log"] .split-tree-panel,
+body[data-current-page="log"] .split-week-compact,
+body[data-current-page="log"] .split-day-list
 {
     height: auto;
     max-height: none;
@@ -58,15 +97,10 @@ body[data-current-page="log"] .log-timeline-carousel
     padding-bottom: 1rem;
 }
 
-body[data-current-page="log"] #create-panel-split.create-panel--active,
-body[data-current-page="log"] #create-panel-split .create-form--split,
-body[data-current-page="log"] #create-panel-split .split-editor-mount
+body[data-current-page="log"] .split-day-row
 {
-    height: auto;
-    max-height: none;
-    min-height: 0;
     flex: none;
-    overflow: visible;
+    max-height: none;
 }
 
 /* Hide scrollbars on app pages while keeping touch / wheel scroll */

@@ -721,24 +721,19 @@
 
 .split-week-mount
 {
-    flex: 1 1 auto;
-    min-height: 0;
-    overflow: hidden;
     display: flex;
     flex-direction: column;
+    gap: 0.35rem;
 }
 
 .split-week-panel,
 .split-tree-panel
 {
-    flex: 1 1 auto;
-    min-height: 0;
     display: flex;
     flex-direction: column;
     padding: 0;
     border: none;
     background: transparent;
-    overflow: hidden;
 }
 
 .split-tree-toolbar
@@ -754,15 +749,12 @@
     letter-spacing: -0.01em;
 }
 
-/* Compact weekly split — seven narrow rows, no scroll */
+/* Compact weekly split — rows stack and scroll with the page */
 .split-week-compact
 {
-    flex: 1 1 auto;
-    min-height: 0;
     display: flex;
     flex-direction: column;
     gap: 0.35rem;
-    overflow: hidden;
 }
 
 .split-week-compact .split-tree-toolbar
@@ -775,9 +767,6 @@
     display: flex;
     flex-direction: column;
     gap: 0.4rem;
-    flex: 1 1 auto;
-    min-height: 0;
-    overflow: hidden;
     padding: 0.1rem 0;
 }
 
@@ -785,9 +774,8 @@
 {
     appearance: none;
     width: 100%;
-    flex: 1 1 0;
+    flex: none;
     min-height: 2.55rem;
-    max-height: 3rem;
     display: grid;
     grid-template-columns: 1.4rem minmax(0, 1fr) 0.55rem 0.7rem;
     align-items: center;
