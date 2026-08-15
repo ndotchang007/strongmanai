@@ -1430,6 +1430,14 @@ html[data-theme="light"] .home-settings-danger-btn--solid
     color: var(--text-primary, #fff);
 }
 
+a.home-settings-action-btn
+{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+
 .home-settings-action-btn--primary
 {
     background: var(--accent, #ff4d0d);
