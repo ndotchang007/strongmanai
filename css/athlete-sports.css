@@ -183,6 +183,11 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.75rem;
+  min-width: 0;
+}
+
+.sport-modal-dates > div {
+  min-width: 0;
 }
 
 .sport-modal-hint {
@@ -337,6 +342,17 @@
   color: #fff;
   font-family: var(--font, "DM Sans", system-ui, sans-serif);
   font-size: 0.95rem;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.buddy-field[type="date"],
+.buddy-field[type="month"] {
+  display: block;
+  -webkit-appearance: none;
+  appearance: none;
+  min-height: 2.75rem;
+  color-scheme: dark;
 }
 
 select.buddy-field {

@@ -1492,6 +1492,7 @@ html[data-theme="light"] .settings-account-section
     display: flex;
     flex-direction: column;
     gap: 0.15rem;
+    min-width: 0;
 }
 
 .settings-account-row
@@ -1611,7 +1612,24 @@ html[data-theme="light"] .home-settings-input
 
 .home-settings-input--date
 {
+    width: 100%;
     max-width: 100%;
+    min-width: 0;
+    display: block;
+    -webkit-appearance: none;
+    appearance: none;
+    min-height: 2.75rem;
+    color-scheme: dark;
+}
+
+html[data-theme="light"] .home-settings-input--date
+{
+    color-scheme: light;
+}
+
+.user-account-fields
+{
+    min-width: 0;
 }
 
 .settings-account-status

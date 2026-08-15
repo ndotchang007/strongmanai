@@ -108,7 +108,12 @@
     if (window.AthleteProfileForm) {
       window.AthleteProfileForm.loadIntoForm(user, FORM_OPTS);
     }
-    if (window.UserAccountForm) window.UserAccountForm.loadFromUser();
+    if (
+      window.UserAccountForm &&
+      (!window.UserAccountForm.isDirty || !window.UserAccountForm.isDirty())
+    ) {
+      window.UserAccountForm.loadFromUser();
+    }
     updateCompletionBadge();
     showSetupBannerIfNeeded();
     if (window.RockySetupAlert && typeof window.RockySetupAlert.renderAll === 'function') {
@@ -116,9 +121,17 @@
     }
   }
 
+  function refreshAndLoadForm() {
+    var refresh =
+      typeof window.refreshCurrentUserFromServer === 'function'
+        ? window.refreshCurrentUserFromServer()
+        : Promise.resolve(false);
+    refresh.finally(loadForm);
+  }
+
   mountAccountForm();
   renderForm();
-  loadForm();
+  refreshAndLoadForm();
   if (window.RockySetupAlert && typeof window.RockySetupAlert.renderAll === 'function') {
     window.RockySetupAlert.renderAll();
   }
@@ -148,7 +161,14 @@
   }
 
   document.addEventListener('visibilitychange', function () {
-    if (!document.hidden) loadForm();
+    if (!document.hidden) refreshAndLoadForm();
+  });
+
+  window.addEventListener('strongman:profile-synced', function () {
+    if (window.UserAccountForm && window.UserAccountForm.isDirty && window.UserAccountForm.isDirty()) {
+      return;
+    }
+    loadForm();
   });
 
 })();

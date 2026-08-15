@@ -150,7 +150,8 @@
     }
   }
 
-  function setCurrentUser(user) {
+  function setCurrentUser(user, opts) {
+    opts = opts || {};
     if (user) {
       try {
         var prev = getCurrentUser();
@@ -172,9 +173,56 @@
     if (window.RockySetupAlert && typeof window.RockySetupAlert.renderAll === 'function') {
       window.RockySetupAlert.renderAll();
     }
-    try {
-      window.dispatchEvent(new CustomEvent('strongman:user-updated'));
-    } catch (eUserEvt) {}
+    if (!opts.silent) {
+      try {
+        window.dispatchEvent(new CustomEvent('strongman:user-updated'));
+      } catch (eUserEvt) {}
+    }
+  }
+
+  var profileRefreshInflight = null;
+
+  function mergeServerUser(local, server) {
+    if (!local || !server) return server || local;
+    var merged = Object.assign({}, local, server);
+    if (local.token) merged.token = local.token;
+    return merged;
+  }
+
+  function refreshCurrentUserFromServer() {
+    if (!isLoggedIn()) return Promise.resolve(false);
+    var u = getCurrentUser();
+    if (!u || u.id == null || typeof window.apiGet !== 'function') return Promise.resolve(false);
+    if (profileRefreshInflight) return profileRefreshInflight;
+
+    profileRefreshInflight = window
+      .apiGet('/users/' + u.id)
+      .then(function (res) {
+        if (!res.ok) return false;
+        return res.json().then(function (body) {
+          if (!body || body.id == null) return false;
+          var merged = mergeServerUser(u, body);
+          var changed = JSON.stringify(u) !== JSON.stringify(merged);
+          if (changed) {
+            setCurrentUser(merged, { silent: true });
+            try {
+              window.dispatchEvent(
+                new CustomEvent('strongman:profile-synced', { detail: { user: merged } })
+              );
+            } catch (eProfileEvt) {}
+          }
+          return true;
+        });
+      })
+      .catch(function () {
+        return false;
+      })
+      .then(function (ok) {
+        profileRefreshInflight = null;
+        return ok;
+      });
+
+    return profileRefreshInflight;
   }
 
   function authHeaders() {
@@ -263,6 +311,7 @@
   window.apiDelete = apiDelete;
   window.ensureJoinPlatformBadge = ensureJoinPlatformBadge;
   window.strongmanLogout = logoutUser;
+  window.refreshCurrentUserFromServer = refreshCurrentUserFromServer;
 
   (function loadPwaClient() {
     if (typeof document === 'undefined') return;

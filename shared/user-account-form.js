@@ -228,5 +228,8 @@
     updateUnitLabels: updateUnitLabels,
     convertFormMetrics: convertFormMetrics,
     getUnits: getUnits,
+    isDirty: function () {
+      return accountDirty;
+    },
   };
 })();

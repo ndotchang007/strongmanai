@@ -198,7 +198,21 @@ body.customize-page .main-wrap
 .buddy-input
 {
     width: 100%;
+    max-width: 100%;
+    min-width: 0;
     box-sizing: border-box;
+}
+
+.buddy-input[type="date"],
+.buddy-input[type="month"],
+.customize-input[type="date"],
+.customize-input[type="month"]
+{
+    display: block;
+    -webkit-appearance: none;
+    appearance: none;
+    min-height: 2.75rem;
+    color-scheme: dark;
 }
 
 .customize-completion
@@ -325,6 +339,8 @@ body.customize-page .sports-editor-header
     border: 1px solid rgba(100, 100, 100, 0.42);
     background: rgba(255, 255, 255, 0.03);
     box-sizing: border-box;
+    min-width: 0;
+    overflow: hidden;
 }
 
 .buddy-block > * + *
