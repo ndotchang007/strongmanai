@@ -151,12 +151,4 @@
     if (!document.hidden) loadForm();
   });
 
-  var logoutBtn = document.getElementById('customize-logout-btn');
-  if (logoutBtn) {
-    logoutBtn.addEventListener('click', function () {
-      if (typeof window.strongmanLogout === 'function') {
-        window.strongmanLogout();
-      }
-    });
-  }
 })();

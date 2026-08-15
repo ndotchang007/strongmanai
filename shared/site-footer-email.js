@@ -5,30 +5,106 @@
 (function () {
   var OUTREACH_EMAIL = 'strongmanaioutreach@gmail.com';
 
+  function buildFooterBarHtml() {
+    return (
+      '<nav class="footer-app-bar" aria-label="Footer">' +
+      '<a href="/legal#terms" class="footer-app-link">Terms</a>' +
+      '<span class="footer-app-sep" aria-hidden="true">·</span>' +
+      '<a href="/legal#privacy" class="footer-app-link">Privacy</a>' +
+      '<span class="footer-app-sep" aria-hidden="true">·</span>' +
+      '<button type="button" class="footer-app-link footer-link-button" data-email-kind="bug">Report</button>' +
+      '<span class="footer-app-sep" aria-hidden="true">·</span>' +
+      '<button type="button" class="footer-app-link footer-link-button" data-footer-download="1">Download</button>' +
+      '<span class="footer-app-sep footer-app-sep--logout" aria-hidden="true">·</span>' +
+      '<button type="button" class="footer-app-link footer-link-button" data-footer-logout="1">Log out</button>' +
+      '</nav>'
+    );
+  }
+
+  function handleFooterDownload() {
+    if (window.StrongmanPWA && typeof window.StrongmanPWA.handleDownloadAction === 'function') {
+      window.StrongmanPWA.handleDownloadAction();
+      return;
+    }
+    window.location.href = '/download';
+  }
+
+  function handleFooterLogout() {
+    if (typeof window.strongmanLogout === 'function') {
+      window.strongmanLogout();
+      return;
+    }
+    if (typeof window.setCurrentUser === 'function') {
+      window.setCurrentUser(null);
+    }
+    try {
+      window.location.replace('/login');
+    } catch (err) {
+      window.location.href = '/login';
+    }
+  }
+
+  function syncFooterAuthState(footer) {
+    var logoutBtn = footer.querySelector('[data-footer-logout]');
+    var logoutSep = footer.querySelector('.footer-app-sep--logout');
+    var viewer = typeof window.getCurrentUser === 'function' ? window.getCurrentUser() : null;
+    var showLogout = !!viewer;
+    if (logoutBtn) logoutBtn.hidden = !showLogout;
+    if (logoutSep) logoutSep.hidden = !showLogout;
+  }
+
+  function bindFooterActions(footer) {
+    var downloadBtn = footer.querySelector('[data-footer-download]');
+    var logoutBtn = footer.querySelector('[data-footer-logout]');
+    if (downloadBtn && !downloadBtn.dataset.bound) {
+      downloadBtn.dataset.bound = '1';
+      downloadBtn.addEventListener('click', handleFooterDownload);
+    }
+    if (logoutBtn && !logoutBtn.dataset.bound) {
+      logoutBtn.dataset.bound = '1';
+      logoutBtn.addEventListener('click', handleFooterLogout);
+    }
+    syncFooterAuthState(footer);
+  }
+
+  function minimizeAppFooter(footer) {
+    if (
+      footer.classList.contains('site-footer--scroll-gated') ||
+      footer.dataset.footerMinimized === '1'
+    ) {
+      bindFooterActions(footer);
+      return;
+    }
+    footer.dataset.footerMinimized = '1';
+    footer.removeAttribute('hidden');
+    footer.classList.remove('site-footer--compact');
+    footer.classList.add('site-footer--app');
+    footer.innerHTML = buildFooterBarHtml();
+    bindFooterActions(footer);
+  }
+
   function minimizeAppFooters() {
-    document.querySelectorAll('.site-footer').forEach(function (footer) {
-      if (
-        footer.classList.contains('site-footer--scroll-gated') ||
-        footer.classList.contains('site-footer--app') ||
-        footer.dataset.footerMinimized === '1'
-      ) {
-        return;
-      }
-      footer.dataset.footerMinimized = '1';
-      footer.classList.remove('site-footer--compact');
-      footer.classList.add('site-footer--app');
-      footer.innerHTML =
-        '<nav class="footer-app-bar" aria-label="Footer">' +
-        '<a href="/legal#terms" class="footer-app-link">Terms</a>' +
-        '<span class="footer-app-sep" aria-hidden="true">·</span>' +
-        '<a href="/legal#privacy" class="footer-app-link">Privacy</a>' +
-        '<span class="footer-app-sep" aria-hidden="true">·</span>' +
-        '<button type="button" class="footer-app-link footer-link-button" data-email-kind="bug">Report</button>' +
-        '</nav>';
-    });
+    document.querySelectorAll('.site-footer').forEach(minimizeAppFooter);
+  }
+
+  function ensureAppFooter() {
+    if (document.querySelector('.site-footer')) return;
+    var wrap = document.querySelector('.main-wrap');
+    if (!wrap) return;
+    var footer = document.createElement('footer');
+    footer.className = 'site-footer site-footer--app';
+    footer.dataset.footerMinimized = '1';
+    footer.innerHTML = buildFooterBarHtml();
+    wrap.appendChild(footer);
+    bindFooterActions(footer);
   }
 
   minimizeAppFooters();
+  ensureAppFooter();
+
+  window.addEventListener('strongman:user-updated', function () {
+    document.querySelectorAll('.site-footer--app').forEach(syncFooterAuthState);
+  });
 
   var footerEmailOverlay = document.getElementById('footer-email-overlay');
   var footerEmailHeading = document.getElementById('footer-email-heading');

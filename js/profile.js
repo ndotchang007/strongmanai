@@ -510,8 +510,6 @@
   var avatarImg = document.getElementById('profile-avatar-img');
   var competeBtn = document.getElementById('profile-compete-btn');
   var toolbarEl = document.querySelector('.profile-toolbar');
-  var logoutWrap = document.getElementById('profile-logout-wrap');
-  var logoutLink = document.getElementById('profile-logout');
   var editToggle = null;
   var shareBtn = document.getElementById('profile-share-btn');
   var previewBtn = null;
@@ -527,7 +525,6 @@
   var bioCancelBtn = document.getElementById('profile-bio-cancel');
   var saveStatusEl = document.getElementById('profile-save-status');
   var heroActions = document.getElementById('profile-hero-actions');
-  var logoutBtn = document.getElementById('profile-logout-btn');
   var canEditProfile = false;
   var editModeOpen = false;
   var isViewingOtherProfile = false;
@@ -1460,9 +1457,6 @@
   var viewingOther =
     viewedId != null && (!viewer || Number(viewer.id) !== Number(viewedId));
 
-  if (logoutWrap) logoutWrap.hidden = !viewer;
-  if (logoutBtn) logoutBtn.hidden = !viewer || viewingOther;
-
   syncProfileViewState(!viewingOther && !!viewer);
   configureProfileEditing(!viewingOther && !!viewer, viewer);
 
@@ -1492,29 +1486,6 @@
         window.location.href = '/leaderboard';
       });
     }
-  }
-
-  if (logoutLink && viewer) {
-    logoutLink.addEventListener('click', function (e) {
-      e.preventDefault();
-      if (typeof window.strongmanLogout === 'function') {
-        window.strongmanLogout();
-        return;
-      }
-      window.setCurrentUser(null);
-      window.location.href = '/login';
-    });
-  }
-
-  if (logoutBtn && viewer) {
-    logoutBtn.addEventListener('click', function () {
-      if (typeof window.strongmanLogout === 'function') {
-        window.strongmanLogout();
-        return;
-      }
-      window.setCurrentUser(null);
-      window.location.href = '/login';
-    });
   }
 
   if (bioInput) {

@@ -1,7 +1,6 @@
 (function () {
   var trigger = document.getElementById('sidebar-profile-trigger');
   var menu = document.getElementById('sidebar-profile-menu');
-  var logoutBtn = document.getElementById('sidebar-profile-logout');
   if (!trigger || !menu) return;
 
   /* Popover is positioned to the right of the trigger. The sidebar uses
@@ -86,23 +85,6 @@
       trigger.focus();
     }
   });
-
-  if (logoutBtn) {
-    logoutBtn.addEventListener('click', function () {
-      if (typeof window.strongmanLogout === 'function') {
-        window.strongmanLogout();
-        return;
-      }
-      if (typeof window.setCurrentUser === 'function') {
-        window.setCurrentUser(null);
-      }
-      try {
-        window.location.replace('/login');
-      } catch (err) {
-        window.location.href = '/login';
-      }
-    });
-  }
 
   if (!menu.querySelector('[data-user-settings-link]')) {
     var profileLink = menu.querySelector('a[href="/profile"]');
