@@ -1,5 +1,5 @@
 /* Strongman AI — app-shell service worker (logged-in routes only; no marketing pages) */
-var CACHE_VERSION = 'strongman-app-shell-v7';
+var CACHE_VERSION = 'strongman-app-shell-v8';
 
 var APP_SHELL = [
   '/manifest.webmanifest',

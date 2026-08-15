@@ -1,5 +1,10 @@
 /* Consistent page margins — match dashboard padding across app pages */
 
+html
+{
+    background-color: var(--bg-page, #141414);
+}
+
 body:not(.coach-fullpage):not(.create-focus-mode) .main-wrap
 {
     padding-left: max(clamp(1rem, 3vw, 2rem), env(safe-area-inset-left, 0px));
@@ -20,6 +25,62 @@ body:not(.coach-fullpage):not(.create-focus-mode) .main-wrap
     padding-top: clamp(1.25rem, 3vw, 2rem);
     padding-bottom: clamp(2rem, 4vw, 3rem);
     box-sizing: border-box;
+}
+
+/* iOS notch / Dynamic Island — non-dashboard pages extend into the safe area */
+body[data-current-page]:not([data-current-page="home"]) .dashboard-main,
+body[data-current-page]:not([data-current-page="home"]) .create-main,
+body[data-current-page]:not([data-current-page="home"]) .customize-main,
+body[data-current-page]:not([data-current-page="home"]) .timeline-main,
+body[data-current-page]:not([data-current-page="home"]) .profile-shell,
+body[data-current-page]:not([data-current-page="home"]) .learn-main,
+body[data-current-page]:not([data-current-page="home"]) .info-main,
+body[data-current-page]:not([data-current-page="home"]) .leaderboard-main,
+body[data-current-page]:not([data-current-page="home"]) .profile-mainContent
+{
+    padding-top: max(clamp(1.25rem, 3vw, 2rem), calc(0.35rem + env(safe-area-inset-top, 0px)));
+}
+
+/* Log timeline + split: page scroll instead of clipped inner panels */
+body[data-current-page="log"] .log-timeline-shell,
+body[data-current-page="log"] .log-timeline-carousel,
+body[data-current-page="log"] .dash-archive--timeline
+{
+    height: auto;
+    max-height: none;
+    min-height: 0;
+    flex: none;
+    overflow: visible;
+}
+
+body[data-current-page="log"] .log-timeline-carousel
+{
+    padding-bottom: 1rem;
+}
+
+body[data-current-page="log"] #create-panel-split.create-panel--active,
+body[data-current-page="log"] #create-panel-split .create-form--split,
+body[data-current-page="log"] #create-panel-split .split-editor-mount
+{
+    height: auto;
+    max-height: none;
+    min-height: 0;
+    flex: none;
+    overflow: visible;
+}
+
+/* Hide scrollbars on app pages while keeping touch / wheel scroll */
+body[data-current-page]
+{
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+body[data-current-page]::-webkit-scrollbar
+{
+    display: none;
+    width: 0;
+    height: 0;
 }
 
 .sports-editor-mount,

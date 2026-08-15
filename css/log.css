@@ -139,9 +139,6 @@
     border-radius: 0;
     background: transparent;
     box-shadow: none;
-    flex: 1 1 auto;
-    min-height: 0;
-    overflow: hidden;
 }
 
 .create-form
@@ -426,12 +423,9 @@
 {
     max-width: none;
     width: 100%;
-    height: 100%;
     display: flex;
     flex-direction: column;
     gap: 0.85rem;
-    min-height: 0;
-    overflow: hidden;
 }
 
 .create-split-hero
@@ -545,9 +539,6 @@
     display: flex;
     flex-direction: column;
     gap: 0.85rem;
-    flex: 1 1 auto;
-    min-height: 0;
-    overflow: hidden;
 }
 
 .split-library-mount--toolbar
@@ -1249,68 +1240,6 @@
 {
     color: var(--text-muted, #888);
     font-style: italic;
-}
-
-/* Split page: strict 100vh, no document scroll */
-body[data-current-page="log"]:has(#create-panel-split:not([hidden]))
-{
-    height: 100vh;
-    height: 100dvh;
-    max-height: 100vh;
-    max-height: 100dvh;
-    overflow: hidden;
-    overscroll-behavior: none;
-}
-body[data-current-page="log"]:has(#create-panel-split:not([hidden])) .main-wrap
-{
-    height: 100%;
-    min-height: 0;
-    max-height: 100%;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-body[data-current-page="log"]:has(#create-panel-split:not([hidden])) .site-footer
-{
-    display: none !important;
-}
-body[data-current-page="log"]:has(#create-panel-split:not([hidden])) .create-main
-{
-    flex: 1 1 auto;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    padding: 1.35rem 1.45rem calc(1.5rem + env(safe-area-inset-bottom, 0px));
-    gap: 1.25rem;
-}
-
-@media (min-width: 901px)
-{
-    body[data-current-page="log"]:has(#create-panel-split:not([hidden])) .create-main
-    {
-        padding: 2.25rem 2.5rem 3rem;
-        gap: 1.5rem;
-    }
-}
-body[data-current-page="log"]:has(#create-panel-split:not([hidden])) .create-mode-header
-{
-    flex-shrink: 0;
-}
-body[data-current-page="log"]:has(#create-panel-split:not([hidden])) #create-panel-split
-{
-    flex: 1 1 auto;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-@media (max-width: 900px)
-{
-    body[data-current-page="log"]:has(#create-panel-split:not([hidden])) .create-main
-    {
-        padding-bottom: calc(5.75rem + env(safe-area-inset-bottom, 0px));
-    }
 }
 
 .split-editor-picker

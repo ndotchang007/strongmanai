@@ -3192,72 +3192,14 @@ html[data-theme="light"] .tracking-archive-map-year-label
     color: #fecaca;
 }
 
-/* Timeline: lock document scroll; only the carousel scrolls */
-body[data-current-page="log"]:has(#create-progress-shell:not([hidden]) .tracking-tab-layout[data-active-panel="archive"])
-{
-    height: 100vh;
-    height: 100dvh;
-    max-height: 100vh;
-    max-height: 100dvh;
-    overflow: hidden;
-    overscroll-behavior: none;
-}
-body[data-current-page="log"]:has(#create-progress-shell:not([hidden]) .tracking-tab-layout[data-active-panel="archive"]) .main-wrap
-{
-    height: 100%;
-    min-height: 0;
-    max-height: 100%;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-body[data-current-page="log"]:has(#create-progress-shell:not([hidden]) .tracking-tab-layout[data-active-panel="archive"]) .site-footer
-{
-    display: none !important;
-}
-body[data-current-page="log"]:has(#create-progress-shell:not([hidden]) .tracking-tab-layout[data-active-panel="archive"]) .create-main,
-body[data-current-page="log"]:has(#create-progress-shell:not([hidden]) .tracking-tab-layout[data-active-panel="archive"]) #create-progress-shell,
-body[data-current-page="log"]:has(#create-progress-shell:not([hidden]) .tracking-tab-layout[data-active-panel="archive"]) #create-panel-tracking,
-body[data-current-page="log"]:has(#create-progress-shell:not([hidden]) .tracking-tab-layout[data-active-panel="archive"]) .tracking-tab-layout,
-body[data-current-page="log"]:has(#create-progress-shell:not([hidden]) .tracking-tab-layout[data-active-panel="archive"]) .tracking-panels-wrap,
-body[data-current-page="log"]:has(#create-progress-shell:not([hidden]) .tracking-tab-layout[data-active-panel="archive"]) .tracking-panel--archive,
-body[data-current-page="log"]:has(#create-progress-shell:not([hidden]) .tracking-tab-layout[data-active-panel="archive"]) .log-timeline-shell,
-body[data-current-page="log"]:has(#create-progress-shell:not([hidden]) .tracking-tab-layout[data-active-panel="archive"]) .dash-archive--timeline
-{
-    flex: 1 1 auto;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-body[data-current-page="log"]:has(#create-progress-shell:not([hidden]) .tracking-tab-layout[data-active-panel="archive"]) .create-mode-header
-{
-    flex-shrink: 0;
-}
-body[data-current-page="log"]:has(#create-progress-shell:not([hidden]) .tracking-tab-layout[data-active-panel="archive"]) .create-main
-{
-    padding-bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
-}
-@media (max-width: 900px)
-{
-    body[data-current-page="log"]:has(#create-progress-shell:not([hidden]) .tracking-tab-layout[data-active-panel="archive"]) .create-main
-    {
-        padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
-    }
-}
-
 .log-timeline-shell
 {
     display: flex;
     flex-direction: column;
     gap: 0.65rem;
-    flex: 1 1 auto;
-    min-height: 0;
-    height: 100%;
     max-width: none;
     margin-inline: 0;
     width: 100%;
-    overflow: hidden;
 }
 .log-timeline-top
 {
@@ -3370,50 +3312,9 @@ body[data-current-page="log"]:has(#create-progress-shell:not([hidden]) .tracking
 .log-tl-filter-icon--workout { background: #34d399; }
 .log-tl-filter-icon--pr { background: #facc15; }
 .log-tl-filter-icon--note { background: var(--accent); }
-/* The timeline is the only scroller on this view, so entries below the fold
-   stay reachable while the header and tab bar hold their place. Padding (not
-   negative margins) keeps card borders clear of the clipped shell edge. */
 .log-timeline-carousel
 {
-    flex: 1 1 auto;
-    min-height: min(62vh, 32rem);
-    height: 100%;
-    overflow-y: auto;
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior-y: contain;
-    padding: 0.15rem 0.45rem 2.5rem 0.1rem;
-    scrollbar-gutter: stable;
-    scrollbar-width: thin;
-    scrollbar-color: var(--border-mid, #444) transparent;
-}
-
-body[data-current-page="log"]:has(#create-progress-shell:not([hidden]) .tracking-tab-layout[data-active-panel="archive"]) .log-timeline-carousel
-{
-    min-height: 0;
-    flex: 1 1 auto;
-    padding-bottom: calc(2.75rem + env(safe-area-inset-bottom, 0px));
-}
-
-@media (max-width: 900px)
-{
-    body[data-current-page="log"]:has(#create-progress-shell:not([hidden]) .tracking-tab-layout[data-active-panel="archive"]) .log-timeline-carousel
-    {
-        padding-bottom: calc(1.75rem + env(safe-area-inset-bottom, 0px));
-    }
-}
-.log-timeline-carousel::-webkit-scrollbar
-{
-    width: 6px;
-}
-.log-timeline-carousel::-webkit-scrollbar-track
-{
-    background: transparent;
-}
-.log-timeline-carousel::-webkit-scrollbar-thumb
-{
-    border-radius: 999px;
-    background: var(--border-mid, #444);
+    padding: 0.15rem 0.45rem 1rem 0.1rem;
 }
 
 .log-tl-list
