@@ -100,6 +100,21 @@
     }
   }
 
+  function ensureAppleTouchIcon() {
+    var href = '/assets/app-icon-180.png?v=2';
+    var links = document.querySelectorAll('link[rel="apple-touch-icon"]');
+    if (links.length) {
+      links.forEach(function (link) {
+        link.href = href;
+      });
+      return;
+    }
+    var link = document.createElement('link');
+    link.rel = 'apple-touch-icon';
+    link.href = href;
+    document.head.appendChild(link);
+  }
+
   function ensureInstallSheetStyles() {
     if (document.querySelector('link[data-pwa-install-css]')) return;
     var link = document.createElement('link');
@@ -345,11 +360,25 @@
 
   function notifyUpdateAvailable() {
     if (!swRegistration || !swRegistration.waiting) return;
+    if (!isStandalone()) {
+      autoApplyWebUpdate();
+      return;
+    }
     updateAvailable = true;
     try {
       window.dispatchEvent(new CustomEvent('strongman:pwa-update-available'));
     } catch (e) {}
     syncUpdateUi();
+  }
+
+  function autoApplyWebUpdate() {
+    if (!swRegistration || !swRegistration.waiting) return;
+    if (isWorkoutActive()) {
+      window.setTimeout(autoApplyWebUpdate, 15000);
+      return;
+    }
+    sessionStorage.setItem('strongman_pwa_reload_pending', '1');
+    applyWaitingUpdate();
   }
 
   function syncUpdateUi() {
@@ -358,7 +387,7 @@
       dismissed = sessionStorage.getItem(UPDATE_DISMISS_KEY) === '1';
     } catch (e) {}
 
-    var show = updateAvailable && !dismissed;
+    var show = isStandalone() && updateAvailable && !dismissed;
     var banner = document.getElementById('pwa-update-banner');
     if (banner) banner.hidden = !show;
 
@@ -561,6 +590,7 @@
     ensureManifestLink();
     ensureThemeMeta();
     ensureApplePwaMeta();
+    ensureAppleTouchIcon();
     bindBeforeInstallPrompt();
     bindInstallTriggers();
     bindUpdateUi();

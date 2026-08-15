@@ -61,6 +61,8 @@
     var updateSep = footer.querySelector('.footer-app-sep--update');
     var showUpdate =
       window.StrongmanPWA &&
+      typeof window.StrongmanPWA.isStandalone === 'function' &&
+      window.StrongmanPWA.isStandalone() &&
       typeof window.StrongmanPWA.hasUpdateAvailable === 'function' &&
       window.StrongmanPWA.hasUpdateAvailable();
     if (updateBtn) updateBtn.hidden = !showUpdate;
