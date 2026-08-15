@@ -1292,7 +1292,7 @@
       });
     }
 
-    window.ExerciseDatabase.fetch({ limit: 50 }).then(function () {
+    window.ExerciseDatabase.fetch({ limit: 200 }).then(function () {
       populateExerciseDatalist();
       if (exerciseCatsEl && window.ExerciseDatabase.categories.length) {
         var active = exercisePickerCategory;

@@ -1,5 +1,5 @@
 (function () {
-  var PRODUCTION_API_BASE = 'https://strongmanai-api-test.onrender.com/api/v1';
+  var PRODUCTION_API_BASE = 'https://strongmanai-api.onrender.com/api/v1';
   var LOCAL_API_BASE = 'http://127.0.0.1:8080/api/v1';
 
   function trimSlash(s) {

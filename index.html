@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="strongman-api-base" content="https://strongmanai-api-test.onrender.com/api/v1">
+<meta name="strongman-api-base" content="https://strongmanai-api.onrender.com/api/v1">
 <link rel="manifest" href="/manifest.webmanifest">
 <title>Strongman AI</title>
 <link rel="icon" type="image/png" href="/assets/logo.png">
@@ -1317,7 +1317,7 @@ a{color:inherit;text-decoration:none}
     },{ threshold:.35 });
     sio.observe(statsSection);
   }
-  var statsUrls = ['/api/v1/stats', 'https://strongmanai-api-test.onrender.com/api/v1/stats'];
+  var statsUrls = ['/api/v1/stats', 'https://strongmanai-api.onrender.com/api/v1/stats'];
   (function loadStats(i){
     if(i >= statsUrls.length) return;
     fetch(statsUrls[i]).then(function(r){ return r.ok ? r.json() : Promise.reject(); })

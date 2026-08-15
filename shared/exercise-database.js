@@ -49,7 +49,7 @@
     { name: 'Curl', category: 'accessory', equipment: 'BB', minIncrement: 5, aliases: ['bicep curl', 'barbell curl'] },
     { name: 'Tricep pushdown', category: 'accessory', equipment: 'CB', minIncrement: 2.5, aliases: ['cable pushdown'] },
     { name: 'Tricep extension', category: 'accessory', equipment: 'DB', minIncrement: 5, aliases: ['skull crusher', 'overhead extension'] },
-    { name: 'Face pull', category: 'accessory', equipment: 'CB', minIncrement: 2.5, aliases: [] },
+    { name: 'Face pull', category: 'accessory', equipment: 'CB', minIncrement: 2.5, aliases: ['face pulls', 'rear delt pull'] },
     { name: 'Lateral raise', category: 'accessory', equipment: 'DB', minIncrement: 5, aliases: ['side raise'] },
     { name: 'Hammer curl', category: 'accessory', equipment: 'DB', minIncrement: 5, aliases: [] },
     { name: 'Good morning', category: 'accessory', equipment: 'BB', minIncrement: 5, aliases: [] },
@@ -60,6 +60,78 @@
     { name: 'Calf raise', category: 'accessory', equipment: 'SM', minIncrement: 10, aliases: [] },
     { name: 'Ab wheel rollout', category: 'accessory', equipment: 'BW', minIncrement: 0, aliases: ['rollout'] },
     { name: 'Pallof press', category: 'accessory', equipment: 'CB', minIncrement: 2.5, aliases: [] },
+
+    { name: 'Decline bench press', category: 'press', equipment: 'BB', minIncrement: 5, aliases: ['decline bench'] },
+    { name: 'Close-grip bench press', category: 'press', equipment: 'BB', minIncrement: 5, aliases: ['cgbp', 'close grip bench'] },
+    { name: 'Floor press', category: 'press', equipment: 'BB', minIncrement: 5, aliases: [] },
+    { name: 'Landmine press', category: 'press', equipment: 'BB', minIncrement: 5, aliases: ['landmine ohp'] },
+    { name: 'Arnold press', category: 'press', equipment: 'DB', minIncrement: 5, aliases: [] },
+    { name: 'Push-up', category: 'press', equipment: 'BW', minIncrement: 0, aliases: ['pushup', 'push ups', 'press up'] },
+    { name: 'Dip', category: 'press', equipment: 'BW', minIncrement: 0, aliases: ['dips', 'chest dip', 'parallel bar dip'] },
+    { name: 'Upright row', category: 'press', equipment: 'BB', minIncrement: 5, aliases: ['upright rows'] },
+    { name: 'Shrug', category: 'accessory', equipment: 'BB', minIncrement: 5, aliases: ['barbell shrug', 'shrugs'] },
+    { name: 'Front raise', category: 'accessory', equipment: 'DB', minIncrement: 5, aliases: ['front raises'] },
+    { name: 'Rear delt fly', category: 'accessory', equipment: 'DB', minIncrement: 5, aliases: ['reverse fly', 'rear delt raise', 'bent over reverse fly'] },
+    { name: 'Cable crossover', category: 'press', equipment: 'CB', minIncrement: 2.5, aliases: ['cable fly crossover'] },
+    { name: 'Skull crusher', category: 'accessory', equipment: 'BB', minIncrement: 5, aliases: ['skull crushers', 'lying tricep extension'] },
+
+    { name: 'Jump squat', category: 'squat_dead', equipment: 'BB', minIncrement: 5, aliases: ['jump squats', 'squat jump'] },
+    { name: 'Box squat', category: 'squat_dead', equipment: 'BB', minIncrement: 5, aliases: [] },
+    { name: 'Pause squat', category: 'squat_dead', equipment: 'BB', minIncrement: 5, aliases: [] },
+    { name: 'Goblet squat', category: 'squat_dead', equipment: 'KB', minIncrement: 5, aliases: ['kb squat'] },
+    { name: 'Bulgarian split squat', category: 'squat_dead', equipment: 'DB', minIncrement: 5, aliases: ['bss', 'split squat', 'bulgarian squat'] },
+    { name: 'Walking lunge', category: 'squat_dead', equipment: 'DB', minIncrement: 5, aliases: ['lunges', 'walking lunges'] },
+    { name: 'Reverse lunge', category: 'squat_dead', equipment: 'DB', minIncrement: 5, aliases: ['reverse lunges'] },
+    { name: 'Step-up', category: 'squat_dead', equipment: 'DB', minIncrement: 5, aliases: ['step ups', 'box step up'] },
+    { name: 'Hack squat', category: 'squat_dead', equipment: 'SM', minIncrement: 10, aliases: [] },
+    { name: 'Belt squat', category: 'squat_dead', equipment: 'SM', minIncrement: 10, aliases: [] },
+    { name: 'Sissy squat', category: 'squat_dead', equipment: 'BW', minIncrement: 0, aliases: [] },
+    { name: 'Nordic curl', category: 'accessory', equipment: 'BW', minIncrement: 0, aliases: ['nordic ham curl', 'nordic hamstring curl'] },
+
+    { name: 'Rack pull', category: 'squat_dead', equipment: 'BB', minIncrement: 5, aliases: ['rack pulls', 'partial deadlift'] },
+    { name: 'Block pull', category: 'squat_dead', equipment: 'BB', minIncrement: 5, aliases: ['block deadlift'] },
+    { name: 'Single-leg Romanian deadlift', category: 'squat_dead', equipment: 'DB', minIncrement: 5, aliases: ['single leg rdl', 'sl rdl'] },
+    { name: 'Glute bridge', category: 'accessory', equipment: 'BW', minIncrement: 0, aliases: ['hip bridge', 'bodyweight hip thrust'] },
+    { name: 'Back extension', category: 'accessory', equipment: 'SM', minIncrement: 10, aliases: ['hyperextension', 'back ext', '45 degree back extension'] },
+
+    { name: 'Power clean', category: 'squat_dead', equipment: 'BB', minIncrement: 5, aliases: ['hang power clean'] },
+    { name: 'Hang clean', category: 'squat_dead', equipment: 'BB', minIncrement: 5, aliases: [] },
+    { name: 'Clean and jerk', category: 'press', equipment: 'BB', minIncrement: 5, aliases: ['clean & jerk', 'c&j'] },
+    { name: 'Snatch', category: 'squat_dead', equipment: 'BB', minIncrement: 5, aliases: ['full snatch'] },
+    { name: 'Power snatch', category: 'squat_dead', equipment: 'BB', minIncrement: 5, aliases: [] },
+    { name: 'Kettlebell swing', category: 'accessory', equipment: 'KB', minIncrement: 5, aliases: ['kb swing', 'kettlebell swings'] },
+    { name: 'Box jump', category: 'accessory', equipment: 'BW', minIncrement: 0, aliases: ['box jumps'] },
+    { name: 'Broad jump', category: 'accessory', equipment: 'BW', minIncrement: 0, aliases: ['standing long jump'] },
+    { name: 'Medicine ball slam', category: 'accessory', equipment: 'BW', minIncrement: 0, aliases: ['med ball slam', 'ball slam'] },
+    { name: 'Burpee', category: 'accessory', equipment: 'BW', minIncrement: 0, aliases: ['burpees'] },
+
+    { name: 'Chin-up', category: 'accessory', equipment: 'BW', minIncrement: 0, aliases: ['chinups', 'chin ups'] },
+    { name: 'Seated cable row', category: 'accessory', equipment: 'CB', minIncrement: 2.5, aliases: ['cable row', 'seated row'] },
+    { name: 'T-bar row', category: 'accessory', equipment: 'BB', minIncrement: 5, aliases: ['t bar row'] },
+    { name: 'Meadows row', category: 'accessory', equipment: 'DB', minIncrement: 5, aliases: ['meadows rows', 'landmine row'] },
+    { name: 'Chest-supported row', category: 'accessory', equipment: 'SM', minIncrement: 10, aliases: ['chest supported row', 'machine row'] },
+    { name: 'Band pull-apart', category: 'accessory', equipment: 'CB', minIncrement: 0, aliases: ['band pull aparts', 'pull apart'] },
+    { name: 'Straight-arm pulldown', category: 'accessory', equipment: 'CB', minIncrement: 2.5, aliases: ['lat pushdown', 'stiff arm pulldown'] },
+
+    { name: 'Preacher curl', category: 'accessory', equipment: 'BB', minIncrement: 5, aliases: ['preacher curls'] },
+    { name: 'Concentration curl', category: 'accessory', equipment: 'DB', minIncrement: 5, aliases: ['concentration curls'] },
+    { name: 'Incline dumbbell curl', category: 'accessory', equipment: 'DB', minIncrement: 5, aliases: ['incline curl'] },
+    { name: 'Cable curl', category: 'accessory', equipment: 'CB', minIncrement: 2.5, aliases: ['cable bicep curl'] },
+    { name: 'Wrist curl', category: 'accessory', equipment: 'BB', minIncrement: 2.5, aliases: ['wrist curls'] },
+
+    { name: 'Plank', category: 'accessory', equipment: 'BW', minIncrement: 0, aliases: ['front plank', 'planks'] },
+    { name: 'Hanging leg raise', category: 'accessory', equipment: 'BW', minIncrement: 0, aliases: ['leg raise', 'hanging knee raise'] },
+    { name: 'Cable crunch', category: 'accessory', equipment: 'CB', minIncrement: 2.5, aliases: ['kneeling cable crunch'] },
+    { name: 'Russian twist', category: 'accessory', equipment: 'BW', minIncrement: 0, aliases: ['russian twists'] },
+    { name: 'Dead bug', category: 'accessory', equipment: 'BW', minIncrement: 0, aliases: ['dead bugs'] },
+    { name: 'Woodchopper', category: 'accessory', equipment: 'CB', minIncrement: 2.5, aliases: ['cable woodchopper', 'wood chop'] },
+    { name: 'Side plank', category: 'accessory', equipment: 'BW', minIncrement: 0, aliases: ['side planks'] },
+
+    { name: 'Sled push', category: 'carry', equipment: 'SM', minIncrement: 10, aliases: ['prowler push', 'sled drive'] },
+    { name: 'Sled drag', category: 'carry', equipment: 'SM', minIncrement: 10, aliases: ['prowler drag'] },
+    { name: 'Overhead carry', category: 'carry', equipment: 'DB', minIncrement: 5, aliases: ['oh carry', 'waiter carry'] },
+    { name: 'Zercher carry', category: 'carry', equipment: 'BB', minIncrement: 5, aliases: ['zercher walk'] },
+    { name: 'Front rack carry', category: 'carry', equipment: 'BB', minIncrement: 5, aliases: ['front carry', 'front rack walk'] },
   ];
 
   var EQUIP_LABELS = {
@@ -123,6 +195,78 @@
     { name: 'Good morning', category: 'accessory', variants: ['barbell'] },
     { name: 'Ab wheel rollout', category: 'accessory', variants: ['bodyweight'] },
     { name: 'Pallof press', category: 'accessory', variants: ['cable'] },
+
+    { name: 'Decline bench press', category: 'press', variants: ['barbell', 'dumbbell', 'machine'] },
+    { name: 'Close-grip bench press', category: 'press', variants: ['barbell'] },
+    { name: 'Floor press', category: 'press', variants: ['barbell', 'dumbbell'] },
+    { name: 'Landmine press', category: 'press', variants: ['barbell', 'single_arm'] },
+    { name: 'Arnold press', category: 'press', variants: ['dumbbell', 'single_arm'] },
+    { name: 'Push-up', category: 'press', variants: ['bodyweight'] },
+    { name: 'Dip', category: 'press', variants: ['bodyweight', 'machine'] },
+    { name: 'Upright row', category: 'press', variants: ['barbell', 'dumbbell', 'cable'] },
+    { name: 'Shrug', category: 'accessory', variants: ['barbell', 'dumbbell', 'machine'] },
+    { name: 'Front raise', category: 'accessory', variants: ['dumbbell', 'cable', 'single_arm'] },
+    { name: 'Rear delt fly', category: 'accessory', variants: ['dumbbell', 'cable', 'machine'] },
+    { name: 'Cable crossover', category: 'press', variants: ['cable'] },
+    { name: 'Skull crusher', category: 'accessory', variants: ['barbell', 'dumbbell', 'cable'] },
+
+    { name: 'Jump squat', category: 'squat_dead', variants: ['barbell', 'dumbbell', 'bodyweight'] },
+    { name: 'Box squat', category: 'squat_dead', variants: ['barbell'] },
+    { name: 'Pause squat', category: 'squat_dead', variants: ['barbell'] },
+    { name: 'Goblet squat', category: 'squat_dead', variants: ['kettlebell', 'dumbbell'] },
+    { name: 'Bulgarian split squat', category: 'squat_dead', variants: ['dumbbell', 'barbell', 'bodyweight'] },
+    { name: 'Walking lunge', category: 'squat_dead', variants: ['dumbbell', 'barbell', 'bodyweight'] },
+    { name: 'Reverse lunge', category: 'squat_dead', variants: ['dumbbell', 'barbell', 'bodyweight'] },
+    { name: 'Step-up', category: 'squat_dead', variants: ['dumbbell', 'barbell', 'bodyweight'] },
+    { name: 'Hack squat', category: 'squat_dead', variants: ['machine'] },
+    { name: 'Belt squat', category: 'squat_dead', variants: ['machine'] },
+    { name: 'Sissy squat', category: 'squat_dead', variants: ['bodyweight', 'machine'] },
+    { name: 'Nordic curl', category: 'accessory', variants: ['bodyweight', 'machine'] },
+
+    { name: 'Rack pull', category: 'squat_dead', variants: ['barbell'] },
+    { name: 'Block pull', category: 'squat_dead', variants: ['barbell'] },
+    { name: 'Single-leg Romanian deadlift', category: 'squat_dead', variants: ['dumbbell', 'single_arm', 'kettlebell'] },
+    { name: 'Glute bridge', category: 'accessory', variants: ['bodyweight', 'barbell', 'dumbbell'] },
+    { name: 'Back extension', category: 'accessory', variants: ['machine', 'bodyweight'] },
+
+    { name: 'Power clean', category: 'squat_dead', variants: ['barbell'] },
+    { name: 'Hang clean', category: 'squat_dead', variants: ['barbell'] },
+    { name: 'Clean and jerk', category: 'press', variants: ['barbell'] },
+    { name: 'Snatch', category: 'squat_dead', variants: ['barbell'] },
+    { name: 'Power snatch', category: 'squat_dead', variants: ['barbell'] },
+    { name: 'Kettlebell swing', category: 'accessory', variants: ['kettlebell'] },
+    { name: 'Box jump', category: 'accessory', variants: ['bodyweight'] },
+    { name: 'Broad jump', category: 'accessory', variants: ['bodyweight'] },
+    { name: 'Medicine ball slam', category: 'accessory', variants: ['bodyweight'] },
+    { name: 'Burpee', category: 'accessory', variants: ['bodyweight'] },
+
+    { name: 'Chin-up', category: 'accessory', variants: ['bodyweight', 'machine'] },
+    { name: 'Seated cable row', category: 'accessory', variants: ['cable', 'machine'] },
+    { name: 'T-bar row', category: 'accessory', variants: ['barbell', 'machine'] },
+    { name: 'Meadows row', category: 'accessory', variants: ['dumbbell', 'single_arm', 'barbell'] },
+    { name: 'Chest-supported row', category: 'accessory', variants: ['machine', 'dumbbell'] },
+    { name: 'Band pull-apart', category: 'accessory', variants: ['cable', 'bodyweight'] },
+    { name: 'Straight-arm pulldown', category: 'accessory', variants: ['cable'] },
+
+    { name: 'Preacher curl', category: 'accessory', variants: ['barbell', 'dumbbell', 'machine'] },
+    { name: 'Concentration curl', category: 'accessory', variants: ['dumbbell', 'single_arm'] },
+    { name: 'Incline dumbbell curl', category: 'accessory', variants: ['dumbbell'] },
+    { name: 'Cable curl', category: 'accessory', variants: ['cable'] },
+    { name: 'Wrist curl', category: 'accessory', variants: ['barbell', 'dumbbell'] },
+
+    { name: 'Plank', category: 'accessory', variants: ['bodyweight'] },
+    { name: 'Hanging leg raise', category: 'accessory', variants: ['bodyweight', 'machine'] },
+    { name: 'Cable crunch', category: 'accessory', variants: ['cable'] },
+    { name: 'Russian twist', category: 'accessory', variants: ['bodyweight'] },
+    { name: 'Dead bug', category: 'accessory', variants: ['bodyweight'] },
+    { name: 'Woodchopper', category: 'accessory', variants: ['cable'] },
+    { name: 'Side plank', category: 'accessory', variants: ['bodyweight'] },
+
+    { name: 'Sled push', category: 'carry', variants: ['strongman'] },
+    { name: 'Sled drag', category: 'carry', variants: ['strongman'] },
+    { name: 'Overhead carry', category: 'carry', variants: ['dumbbell', 'kettlebell', 'barbell'] },
+    { name: 'Zercher carry', category: 'carry', variants: ['barbell', 'strongman'] },
+    { name: 'Front rack carry', category: 'carry', variants: ['barbell', 'dumbbell'] },
   ];
 
   // Alias trap_bar onto barbell-style labeling for deadlifts
@@ -146,16 +290,55 @@
     return null;
   }
 
+  function variantsForEquipment(code) {
+    var map = {
+      BB: ['barbell'],
+      DB: ['dumbbell', 'single_arm'],
+      CB: ['cable'],
+      BW: ['bodyweight'],
+      KB: ['kettlebell'],
+      SM: ['machine', 'strongman'],
+    };
+    return map[code] || ['barbell', 'dumbbell', 'cable', 'machine', 'bodyweight'];
+  }
+
+  function catalogToMovement(ex) {
+    var existing = findMovement(ex.name);
+    if (existing) return existing;
+    return {
+      name: ex.name,
+      category: ex.category,
+      variants: variantsForEquipment(ex.equipment),
+    };
+  }
+
   function listMovements(opts) {
     opts = opts || {};
     var q = opts.q || '';
     var category = opts.category || 'all';
     var limit = opts.limit || 40;
-    return MOVEMENTS.filter(function (m) {
+    var rows = MOVEMENTS.filter(function (m) {
       if (category && category !== 'all' && m.category !== category) return false;
       if (!q) return true;
-      return normalize(m.name).indexOf(normalize(q)) !== -1;
-    }).slice(0, limit);
+      var hay = normalize(m.name);
+      var terms = normalize(q).split(/\s+/).filter(Boolean);
+      return terms.every(function (t) {
+        return hay.indexOf(t) !== -1;
+      });
+    });
+    if (q) {
+      var seen = {};
+      rows.forEach(function (m) {
+        seen[normalize(m.name)] = true;
+      });
+      search({ q: q, category: category, limit: Math.max(limit, 40) }).forEach(function (ex) {
+        var key = normalize(ex.name);
+        if (seen[key]) return;
+        seen[key] = true;
+        rows.push(catalogToMovement(ex));
+      });
+    }
+    return rows.slice(0, limit);
   }
 
   function findMovement(name) {
@@ -322,14 +505,23 @@
   function applyApiPayload(body) {
     if (!body) return;
     if (Array.isArray(body.exercises) && body.exercises.length) {
-      CATALOG.length = 0;
+      var indexByName = {};
+      CATALOG.forEach(function (ex, i) {
+        indexByName[normalize(ex.name)] = i;
+      });
       body.exercises.forEach(function (ex) {
         var row = Object.assign({}, ex);
         if (row.minIncrement == null && row.equipment) {
           var defaults = { BB: 5, DB: 5, KB: 5, CB: 2.5, BW: 0, SM: 10 };
           row.minIncrement = defaults[row.equipment] != null ? defaults[row.equipment] : 5;
         }
-        CATALOG.push(row);
+        var key = normalize(row.name);
+        if (indexByName[key] != null) {
+          CATALOG[indexByName[key]] = row;
+        } else {
+          indexByName[key] = CATALOG.length;
+          CATALOG.push(row);
+        }
       });
     }
     if (Array.isArray(body.categories) && body.categories.length) {
@@ -399,9 +591,27 @@
     if (!n) return '';
     if (/bench|chest|fly|pec|push-?up/.test(n) && !/tricep/.test(n)) return 'chest, triceps, shoulders';
     if (/overhead press|shoulder press|military|ohp|lateral raise|rear delt/.test(n)) return 'shoulders';
-    if (/squat|leg press|lunge|leg extension/.test(n)) return 'quads, glutes';
-    if (/deadlift|rdl|good morning|hip thrust|leg curl|ham/.test(n)) return 'hamstrings, glutes, back';
-    if (/row|pulldown|pull-?up|chin|lat /.test(n)) return 'back, biceps';
+    if (/squat|leg press|lunge|leg extension|jump squat|goblet|split squat|step-?up|hack squat|belt squat|sissy/.test(n)) {
+      return 'quads, glutes';
+    }
+    if (/deadlift|rdl|good morning|hip thrust|leg curl|ham|rack pull|block pull|nordic/.test(n)) {
+      return 'hamstrings, glutes, back';
+    }
+    if (/row|pulldown|pull-?up|chin|lat |meadows|pull-apart|straight-arm/.test(n)) {
+      return 'back, biceps';
+    }
+    if (/clean|snatch|jerk|swing|slam|burpee|box jump|broad jump/.test(n)) {
+      return 'full body, power';
+    }
+    if (/plank|crunch|leg raise|russian twist|dead bug|woodchop|pallof|ab wheel|rollout|side plank/.test(n)) {
+      return 'core';
+    }
+    if (/sled|carry|zercher|front rack|overhead carry/.test(n)) {
+      return 'full body, grip, core';
+    }
+    if (/shrug|upright row|front raise|rear delt|reverse fly|face pull|lateral raise/.test(n)) {
+      return 'shoulders, upper back';
+    }
     if (/curl|hammer/.test(n) && !/leg curl/.test(n)) return 'biceps';
     if (/tricep|pushdown|skull|extension/.test(n) && !/leg extension/.test(n)) return 'triceps';
     if (/calf/.test(n)) return 'calves';
@@ -484,6 +694,24 @@
       'Hug the stone low, lap it, then roll it up the torso and load. Keep the stone close and use your hips — protect the low back.',
     'Tire flip':
       'Get low, hands under the tread, drive through the legs, then punch/push the tire over. Don’t round hard and yank with the arms alone.',
+    'Jump squat':
+      'Brace, sit to a controlled depth, then explode up and land softly with knees tracking over toes. Reset each rep — don’t collapse on the landing.',
+    'Goblet squat':
+      'Hold the weight at chest height, elbows in. Sit between your hips with a tall torso. Drive up through mid-foot and keep the weight close.',
+    'Bulgarian split squat':
+      'Rear foot elevated, front shin mostly vertical. Drop straight down, knee tracks over toes, then drive up through the front heel. Stay tall.',
+    'Kettlebell swing':
+      'Hinge, not squat. Snap the hips forward and let the bell float to chest height. Arms stay relaxed; power comes from the glutes and hamstrings.',
+    'Box jump':
+      'Swing arms, jump onto the box with soft knees, stand tall, then step down. Prioritize landing mechanics over box height.',
+    'Power clean':
+      'Start over mid-foot, keep the bar close, extend hips and knees explosively, then pull yourself under into a front rack. Elbows high at the catch.',
+    'Snatch':
+      'Wide grip, bar close through the pull. Extend fully, then punch under into an overhead lockout. Stay balanced over mid-foot.',
+    'Plank':
+      'Ribs down, glutes on, neutral neck. Brace like you’re about to take a punch and breathe without losing position.',
+    'Hanging leg raise':
+      'Minimize swinging. Posterior pelvic tilt at the top, control the lower. If needed, bend knees to keep tension on the abs.',
   };
 
   var DEFAULT_FORM_TIP =
