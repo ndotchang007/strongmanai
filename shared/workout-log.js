@@ -6,6 +6,9 @@
   var STORAGE_BASE = 'strongman_workouts_v1';
   var LEGACY_KEY = 'strongman_workouts_v1';
   var syncInflight = null;
+  var memoryStores = {};
+  var persistTimers = {};
+  var hydrateInflight = {};
 
   function userSuffix() {
     try {
@@ -60,13 +63,16 @@
     } catch (e) {}
   }
 
-  function onUserChanged(userId) {
-    if (userId == null) return;
-    migrateGuestToUser(userId);
-    migrateLegacy();
+  function currentUserId() {
+    try {
+      var u = window.getCurrentUser && window.getCurrentUser();
+      return u && u.id != null ? u.id : null;
+    } catch (e) {
+      return null;
+    }
   }
 
-  function loadStore() {
+  function readLocalStorageStore() {
     migrateLegacy();
     try {
       var raw = localStorage.getItem(storageKey());
@@ -79,10 +85,87 @@
     }
   }
 
+  function hydrateStoreForCurrentUser() {
+    var key = storageKey();
+    if (hydrateInflight[key]) return hydrateInflight[key];
+    var userId = currentUserId();
+    if (userId == null || !window.OfflineDB) {
+      memoryStores[key] = readLocalStorageStore();
+      return Promise.resolve(memoryStores[key]);
+    }
+    hydrateInflight[key] = window.OfflineDB.ready()
+      .then(function () {
+        return window.OfflineDB.getWorkouts(userId);
+      })
+      .then(function (idbStore) {
+        if (idbStore && Array.isArray(idbStore.sessions) && idbStore.sessions.length) {
+          memoryStores[key] = { sessions: idbStore.sessions.slice() };
+          return memoryStores[key];
+        }
+        return window.OfflineDB.migrateWorkoutsFromLocalStorage(userId, storageKey()).then(function () {
+          return window.OfflineDB.getWorkouts(userId);
+        }).then(function (migrated) {
+          if (migrated && Array.isArray(migrated.sessions) && migrated.sessions.length) {
+            memoryStores[key] = { sessions: migrated.sessions.slice() };
+            return memoryStores[key];
+          }
+          var local = readLocalStorageStore();
+          memoryStores[key] = local;
+          if (local.sessions.length) {
+            window.OfflineDB.putWorkouts(userId, local);
+          }
+          return memoryStores[key];
+        });
+      })
+      .catch(function () {
+        memoryStores[key] = readLocalStorageStore();
+        return memoryStores[key];
+      })
+      .then(function (store) {
+        hydrateInflight[key] = null;
+        return store;
+      });
+    return hydrateInflight[key];
+  }
+
+  function onUserChanged(userId) {
+    if (userId == null) return;
+    migrateGuestToUser(userId);
+    migrateLegacy();
+    var key = STORAGE_BASE + '_u' + userId;
+    delete memoryStores[key];
+    hydrateStoreForCurrentUser();
+  }
+
+  function loadStore() {
+    var key = storageKey();
+    if (memoryStores[key]) return memoryStores[key];
+    memoryStores[key] = readLocalStorageStore();
+    hydrateStoreForCurrentUser();
+    return memoryStores[key];
+  }
+
   function saveStore(store) {
+    var key = storageKey();
+    memoryStores[key] = store;
     try {
-      localStorage.setItem(storageKey(), JSON.stringify(store));
+      localStorage.setItem(key, JSON.stringify(store));
     } catch (e) {}
+    var userId = currentUserId();
+    if (userId != null && window.OfflineDB) {
+      if (persistTimers[key]) clearTimeout(persistTimers[key]);
+      persistTimers[key] = setTimeout(function () {
+        persistTimers[key] = null;
+        window.OfflineDB.putWorkouts(userId, store);
+        window.OfflineDB.putSnapshot(userId, {
+          workoutCount: (store.sessions || []).length,
+          lastWorkoutAt:
+            store.sessions && store.sessions[0] && store.sessions[0].createdAt
+              ? store.sessions[0].createdAt
+              : null,
+        });
+      }, 120);
+    }
   }
 
   function intensityLabel(score) {
@@ -479,6 +562,7 @@
     STORAGE_BASE: STORAGE_BASE,
     loadStore: loadStore,
     saveStore: saveStore,
+    hydrateStoreForCurrentUser: hydrateStoreForCurrentUser,
     intensityLabel: intensityLabel,
     updateSession: updateSession,
     replaceSession: replaceSession,

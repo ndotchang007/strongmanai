@@ -128,6 +128,10 @@
   };
 
   window.addEventListener('strongman:user-updated', bootSync);
+  window.addEventListener('online', bootSync);
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'visible') bootSync();
+  });
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', bootSync);
   } else {

@@ -24,6 +24,9 @@
   }
 
   function registerServiceWorker() {
+    if (window.StrongmanPWA && typeof window.StrongmanPWA.registerServiceWorker === 'function') {
+      return window.StrongmanPWA.registerServiceWorker();
+    }
     if (!('serviceWorker' in navigator)) return Promise.resolve(null);
     return navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function (err) {
       console.warn('[push] service worker registration failed', err);

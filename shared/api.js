@@ -250,4 +250,14 @@
   window.apiPut = apiPut;
   window.apiDelete = apiDelete;
   window.ensureJoinPlatformBadge = ensureJoinPlatformBadge;
+
+  (function loadPwaClient() {
+    if (typeof document === 'undefined') return;
+    if (document.querySelector('script[data-strongman-pwa="1"]')) return;
+    var s = document.createElement('script');
+    s.src = '/shared/pwa-client.js';
+    s.defer = true;
+    s.setAttribute('data-strongman-pwa', '1');
+    document.head.appendChild(s);
+  })();
 })();

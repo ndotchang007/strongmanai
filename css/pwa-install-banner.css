@@ -1,0 +1,99 @@
+/* Subtle dashboard banner — optional PWA install */
+.pwa-install-banner
+{
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin: 0 0 1rem;
+    padding: 0.75rem 0.95rem;
+    border-radius: 14px;
+    border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--border-subtle, rgba(255,255,255,0.1)));
+    background: color-mix(in srgb, var(--accent) 8%, var(--bg-elevated, #151515));
+    color: var(--text-secondary, #c4c4cc);
+    font-size: 0.88rem;
+    line-height: 1.45;
+}
+
+.pwa-install-banner[hidden]
+{
+    display: none !important;
+}
+
+.pwa-install-banner__copy
+{
+    flex: 1 1 12rem;
+    margin: 0;
+}
+
+.pwa-install-banner__copy strong
+{
+    color: var(--text-primary, #fff);
+    font-weight: 650;
+}
+
+.pwa-install-banner__actions
+{
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    flex-wrap: wrap;
+}
+
+.pwa-install-banner__btn
+{
+    border: none;
+    border-radius: 999px;
+    padding: 0.45rem 0.85rem;
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 650;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.pwa-install-banner__btn--primary
+{
+    background: var(--accent, #ff4d0d);
+    color: #fff;
+}
+
+.pwa-install-banner__btn--primary:hover
+{
+    filter: brightness(1.06);
+}
+
+.pwa-install-banner__btn--ghost
+{
+    background: transparent;
+    color: var(--text-secondary, #c4c4cc);
+}
+
+.pwa-install-banner__btn--ghost:hover
+{
+    color: var(--text-primary, #fff);
+}
+
+.pwa-install-banner__close
+{
+    border: none;
+    background: transparent;
+    color: var(--text-muted, #8a8a94);
+    font-size: 1.15rem;
+    line-height: 1;
+    padding: 0.15rem 0.35rem;
+    cursor: pointer;
+}
+
+.pwa-install-banner__close:hover
+{
+    color: var(--text-primary, #fff);
+}
+
+@media (max-width: 640px)
+{
+    .pwa-install-banner
+    {
+        padding: 0.7rem 0.8rem;
+    }
+}

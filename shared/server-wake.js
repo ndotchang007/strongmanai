@@ -225,6 +225,7 @@
   }
 
   function shouldAutoRun() {
+    if (!navigator.onLine) return false;
     if (isLocalApi()) return false;
     if (!isLoggedIn()) return false;
     if (isPublicPath(currentPath())) return false;

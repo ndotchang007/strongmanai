@@ -1,0 +1,27 @@
+{
+  "name": "Strongman AI",
+  "short_name": "Strongman",
+  "description": "Progressive overload training — log workouts, track PRs, and coach with Rocky.",
+  "start_url": "/login",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#000000",
+  "theme_color": "#ff4d0d",
+  "categories": ["fitness", "health"],
+  "icons": [
+    {
+      "src": "/assets/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "prefer_related_applications": false
+}
