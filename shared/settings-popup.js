@@ -1230,7 +1230,7 @@
         '<h3 class="home-settings-section-title" id="settings-app-heading">App</h3>' +
         '<p class="home-settings-hint home-settings-hint--below-title">Install Strongman AI on this device or sign out of your account.</p>' +
         '<div class="home-settings-app-actions">' +
-        '<button type="button" class="home-settings-action-btn home-settings-action-btn--primary" id="settings-download-app">Download app</button>' +
+        '<a href="/download" class="home-settings-action-btn home-settings-action-btn--primary" id="settings-download-app">Download app</a>' +
         '<button type="button" class="home-settings-action-btn home-settings-action-btn--ghost" id="settings-logout">Log out</button>' +
         '</div>';
 
@@ -1242,17 +1242,7 @@
         body.appendChild(appSection);
       }
 
-      var downloadBtn = document.getElementById('settings-download-app');
       var logoutSettingsBtn = document.getElementById('settings-logout');
-      if (downloadBtn) {
-        downloadBtn.addEventListener('click', function () {
-          if (window.StrongmanPWA && typeof window.StrongmanPWA.handleDownloadAction === 'function') {
-            window.StrongmanPWA.handleDownloadAction();
-            return;
-          }
-          window.location.href = '/download';
-        });
-      }
       if (logoutSettingsBtn) {
         logoutSettingsBtn.addEventListener('click', function () {
           if (typeof window.strongmanLogout === 'function') {

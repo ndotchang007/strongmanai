@@ -114,9 +114,7 @@
       var trigger = e.target.closest('[data-pwa-install]');
       if (!trigger) return;
       e.preventDefault();
-      var mode = trigger.getAttribute('data-pwa-install');
-      if (!mode || mode === 'true') mode = null;
-      handleDownloadAction(mode);
+      handleDownloadAction();
     });
   }
 
@@ -502,20 +500,12 @@
     return Promise.resolve(false);
   }
 
-  function handleDownloadAction(forcedMode) {
-    if (isStandalone()) {
-      showInstallSheet('installed');
-      return Promise.resolve(false);
+  function handleDownloadAction() {
+    try {
+      window.location.assign('/download');
+    } catch (e) {
+      window.location.href = '/download';
     }
-    if (forcedMode === 'ios' || forcedMode === 'android' || forcedMode === 'desktop') {
-      showInstallSheet(forcedMode);
-      return Promise.resolve(false);
-    }
-    if (deferredInstallPrompt) {
-      showInstallSheet('prompt');
-      return Promise.resolve(false);
-    }
-    showInstallSheet(manualInstallMode());
     return Promise.resolve(false);
   }
 

@@ -250,13 +250,7 @@
         }
       } else if (action === 'open-app') {
         var url = t.getAttribute('data-url') || '/download';
-        if (window.StrongmanPWA && typeof window.StrongmanPWA.promptInstall === 'function') {
-          window.StrongmanPWA.promptInstall().then(function (accepted) {
-            if (!accepted) window.location.href = url;
-          });
-        } else {
-          window.location.href = url;
-        }
+        window.location.href = url;
         if (window.StrongmanAppNotifications) window.StrongmanAppNotifications.dismiss(appId);
       }
       loadAppNotifications();

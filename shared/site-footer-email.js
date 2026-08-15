@@ -24,11 +24,11 @@
   }
 
   function handleFooterDownload() {
-    if (window.StrongmanPWA && typeof window.StrongmanPWA.handleDownloadAction === 'function') {
-      window.StrongmanPWA.handleDownloadAction();
-      return;
+    try {
+      window.location.assign('/download');
+    } catch (e) {
+      window.location.href = '/download';
     }
-    window.location.href = '/download';
   }
 
   function handleFooterLogout() {
