@@ -89,12 +89,18 @@
 
   if (logoutBtn) {
     logoutBtn.addEventListener('click', function () {
+      if (typeof window.strongmanLogout === 'function') {
+        window.strongmanLogout();
+        return;
+      }
       if (typeof window.setCurrentUser === 'function') {
         window.setCurrentUser(null);
       }
       try {
-        window.location.href = '/';
-      } catch (err) {}
+        window.location.replace('/login');
+      } catch (err) {
+        window.location.href = '/login';
+      }
     });
   }
 

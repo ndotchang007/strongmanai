@@ -138,6 +138,18 @@
     } catch (e) {}
   }
 
+  function logoutUser() {
+    if (window.StrongmanPush && typeof window.StrongmanPush.unsubscribe === 'function') {
+      window.StrongmanPush.unsubscribe().catch(function () {});
+    }
+    setCurrentUser(null);
+    try {
+      window.location.replace('/login');
+    } catch (e) {
+      window.location.href = '/login';
+    }
+  }
+
   function setCurrentUser(user) {
     if (user) {
       try {
@@ -250,6 +262,7 @@
   window.apiPut = apiPut;
   window.apiDelete = apiDelete;
   window.ensureJoinPlatformBadge = ensureJoinPlatformBadge;
+  window.strongmanLogout = logoutUser;
 
   (function loadPwaClient() {
     if (typeof document === 'undefined') return;

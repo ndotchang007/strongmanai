@@ -527,6 +527,7 @@
   var bioCancelBtn = document.getElementById('profile-bio-cancel');
   var saveStatusEl = document.getElementById('profile-save-status');
   var heroActions = document.getElementById('profile-hero-actions');
+  var logoutBtn = document.getElementById('profile-logout-btn');
   var canEditProfile = false;
   var editModeOpen = false;
   var isViewingOtherProfile = false;
@@ -1460,6 +1461,7 @@
     viewedId != null && (!viewer || Number(viewer.id) !== Number(viewedId));
 
   if (logoutWrap) logoutWrap.hidden = !viewer;
+  if (logoutBtn) logoutBtn.hidden = !viewer || viewingOther;
 
   syncProfileViewState(!viewingOther && !!viewer);
   configureProfileEditing(!viewingOther && !!viewer, viewer);
@@ -1495,8 +1497,23 @@
   if (logoutLink && viewer) {
     logoutLink.addEventListener('click', function (e) {
       e.preventDefault();
+      if (typeof window.strongmanLogout === 'function') {
+        window.strongmanLogout();
+        return;
+      }
       window.setCurrentUser(null);
-      window.location.href = '/';
+      window.location.href = '/login';
+    });
+  }
+
+  if (logoutBtn && viewer) {
+    logoutBtn.addEventListener('click', function () {
+      if (typeof window.strongmanLogout === 'function') {
+        window.strongmanLogout();
+        return;
+      }
+      window.setCurrentUser(null);
+      window.location.href = '/login';
     });
   }
 

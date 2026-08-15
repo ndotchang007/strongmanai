@@ -8,6 +8,7 @@
   var emptyEl = null;
   var countEl = null;
   var invites = [];
+  var appNotifications = [];
   var pollId = null;
   var open = false;
   var busyId = null;
@@ -42,17 +43,81 @@
     badge.textContent = num > 9 ? '9+' : String(num);
   }
 
+  function loadAppNotifications() {
+    if (!window.StrongmanAppNotifications) {
+      appNotifications = [];
+      return appNotifications;
+    }
+    if (typeof window.StrongmanAppNotifications.ensureDownloadPrompt === 'function') {
+      window.StrongmanAppNotifications.ensureDownloadPrompt();
+    }
+    appNotifications =
+      typeof window.StrongmanAppNotifications.listActive === 'function'
+        ? window.StrongmanAppNotifications.listActive()
+        : [];
+    return appNotifications;
+  }
+
+  function totalCount() {
+    return (invites || []).length + (appNotifications || []).length;
+  }
+
+  function renderAppNotificationItem(notif) {
+    var li = document.createElement('li');
+    li.className = 'notif-bell-item notif-bell-item--app';
+    li.setAttribute('data-app-notif-id', String(notif.id || ''));
+
+    var title = document.createElement('p');
+    title.className = 'notif-bell-item-title';
+    title.textContent = notif.title || 'Notification';
+
+    var meta = document.createElement('p');
+    meta.className = 'notif-bell-item-meta';
+    meta.textContent = notif.body || '';
+
+    var actions = document.createElement('div');
+    actions.className = 'notif-bell-item-actions';
+
+    if (notif.url) {
+      var openBtn = document.createElement('button');
+      openBtn.type = 'button';
+      openBtn.className = 'notif-bell-action notif-bell-action--accept';
+      openBtn.textContent = notif.actionLabel || 'Open';
+      openBtn.setAttribute('data-action', 'open-app');
+      openBtn.setAttribute('data-url', notif.url);
+      actions.appendChild(openBtn);
+    }
+
+    var dismissBtn = document.createElement('button');
+    dismissBtn.type = 'button';
+    dismissBtn.className = 'notif-bell-action';
+    dismissBtn.textContent = notif.dismissLabel || 'Dismiss';
+    dismissBtn.setAttribute('data-action', 'dismiss-app');
+    actions.appendChild(dismissBtn);
+
+    li.appendChild(title);
+    li.appendChild(meta);
+    li.appendChild(actions);
+    return li;
+  }
+
   function renderPanel() {
     if (!listEl || !emptyEl || !countEl) return;
-    countEl.textContent = invites.length ? invites.length + ' pending' : 'None';
+    loadAppNotifications();
+    var total = totalCount();
+    countEl.textContent = total ? total + ' new' : 'None';
     listEl.innerHTML = '';
 
-    if (!invites.length) {
+    if (!total) {
       emptyEl.hidden = false;
+      emptyEl.textContent = 'No notifications right now.';
       return;
     }
 
     emptyEl.hidden = true;
+    appNotifications.forEach(function (notif) {
+      listEl.appendChild(renderAppNotificationItem(notif));
+    });
     invites.forEach(function (inv) {
       var li = document.createElement('li');
       li.className = 'notif-bell-item';
@@ -100,52 +165,7 @@
   }
 
   function maybeNotifyNewInvites(nextInvites) {
-    var ids = (nextInvites || []).map(function (inv) {
-      return String(inv.competitionId || inv.id || '');
-    }).filter(Boolean);
-    if (lastKnownInviteIds == null) {
-      lastKnownInviteIds = ids;
-      return;
-    }
-    var prev = {};
-    lastKnownInviteIds.forEach(function (id) {
-      prev[id] = true;
-    });
-    var fresh = (nextInvites || []).filter(function (inv) {
-      var id = String(inv.competitionId || inv.id || '');
-      return id && !prev[id];
-    });
-    lastKnownInviteIds = ids;
-    if (!fresh.length) return;
-    if (!('Notification' in window) || Notification.permission !== 'granted') return;
-    if (localStorage.getItem('strongman-home-notify-push') !== '1') return;
-    if (
-      'serviceWorker' in navigator &&
-      window.StrongmanPush &&
-      typeof window.StrongmanPush.canUsePush === 'function' &&
-      window.StrongmanPush.canUsePush()
-    ) {
-      return;
-    }
-    fresh.slice(0, 3).forEach(function (inv) {
-      try {
-        var n = new Notification('New competition invite', {
-          body:
-            (inv.fromUsername || 'Someone') +
-            ' challenged you' +
-            (inv.goalTitle ? ': ' + inv.goalTitle : ''),
-          tag: 'competition-invite-' + String(inv.competitionId || inv.id || ''),
-          data: { url: '/leaderboard' },
-        });
-        n.onclick = function () {
-          try {
-            window.focus();
-            window.location.href = '/leaderboard';
-          } catch (e) {}
-          n.close();
-        };
-      } catch (e) {}
-    });
+    return;
   }
 
   function fetchInvites() {
@@ -164,7 +184,8 @@
       })
       .then(function (data) {
         invites = Array.isArray(data && data.invites) ? data.invites : [];
-        setBadgeCount(data && data.count != null ? data.count : invites.length);
+        loadAppNotifications();
+        setBadgeCount(totalCount());
         maybeNotifyNewInvites(invites);
         if (open) renderPanel();
         return invites;
@@ -215,6 +236,35 @@
     if (!t || !t.getAttribute) return;
     var action = t.getAttribute('data-action');
     if (!action) return;
+
+    if (action === 'open-app' || action === 'dismiss-app') {
+      var appItem = t.closest('.notif-bell-item--app');
+      var appId = appItem && appItem.getAttribute('data-app-notif-id');
+      if (!appId) return;
+      e.preventDefault();
+      if (action === 'dismiss-app') {
+        if (appId === 'download-app' && window.StrongmanAppNotifications) {
+          window.StrongmanAppNotifications.dismissDownloadPrompt();
+        } else if (window.StrongmanAppNotifications) {
+          window.StrongmanAppNotifications.dismiss(appId);
+        }
+      } else if (action === 'open-app') {
+        var url = t.getAttribute('data-url') || '/download';
+        if (window.StrongmanPWA && typeof window.StrongmanPWA.promptInstall === 'function') {
+          window.StrongmanPWA.promptInstall().then(function (accepted) {
+            if (!accepted) window.location.href = url;
+          });
+        } else {
+          window.location.href = url;
+        }
+        if (window.StrongmanAppNotifications) window.StrongmanAppNotifications.dismiss(appId);
+      }
+      loadAppNotifications();
+      setBadgeCount(totalCount());
+      renderPanel();
+      return;
+    }
+
     var item = t.closest('.notif-bell-item');
     var compId = item && item.getAttribute('data-comp-id');
     if (!compId) return;
@@ -263,12 +313,12 @@
       '</svg>' +
       '<span class="notif-bell-badge" id="notif-bell-badge" hidden></span>' +
       '</button>' +
-      '<div class="notif-bell-panel" id="notif-bell-panel" hidden role="region" aria-label="Competition invites">' +
+      '<div class="notif-bell-panel" id="notif-bell-panel" hidden role="region" aria-label="Notifications">' +
       '<div class="notif-bell-panel-head">' +
-      '<h2 class="notif-bell-panel-title">Invites</h2>' +
+      '<h2 class="notif-bell-panel-title">Notifications</h2>' +
       '<span class="notif-bell-panel-count" id="notif-bell-panel-count">None</span>' +
       '</div>' +
-      '<p class="notif-bell-empty" id="notif-bell-empty">No pending competition invites.</p>' +
+      '<p class="notif-bell-empty" id="notif-bell-empty">No notifications right now.</p>' +
       '<ul class="notif-bell-list" id="notif-bell-list"></ul>' +
       '</div>';
 
@@ -304,11 +354,39 @@
     document.addEventListener('click', onDocumentClick);
     window.addEventListener('strongman:user-updated', syncVisibility);
     window.addEventListener('strongman:competitions-updated', fetchInvites);
+    window.addEventListener('strongman:app-notifications-updated', function () {
+      loadAppNotifications();
+      setBadgeCount(totalCount());
+      if (open) renderPanel();
+    });
+  }
+
+  function ensureAppNotificationsLoaded(cb) {
+    cb = typeof cb === 'function' ? cb : function () {};
+    if (window.StrongmanAppNotifications) {
+      cb();
+      return;
+    }
+    var existing = document.querySelector('script[data-strongman-app-notifs="1"]');
+    if (existing) {
+      existing.addEventListener('load', cb);
+      return;
+    }
+    var s = document.createElement('script');
+    s.src = '/shared/app-notifications.js';
+    s.setAttribute('data-strongman-app-notifs', '1');
+    s.onload = cb;
+    s.onerror = cb;
+    document.head.appendChild(s);
   }
 
   function init() {
     buildDom();
-    syncVisibility();
+    ensureAppNotificationsLoaded(function () {
+      loadAppNotifications();
+      setBadgeCount(totalCount());
+      syncVisibility();
+    });
   }
 
   window.NotificationBell = {

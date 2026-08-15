@@ -1409,6 +1409,58 @@ html[data-theme="light"] .home-settings-danger-btn--solid
     color: #fff;
 }
 
+.home-settings-app-actions
+{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    margin-top: 0.35rem;
+}
+
+.home-settings-action-btn
+{
+    border-radius: 999px;
+    padding: 0.62rem 1rem;
+    font: inherit;
+    font-size: 0.88rem;
+    font-weight: 650;
+    cursor: pointer;
+    border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.12));
+    background: transparent;
+    color: var(--text-primary, #fff);
+}
+
+.home-settings-action-btn--primary
+{
+    background: var(--accent, #ff4d0d);
+    border-color: transparent;
+    color: #fff;
+}
+
+.home-settings-action-btn--ghost:hover,
+.home-settings-action-btn--primary:hover
+{
+    filter: brightness(1.05);
+}
+
+.customize-logout-btn
+{
+    margin-left: auto;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary, #c4c4cc);
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0.35rem 0.15rem;
+}
+
+.customize-logout-btn:hover
+{
+    color: var(--text-primary, #fff);
+}
+
 /* Account info (inline init fields in settings) */
 .home-settings-panel--wide
 {

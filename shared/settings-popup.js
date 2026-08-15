@@ -180,29 +180,7 @@
   }
 
   function maybeFireScheduledReminder() {
-    if (!browserNotificationsReady()) return;
-    if (serverPushHandlesNotifications()) return;
-    var s = loadReminderSchedule();
-    if (!s.enabled) return;
-    var now = new Date();
-    var parts = s.time.split(':');
-    var th = parseInt(parts[0], 10);
-    var tm = parseInt(parts[1], 10);
-    if (now.getHours() !== th || now.getMinutes() !== tm) return;
-    var wd = now.getDay();
-    var allowed = reminderDaysForSchedule(s);
-    if (allowed.indexOf(wd) === -1) return;
-    var key = localDateKey(now);
-    if (localStorage.getItem(REMINDER_LAST_FIRE_KEY) === key) return;
-    try {
-      new Notification('Strongman AI — reminder', {
-        body: 'Time for a quick check-in or your next session.',
-        tag: 'strongman-daily-reminder',
-      });
-    } catch (e) {
-      /* ignore */
-    }
-    localStorage.setItem(REMINDER_LAST_FIRE_KEY, key);
+    return;
   }
 
   var settingsTrigger = document.getElementById('sidebar-settings-trigger');
@@ -1180,7 +1158,7 @@
       var intro = document.createElement('p');
       intro.className = 'settings-hub-intro';
       intro.textContent =
-        'Theme, log view, notifications, and app preferences. Equipment, schedule, and goals live in User settings under You.';
+        'Theme, log view, and app preferences. Equipment, schedule, and goals live in User settings under You.';
       body.insertBefore(intro, body.firstChild);
     }
 
@@ -1236,7 +1214,52 @@
     var notifySection = document.getElementById('settings-notifications-heading');
     if (notifySection) {
       var nSec = notifySection.closest('.home-settings-section');
-      if (nSec) nSec.classList.add('settings-buddy-card');
+      if (nSec) {
+        nSec.hidden = true;
+        nSec.setAttribute('aria-hidden', 'true');
+        nSec.classList.add('settings-hub-section--hidden-workout');
+      }
+    }
+
+    if (!document.getElementById('settings-app-section')) {
+      var appSection = document.createElement('section');
+      appSection.className = 'home-settings-section settings-buddy-card';
+      appSection.id = 'settings-app-section';
+      appSection.setAttribute('aria-labelledby', 'settings-app-heading');
+      appSection.innerHTML =
+        '<h3 class="home-settings-section-title" id="settings-app-heading">App</h3>' +
+        '<p class="home-settings-hint home-settings-hint--below-title">Install Strongman AI on this device or sign out of your account.</p>' +
+        '<div class="home-settings-app-actions">' +
+        '<button type="button" class="home-settings-action-btn home-settings-action-btn--primary" id="settings-download-app">Download app</button>' +
+        '<button type="button" class="home-settings-action-btn home-settings-action-btn--ghost" id="settings-logout">Log out</button>' +
+        '</div>';
+
+      var privacySection = document.getElementById('settings-privacy-heading');
+      var privacySec = privacySection && privacySection.closest('.home-settings-section');
+      if (privacySec && privacySec.parentNode) {
+        privacySec.parentNode.insertBefore(appSection, privacySec);
+      } else {
+        body.appendChild(appSection);
+      }
+
+      var downloadBtn = document.getElementById('settings-download-app');
+      var logoutSettingsBtn = document.getElementById('settings-logout');
+      if (downloadBtn) {
+        downloadBtn.addEventListener('click', function () {
+          if (window.StrongmanPWA && typeof window.StrongmanPWA.handleDownloadAction === 'function') {
+            window.StrongmanPWA.handleDownloadAction();
+            return;
+          }
+          window.location.href = '/download';
+        });
+      }
+      if (logoutSettingsBtn) {
+        logoutSettingsBtn.addEventListener('click', function () {
+          if (typeof window.strongmanLogout === 'function') {
+            window.strongmanLogout();
+          }
+        });
+      }
     }
 
     var privacySection = document.getElementById('settings-privacy-heading');
