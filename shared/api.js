@@ -186,6 +186,12 @@
     if (!local || !server) return server || local;
     var merged = Object.assign({}, local, server);
     if (local.token) merged.token = local.token;
+    if (local.lastSeenVersion && !server.lastSeenVersion) {
+      merged.lastSeenVersion = local.lastSeenVersion;
+    }
+    if (local.profileInitialized === true && server.profileInitialized !== true) {
+      merged.profileInitialized = true;
+    }
     return merged;
   }
 
@@ -287,8 +293,10 @@
   }
 
   function needsCatchup(user) {
-    if (!user || !user.profileInitialized) return false;
-    return user.lastSeenVersion !== currentAppVersion();
+    if (!user) return false;
+    if (needsProfileInit(user)) return false;
+    var seen = user.lastSeenVersion ? String(user.lastSeenVersion).trim() : '';
+    return seen !== currentAppVersion();
   }
 
   function resolvePostAuthPath(user, nextPath) {
