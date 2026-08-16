@@ -41,10 +41,12 @@ body[data-current-page]:not([data-current-page="home"]) .profile-mainContent
     padding-top: max(clamp(1.25rem, 3vw, 2rem), calc(0.35rem + env(safe-area-inset-top, 0px)));
 }
 
-/* Log page — natural document scroll (no 100vh flex traps) */
+/* Log page — natural document scroll (no 100vh flex traps), stay within viewport width */
 html:has(body[data-current-page="log"])
 {
     scroll-snap-type: none;
+    overflow-x: hidden;
+    max-width: 100%;
 }
 
 body[data-current-page="log"]
@@ -52,17 +54,33 @@ body[data-current-page="log"]
     height: auto;
     min-height: 100vh;
     min-height: 100dvh;
+    width: 100%;
+    max-width: 100%;
     overflow-x: hidden;
     overflow-y: auto;
 }
 
-body[data-current-page="log"] .main-wrap,
+/* create-main already mirrors dash-home padding — avoid double horizontal gutters */
+body[data-current-page="log"]:not(.coach-fullpage) .main-wrap
+{
+    flex: 1 1 auto;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    padding-left: 0;
+    padding-right: 0;
+    overflow-x: clip;
+    overflow-y: visible;
+}
+
 body[data-current-page="log"] .create-main
 {
-    flex: 0 0 auto;
-    height: auto;
-    max-height: none;
-    overflow: visible;
+    flex: 1 1 auto;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: clip;
+    overflow-y: visible;
 }
 
 body[data-current-page="log"] #create-progress-shell,
@@ -83,13 +101,17 @@ body[data-current-page="log"] .split-week-mount,
 body[data-current-page="log"] .split-week-panel,
 body[data-current-page="log"] .split-tree-panel,
 body[data-current-page="log"] .split-week-compact,
-body[data-current-page="log"] .split-day-list
+body[data-current-page="log"] .split-day-list,
+body[data-current-page="log"] .grid-container,
+body[data-current-page="log"] .tracking-stats-grid--charts
 {
     height: auto;
     max-height: none;
     min-height: 0;
-    flex: none;
-    overflow: visible;
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: clip;
+    overflow-y: visible;
 }
 
 body[data-current-page="log"] .log-timeline-carousel
@@ -97,10 +119,19 @@ body[data-current-page="log"] .log-timeline-carousel
     padding-bottom: 1rem;
 }
 
-body[data-current-page="log"] .split-day-row
+body[data-current-page="log"] .create-mode-header,
+body[data-current-page="log"] .create-mode-tabs,
+body[data-current-page="log"] .tracking-mode-header,
+body[data-current-page="log"] .tracking-mode-tabs
 {
-    flex: none;
-    max-height: none;
+    max-width: 100%;
+    min-width: 0;
+}
+
+body[data-current-page="log"] .create-mode-tab,
+body[data-current-page="log"] .tracking-mode-tab
+{
+    min-width: 0;
 }
 
 /* Hide scrollbars on app pages while keeping touch / wheel scroll */
