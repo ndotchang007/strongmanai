@@ -7,6 +7,7 @@
  *
  * Aliases: --bg-page / --bg-card / --accent / --accent-bright
  */
+@import url('overlay-stack.css');
 
 :root
 {
@@ -39,6 +40,11 @@
     --surface-inset: rgba(255, 255, 255, 0.03);
     --surface-inset-mid: rgba(255, 255, 255, 0.04);
     --on-accent-text: #08080a;
+
+    /* Overlay stack — popups, modals, settings, notifications (below server-wake / tester-gate) */
+    --z-overlay-backdrop: 98000;
+    --z-overlay: 98001;
+    --z-overlay-top: 98002;
 }
 
 /* —— Ember (classic Strongman) —— */
@@ -1182,4 +1188,3 @@ html[data-theme="mono-light"] .home-settings-select option
     background-color: #fff;
     color: #111;
 }
-

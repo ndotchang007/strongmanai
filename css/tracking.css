@@ -3845,7 +3845,7 @@ html[data-theme="light"] .tracking-archive-map-year-label
 {
     position: fixed;
     inset: 0;
-    z-index: 1300;
+    z-index: var(--z-overlay-backdrop);
     background: rgba(0, 0, 0, 0.55);
     opacity: 0;
     pointer-events: none;
@@ -3860,7 +3860,7 @@ html[data-theme="light"] .tracking-archive-map-year-label
 {
     position: fixed;
     inset: 0;
-    z-index: 1301;
+    z-index: var(--z-overlay);
     display: grid;
     place-items: center;
     padding: 1.25rem;

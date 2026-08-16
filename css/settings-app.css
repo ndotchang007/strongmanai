@@ -23,7 +23,7 @@ button.sidebar-settings-trigger::-moz-focus-inner
 {
     position: fixed;
     inset: 0;
-    z-index: 2000;
+    z-index: var(--z-overlay-backdrop);
     background: color-mix(in srgb, var(--bg-deep, #050506) 72%, transparent);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
@@ -40,7 +40,7 @@ button.sidebar-settings-trigger::-moz-focus-inner
 {
     position: fixed;
     inset: 0;
-    z-index: 2001;
+    z-index: var(--z-overlay);
     display: flex;
     align-items: center;
     justify-content: center;

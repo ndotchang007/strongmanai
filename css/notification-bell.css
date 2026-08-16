@@ -5,7 +5,7 @@
     position: fixed;
     top: calc(0.85rem + env(safe-area-inset-top, 0px));
     right: calc(0.85rem + env(safe-area-inset-right, 0px));
-    z-index: 1250;
+    z-index: var(--z-overlay-top);
     font-family: var(--font, system-ui, sans-serif);
 }
 

@@ -1,0 +1,62 @@
+/*
+ * Global overlay z-index — keeps popups, settings, and notifications above page UI.
+ * Loaded via theme.css. Uses !important so later stylesheets cannot bury modals.
+ * System blockers (server-wake, tester-gate) stay above these intentionally.
+ */
+
+/* —— Backdrops & dimming layers —— */
+.home-settings-backdrop,
+.pr-edit-backdrop,
+.create-share-backdrop,
+.create-comp-report-backdrop,
+.create-audio-overlay-backdrop,
+.tracking-archive-video-backdrop,
+.dash-day-backdrop,
+.coach-know-backdrop,
+.wt-form-tip-backdrop,
+.ig-desktop-blocker-backdrop,
+.footer-email-overlay
+{
+    z-index: var(--z-overlay-backdrop) !important;
+}
+
+/* —— Dialogs, modals, sheets, full-screen overlays —— */
+.home-settings-dialog,
+.pr-edit-dialog,
+.create-share-modal,
+.create-comp-report-modal,
+.create-audio-overlay-modal,
+.tracking-archive-video-modal,
+.dash-day-dialog,
+.coach-know-drawer,
+.wt-form-tip-dialog,
+.ig-desktop-blocker,
+.pf-ach-overlay,
+.pwa-install-sheet,
+.sport-modal-backdrop,
+.wd-overlay,
+.wd-finish,
+.wd-routine-picker,
+.wd-confirm,
+.wd-edit-sheet,
+.home-gym-live,
+.sm-badge-unlock,
+.cookie-consent-bar,
+.generate-workout-overlay,
+.pwa-download-overlay,
+.explore-video-overlay
+{
+    z-index: var(--z-overlay) !important;
+}
+
+/* —— Notifications & top chrome (above other open popups) —— */
+.notif-bell-root
+{
+    z-index: var(--z-overlay-top) !important;
+}
+
+/* Docked in dashboard header — stay in local stacking context */
+.dash-plan-tools .notif-bell-root
+{
+    z-index: 5 !important;
+}
