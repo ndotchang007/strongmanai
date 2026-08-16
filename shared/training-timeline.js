@@ -594,6 +594,132 @@
     if (ed) ed.hidden = true;
   }
 
+  function typeOptionsHtml() {
+    return TYPE_OPTIONS.map(function (t) {
+      return '<option value="' + t.id + '">' + escapeHtml(t.label) + '</option>';
+    }).join('');
+  }
+
+  function editorMarkup(hidden) {
+    return (
+      '<div class="dash-timeline-editor"' +
+      (hidden ? ' hidden' : '') +
+      '>' +
+      '<p class="dash-timeline-editor-title">Add to timeline</p>' +
+      '<input type="hidden" name="tl-id" value="">' +
+      '<label class="dash-timeline-field"><span>Type</span><select name="tl-type">' +
+      typeOptionsHtml() +
+      '</select></label>' +
+      '<p class="dash-timeline-setting-hint"></p>' +
+      '<label class="dash-timeline-field dash-timeline-setting" hidden><span>Details</span><select name="tl-setting"></select></label>' +
+      '<label class="dash-timeline-field"><span>Date</span><input type="date" name="tl-date"></label>' +
+      '<label class="dash-timeline-field"><span>Title</span><input type="text" name="tl-title" maxlength="80" placeholder="e.g. Left knee flared up"></label>' +
+      '<label class="dash-timeline-field"><span>Details</span><textarea name="tl-detail" rows="2" maxlength="240" placeholder="Optional note — what changed and why"></textarea></label>' +
+      '<div class="dash-timeline-editor-actions">' +
+      '<button type="button" class="dash-timeline-save tracking-submit">Save</button>' +
+      '<button type="button" class="dash-timeline-cancel tracking-share-secondary">Cancel</button>' +
+      '</div></div>'
+    );
+  }
+
+  function saveFromEditor(ed, onDone) {
+    if (!ed) return false;
+    var idVal = (ed.querySelector('[name="tl-id"]').value || '').trim();
+    var typeVal = ed.querySelector('[name="tl-type"]').value || 'note';
+    var dateVal = ed.querySelector('[name="tl-date"]').value || dateKeyFromMs(Date.now());
+    var titleVal = (ed.querySelector('[name="tl-title"]').value || '').trim();
+    var detailVal = (ed.querySelector('[name="tl-detail"]').value || '').trim();
+    var settingEl = ed.querySelector('[name="tl-setting"]');
+    var settingVal =
+      settingEl && !ed.querySelector('.dash-timeline-setting').hidden ? settingEl.value || '' : '';
+    if (!titleVal) {
+      ed.querySelector('[name="tl-title"]').focus();
+      return false;
+    }
+    if (settingOptionsForType(typeVal) && !settingVal) {
+      if (settingEl) settingEl.focus();
+      return false;
+    }
+    var meta = typeMeta(typeVal);
+    if (!titleVal && settingVal) {
+      titleVal =
+        (meta.label || typeVal) +
+        ': ' +
+        (typeVal === 'equipment'
+          ? optionLabel(EQUIPMENT_OPTIONS, settingVal)
+          : typeVal === 'goal'
+            ? optionLabel(GOAL_OPTIONS, settingVal)
+            : optionLabel(SEASON_OPTIONS, settingVal));
+    }
+    var ev = {
+      id: idVal || uid(),
+      type: typeVal,
+      date: dateVal,
+      at: parseDateKey(dateVal) || Date.now(),
+      title: titleVal,
+      detail: detailVal,
+      settingValue: settingVal,
+      updatedAt: new Date().toISOString(),
+      appliedSettings: false,
+    };
+    var finish = function () {
+      ev.appliedSettings = meta.updates && meta.updates !== 'none';
+      upsertCustom(ev);
+      try {
+        window.dispatchEvent(new CustomEvent('strongman:timeline-updated'));
+      } catch (e) {}
+      if (typeof onDone === 'function') onDone(ev);
+    };
+    applySideEffects(ev).then(finish).catch(finish);
+    return true;
+  }
+
+  function wireEditor(root, opts) {
+    opts = opts || {};
+    var typeSel = root.querySelector('[name="tl-type"]');
+    if (typeSel) {
+      typeSel.addEventListener('change', function () {
+        var ed = root.querySelector('.dash-timeline-editor');
+        syncSettingField(ed, typeSel.value, '');
+      });
+    }
+    var saveBtn = root.querySelector('.dash-timeline-save');
+    if (saveBtn) {
+      saveBtn.addEventListener('click', function () {
+        var ed = root.querySelector('.dash-timeline-editor');
+        saveFromEditor(ed, opts.onSaved);
+      });
+    }
+    var cancelBtn = root.querySelector('.dash-timeline-cancel');
+    if (cancelBtn) {
+      cancelBtn.addEventListener('click', function () {
+        closeEditor(root);
+        if (typeof opts.onCancel === 'function') opts.onCancel();
+      });
+    }
+  }
+
+  function mountStandaloneEditor(container, opts) {
+    if (!container) return null;
+    opts = opts || {};
+    container.innerHTML = editorMarkup();
+    wireEditor(container, opts);
+    return {
+      open: function (existing, defaultType) {
+        openEditor(container, existing);
+        if (!existing && defaultType) {
+          var typeEl = container.querySelector('[name="tl-type"]');
+          var ed = container.querySelector('.dash-timeline-editor');
+          if (typeEl) typeEl.value = defaultType;
+          syncSettingField(ed, defaultType, '');
+        }
+      },
+      close: function () {
+        closeEditor(container);
+      },
+    };
+  }
+
   function settingOptionsForType(type) {
     if (type === 'equipment') return EQUIPMENT_OPTIONS;
     if (type === 'goal') return GOAL_OPTIONS;
@@ -681,10 +807,6 @@
     if (!root) return;
     var limit = opts.limit || 28;
     var events = collectEvents(sessions).slice(0, limit);
-    var typeOpts = TYPE_OPTIONS.map(function (t) {
-      return '<option value="' + t.id + '">' + escapeHtml(t.label) + '</option>';
-    }).join('');
-
     var rowsHtml = events.length
       ? events
           .map(function (ev) {
@@ -753,21 +875,7 @@
       '<div class="dash-timeline-toolbar">' +
       '<button type="button" class="dash-timeline-add" id="dash-timeline-add">Add entry</button>' +
       '</div>' +
-      '<div class="dash-timeline-editor" hidden>' +
-      '<p class="dash-timeline-editor-title">Add to timeline</p>' +
-      '<input type="hidden" name="tl-id" value="">' +
-      '<label class="dash-timeline-field"><span>Type</span><select name="tl-type">' +
-      typeOpts +
-      '</select></label>' +
-      '<p class="dash-timeline-setting-hint"></p>' +
-      '<label class="dash-timeline-field dash-timeline-setting" hidden><span>Details</span><select name="tl-setting"></select></label>' +
-      '<label class="dash-timeline-field"><span>Date</span><input type="date" name="tl-date"></label>' +
-      '<label class="dash-timeline-field"><span>Title</span><input type="text" name="tl-title" maxlength="80" placeholder="e.g. Left knee flared up"></label>' +
-      '<label class="dash-timeline-field"><span>Details</span><textarea name="tl-detail" rows="2" maxlength="240" placeholder="Optional note — what changed and why"></textarea></label>' +
-      '<div class="dash-timeline-editor-actions">' +
-      '<button type="button" class="dash-timeline-save">Save</button>' +
-      '<button type="button" class="dash-timeline-cancel">Cancel</button>' +
-      '</div></div>' +
+      editorMarkup(true) +
       '<ol class="dash-timeline-list" role="list">' +
       rowsHtml +
       '</ol>';
@@ -784,68 +892,11 @@
         closeEditor(root);
       });
     }
-    var typeSel = root.querySelector('[name="tl-type"]');
-    if (typeSel) {
-      typeSel.addEventListener('change', function () {
-        var ed = root.querySelector('.dash-timeline-editor');
-        syncSettingField(ed, typeSel.value, '');
-      });
-    }
-    var saveBtn = root.querySelector('.dash-timeline-save');
-    if (saveBtn) {
-      saveBtn.addEventListener('click', function () {
-        var ed = root.querySelector('.dash-timeline-editor');
-        var idVal = (ed.querySelector('[name="tl-id"]').value || '').trim();
-        var typeVal = ed.querySelector('[name="tl-type"]').value || 'note';
-        var dateVal = ed.querySelector('[name="tl-date"]').value || dateKeyFromMs(Date.now());
-        var titleVal = (ed.querySelector('[name="tl-title"]').value || '').trim();
-        var detailVal = (ed.querySelector('[name="tl-detail"]').value || '').trim();
-        var settingEl = ed.querySelector('[name="tl-setting"]');
-        var settingVal =
-          settingEl && !ed.querySelector('.dash-timeline-setting').hidden
-            ? settingEl.value || ''
-            : '';
-        if (!titleVal) {
-          ed.querySelector('[name="tl-title"]').focus();
-          return;
-        }
-        if (settingOptionsForType(typeVal) && !settingVal) {
-          if (settingEl) settingEl.focus();
-          return;
-        }
-        var meta = typeMeta(typeVal);
-        if (!titleVal && settingVal) {
-          titleVal =
-            (meta.label || typeVal) +
-            ': ' +
-            (typeVal === 'equipment'
-              ? optionLabel(EQUIPMENT_OPTIONS, settingVal)
-              : typeVal === 'goal'
-                ? optionLabel(GOAL_OPTIONS, settingVal)
-                : optionLabel(SEASON_OPTIONS, settingVal));
-        }
-        var ev = {
-          id: idVal || uid(),
-          type: typeVal,
-          date: dateVal,
-          at: parseDateKey(dateVal) || Date.now(),
-          title: titleVal,
-          detail: detailVal,
-          settingValue: settingVal,
-          updatedAt: new Date().toISOString(),
-          appliedSettings: false,
-        };
-        var finish = function () {
-          ev.appliedSettings = meta.updates && meta.updates !== 'none';
-          upsertCustom(ev);
-          render(root, sessions, opts);
-          try {
-            window.dispatchEvent(new CustomEvent('strongman:timeline-updated'));
-          } catch (e) {}
-        };
-        applySideEffects(ev).then(finish).catch(finish);
-      });
-    }
+    wireEditor(root, {
+      onSaved: function () {
+        render(root, sessions, opts);
+      },
+    });
 
     root.querySelectorAll('[data-tl-edit]').forEach(function (btn) {
       btn.addEventListener('click', function () {
@@ -888,5 +939,8 @@
     TYPE_OPTIONS: TYPE_OPTIONS,
     mount: mount,
     render: render,
+    openEditor: openEditor,
+    closeEditor: closeEditor,
+    mountStandaloneEditor: mountStandaloneEditor,
   };
 })();

@@ -1302,12 +1302,93 @@
     openPrShareModal();
   }
 
-  /* —— Timeline "New PR" dialog: the only place PRs are created —— */
+  /* —— Timeline "New entry" chooser + PR / life-event dialogs —— */
   var tlPrDialog = document.getElementById('tl-pr-dialog');
   var tlPrBackdrop = document.getElementById('tl-pr-backdrop');
   var tlPrForm = document.getElementById('tl-pr-form');
   var tlPrError = document.getElementById('tl-pr-error');
-  var tlPrOpenBtn = document.getElementById('log-timeline-new-pr');
+  var tlNewOpenBtn = document.getElementById('log-timeline-new-entry');
+  var tlNewDialog = document.getElementById('tl-new-dialog');
+  var tlNewBackdrop = document.getElementById('tl-new-backdrop');
+  var tlEventDialog = document.getElementById('tl-event-dialog');
+  var tlEventBackdrop = document.getElementById('tl-event-backdrop');
+  var tlEventEditorRoot = document.getElementById('log-timeline-editor-root');
+  var tlEventEditorApi = null;
+
+  function closeTlNewDialog() {
+    if (tlNewBackdrop) {
+      tlNewBackdrop.classList.remove('is-open');
+      tlNewBackdrop.setAttribute('aria-hidden', 'true');
+    }
+    if (tlNewDialog) {
+      tlNewDialog.hidden = true;
+      tlNewDialog.classList.remove('is-open');
+      tlNewDialog.setAttribute('aria-hidden', 'true');
+    }
+    if (!isAnyTimelineDialogOpen()) document.body.style.overflow = '';
+  }
+
+  function openTlNewDialog() {
+    if (!tlNewDialog) return;
+    if (tlNewBackdrop) {
+      tlNewBackdrop.classList.add('is-open');
+      tlNewBackdrop.setAttribute('aria-hidden', 'false');
+    }
+    tlNewDialog.hidden = false;
+    tlNewDialog.classList.add('is-open');
+    tlNewDialog.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    var firstChoice = tlNewDialog.querySelector('.log-tl-new-choice');
+    if (firstChoice) firstChoice.focus();
+  }
+
+  function closeTlEventDialog() {
+    if (tlEventBackdrop) {
+      tlEventBackdrop.classList.remove('is-open');
+      tlEventBackdrop.setAttribute('aria-hidden', 'true');
+    }
+    if (tlEventDialog) {
+      tlEventDialog.hidden = true;
+      tlEventDialog.classList.remove('is-open');
+      tlEventDialog.setAttribute('aria-hidden', 'true');
+    }
+    if (tlEventEditorApi) tlEventEditorApi.close();
+    if (!isAnyTimelineDialogOpen()) document.body.style.overflow = '';
+  }
+
+  function openTlEventDialog(existing) {
+    if (!tlEventDialog || !window.TrainingTimeline) return;
+    if (!tlEventEditorApi && tlEventEditorRoot) {
+      tlEventEditorApi = window.TrainingTimeline.mountStandaloneEditor(tlEventEditorRoot, {
+        onSaved: function () {
+          closeTlEventDialog();
+          renderArchiveInline();
+        },
+        onCancel: closeTlEventDialog,
+      });
+    }
+    var heading = document.getElementById('tl-event-heading');
+    if (heading) heading.textContent = existing ? 'Edit timeline entry' : 'Add to timeline';
+    if (tlEventBackdrop) {
+      tlEventBackdrop.classList.add('is-open');
+      tlEventBackdrop.setAttribute('aria-hidden', 'false');
+    }
+    tlEventDialog.hidden = false;
+    tlEventDialog.classList.add('is-open');
+    tlEventDialog.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    if (tlEventEditorApi) tlEventEditorApi.open(existing || null);
+    var titleField = tlEventEditorRoot && tlEventEditorRoot.querySelector('[name="tl-title"]');
+    if (titleField) titleField.focus();
+  }
+
+  function isAnyTimelineDialogOpen() {
+    return (
+      (tlPrDialog && !tlPrDialog.hidden) ||
+      (tlNewDialog && !tlNewDialog.hidden) ||
+      (tlEventDialog && !tlEventDialog.hidden)
+    );
+  }
 
   function setTlPrError(msg) {
     if (!tlPrError) return;
@@ -1334,7 +1415,7 @@
       tlPrDialog.classList.remove('is-open');
       tlPrDialog.setAttribute('aria-hidden', 'true');
     }
-    document.body.style.overflow = '';
+    if (!isAnyTimelineDialogOpen()) document.body.style.overflow = '';
   }
 
   function openTlPrDialog() {
@@ -1362,12 +1443,31 @@
     r.addEventListener('change', syncTlPrPanels);
   });
 
-  if (tlPrOpenBtn) tlPrOpenBtn.addEventListener('click', openTlPrDialog);
+  if (tlNewOpenBtn) tlNewOpenBtn.addEventListener('click', openTlNewDialog);
+  var tlNewCloseBtn = document.getElementById('tl-new-close');
+  if (tlNewCloseBtn) tlNewCloseBtn.addEventListener('click', closeTlNewDialog);
+  if (tlNewBackdrop) tlNewBackdrop.addEventListener('click', closeTlNewDialog);
+  if (tlNewDialog) {
+    tlNewDialog.querySelectorAll('[data-new-entry]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var kind = btn.getAttribute('data-new-entry');
+        closeTlNewDialog();
+        if (kind === 'pr') openTlPrDialog();
+        else if (kind === 'event') openTlEventDialog(null);
+      });
+    });
+  }
+  var tlEventCloseBtn = document.getElementById('tl-event-close');
+  if (tlEventCloseBtn) tlEventCloseBtn.addEventListener('click', closeTlEventDialog);
+  if (tlEventBackdrop) tlEventBackdrop.addEventListener('click', closeTlEventDialog);
   var tlPrCloseBtn = document.getElementById('tl-pr-close');
   if (tlPrCloseBtn) tlPrCloseBtn.addEventListener('click', closeTlPrDialog);
   if (tlPrBackdrop) tlPrBackdrop.addEventListener('click', closeTlPrDialog);
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape' && tlPrDialog && !tlPrDialog.hidden) closeTlPrDialog();
+    if (e.key !== 'Escape') return;
+    if (tlEventDialog && !tlEventDialog.hidden) closeTlEventDialog();
+    else if (tlNewDialog && !tlNewDialog.hidden) closeTlNewDialog();
+    else if (tlPrDialog && !tlPrDialog.hidden) closeTlPrDialog();
   });
 
   if (tlPrForm && PR) {
@@ -2777,6 +2877,13 @@
         var updateBtn = timelineActionBtn('Update');
         updateBtn.setAttribute('data-pr-open', pr.id || pr.clientId || '');
         actions.appendChild(updateBtn);
+      } else if (ev.source === 'custom' && ev.editable) {
+        var editEvBtn = timelineActionBtn('Edit');
+        editEvBtn.setAttribute('data-tl-edit', ev.id || '');
+        var deleteEvBtn = timelineActionBtn('Delete', 'danger');
+        deleteEvBtn.setAttribute('data-tl-delete', ev.id || '');
+        actions.appendChild(editEvBtn);
+        actions.appendChild(deleteEvBtn);
       }
 
       if (actions.childNodes.length) card.appendChild(actions);
@@ -3544,6 +3651,32 @@
       e.preventDefault();
       var recOpen = PR.getRecordById(pidOpen);
       if (recOpen) openPrEditDialog(recOpen);
+      return;
+    }
+    var tlEditEl = e.target.closest && e.target.closest('[data-tl-edit]');
+    if (tlEditEl && window.TrainingTimeline) {
+      var tlEditId = tlEditEl.getAttribute('data-tl-edit');
+      if (!tlEditId) return;
+      e.preventDefault();
+      e.stopPropagation();
+      var foundEv = window.TrainingTimeline.loadCustomEvents().filter(function (item) {
+        return item.id === tlEditId;
+      })[0];
+      if (foundEv) openTlEventDialog(foundEv);
+      return;
+    }
+    var tlDeleteEl = e.target.closest && e.target.closest('[data-tl-delete]');
+    if (tlDeleteEl && window.TrainingTimeline) {
+      var tlDeleteId = tlDeleteEl.getAttribute('data-tl-delete');
+      if (!tlDeleteId) return;
+      e.preventDefault();
+      e.stopPropagation();
+      if (!window.confirm('Delete this timeline entry?')) return;
+      window.TrainingTimeline.removeCustom(tlDeleteId);
+      try {
+        window.dispatchEvent(new CustomEvent('strongman:timeline-updated'));
+      } catch (err) {}
+      renderArchiveInline();
       return;
     }
     var rmPhotoBtn = e.target.closest && e.target.closest('.tracking-session-photo-remove');

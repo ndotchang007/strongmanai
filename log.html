@@ -537,7 +537,7 @@
                                     </div>
                                     <div class="log-timeline-head-tools">
                                         <span class="dash-archive-count log-timeline-count" id="tracking-archive-count" aria-live="polite">0 sessions</span>
-                                        <button type="button" class="log-tl-new-btn" id="log-timeline-new-pr" aria-haspopup="dialog" aria-controls="tl-pr-dialog">
+                                        <button type="button" class="log-tl-new-btn" id="log-timeline-new-entry" aria-haspopup="dialog" aria-controls="tl-new-dialog">
                                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
                                             New entry
                                         </button>
@@ -935,6 +935,45 @@
                 <button type="button" class="create-share-instagram" id="tracking-workout-share-instagram">Share to Instagram</button>
             </div>
             <p class="create-share-note" id="tracking-workout-share-status" role="status"></p>
+        </div>
+    </div>
+
+    <div class="pr-edit-backdrop" id="tl-new-backdrop" aria-hidden="true"></div>
+    <div class="pr-edit-dialog" id="tl-new-dialog" role="dialog" aria-modal="true" aria-labelledby="tl-new-heading" aria-hidden="true" hidden>
+        <div class="pr-edit-panel pr-edit-panel--compact">
+            <header class="pr-edit-header">
+                <div>
+                    <p class="pr-edit-kicker">Timeline</p>
+                    <h2 class="pr-edit-title" id="tl-new-heading">New entry</h2>
+                </div>
+                <button type="button" class="pr-edit-close" id="tl-new-close" aria-label="Close">×</button>
+            </header>
+            <p class="pr-edit-lede">Add a PR or log injury, illness, equipment changes, and other life events.</p>
+            <div class="log-tl-new-choices" role="group" aria-label="Entry type">
+                <button type="button" class="log-tl-new-choice" data-new-entry="pr">
+                    <span class="log-tl-new-choice-label">Personal record</span>
+                    <span class="log-tl-new-choice-hint">Running, swimming, or lifting PR</span>
+                </button>
+                <button type="button" class="log-tl-new-choice" data-new-entry="event">
+                    <span class="log-tl-new-choice-label">Injury, illness, or life event</span>
+                    <span class="log-tl-new-choice-hint">Pain, sickness, travel, equipment, notes…</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="pr-edit-backdrop" id="tl-event-backdrop" aria-hidden="true"></div>
+    <div class="pr-edit-dialog" id="tl-event-dialog" role="dialog" aria-modal="true" aria-labelledby="tl-event-heading" aria-hidden="true" hidden>
+        <div class="pr-edit-panel">
+            <header class="pr-edit-header">
+                <div>
+                    <p class="pr-edit-kicker">Timeline entry</p>
+                    <h2 class="pr-edit-title" id="tl-event-heading">Add to timeline</h2>
+                </div>
+                <button type="button" class="pr-edit-close" id="tl-event-close" aria-label="Close">×</button>
+            </header>
+            <p class="pr-edit-lede">Rocky uses these to adjust your plan — injuries, illness, schedule changes, and more.</p>
+            <div id="log-timeline-editor-root" class="tl-event-editor"></div>
         </div>
     </div>
 

@@ -3263,6 +3263,107 @@ html[data-theme="light"] .tracking-archive-map-year-label
     border-color: var(--accent);
     background: color-mix(in srgb, var(--accent) 22%, transparent);
 }
+.log-tl-new-choices
+{
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+}
+.log-tl-new-choice
+{
+    appearance: none;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.15rem;
+    width: 100%;
+    padding: 0.75rem 0.85rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-mid, #555);
+    background: color-mix(in srgb, var(--bg-page, #141414) 40%, transparent);
+    color: inherit;
+    font-family: var(--font);
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+.log-tl-new-choice:hover
+{
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+.log-tl-new-choice-label
+{
+    font-size: 0.88rem;
+    font-weight: 750;
+    color: var(--text, #f2f2f2);
+}
+.log-tl-new-choice-hint
+{
+    font-size: 0.74rem;
+    color: var(--text-muted, #aaa);
+    line-height: 1.35;
+}
+.pr-edit-panel--compact
+{
+    width: min(100%, 22rem);
+}
+.tl-event-editor .dash-timeline-editor
+{
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+}
+.tl-event-editor .dash-timeline-editor-title
+{
+    display: none;
+}
+.tl-event-editor .dash-timeline-field
+{
+    display: flex;
+    flex-direction: column;
+    gap: 0.28rem;
+}
+.tl-event-editor .dash-timeline-field > span
+{
+    font-size: 0.78rem;
+    font-weight: 650;
+    color: var(--text-muted, #aaa);
+}
+.tl-event-editor .dash-timeline-field input,
+.tl-event-editor .dash-timeline-field select,
+.tl-event-editor .dash-timeline-field textarea
+{
+    width: 100%;
+    padding: 0.5rem 0.6rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-mid, #555);
+    background: var(--bg-page, #141414);
+    color: inherit;
+    font-family: var(--font);
+    font-size: 0.85rem;
+}
+.tl-event-editor .dash-timeline-setting-hint
+{
+    margin: -0.25rem 0 0;
+    font-size: 0.74rem;
+    color: var(--text-muted, #aaa);
+    line-height: 1.35;
+}
+.tl-event-editor .dash-timeline-editor-actions
+{
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.15rem;
+}
+.tl-event-editor .dash-timeline-editor-actions .tracking-submit
+{
+    flex: 1;
+}
+.tl-event-editor .dash-timeline-cancel
+{
+    flex: 0 0 auto;
+}
 .log-timeline-search .dash-archive-search-input
 {
     width: 100%;
