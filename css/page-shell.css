@@ -134,6 +134,13 @@ body[data-current-page="log"] .tracking-mode-tab
     min-width: 0;
 }
 
+body[data-current-page="log"] .split-day-row
+{
+    flex: none;
+    max-height: none;
+    max-width: 100%;
+}
+
 /* Hide scrollbars on app pages while keeping touch / wheel scroll */
 body[data-current-page]
 {
